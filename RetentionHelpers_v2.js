@@ -427,6 +427,12 @@ function showVersionInfo() {
     '• Removed Star Points\n' +
     '• Team Success 10/10 split\n' +
     '• No validation on modifiers\n\n' +
+    'Changes in v2.1:\n' +
+    '• Split Team Success into Regular Season + Postseason columns\n' +
+    '• Postseason via VLOOKUP from table (3-column table with points formula)\n' +
+    '• Auto-populate team lists in both tables\n' +
+    '• Smart Update preserves Team Direction data\n' +
+    '• 19 columns total (was 18)\n\n' +
     'File Structure:\n' +
     '• RetentionConfig_v2.js (configuration)\n' +
     '• RetentionCore_v2.js (data & calculation engine)\n' +

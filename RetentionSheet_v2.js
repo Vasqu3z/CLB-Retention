@@ -159,9 +159,10 @@ function applyDataFormatting(sheet, startRow, numRows) {
   }
 
   // Apply alternating row colors to auto-calculated columns (batch operation)
+  // V2.1: Updated for split TS columns
   var autoCalcColumns = [
     cols.COL_PLAYER, cols.COL_TEAM,
-    cols.COL_TS_BASE, cols.COL_TS_TOTAL,
+    cols.COL_REG_SEASON, cols.COL_POSTSEASON, cols.COL_TS_TOTAL,
     cols.COL_PT_BASE, cols.COL_PT_TOTAL,
     cols.COL_PERF_BASE, cols.COL_PERF_TOTAL,
     cols.COL_AUTO_TOTAL, cols.COL_MANUAL_TOTAL,
@@ -173,8 +174,9 @@ function applyDataFormatting(sheet, startRow, numRows) {
   }
 
   // Center-align numeric columns (batch operations)
+  // V2.1: Updated for split TS columns
   var numericColumns = [
-    cols.COL_TS_BASE, cols.COL_TS_TOTAL,
+    cols.COL_REG_SEASON, cols.COL_POSTSEASON, cols.COL_TS_TOTAL,
     cols.COL_PT_BASE, cols.COL_PT_TOTAL,
     cols.COL_PERF_BASE, cols.COL_PERF_TOTAL,
     cols.COL_AUTO_TOTAL, cols.COL_MANUAL_TOTAL, cols.COL_FINAL_GRADE

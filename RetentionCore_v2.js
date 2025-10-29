@@ -769,7 +769,10 @@ function isRetentionSheetFormatted(sheet) {
     var hasPlayer = headers[0] === "Player";
     var hasTeam = headers[1] === "Team";
     var hasDraftValue = String(headers[2]).indexOf("Draft") >= 0 || String(headers[2]).indexOf("Value") >= 0;
-    var hasRegSeason = String(headers[3]).indexOf("Regular") >= 0 || String(headers[3]).indexOf("Season") >= 0;
+    // Column 3: Accept "Record", "Regular", or "Season"
+    var hasRegSeason = String(headers[3]).indexOf("Record") >= 0 ||
+                       String(headers[3]).indexOf("Regular") >= 0 ||
+                       String(headers[3]).indexOf("Season") >= 0;
     var hasPostseason = String(headers[4]).indexOf("Postseason") >= 0;
 
     var isFormatted = hasPlayer && hasTeam && hasDraftValue && hasRegSeason && hasPostseason;

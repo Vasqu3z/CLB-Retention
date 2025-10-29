@@ -317,32 +317,39 @@ var RETENTION_CONFIG = {
 
   // ===== DRAFT EXPECTATIONS SYSTEM V2 =====
   // Compares performance to acquisition cost (draft round)
-  // 3-tier system: High rounds get bonus for good situation, Mid/Late get penalties for underperforming
+  // 3-tier system based on player's perceived value vs team's perceived value
+  // High: Situation-based (good/bad fit), Mid/Late: Self-worth based (overvalued/undervalued)
   DRAFT_EXPECTATIONS: {
     ENABLED: true,
 
-    // High draft picks (Rounds 1-2) - Expected to be elite
-    // No underperformance penalty (already at top), bonus for being in good situation
+    // High draft picks (Rounds 1-2) - Situation indicators
+    // Bonus if performing well (good situation), penalty if underperforming (bad situation)
     HIGH_ROUNDS: {
       ROUNDS: [1, 2],
       GOOD_SITUATION_PERCENTILE: 75,     // Top 25% performance
-      GOOD_SITUATION_BONUS: 2.5          // Bonus for elite player in good spot
+      GOOD_SITUATION_MOD: 2.5,           // Bonus for elite player in good spot
+      UNDERPERFORM_PERCENTILE: 50,       // Below 50th percentile
+      UNDERPERFORM_MOD: -4.0             // Severe penalty for elite pick in bad situation
     },
 
-    // Mid draft picks (Rounds 3-5) - Expected to be solid contributors
+    // Mid draft picks (Rounds 3-5) - Self-worth indicators
+    // Penalty if overperforming (player feels undervalued), bonus if underperforming (team overvalued them)
     MID_ROUNDS: {
       ROUNDS: [3, 4, 5],
-      EXPECTED_PERCENTILE: 50,           // Expected to be average or better
-      UNDERPERFORM_PENALTY: -3.5,        // Moderate penalty for underperforming
-      OVERPERFORM_BONUS: 2.0             // Small bonus for exceeding expectations
+      OVERPERFORM_PERCENTILE: 75,        // Top 25% performance (exceeding expectations)
+      OVERPERFORM_MOD: -3.5,             // Penalty - player feels undervalued by team
+      UNDERPERFORM_PERCENTILE: 50,       // Below 50th percentile
+      UNDERPERFORM_MOD: 2.0              // Bonus - team overvalued player, less flight risk
     },
 
-    // Late draft picks (Rounds 6-8+) - Expected to contribute
+    // Late draft picks (Rounds 6-8+) - Self-worth indicators (more extreme)
+    // Same logic as mid rounds but more pronounced
     LATE_ROUNDS: {
       ROUNDS: [6, 7, 8],
-      EXPECTED_PERCENTILE: 40,           // Expected to be somewhat useful
-      UNDERPERFORM_PENALTY: -5.0,        // Severe penalty (complete bust)
-      OVERPERFORM_BONUS: 3.0             // Larger bonus for finding value late
+      OVERPERFORM_PERCENTILE: 75,        // Top 25% performance (major overperformance)
+      OVERPERFORM_MOD: -5.0,             // Major penalty - player severely undervalued
+      UNDERPERFORM_PERCENTILE: 40,       // Below 40th percentile
+      UNDERPERFORM_MOD: 3.0              // Larger bonus - team overvalued, player knows it
     }
   },
 

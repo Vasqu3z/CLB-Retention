@@ -79,7 +79,7 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     .setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER);
 
   sheet.getRange(2, 1)
-    .setValue("Designed for TOP 3 players per team. Weighted grading on 5-95 scale: TS(18%) + PT(32%) + Perf(17%) + Chem(12%) + Dir(21%). " +
+    .setValue("Designed for TOP 3 players per team. Weighted grading on 5-95 scale. " +
               "Auto-flagging detects flight risk for elite players on struggling teams. Draft expectations reward/penalize based on performance vs draft round.")
     .setFontSize(9)
     .setFontStyle("italic")
@@ -442,39 +442,6 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
   sheet.getParent().setNamedRange(RETENTION_CONFIG.POSTSEASON_TABLE_NAME, postseasonRange);
 
   Logger.log("Created Postseason table with " + numTeams + " teams at rows " + postseasonDataStart + "-" + (postseasonDataStart + numTeams - 1));
-
-  // ===== INSTRUCTIONS SECTION =====
-  var instructionsRow = postseasonDataStart + 10;
-
-  // Main instruction
-  sheet.getRange(instructionsRow, 1)
-    .setValue("INSTRUCTIONS V2: (1) Enter Team Direction scores in table above - all players on same team inherit this score via VLOOKUP. " +
-              "(2) Enter postseason results (Team | Finish: 1-8 or text like 'Champion'). " +
-              "(3) Run 'Calculate Retention Grades v2' from menu to update scores. " +
-              "(4) Edit yellow cells: Draft Value (Col C), Chemistry (Col O). " +
-              "(5) Edit blue cells: Modifiers (Cols F, I, L) - validated -5 to +5. " +
-              "(6) Final grades on 5-95 scale, auto-calculate using weighted formula: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21)*4.5 + 5.")
-    .setFontStyle("italic")
-    .setFontSize(9)
-    .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-    .setBackground("#f0f0f0");
-
-  sheet.getRange(instructionsRow, 1, 1, 10).merge();
-
-  // Design notes
-  sheet.getRange(instructionsRow + 2, 1)
-    .setValue("DESIGN NOTE V2: Grades on 5-95 scale (90-point range). Weighted grading replaces additive system. " +
-              "Auto-flagging: Elite players (top 25%) on 7th-8th teams get -4 perf penalty, good players (top 40%) on 5th-8th teams get -2. " +
-              "Draft expectations: High rounds (1-2) get +2.5 bonus if performing well (75th+ %ile). " +
-              "Mid rounds (3-5) get -3.5 penalty if underperforming (<50th %ile) or +2.0 bonus if overperforming (75th+ %ile). " +
-              "Late rounds (6-8+) get -5.0 penalty if underperforming (<40th %ile) or +3.0 bonus if overperforming (75th+ %ile). " +
-              "Team Direction: One score per team via VLOOKUP, replaces per-player input.")
-    .setFontStyle("italic")
-    .setFontSize(8)
-    .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-    .setBackground("#e8f4f8");
-
-  sheet.getRange(instructionsRow + 2, 1, 1, 10).merge();
 }
 
 /**

@@ -317,22 +317,32 @@ var RETENTION_CONFIG = {
 
   // ===== DRAFT EXPECTATIONS SYSTEM V2 =====
   // Compares performance to acquisition cost (draft round)
-  // Players underperforming draft value have higher retention risk
+  // 3-tier system: High rounds get bonus for good situation, Mid/Late get penalties for underperforming
   DRAFT_EXPECTATIONS: {
     ENABLED: true,
 
-    // High draft picks (Rounds 1-3) - Expected to be elite
+    // High draft picks (Rounds 1-2) - Expected to be elite
+    // No underperformance penalty (already at top), bonus for being in good situation
     HIGH_ROUNDS: {
-      ROUNDS: [1, 2, 3],
-      EXPECTED_PERCENTILE: 75,     // Expected to be top 25%
-      UNDERPERFORM_PENALTY: -2.5   // Penalty if below expectation
+      ROUNDS: [1, 2],
+      GOOD_SITUATION_PERCENTILE: 75,     // Top 25% performance
+      GOOD_SITUATION_BONUS: 2.5          // Bonus for elite player in good spot
     },
 
-    // Low draft picks (Rounds 4-8) - Expected to be solid contributors
-    LOW_ROUNDS: {
-      ROUNDS: [4, 5, 6, 7, 8],
-      EXPECTED_PERCENTILE: 45,     // Expected to be above average
-      UNDERPERFORM_PENALTY: -4.5   // Larger penalty (bigger disappointment)
+    // Mid draft picks (Rounds 3-5) - Expected to be solid contributors
+    MID_ROUNDS: {
+      ROUNDS: [3, 4, 5],
+      EXPECTED_PERCENTILE: 50,           // Expected to be average or better
+      UNDERPERFORM_PENALTY: -3.5,        // Moderate penalty for underperforming
+      OVERPERFORM_BONUS: 2.0             // Small bonus for exceeding expectations
+    },
+
+    // Late draft picks (Rounds 6-8+) - Expected to contribute
+    LATE_ROUNDS: {
+      ROUNDS: [6, 7, 8],
+      EXPECTED_PERCENTILE: 40,           // Expected to be somewhat useful
+      UNDERPERFORM_PENALTY: -5.0,        // Severe penalty (complete bust)
+      OVERPERFORM_BONUS: 3.0             // Larger bonus for finding value late
     }
   },
 
@@ -536,18 +546,19 @@ RETENTION_CONFIG.getMinGPForQualification = function(teamGamesPlayed) {
 };
 
 /**
- * Get color for final grade
+ * Get color for final grade (d95 scale: 5-95 range)
+ * Thresholds adjusted for 90-point range starting at 5
  */
 RETENTION_CONFIG.getGradeColor = function(finalGrade) {
-  if (finalGrade >= 75) return this.OUTPUT.COLORS.EXCELLENT;
-  if (finalGrade >= 60) return this.OUTPUT.COLORS.GOOD;
-  if (finalGrade >= 40) return this.OUTPUT.COLORS.AVERAGE;
-  return this.OUTPUT.COLORS.POOR;
+  if (finalGrade >= 70) return this.OUTPUT.COLORS.EXCELLENT;  // Top ~28% of range (70-95)
+  if (finalGrade >= 55) return this.OUTPUT.COLORS.GOOD;       // Upper-mid ~17% of range (55-70)
+  if (finalGrade >= 40) return this.OUTPUT.COLORS.AVERAGE;    // Mid ~17% of range (40-55)
+  return this.OUTPUT.COLORS.POOR;                              // Bottom ~38% of range (5-40)
 };
 
 /**
- * Calculate weighted final grade (d100 scale 0-100)
- * V2 FORMULA: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21) * 5
+ * Calculate weighted final grade (d95 scale 5-95)
+ * V2 FORMULA: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21) * 4.5 + 5
  */
 RETENTION_CONFIG.calculateWeightedGrade = function(tsTotal, ptTotal, perfTotal, chemScore, dirScore) {
   var weights = this.FACTOR_WEIGHTS;
@@ -560,8 +571,8 @@ RETENTION_CONFIG.calculateWeightedGrade = function(tsTotal, ptTotal, perfTotal, 
     (chemScore * weights.CHEMISTRY) +
     (dirScore * weights.DIRECTION);
 
-  // Scale to d100 (0-100)
-  var finalGrade = weightedSum * 5;
+  // Scale to d95 (5-95 range)
+  var finalGrade = (weightedSum * 4.5) + 5;
 
   // Round to whole number
   return Math.round(finalGrade);

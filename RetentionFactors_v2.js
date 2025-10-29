@@ -485,8 +485,10 @@ function applyAutoFlagging(offensivePercentile, standing) {
 // ===== DRAFT EXPECTATIONS LOGIC =====
 /**
  * Apply draft expectations modifier
- * Compares performance to draft round expectations
- * Returns modifier value (negative if underperforming)
+ * 3-tier system:
+ * - High rounds (1-2): Bonus for being elite in good situation (no penalty)
+ * - Mid rounds (3-5): Penalty for underperforming, bonus for overperforming
+ * - Late rounds (6-8+): Larger penalty for underperforming, larger bonus for overperforming
  * NOTE: Requires draft value to be entered in sheet first
  */
 function applyDraftExpectations(offensivePercentile, draftValue) {
@@ -496,32 +498,67 @@ function applyDraftExpectations(offensivePercentile, draftValue) {
   if (!config.ENABLED) return 0;
 
   var draftRound = parseInt(draftValue);
-  if (isNaN(draftRound) || draftRound < 1 || draftRound > 8) return 0;
+  if (isNaN(draftRound) || draftRound < 1) return 0;
 
-  // High rounds (1-3): Expected to be elite (75th percentile+)
+  // High rounds (1-2): Bonus for elite player in good situation
   if (config.HIGH_ROUNDS.ROUNDS.indexOf(draftRound) >= 0) {
-    if (offensivePercentile < config.HIGH_ROUNDS.EXPECTED_PERCENTILE) {
+    if (offensivePercentile >= config.HIGH_ROUNDS.GOOD_SITUATION_PERCENTILE) {
       if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
-        Logger.log("Draft expectations: Round " + draftRound + " pick underperforming (" +
-                   offensivePercentile.toFixed(0) + "% vs " +
-                   config.HIGH_ROUNDS.EXPECTED_PERCENTILE + "% expected) = " +
-                   config.HIGH_ROUNDS.UNDERPERFORM_PENALTY + " pts");
+        Logger.log("Draft expectations: Round " + draftRound + " pick performing well (" +
+                   offensivePercentile.toFixed(0) + "% ≥ " +
+                   config.HIGH_ROUNDS.GOOD_SITUATION_PERCENTILE + "%) = +" +
+                   config.HIGH_ROUNDS.GOOD_SITUATION_BONUS + " pts (good situation)");
       }
-      return config.HIGH_ROUNDS.UNDERPERFORM_PENALTY;
+      return config.HIGH_ROUNDS.GOOD_SITUATION_BONUS;
     }
+    // No penalty for high picks - they're already expected to be at the top
+    return 0;
   }
 
-  // Low rounds (4-8): Expected to be solid contributors (45th percentile+)
-  if (config.LOW_ROUNDS.ROUNDS.indexOf(draftRound) >= 0) {
-    if (offensivePercentile < config.LOW_ROUNDS.EXPECTED_PERCENTILE) {
+  // Mid rounds (3-5): Expected to be average or better
+  if (config.MID_ROUNDS.ROUNDS.indexOf(draftRound) >= 0) {
+    if (offensivePercentile < config.MID_ROUNDS.EXPECTED_PERCENTILE) {
+      // Underperforming - penalty
       if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
         Logger.log("Draft expectations: Round " + draftRound + " pick underperforming (" +
-                   offensivePercentile.toFixed(0) + "% vs " +
-                   config.LOW_ROUNDS.EXPECTED_PERCENTILE + "% expected) = " +
-                   config.LOW_ROUNDS.UNDERPERFORM_PENALTY + " pts");
+                   offensivePercentile.toFixed(0) + "% < " +
+                   config.MID_ROUNDS.EXPECTED_PERCENTILE + "%) = " +
+                   config.MID_ROUNDS.UNDERPERFORM_PENALTY + " pts");
       }
-      return config.LOW_ROUNDS.UNDERPERFORM_PENALTY;
+      return config.MID_ROUNDS.UNDERPERFORM_PENALTY;
+    } else if (offensivePercentile >= 75) {
+      // Overperforming (top 25%) - bonus
+      if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
+        Logger.log("Draft expectations: Round " + draftRound + " pick overperforming (" +
+                   offensivePercentile.toFixed(0) + "% ≥ 75%) = +" +
+                   config.MID_ROUNDS.OVERPERFORM_BONUS + " pts");
+      }
+      return config.MID_ROUNDS.OVERPERFORM_BONUS;
     }
+    return 0;
+  }
+
+  // Late rounds (6-8+): Expected to contribute something
+  if (draftRound >= 6) {
+    if (offensivePercentile < config.LATE_ROUNDS.EXPECTED_PERCENTILE) {
+      // Underperforming - larger penalty (complete bust)
+      if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
+        Logger.log("Draft expectations: Round " + draftRound + " pick underperforming (" +
+                   offensivePercentile.toFixed(0) + "% < " +
+                   config.LATE_ROUNDS.EXPECTED_PERCENTILE + "%) = " +
+                   config.LATE_ROUNDS.UNDERPERFORM_PENALTY + " pts (bust)");
+      }
+      return config.LATE_ROUNDS.UNDERPERFORM_PENALTY;
+    } else if (offensivePercentile >= 75) {
+      // Overperforming (top 25%) - larger bonus (found value)
+      if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
+        Logger.log("Draft expectations: Round " + draftRound + " pick overperforming (" +
+                   offensivePercentile.toFixed(0) + "% ≥ 75%) = +" +
+                   config.LATE_ROUNDS.OVERPERFORM_BONUS + " pts (value find)");
+      }
+      return config.LATE_ROUNDS.OVERPERFORM_BONUS;
+    }
+    return 0;
   }
 
   return 0;

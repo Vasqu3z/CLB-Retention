@@ -913,15 +913,15 @@ function writePlayerData(sheet, retentionGrades) {
       "=MIN(20,MAX(0,K" + row + "+L" + row + "))"
     );
 
-    // Col Q - Manual Total = (12% Chemistry + 21% Direction) × 5 for d100 scale
+    // Col Q - Manual Total = (12% Chemistry + 21% Direction) × 4.5 for d95 scale (5-95 range)
     sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula(
-      "=ROUND((O" + row + "*0.12+P" + row + "*0.21)*5,1)"
+      "=ROUND((O" + row + "*0.12+P" + row + "*0.21)*4.5,1)"
     );
 
-    // Col R - Final Grade = Weighted formula × 5 for d100 scale
-    // (TS*0.18 + PT*0.32 + Perf*0.17) * 5 + Manual Total
+    // Col R - Final Grade = Weighted formula × 4.5 + 5 for d95 scale (5-95 range)
+    // All factors: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21) × 4.5 + 5
     sheet.getRange(row, cols.COL_FINAL_GRADE).setFormula(
-      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17)*5+Q" + row + ",0)"
+      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17+O" + row + "*0.12+P" + row + "*0.21)*4.5+5,0)"
     );
   }
 

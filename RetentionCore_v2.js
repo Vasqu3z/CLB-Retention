@@ -906,9 +906,9 @@ function writePlayerData(sheet, retentionGrades) {
       "=MIN(20,MAX(0,K" + row + "+L" + row + "))"
     );
 
-    // Col Q - Manual Total = 12% Chemistry + 21% Direction (weighted)
+    // Col Q - Manual Total = (12% Chemistry + 21% Direction) × 5 for d100 scale
     sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula(
-      "=ROUND(O" + row + "*0.12+P" + row + "*0.21,1)"
+      "=ROUND((O" + row + "*0.12+P" + row + "*0.21)*5,1)"
     );
 
     // Col R - Final Grade = Weighted formula × 5 for d100 scale

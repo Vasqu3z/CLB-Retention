@@ -25,9 +25,14 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     var postseasonRow = findPostseasonSection(sheet);
     if (postseasonRow > 0) {
       try {
+        // Postseason data starts 2 rows after header (header, column headers, then data)
         var dataStartRow = postseasonRow + 2;
-        existingPostseasonData = sheet.getRange(dataStartRow, 1, 8, 2).getValues();
-        Logger.log("Preserved postseason data from existing sheet");
+        var lastRow = sheet.getLastRow();
+        var numRows = Math.min(20, lastRow - dataStartRow + 1);  // Read up to 20 teams
+        if (numRows > 0) {
+          existingPostseasonData = sheet.getRange(dataStartRow, 1, numRows, 3).getValues();  // 3 columns: Team, Finish, Points
+          Logger.log("Preserved postseason data: " + numRows + " rows from row " + dataStartRow);
+        }
       } catch (e) {
         Logger.log("Could not preserve postseason data: " + e.toString());
       }
@@ -40,9 +45,14 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     var directionRow = findTeamDirectionSection(sheet);
     if (directionRow > 0) {
       try {
-        var dataStartRow = directionRow + 2;
-        existingDirectionData = sheet.getRange(dataStartRow, 1, 8, 2).getValues();
-        Logger.log("Preserved Team Direction data from existing sheet");
+        // Direction data starts 3 rows after header (header, description, column headers, then data)
+        var dataStartRow = directionRow + 3;
+        var lastRow = sheet.getLastRow();
+        var numRows = Math.min(20, lastRow - dataStartRow + 1);  // Read up to 20 teams
+        if (numRows > 0) {
+          existingDirectionData = sheet.getRange(dataStartRow, 1, numRows, 2).getValues();
+          Logger.log("Preserved Team Direction data: " + numRows + " rows from row " + dataStartRow);
+        }
       } catch (e) {
         Logger.log("Could not preserve Team Direction data: " + e.toString());
       }
@@ -270,15 +280,15 @@ function applyDataFormatting(sheet, startRow, numRows) {
 
 /**
  * Add postseason section, Team Direction table, and instructions at bottom of sheet
- * V2.1: Auto-populates team lists from Team Data sheet
+ * V2.1: Auto-populates team lists from player data on sheet
  * RESTORED: Previously entered postseason and direction data (preserves scores)
  */
 function addBottomSections(sheet, playerCount, existingPostseasonData, existingDirectionData) {
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
   var sectionStartRow = dataStartRow + playerCount + RETENTION_CONFIG.OUTPUT.INSTRUCTIONS_ROW_OFFSET;
 
-  // V2.1: Get list of teams from Team Data sheet
-  var teamList = getTeamList();
+  // V2.1: Get unique teams from player list on sheet (Column B)
+  var teamList = getUniqueTeamsFromSheet(sheet, dataStartRow, playerCount);
 
   // ===== TEAM DIRECTION TABLE (NEW IN V2) =====
   var directionStartRow = sectionStartRow;
@@ -594,42 +604,38 @@ function findTeamDirectionSection(sheet) {
 }
 
 /**
- * Get list of teams from Team Data sheet
- * V2.1: Used to auto-populate Team Direction and Postseason tables
- * Returns array of team names
+ * Get unique teams from player list on sheet
+ * V2.1: Reads from Column B of the retention sheet
+ * Returns array of unique team names in alphabetical order
  */
-function getTeamList() {
+function getUniqueTeamsFromSheet(sheet, startRow, playerCount) {
   try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var teamSheet = ss.getSheetByName(CONFIG.TEAM_STATS_SHEET);
-
-    if (!teamSheet) {
-      Logger.log("WARNING: Team Data sheet not found");
+    if (playerCount === 0) {
+      Logger.log("WARNING: No players on sheet");
       return [];
     }
 
-    var lastRow = teamSheet.getLastRow();
-    if (lastRow <= 1) {
-      Logger.log("WARNING: No teams found in Team Data sheet");
-      return [];
-    }
+    // Read team names from Column B
+    var cols = RETENTION_CONFIG.OUTPUT;
+    var teamData = sheet.getRange(startRow, cols.COL_TEAM, playerCount, 1).getValues();
 
-    var cols = RETENTION_CONFIG.TEAM_DATA_COLUMNS;
-    var teamData = teamSheet.getRange(2, cols.TEAM_NAME, lastRow - 1, 1).getValues();
-
-    var teams = [];
+    // Get unique teams
+    var teamSet = {};
     for (var i = 0; i < teamData.length; i++) {
       var teamName = String(teamData[i][0]).trim();
       if (teamName) {
-        teams.push(teamName);
+        teamSet[teamName] = true;
       }
     }
 
-    Logger.log("Loaded " + teams.length + " teams from Team Data sheet");
+    // Convert to sorted array
+    var teams = Object.keys(teamSet).sort();
+
+    Logger.log("Found " + teams.length + " unique teams from player list: " + teams.join(", "));
     return teams;
 
   } catch (e) {
-    Logger.log("Error getting team list: " + e.toString());
+    Logger.log("Error getting teams from sheet: " + e.toString());
     return [];
   }
 }

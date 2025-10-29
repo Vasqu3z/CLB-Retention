@@ -409,7 +409,7 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
     var pointsFormula = '=IF(B' + row + '="","",IF(OR(B' + row + '=1,REGEXMATCH(LOWER(B' + row + '),"champion|1st|first")),10,' +
                         'IF(OR(B' + row + '=2,REGEXMATCH(LOWER(B' + row + '),"runner|2nd|second")),7.5,' +
                         'IF(OR(B' + row + '=3,B' + row + '=4,REGEXMATCH(LOWER(B' + row + '),"semi|3rd|4th")),5,' +
-                        'IF(OR(B' + row + '>=5,B' + row + '<=8,REGEXMATCH(LOWER(B' + row + '),"quarter|5th|6th|7th|8th")),2.5,0))))';
+                        'IF(OR(AND(ISNUMBER(B' + row + '),B' + row + '>=5,B' + row + '<=8),REGEXMATCH(LOWER(B' + row + '),"quarter|5th|6th|7th|8th")),2.5,0)))))';
     sheet.getRange(row, 3).setFormula(pointsFormula);
   }
 

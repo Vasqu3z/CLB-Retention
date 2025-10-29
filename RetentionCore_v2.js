@@ -65,6 +65,34 @@ function calculateRetentionGrades() {
     Logger.log("Percentiles calculated - Hitters: " + (leagueStats.hitting.avg ? leagueStats.hitting.avg.length : 0) +
                ", Pitchers: " + (leagueStats.pitching.era ? leagueStats.pitching.era.length : 0));
 
+    // Read existing draft values from sheet if it exists (for draft expectations)
+    Logger.log("Step 6.5/7: Reading existing draft values from sheet...");
+    var existingDraftValues = {};
+    var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+    if (sheet && isRetentionSheetFormatted(sheet)) {
+      try {
+        var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
+        var lastRow = sheet.getLastRow();
+        var numRows = Math.max(0, lastRow - dataStartRow + 1);
+
+        if (numRows > 0) {
+          var playerNames = sheet.getRange(dataStartRow, RETENTION_CONFIG.OUTPUT.COL_PLAYER, numRows, 1).getValues();
+          var draftValues = sheet.getRange(dataStartRow, RETENTION_CONFIG.OUTPUT.COL_DRAFT_VALUE, numRows, 1).getValues();
+
+          for (var i = 0; i < numRows; i++) {
+            var playerName = String(playerNames[i][0]).trim();
+            var draftValue = draftValues[i][0];
+            if (playerName && draftValue !== "" && draftValue !== null) {
+              existingDraftValues[playerName] = draftValue;
+            }
+          }
+          Logger.log("Loaded " + Object.keys(existingDraftValues).length + " existing draft values");
+        }
+      } catch (e) {
+        Logger.log("Could not read existing draft values: " + e.toString());
+      }
+    }
+
     Logger.log("Step 7/7: Calculating retention grades...");
 
     // Calculate grades for each player
@@ -76,7 +104,10 @@ function calculateRetentionGrades() {
       // Calculate each factor (functions in RetentionFactors_v2.js)
       var teamSuccess = calculateTeamSuccess(player, teamData, standingsData, postseasonData);
       var playTime = calculatePlayTime(player, teamData, lineupData);
-      var performance = calculatePerformance(player, leagueStats, standingsData);
+
+      // Get draft value for this player (if exists from previous run)
+      var draftValue = existingDraftValues[player.name] || "";
+      var performance = calculatePerformance(player, leagueStats, standingsData, draftValue);
 
       retentionGrades.push({
         playerName: player.name,

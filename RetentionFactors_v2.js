@@ -235,7 +235,7 @@ function calculatePlayTime(player, teamData, lineupData) {
  * Offensive (0-14) + Defensive (0-3) + Pitching (0-3)
  * CRITICAL: Uses stats from ALL teams (performance-based)
  */
-function calculatePerformance(player, leagueStats, standingsData) {
+function calculatePerformance(player, leagueStats, standingsData, draftValue) {
   var config = RETENTION_CONFIG.PERFORMANCE;
 
   var breakdown = {
@@ -437,6 +437,18 @@ function calculatePerformance(player, leagueStats, standingsData) {
                      offensivePercentile.toFixed(0) + "% percentile) = " + penalty + " pts");
         }
       }
+    }
+  }
+
+  // ===== V2: DRAFT EXPECTATIONS SYSTEM =====
+  // Apply modifier based on performance vs draft round expectations
+  if (RETENTION_CONFIG.DRAFT_EXPECTATIONS.ENABLED && offensivePercentile > 0) {
+    var draftMod = applyDraftExpectations(offensivePercentile, draftValue);
+
+    if (draftMod !== 0) {
+      breakdown.draftExpectationsMod = draftMod;
+      var modText = draftMod > 0 ? ("+" + draftMod.toFixed(1)) : draftMod.toFixed(1);
+      detailParts.push("Draft expect: " + modText + " pts");
     }
   }
 

@@ -772,15 +772,22 @@ function updateRetentionData(sheet, retentionGrades) {
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
   var cols = RETENTION_CONFIG.OUTPUT;
 
-  // Find where postseason section starts
-  var postseasonRow = findPostseasonSection(sheet);
+  // Find where Team Direction section starts (comes before Postseason)
+  var directionRow = findTeamDirectionSection(sheet);
   var lastDataRow;
 
-  if (postseasonRow > 0) {
-    lastDataRow = postseasonRow - 2;
-    Logger.log("Clearing data rows " + dataStartRow + " to " + lastDataRow + " (preserving postseason at row " + postseasonRow + ")");
+  if (directionRow > 0) {
+    lastDataRow = directionRow - 2;
+    Logger.log("Clearing data rows " + dataStartRow + " to " + lastDataRow + " (preserving Team Direction at row " + directionRow + ")");
   } else {
-    lastDataRow = dataStartRow + 200;
+    // Fallback: try finding postseason section
+    var postseasonRow = findPostseasonSection(sheet);
+    if (postseasonRow > 0) {
+      lastDataRow = postseasonRow - 2;
+      Logger.log("Clearing data rows " + dataStartRow + " to " + lastDataRow + " (preserving postseason at row " + postseasonRow + ")");
+    } else {
+      lastDataRow = dataStartRow + 200;
+    }
   }
 
   // CRITICAL: Only clear auto-calculated columns, preserve manual inputs

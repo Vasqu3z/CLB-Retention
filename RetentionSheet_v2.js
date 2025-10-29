@@ -25,8 +25,8 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     var postseasonRow = findPostseasonSection(sheet);
     if (postseasonRow > 0) {
       try {
-        // Postseason data starts 2 rows after header (header, column headers, then data)
-        var dataStartRow = postseasonRow + 2;
+        // Postseason data starts 3 rows after header (header, description, column headers, then data)
+        var dataStartRow = postseasonRow + 3;
         var lastRow = sheet.getLastRow();
         var numRows = Math.min(20, lastRow - dataStartRow + 1);  // Read up to 20 teams
         if (numRows > 0) {
@@ -79,8 +79,8 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     .setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER);
 
   sheet.getRange(2, 1)
-    .setValue("Designed for TOP 3 players per team. Weighted grading: TS(18%) + PT(32%) + Perf(17%) + Chem(12%) + Dir(21%). " +
-              "Auto-flagging detects flight risk for elite players on struggling teams.")
+    .setValue("Designed for TOP 3 players per team. Weighted grading on 5-95 scale. " +
+              "Auto-flagging detects flight risk for elite players on struggling teams. Draft expectations reward/penalize based on performance vs draft round.")
     .setFontSize(9)
     .setFontStyle("italic")
     .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
@@ -170,13 +170,14 @@ function applyDataFormatting(sheet, startRow, numRows) {
 
   // Apply alternating row colors to auto-calculated columns (batch operation)
   // V2.1: Updated for split TS columns
+  // NOTE: COL_FINAL_GRADE excluded - gets grade-based colors from applyFinalGradeFormatting
   var autoCalcColumns = [
     cols.COL_PLAYER, cols.COL_TEAM,
     cols.COL_REG_SEASON, cols.COL_POSTSEASON, cols.COL_TS_TOTAL,
     cols.COL_PT_BASE, cols.COL_PT_TOTAL,
     cols.COL_PERF_BASE, cols.COL_PERF_TOTAL,
     cols.COL_AUTO_TOTAL, cols.COL_MANUAL_TOTAL,
-    cols.COL_FINAL_GRADE, cols.COL_DETAILS
+    cols.COL_DETAILS
   ];
 
   for (var c = 0; c < autoCalcColumns.length; c++) {
@@ -257,13 +258,18 @@ function applyDataFormatting(sheet, startRow, numRows) {
   sheet.getRange(startRow, cols.COL_DIRECTION, numRows, 1).setHorizontalAlignment("center");
 
   // Add data validation
-  // V2 CHANGE: No validation on modifier columns
-
   // Draft Value validation (1-8 or blank)
   var draftRule = SpreadsheetApp.newDataValidation()
     .requireNumberBetween(1, 8)
     .setAllowInvalid(true)  // Allow blank
     .setHelpText("Enter draft round (1-8) or leave blank")
+    .build();
+
+  // Modifier validation (-5 to +5)
+  var modifierRule = SpreadsheetApp.newDataValidation()
+    .requireNumberBetween(-5, 5)
+    .setAllowInvalid(false)
+    .setHelpText("Enter a modifier between -5 and +5")
     .build();
 
   var chemistryRule = SpreadsheetApp.newDataValidation()
@@ -273,6 +279,9 @@ function applyDataFormatting(sheet, startRow, numRows) {
     .build();
 
   sheet.getRange(startRow, cols.COL_DRAFT_VALUE, numRows, 1).setDataValidation(draftRule);
+  sheet.getRange(startRow, cols.COL_TS_MOD, numRows, 1).setDataValidation(modifierRule);
+  sheet.getRange(startRow, cols.COL_PT_MOD, numRows, 1).setDataValidation(modifierRule);
+  sheet.getRange(startRow, cols.COL_PERF_MOD, numRows, 1).setDataValidation(modifierRule);
   sheet.getRange(startRow, cols.COL_CHEMISTRY, numRows, 1).setDataValidation(chemistryRule);
 
   // Direction is VLOOKUP - no validation needed
@@ -372,15 +381,24 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
 
   sheet.getRange(postseasonStartRow, 1, 1, 3).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER);
 
+  // Description row
+  sheet.getRange(postseasonStartRow + 1, 1)
+    .setValue("Enter postseason results for each team. All players on that team inherit the score in the points column via VLOOKUP.")
+    .setFontSize(9)
+    .setFontStyle("italic")
+    .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+
+  sheet.getRange(postseasonStartRow + 1, 1, 1, 4).merge();
+
   // Column headers (3 columns now: Team | Finish | Points)
-  sheet.getRange(postseasonStartRow + 1, 1, 1, 3)
+  sheet.getRange(postseasonStartRow + 2, 1, 1, 3)
     .setValues([["Team", "Finish", "Points (0-10)"]])
     .setFontWeight("bold")
     .setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER)
     .setHorizontalAlignment("center");
 
   // V2.1: Auto-populate with team list and restore existing finishes
-  var postseasonDataStart = postseasonStartRow + 2;
+  var postseasonDataStart = postseasonStartRow + 3;
 
   // Build existing postseason finishes map
   var existingFinishes = {};
@@ -424,38 +442,6 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
   sheet.getParent().setNamedRange(RETENTION_CONFIG.POSTSEASON_TABLE_NAME, postseasonRange);
 
   Logger.log("Created Postseason table with " + numTeams + " teams at rows " + postseasonDataStart + "-" + (postseasonDataStart + numTeams - 1));
-
-  // ===== INSTRUCTIONS SECTION =====
-  var instructionsRow = postseasonDataStart + 10;
-
-  // Main instruction
-  sheet.getRange(instructionsRow, 1)
-    .setValue("INSTRUCTIONS V2: (1) Enter Team Direction scores in table above - all players on same team inherit this score via VLOOKUP. " +
-              "(2) Enter postseason results (Team | Finish: 1-8 or text like 'Champion'). " +
-              "(3) Run 'Calculate Retention Grades v2' from menu to update scores. " +
-              "(4) Edit yellow cells: Draft Value (Col C), Chemistry (Col N). " +
-              "(5) Edit blue cells: Modifiers (Cols E, H, K) - no validation, enter any value. " +
-              "(6) Final grades auto-calculate in Column Q using weighted formula: (TS*0.18 + PT*0.32 + Perf*0.17)*5 + (Chem*0.12 + Dir*0.21)*5.")
-    .setFontStyle("italic")
-    .setFontSize(9)
-    .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-    .setBackground("#f0f0f0");
-
-  sheet.getRange(instructionsRow, 1, 1, 10).merge();
-
-  // Design notes
-  sheet.getRange(instructionsRow + 2, 1)
-    .setValue("DESIGN NOTE V2: Weighted grading replaces additive system. " +
-              "Auto-flagging detects flight risk: Elite players (top 25%) on 7th-8th place teams get -4 performance penalty, " +
-              "good players (top 40%) on 5th-8th place teams get -2 penalty. " +
-              "Draft expectations (future): High picks (1-3) expected 75th %ile, low picks (4-8) expected 45th %ile. " +
-              "Team Direction replaces per-player Direction input - one score per team via VLOOKUP.")
-    .setFontStyle("italic")
-    .setFontSize(8)
-    .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP)
-    .setBackground("#e8f4f8");
-
-  sheet.getRange(instructionsRow + 2, 1, 1, 10).merge();
 }
 
 /**
@@ -552,9 +538,9 @@ function refreshRetentionFormulas() {
       "=MIN(20,MAX(0,K" + row + "+L" + row + "))"
     );
 
-    // Manual Total = 12% Chemistry + 21% Direction (weighted)
+    // Manual Total = (12% Chemistry + 21% Direction) × 4.5 for d95 scale
     sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula(
-      "=ROUND(O" + row + "*0.12+P" + row + "*0.21,1)"
+      "=ROUND((O" + row + "*0.12+P" + row + "*0.21)*4.5,1)"
     );
 
     // Direction = VLOOKUP from Team Direction table
@@ -562,9 +548,9 @@ function refreshRetentionFormulas() {
       "=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))"
     );
 
-    // Final Grade = Weighted formula × 5 for d100 scale
+    // Final Grade = Weighted formula × 4.5 + 5 for d95 scale (5-95 range)
     sheet.getRange(row, cols.COL_FINAL_GRADE).setFormula(
-      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17)*5+Q" + row + ",0)"
+      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17+O" + row + "*0.12+P" + row + "*0.21)*4.5+5,0)"
     );
 
     rowsUpdated++;

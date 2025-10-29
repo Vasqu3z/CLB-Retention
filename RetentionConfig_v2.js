@@ -317,22 +317,39 @@ var RETENTION_CONFIG = {
 
   // ===== DRAFT EXPECTATIONS SYSTEM V2 =====
   // Compares performance to acquisition cost (draft round)
-  // Players underperforming draft value have higher retention risk
+  // 3-tier system based on player's perceived value vs team's perceived value
+  // High: Situation-based (good/bad fit), Mid/Late: Self-worth based (overvalued/undervalued)
   DRAFT_EXPECTATIONS: {
     ENABLED: true,
 
-    // High draft picks (Rounds 1-3) - Expected to be elite
+    // High draft picks (Rounds 1-2) - Situation indicators
+    // Bonus if performing well (good situation), penalty if underperforming (bad situation)
     HIGH_ROUNDS: {
-      ROUNDS: [1, 2, 3],
-      EXPECTED_PERCENTILE: 75,     // Expected to be top 25%
-      UNDERPERFORM_PENALTY: -2.5   // Penalty if below expectation
+      ROUNDS: [1, 2],
+      GOOD_SITUATION_PERCENTILE: 75,     // Top 25% performance
+      GOOD_SITUATION_MOD: 2.5,           // Bonus for elite player in good spot
+      UNDERPERFORM_PERCENTILE: 50,       // Below 50th percentile
+      UNDERPERFORM_MOD: -4.0             // Severe penalty for elite pick in bad situation
     },
 
-    // Low draft picks (Rounds 4-8) - Expected to be solid contributors
-    LOW_ROUNDS: {
-      ROUNDS: [4, 5, 6, 7, 8],
-      EXPECTED_PERCENTILE: 45,     // Expected to be above average
-      UNDERPERFORM_PENALTY: -4.5   // Larger penalty (bigger disappointment)
+    // Mid draft picks (Rounds 3-5) - Self-worth indicators
+    // Penalty if overperforming (player feels undervalued), bonus if underperforming (team overvalued them)
+    MID_ROUNDS: {
+      ROUNDS: [3, 4, 5],
+      OVERPERFORM_PERCENTILE: 75,        // Top 25% performance (exceeding expectations)
+      OVERPERFORM_MOD: -3.5,             // Penalty - player feels undervalued by team
+      UNDERPERFORM_PERCENTILE: 50,       // Below 50th percentile
+      UNDERPERFORM_MOD: 2.0              // Bonus - team overvalued player, less flight risk
+    },
+
+    // Late draft picks (Rounds 6-8+) - Self-worth indicators (more extreme)
+    // Same logic as mid rounds but more pronounced
+    LATE_ROUNDS: {
+      ROUNDS: [6, 7, 8],
+      OVERPERFORM_PERCENTILE: 75,        // Top 25% performance (major overperformance)
+      OVERPERFORM_MOD: -5.0,             // Major penalty - player severely undervalued
+      UNDERPERFORM_PERCENTILE: 40,       // Below 40th percentile
+      UNDERPERFORM_MOD: 3.0              // Larger bonus - team overvalued, player knows it
     }
   },
 
@@ -536,18 +553,19 @@ RETENTION_CONFIG.getMinGPForQualification = function(teamGamesPlayed) {
 };
 
 /**
- * Get color for final grade
+ * Get color for final grade (d95 scale: 5-95 range)
+ * Thresholds adjusted for 90-point range starting at 5
  */
 RETENTION_CONFIG.getGradeColor = function(finalGrade) {
-  if (finalGrade >= 75) return this.OUTPUT.COLORS.EXCELLENT;
-  if (finalGrade >= 60) return this.OUTPUT.COLORS.GOOD;
-  if (finalGrade >= 40) return this.OUTPUT.COLORS.AVERAGE;
-  return this.OUTPUT.COLORS.POOR;
+  if (finalGrade >= 70) return this.OUTPUT.COLORS.EXCELLENT;  // Top ~28% of range (70-95)
+  if (finalGrade >= 55) return this.OUTPUT.COLORS.GOOD;       // Upper-mid ~17% of range (55-70)
+  if (finalGrade >= 40) return this.OUTPUT.COLORS.AVERAGE;    // Mid ~17% of range (40-55)
+  return this.OUTPUT.COLORS.POOR;                              // Bottom ~38% of range (5-40)
 };
 
 /**
- * Calculate weighted final grade (d100 scale 0-100)
- * V2 FORMULA: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21) * 5
+ * Calculate weighted final grade (d95 scale 5-95)
+ * V2 FORMULA: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21) * 4.5 + 5
  */
 RETENTION_CONFIG.calculateWeightedGrade = function(tsTotal, ptTotal, perfTotal, chemScore, dirScore) {
   var weights = this.FACTOR_WEIGHTS;
@@ -560,8 +578,8 @@ RETENTION_CONFIG.calculateWeightedGrade = function(tsTotal, ptTotal, perfTotal, 
     (chemScore * weights.CHEMISTRY) +
     (dirScore * weights.DIRECTION);
 
-  // Scale to d100 (0-100)
-  var finalGrade = weightedSum * 5;
+  // Scale to d95 (5-95 range)
+  var finalGrade = (weightedSum * 4.5) + 5;
 
   // Round to whole number
   return Math.round(finalGrade);

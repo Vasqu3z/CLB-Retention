@@ -235,7 +235,7 @@ function calculatePlayTime(player, teamData, lineupData) {
  * Offensive (0-14) + Defensive (0-3) + Pitching (0-3)
  * CRITICAL: Uses stats from ALL teams (performance-based)
  */
-function calculatePerformance(player, leagueStats, standingsData) {
+function calculatePerformance(player, leagueStats, standingsData, draftValue) {
   var config = RETENTION_CONFIG.PERFORMANCE;
 
   var breakdown = {
@@ -429,7 +429,7 @@ function calculatePerformance(player, leagueStats, standingsData) {
 
       if (penalty < 0) {
         breakdown.autoFlaggingPenalty = penalty;
-        detailParts.push("Auto-flag: " + penalty + " pts (flight risk)");
+        detailParts.push("Auto-Perf Mod: " + penalty + " pts (flight risk)");
 
         if (RETENTION_CONFIG.DEBUG.LOG_AUTO_FLAGGING) {
           Logger.log("Auto-flagging: " + player.name + " on " + player.team +
@@ -437,6 +437,18 @@ function calculatePerformance(player, leagueStats, standingsData) {
                      offensivePercentile.toFixed(0) + "% percentile) = " + penalty + " pts");
         }
       }
+    }
+  }
+
+  // ===== V2: DRAFT EXPECTATIONS SYSTEM =====
+  // Apply modifier based on performance vs draft round expectations
+  if (RETENTION_CONFIG.DRAFT_EXPECTATIONS.ENABLED && offensivePercentile > 0) {
+    var draftMod = applyDraftExpectations(offensivePercentile, draftValue);
+
+    if (draftMod !== 0) {
+      breakdown.draftExpectationsMod = draftMod;
+      var modText = draftMod > 0 ? ("+" + draftMod.toFixed(1)) : draftMod.toFixed(1);
+      detailParts.push("Auto-Value Mod: " + modText + " pts");
     }
   }
 
@@ -485,8 +497,10 @@ function applyAutoFlagging(offensivePercentile, standing) {
 // ===== DRAFT EXPECTATIONS LOGIC =====
 /**
  * Apply draft expectations modifier
- * Compares performance to draft round expectations
- * Returns modifier value (negative if underperforming)
+ * 3-tier system based on player's perceived value vs team's perceived value:
+ * - High rounds (1-2): Situation-based (good situation = bonus, bad situation = penalty)
+ * - Mid rounds (3-5): Self-worth based (overperforming = feels undervalued = penalty, underperforming = bonus)
+ * - Late rounds (6-8+): Self-worth based (same as mid but more extreme)
  * NOTE: Requires draft value to be entered in sheet first
  */
 function applyDraftExpectations(offensivePercentile, draftValue) {
@@ -496,32 +510,78 @@ function applyDraftExpectations(offensivePercentile, draftValue) {
   if (!config.ENABLED) return 0;
 
   var draftRound = parseInt(draftValue);
-  if (isNaN(draftRound) || draftRound < 1 || draftRound > 8) return 0;
+  if (isNaN(draftRound) || draftRound < 1) return 0;
 
-  // High rounds (1-3): Expected to be elite (75th percentile+)
+  // High rounds (1-2): Situation-based modifiers
   if (config.HIGH_ROUNDS.ROUNDS.indexOf(draftRound) >= 0) {
-    if (offensivePercentile < config.HIGH_ROUNDS.EXPECTED_PERCENTILE) {
+    if (offensivePercentile >= config.HIGH_ROUNDS.GOOD_SITUATION_PERCENTILE) {
+      // Performing well - good situation
       if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
-        Logger.log("Draft expectations: Round " + draftRound + " pick underperforming (" +
-                   offensivePercentile.toFixed(0) + "% vs " +
-                   config.HIGH_ROUNDS.EXPECTED_PERCENTILE + "% expected) = " +
-                   config.HIGH_ROUNDS.UNDERPERFORM_PENALTY + " pts");
+        Logger.log("Draft expectations: Round " + draftRound + " pick in good situation (" +
+                   offensivePercentile.toFixed(0) + "% ≥ " +
+                   config.HIGH_ROUNDS.GOOD_SITUATION_PERCENTILE + "%) = " +
+                   config.HIGH_ROUNDS.GOOD_SITUATION_MOD + " pts");
       }
-      return config.HIGH_ROUNDS.UNDERPERFORM_PENALTY;
+      return config.HIGH_ROUNDS.GOOD_SITUATION_MOD;
+    } else if (offensivePercentile < config.HIGH_ROUNDS.UNDERPERFORM_PERCENTILE) {
+      // Underperforming - bad situation
+      if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
+        Logger.log("Draft expectations: Round " + draftRound + " pick in bad situation (" +
+                   offensivePercentile.toFixed(0) + "% < " +
+                   config.HIGH_ROUNDS.UNDERPERFORM_PERCENTILE + "%) = " +
+                   config.HIGH_ROUNDS.UNDERPERFORM_MOD + " pts");
+      }
+      return config.HIGH_ROUNDS.UNDERPERFORM_MOD;
     }
+    return 0;
   }
 
-  // Low rounds (4-8): Expected to be solid contributors (45th percentile+)
-  if (config.LOW_ROUNDS.ROUNDS.indexOf(draftRound) >= 0) {
-    if (offensivePercentile < config.LOW_ROUNDS.EXPECTED_PERCENTILE) {
+  // Mid rounds (3-5): Self-worth modifiers (flipped logic)
+  if (config.MID_ROUNDS.ROUNDS.indexOf(draftRound) >= 0) {
+    if (offensivePercentile >= config.MID_ROUNDS.OVERPERFORM_PERCENTILE) {
+      // Overperforming - player feels undervalued by team
+      if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
+        Logger.log("Draft expectations: Round " + draftRound + " pick overperforming (" +
+                   offensivePercentile.toFixed(0) + "% ≥ " +
+                   config.MID_ROUNDS.OVERPERFORM_PERCENTILE + "%) = " +
+                   config.MID_ROUNDS.OVERPERFORM_MOD + " pts (feels undervalued)");
+      }
+      return config.MID_ROUNDS.OVERPERFORM_MOD;
+    } else if (offensivePercentile < config.MID_ROUNDS.UNDERPERFORM_PERCENTILE) {
+      // Underperforming - team overvalued player, less flight risk
       if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
         Logger.log("Draft expectations: Round " + draftRound + " pick underperforming (" +
-                   offensivePercentile.toFixed(0) + "% vs " +
-                   config.LOW_ROUNDS.EXPECTED_PERCENTILE + "% expected) = " +
-                   config.LOW_ROUNDS.UNDERPERFORM_PENALTY + " pts");
+                   offensivePercentile.toFixed(0) + "% < " +
+                   config.MID_ROUNDS.UNDERPERFORM_PERCENTILE + "%) = " +
+                   config.MID_ROUNDS.UNDERPERFORM_MOD + " pts (team overvalued)");
       }
-      return config.LOW_ROUNDS.UNDERPERFORM_PENALTY;
+      return config.MID_ROUNDS.UNDERPERFORM_MOD;
     }
+    return 0;
+  }
+
+  // Late rounds (6-8+): Self-worth modifiers (more extreme, flipped logic)
+  if (draftRound >= 6) {
+    if (offensivePercentile >= config.LATE_ROUNDS.OVERPERFORM_PERCENTILE) {
+      // Overperforming - player severely undervalued by team
+      if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
+        Logger.log("Draft expectations: Round " + draftRound + " pick overperforming (" +
+                   offensivePercentile.toFixed(0) + "% ≥ " +
+                   config.LATE_ROUNDS.OVERPERFORM_PERCENTILE + "%) = " +
+                   config.LATE_ROUNDS.OVERPERFORM_MOD + " pts (severely undervalued)");
+      }
+      return config.LATE_ROUNDS.OVERPERFORM_MOD;
+    } else if (offensivePercentile < config.LATE_ROUNDS.UNDERPERFORM_PERCENTILE) {
+      // Underperforming - team overvalued player significantly
+      if (RETENTION_CONFIG.DEBUG.LOG_DRAFT_EXPECTATIONS) {
+        Logger.log("Draft expectations: Round " + draftRound + " pick underperforming (" +
+                   offensivePercentile.toFixed(0) + "% < " +
+                   config.LATE_ROUNDS.UNDERPERFORM_PERCENTILE + "%) = " +
+                   config.LATE_ROUNDS.UNDERPERFORM_MOD + " pts (team overvalued)");
+      }
+      return config.LATE_ROUNDS.UNDERPERFORM_MOD;
+    }
+    return 0;
   }
 
   return 0;

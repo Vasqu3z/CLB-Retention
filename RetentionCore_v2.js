@@ -65,6 +65,34 @@ function calculateRetentionGrades() {
     Logger.log("Percentiles calculated - Hitters: " + (leagueStats.hitting.avg ? leagueStats.hitting.avg.length : 0) +
                ", Pitchers: " + (leagueStats.pitching.era ? leagueStats.pitching.era.length : 0));
 
+    // Read existing draft values from sheet if it exists (for draft expectations)
+    Logger.log("Step 6.5/7: Reading existing draft values from sheet...");
+    var existingDraftValues = {};
+    var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+    if (sheet && isRetentionSheetFormatted(sheet)) {
+      try {
+        var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
+        var lastRow = sheet.getLastRow();
+        var numRows = Math.max(0, lastRow - dataStartRow + 1);
+
+        if (numRows > 0) {
+          var playerNames = sheet.getRange(dataStartRow, RETENTION_CONFIG.OUTPUT.COL_PLAYER, numRows, 1).getValues();
+          var draftValues = sheet.getRange(dataStartRow, RETENTION_CONFIG.OUTPUT.COL_DRAFT_VALUE, numRows, 1).getValues();
+
+          for (var i = 0; i < numRows; i++) {
+            var playerName = String(playerNames[i][0]).trim();
+            var draftValue = draftValues[i][0];
+            if (playerName && draftValue !== "" && draftValue !== null) {
+              existingDraftValues[playerName] = draftValue;
+            }
+          }
+          Logger.log("Loaded " + Object.keys(existingDraftValues).length + " existing draft values");
+        }
+      } catch (e) {
+        Logger.log("Could not read existing draft values: " + e.toString());
+      }
+    }
+
     Logger.log("Step 7/7: Calculating retention grades...");
 
     // Calculate grades for each player
@@ -76,7 +104,10 @@ function calculateRetentionGrades() {
       // Calculate each factor (functions in RetentionFactors_v2.js)
       var teamSuccess = calculateTeamSuccess(player, teamData, standingsData, postseasonData);
       var playTime = calculatePlayTime(player, teamData, lineupData);
-      var performance = calculatePerformance(player, leagueStats, standingsData);
+
+      // Get draft value for this player (if exists from previous run)
+      var draftValue = existingDraftValues[player.name] || "";
+      var performance = calculatePerformance(player, leagueStats, standingsData, draftValue);
 
       retentionGrades.push({
         playerName: player.name,
@@ -738,7 +769,10 @@ function isRetentionSheetFormatted(sheet) {
     var hasPlayer = headers[0] === "Player";
     var hasTeam = headers[1] === "Team";
     var hasDraftValue = String(headers[2]).indexOf("Draft") >= 0 || String(headers[2]).indexOf("Value") >= 0;
-    var hasRegSeason = String(headers[3]).indexOf("Regular") >= 0 || String(headers[3]).indexOf("Season") >= 0;
+    // Column 3: Accept "Record", "Regular", or "Season"
+    var hasRegSeason = String(headers[3]).indexOf("Record") >= 0 ||
+                       String(headers[3]).indexOf("Regular") >= 0 ||
+                       String(headers[3]).indexOf("Season") >= 0;
     var hasPostseason = String(headers[4]).indexOf("Postseason") >= 0;
 
     var isFormatted = hasPlayer && hasTeam && hasDraftValue && hasRegSeason && hasPostseason;
@@ -913,15 +947,15 @@ function writePlayerData(sheet, retentionGrades) {
       "=MIN(20,MAX(0,K" + row + "+L" + row + "))"
     );
 
-    // Col Q - Manual Total = (12% Chemistry + 21% Direction) × 5 for d100 scale
+    // Col Q - Manual Total = (12% Chemistry + 21% Direction) × 4.5 for d95 scale (5-95 range)
     sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula(
-      "=ROUND((O" + row + "*0.12+P" + row + "*0.21)*5,1)"
+      "=ROUND((O" + row + "*0.12+P" + row + "*0.21)*4.5,1)"
     );
 
-    // Col R - Final Grade = Weighted formula × 5 for d100 scale
-    // (TS*0.18 + PT*0.32 + Perf*0.17) * 5 + Manual Total
+    // Col R - Final Grade = Weighted formula × 4.5 + 5 for d95 scale (5-95 range)
+    // All factors: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21) × 4.5 + 5
     sheet.getRange(row, cols.COL_FINAL_GRADE).setFormula(
-      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17)*5+Q" + row + ",0)"
+      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17+O" + row + "*0.12+P" + row + "*0.21)*4.5+5,0)"
     );
   }
 

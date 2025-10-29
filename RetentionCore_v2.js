@@ -732,24 +732,26 @@ function isRetentionSheetFormatted(sheet) {
       return false;
     }
 
-    // Read header row (check for v2 indicators)
+    // Read header row (check for v2.1 indicators)
     var headers = sheet.getRange(headerRow, 1, 1, 6).getValues()[0];
 
     var hasPlayer = headers[0] === "Player";
     var hasTeam = headers[1] === "Team";
     var hasDraftValue = String(headers[2]).indexOf("Draft") >= 0 || String(headers[2]).indexOf("Value") >= 0;
-    var hasTeamSuccess = String(headers[3]).indexOf("Team Success") >= 0;
+    var hasRegSeason = String(headers[3]).indexOf("Regular") >= 0 || String(headers[3]).indexOf("Season") >= 0;
+    var hasPostseason = String(headers[4]).indexOf("Postseason") >= 0;
 
-    var isFormatted = hasPlayer && hasTeam && hasDraftValue && hasTeamSuccess;
+    var isFormatted = hasPlayer && hasTeam && hasDraftValue && hasRegSeason && hasPostseason;
 
     if (isFormatted) {
-      Logger.log("Sheet is properly formatted (v2) - will update data only");
+      Logger.log("Sheet is properly formatted (v2.1) - will update data only");
     } else {
       Logger.log("Sheet header check failed - needs formatting");
       Logger.log("  Player: " + hasPlayer + " (" + headers[0] + ")");
       Logger.log("  Team: " + hasTeam + " (" + headers[1] + ")");
       Logger.log("  Draft Value: " + hasDraftValue + " (" + headers[2] + ")");
-      Logger.log("  Team Success: " + hasTeamSuccess + " (" + headers[3] + ")");
+      Logger.log("  Regular Season: " + hasRegSeason + " (" + headers[3] + ")");
+      Logger.log("  Postseason: " + hasPostseason + " (" + headers[4] + ")");
     }
 
     return isFormatted;
@@ -770,19 +772,26 @@ function updateRetentionData(sheet, retentionGrades) {
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
   var cols = RETENTION_CONFIG.OUTPUT;
 
-  // Find where postseason section starts
-  var postseasonRow = findPostseasonSection(sheet);
+  // Find where Team Direction section starts (comes before Postseason)
+  var directionRow = findTeamDirectionSection(sheet);
   var lastDataRow;
 
-  if (postseasonRow > 0) {
-    lastDataRow = postseasonRow - 2;
-    Logger.log("Clearing data rows " + dataStartRow + " to " + lastDataRow + " (preserving postseason at row " + postseasonRow + ")");
+  if (directionRow > 0) {
+    lastDataRow = directionRow - 2;
+    Logger.log("Clearing data rows " + dataStartRow + " to " + lastDataRow + " (preserving Team Direction at row " + directionRow + ")");
   } else {
-    lastDataRow = dataStartRow + 200;
+    // Fallback: try finding postseason section
+    var postseasonRow = findPostseasonSection(sheet);
+    if (postseasonRow > 0) {
+      lastDataRow = postseasonRow - 2;
+      Logger.log("Clearing data rows " + dataStartRow + " to " + lastDataRow + " (preserving postseason at row " + postseasonRow + ")");
+    } else {
+      lastDataRow = dataStartRow + 200;
+    }
   }
 
   // CRITICAL: Only clear auto-calculated columns, preserve manual inputs
-  // Manual columns (PRESERVED): C (draft value), E, H, K (modifiers), N (chemistry), O (direction via VLOOKUP)
+  // V2.1: Manual columns (PRESERVED): C (draft value), F, I, L (modifiers), O (chemistry), P (direction via VLOOKUP)
 
   var numRows = lastDataRow - dataStartRow + 1;
 
@@ -792,19 +801,20 @@ function updateRetentionData(sheet, retentionGrades) {
 
   // PRESERVE Draft Value (Col C) - do not clear
 
-  // Clear TS base and total (preserve modifier at Col E)
-  sheet.getRange(dataStartRow, cols.COL_TS_BASE, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).clearContent();
+  // Clear TS components and total (preserve modifier at Col F)
+  sheet.getRange(dataStartRow, cols.COL_REG_SEASON, numRows, 1).clearContent();  // D - Regular Season
+  sheet.getRange(dataStartRow, cols.COL_POSTSEASON, numRows, 1).clearContent();  // E - Postseason (VLOOKUP)
+  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).clearContent();    // G - TS Total
 
-  // Clear PT base and total (preserve modifier at Col H)
+  // Clear PT base and total (preserve modifier at Col I)
   sheet.getRange(dataStartRow, cols.COL_PT_BASE, numRows, 1).clearContent();
   sheet.getRange(dataStartRow, cols.COL_PT_TOTAL, numRows, 1).clearContent();
 
-  // Clear Performance base and total (preserve modifier at Col K)
+  // Clear Performance base and total (preserve modifier at Col L)
   sheet.getRange(dataStartRow, cols.COL_PERF_BASE, numRows, 1).clearContent();
   sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL, numRows, 1).clearContent();
 
-  // Clear totals (preserve chemistry at N and direction at O)
+  // Clear totals (preserve chemistry at O and direction at P)
   sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).clearContent();
   sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL, numRows, 1).clearContent();
 
@@ -836,9 +846,10 @@ function writePlayerData(sheet, retentionGrades) {
   });
 
   // Prepare data arrays for batch writing (only auto-calculated columns)
+  // V2.1: Split TS into Regular Season + Postseason
   var playerNames = [];
   var teams = [];
-  var tsBaseValues = [];
+  var regSeasonValues = [];
   var ptBaseValues = [];
   var perfBaseValues = [];
   var autoTotalValues = [];
@@ -854,7 +865,8 @@ function writePlayerData(sheet, retentionGrades) {
 
     playerNames.push([grade.playerName]);
     teams.push([grade.team]);
-    tsBaseValues.push([grade.teamSuccess.total.toFixed(1)]);
+    regSeasonValues.push([grade.teamSuccess.regularSeason.toFixed(1)]);  // V2.1: Split TS
+    // Postseason will be VLOOKUP formula, not written here
     ptBaseValues.push([grade.playTime.total.toFixed(1)]);
     perfBaseValues.push([grade.performance.total.toFixed(1)]);
     autoTotalValues.push([grade.autoTotal.toFixed(1)]);
@@ -866,34 +878,50 @@ function writePlayerData(sheet, retentionGrades) {
   if (numRows === 0) return;
 
   // Write auto-calculated columns only (batch operations)
+  // V2.1: Write Regular Season, Postseason will be VLOOKUP formula
   sheet.getRange(dataStartRow, cols.COL_PLAYER, numRows, 1).setValues(playerNames);
   sheet.getRange(dataStartRow, cols.COL_TEAM, numRows, 1).setValues(teams);
-  sheet.getRange(dataStartRow, cols.COL_TS_BASE, numRows, 1).setValues(tsBaseValues);
+  sheet.getRange(dataStartRow, cols.COL_REG_SEASON, numRows, 1).setValues(regSeasonValues);  // D
+  // Col E (Postseason) will be set with VLOOKUP formula below
   sheet.getRange(dataStartRow, cols.COL_PT_BASE, numRows, 1).setValues(ptBaseValues);
   sheet.getRange(dataStartRow, cols.COL_PERF_BASE, numRows, 1).setValues(perfBaseValues);
   sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).setValues(autoTotalValues);
   sheet.getRange(dataStartRow, cols.COL_DETAILS, numRows, 1).setValues(detailsValues);
 
-  // Write formulas (V2 weighted formulas)
+  // Write formulas (V2.1 weighted formulas with split TS)
   for (var i = 0; i < numRows; i++) {
     var row = dataStartRow + i;
 
-    // TS Total = Base + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_TS_TOTAL).setFormula("=MIN(20,MAX(0,D" + row + "+E" + row + "))");
+    // Col E - Postseason Success (VLOOKUP from PostseasonResults table)
+    // Format: =IF(B="",0,IFERROR(VLOOKUP(B,PostseasonResults,2,FALSE),0))
+    sheet.getRange(row, cols.COL_POSTSEASON).setFormula(
+      "=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",PostseasonResults,3,FALSE),0))"
+    );
 
-    // PT Total = Base + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_PT_TOTAL).setFormula("=MIN(20,MAX(0,G" + row + "+H" + row + "))");
+    // Col G - TS Total = Regular Season + Postseason + Modifier (capped 0-20)
+    sheet.getRange(row, cols.COL_TS_TOTAL).setFormula(
+      "=MIN(20,MAX(0,D" + row + "+E" + row + "+F" + row + "))"
+    );
 
-    // Performance Total = Base + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_PERF_TOTAL).setFormula("=MIN(20,MAX(0,J" + row + "+K" + row + "))");
+    // Col J - PT Total = Base + Modifier (capped 0-20)
+    sheet.getRange(row, cols.COL_PT_TOTAL).setFormula(
+      "=MIN(20,MAX(0,H" + row + "+I" + row + "))"
+    );
 
-    // Manual Total = 12% Chemistry + 21% Direction (weighted)
-    sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula("=ROUND(N" + row + "*0.12+O" + row + "*0.21,1)");
+    // Col M - Performance Total = Base + Modifier (capped 0-20)
+    sheet.getRange(row, cols.COL_PERF_TOTAL).setFormula(
+      "=MIN(20,MAX(0,K" + row + "+L" + row + "))"
+    );
 
-    // Final Grade = Weighted formula × 5 for d100 scale
+    // Col Q - Manual Total = (12% Chemistry + 21% Direction) × 5 for d100 scale
+    sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula(
+      "=ROUND((O" + row + "*0.12+P" + row + "*0.21)*5,1)"
+    );
+
+    // Col R - Final Grade = Weighted formula × 5 for d100 scale
     // (TS*0.18 + PT*0.32 + Perf*0.17) * 5 + Manual Total
     sheet.getRange(row, cols.COL_FINAL_GRADE).setFormula(
-      "=ROUND((F" + row + "*0.18+I" + row + "*0.32+L" + row + "*0.17)*5+P" + row + ",0)"
+      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17)*5+Q" + row + ",0)"
     );
   }
 

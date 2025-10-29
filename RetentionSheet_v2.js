@@ -25,9 +25,14 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     var postseasonRow = findPostseasonSection(sheet);
     if (postseasonRow > 0) {
       try {
+        // Postseason data starts 2 rows after header (header, column headers, then data)
         var dataStartRow = postseasonRow + 2;
-        existingPostseasonData = sheet.getRange(dataStartRow, 1, 8, 2).getValues();
-        Logger.log("Preserved postseason data from existing sheet");
+        var lastRow = sheet.getLastRow();
+        var numRows = Math.min(20, lastRow - dataStartRow + 1);  // Read up to 20 teams
+        if (numRows > 0) {
+          existingPostseasonData = sheet.getRange(dataStartRow, 1, numRows, 3).getValues();  // 3 columns: Team, Finish, Points
+          Logger.log("Preserved postseason data: " + numRows + " rows from row " + dataStartRow);
+        }
       } catch (e) {
         Logger.log("Could not preserve postseason data: " + e.toString());
       }
@@ -40,9 +45,14 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     var directionRow = findTeamDirectionSection(sheet);
     if (directionRow > 0) {
       try {
-        var dataStartRow = directionRow + 2;
-        existingDirectionData = sheet.getRange(dataStartRow, 1, 8, 2).getValues();
-        Logger.log("Preserved Team Direction data from existing sheet");
+        // Direction data starts 3 rows after header (header, description, column headers, then data)
+        var dataStartRow = directionRow + 3;
+        var lastRow = sheet.getLastRow();
+        var numRows = Math.min(20, lastRow - dataStartRow + 1);  // Read up to 20 teams
+        if (numRows > 0) {
+          existingDirectionData = sheet.getRange(dataStartRow, 1, numRows, 2).getValues();
+          Logger.log("Preserved Team Direction data: " + numRows + " rows from row " + dataStartRow);
+        }
       } catch (e) {
         Logger.log("Could not preserve Team Direction data: " + e.toString());
       }
@@ -82,8 +92,9 @@ function buildRetentionSheetFromScratch(retentionGrades) {
   var headers = [
     "Player",
     "Team",
-    "Draft/Trade\nValue (1-8)",  // NEW in v2
-    "Team Success\n(Base 0-20)",
+    "Draft/Trade\nValue (1-8)",  // V2: NEW
+    "Regular Season\nSuccess (0-10)",  // V2.1: SPLIT from TS
+    "Postseason\nSuccess (0-10)",      // V2.1: SPLIT, VLOOKUP
     "TS Mod\n(manual)",          // V2: No validation
     "TS Total\n(0-20)",
     "Play Time\n(Base 0-20)",
@@ -108,26 +119,26 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     .setVerticalAlignment("middle")
     .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
 
-  // Set column widths
+  // Set column widths (V2.1: 19 columns)
   var cols = RETENTION_CONFIG.OUTPUT;
   sheet.setColumnWidth(cols.COL_PLAYER, RETENTION_CONFIG.OUTPUT.PLAYER_COL_WIDTH);
   sheet.setColumnWidth(cols.COL_TEAM, RETENTION_CONFIG.OUTPUT.TEAM_COL_WIDTH);
   sheet.setColumnWidth(cols.COL_DRAFT_VALUE, RETENTION_CONFIG.OUTPUT.DRAFT_VALUE_COL_WIDTH);
 
-  // Stats columns (D-M)
-  for (var i = cols.COL_TS_BASE; i <= cols.COL_AUTO_TOTAL; i++) {
+  // Stats columns (D-N)
+  for (var i = cols.COL_REG_SEASON; i <= cols.COL_AUTO_TOTAL; i++) {
     sheet.setColumnWidth(i, RETENTION_CONFIG.OUTPUT.STAT_COL_WIDTH);
   }
 
-  // Manual input columns (N-O)
+  // Manual input columns (O-P)
   sheet.setColumnWidth(cols.COL_CHEMISTRY, RETENTION_CONFIG.OUTPUT.CHEMISTRY_COL_WIDTH);
   sheet.setColumnWidth(cols.COL_DIRECTION, RETENTION_CONFIG.OUTPUT.DIRECTION_COL_WIDTH);
 
-  // Grade columns (P-Q)
+  // Grade columns (Q-R)
   sheet.setColumnWidth(cols.COL_MANUAL_TOTAL, RETENTION_CONFIG.OUTPUT.GRADE_COL_WIDTH);
   sheet.setColumnWidth(cols.COL_FINAL_GRADE, RETENTION_CONFIG.OUTPUT.GRADE_COL_WIDTH);
 
-  // Details column (R)
+  // Details column (S)
   sheet.setColumnWidth(cols.COL_DETAILS, RETENTION_CONFIG.OUTPUT.DETAILS_COL_WIDTH);
 
   // Freeze header rows
@@ -158,9 +169,10 @@ function applyDataFormatting(sheet, startRow, numRows) {
   }
 
   // Apply alternating row colors to auto-calculated columns (batch operation)
+  // V2.1: Updated for split TS columns
   var autoCalcColumns = [
     cols.COL_PLAYER, cols.COL_TEAM,
-    cols.COL_TS_BASE, cols.COL_TS_TOTAL,
+    cols.COL_REG_SEASON, cols.COL_POSTSEASON, cols.COL_TS_TOTAL,
     cols.COL_PT_BASE, cols.COL_PT_TOTAL,
     cols.COL_PERF_BASE, cols.COL_PERF_TOTAL,
     cols.COL_AUTO_TOTAL, cols.COL_MANUAL_TOTAL,
@@ -172,8 +184,9 @@ function applyDataFormatting(sheet, startRow, numRows) {
   }
 
   // Center-align numeric columns (batch operations)
+  // V2.1: Updated for split TS columns
   var numericColumns = [
-    cols.COL_TS_BASE, cols.COL_TS_TOTAL,
+    cols.COL_REG_SEASON, cols.COL_POSTSEASON, cols.COL_TS_TOTAL,
     cols.COL_PT_BASE, cols.COL_PT_TOTAL,
     cols.COL_PERF_BASE, cols.COL_PERF_TOTAL,
     cols.COL_AUTO_TOTAL, cols.COL_MANUAL_TOTAL, cols.COL_FINAL_GRADE
@@ -267,12 +280,15 @@ function applyDataFormatting(sheet, startRow, numRows) {
 
 /**
  * Add postseason section, Team Direction table, and instructions at bottom of sheet
- * V2: Adds Team Direction table
- * RESTORED: Previously entered postseason and direction data
+ * V2.1: Auto-populates team lists from player data on sheet
+ * RESTORED: Previously entered postseason and direction data (preserves scores)
  */
 function addBottomSections(sheet, playerCount, existingPostseasonData, existingDirectionData) {
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
   var sectionStartRow = dataStartRow + playerCount + RETENTION_CONFIG.OUTPUT.INSTRUCTIONS_ROW_OFFSET;
+
+  // V2.1: Get unique teams from player list on sheet (Column B)
+  var teamList = getUniqueTeamsFromSheet(sheet, dataStartRow, playerCount);
 
   // ===== TEAM DIRECTION TABLE (NEW IN V2) =====
   var directionStartRow = sectionStartRow;
@@ -301,24 +317,34 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
     .setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER)
     .setHorizontalAlignment("center");
 
-  // Restore existing direction data or create blank template
+  // V2.1: Auto-populate with team list and restore existing direction scores
   var directionDataStart = directionStartRow + 3;
+  var numTeams = teamList.length;
 
+  // Build existing direction scores map
+  var existingScores = {};
   if (existingDirectionData && existingDirectionData.length > 0) {
-    // Restore preserved data
-    sheet.getRange(directionDataStart, 1, existingDirectionData.length, 2).setValues(existingDirectionData);
-    Logger.log("Restored " + existingDirectionData.length + " rows of Team Direction data");
-  } else {
-    // Create blank template for 8 teams
-    for (var i = 0; i < 8; i++) {
-      sheet.getRange(directionDataStart + i, 1).setValue("");
-      sheet.getRange(directionDataStart + i, 2).setValue(10);  // Default to 10
+    for (var i = 0; i < existingDirectionData.length; i++) {
+      var teamName = String(existingDirectionData[i][0]).trim();
+      var score = existingDirectionData[i][1];
+      if (teamName) {
+        existingScores[teamName] = score;
+      }
     }
+    Logger.log("Preserved Team Direction scores for " + Object.keys(existingScores).length + " teams");
+  }
+
+  // Write teams and scores
+  for (var i = 0; i < numTeams; i++) {
+    var teamName = teamList[i];
+    var score = existingScores[teamName] !== undefined ? existingScores[teamName] : 10;  // Default to 10
+    sheet.getRange(directionDataStart + i, 1).setValue(teamName);
+    sheet.getRange(directionDataStart + i, 2).setValue(score);
   }
 
   // Apply formatting
-  sheet.getRange(directionDataStart, 1, 8, 2).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
-  sheet.getRange(directionDataStart, 2, 8, 1).setHorizontalAlignment("center");
+  sheet.getRange(directionDataStart, 1, numTeams, 2).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
+  sheet.getRange(directionDataStart, 2, numTeams, 1).setHorizontalAlignment("center");
 
   // Add data validation for direction scores
   var directionRule = SpreadsheetApp.newDataValidation()
@@ -327,13 +353,13 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
     .setHelpText("Enter a direction score between 0 and 20")
     .build();
 
-  sheet.getRange(directionDataStart, 2, 8, 1).setDataValidation(directionRule);
+  sheet.getRange(directionDataStart, 2, numTeams, 1).setDataValidation(directionRule);
 
   // Create named range for VLOOKUP
-  var directionRange = sheet.getRange(directionDataStart, 1, 8, 2);
-  sheet.getParent().setNamedRange("TeamDirection", directionRange);
+  var directionRange = sheet.getRange(directionDataStart, 1, numTeams, 2);
+  sheet.getParent().setNamedRange(RETENTION_CONFIG.TEAM_DIRECTION_TABLE.TABLE_NAME, directionRange);
 
-  Logger.log("Created Team Direction table with named range at rows " + directionDataStart + "-" + (directionDataStart + 7));
+  Logger.log("Created Team Direction table with " + numTeams + " teams at rows " + directionDataStart + "-" + (directionDataStart + numTeams - 1));
 
   // ===== POSTSEASON INPUT SECTION =====
   var postseasonStartRow = directionDataStart + 10;
@@ -344,32 +370,60 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
     .setFontSize(12)
     .setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER);
 
-  sheet.getRange(postseasonStartRow, 1, 1, 2).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER);
+  sheet.getRange(postseasonStartRow, 1, 1, 3).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER);
 
-  // Column headers
-  sheet.getRange(postseasonStartRow + 1, 1, 1, 2)
-    .setValues([["Team", "Finish"]])
+  // Column headers (3 columns now: Team | Finish | Points)
+  sheet.getRange(postseasonStartRow + 1, 1, 1, 3)
+    .setValues([["Team", "Finish", "Points (0-10)"]])
     .setFontWeight("bold")
     .setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER)
     .setHorizontalAlignment("center");
 
-  // Restore existing postseason data or create blank template
+  // V2.1: Auto-populate with team list and restore existing finishes
   var postseasonDataStart = postseasonStartRow + 2;
 
+  // Build existing postseason finishes map
+  var existingFinishes = {};
   if (existingPostseasonData && existingPostseasonData.length > 0) {
-    // Restore preserved data
-    sheet.getRange(postseasonDataStart, 1, existingPostseasonData.length, 2).setValues(existingPostseasonData);
-    Logger.log("Restored " + existingPostseasonData.length + " rows of postseason data");
-  } else {
-    // Create blank template
-    for (var i = 0; i < 8; i++) {
-      sheet.getRange(postseasonDataStart + i, 1).setValue("");
-      sheet.getRange(postseasonDataStart + i, 2).setValue("");
+    for (var i = 0; i < existingPostseasonData.length; i++) {
+      var teamName = String(existingPostseasonData[i][0]).trim();
+      var finish = existingPostseasonData[i][1];
+      if (teamName) {
+        existingFinishes[teamName] = finish;
+      }
     }
+    Logger.log("Preserved postseason finishes for " + Object.keys(existingFinishes).length + " teams");
+  }
+
+  // Write teams, finishes, and points formula
+  for (var i = 0; i < numTeams; i++) {
+    var teamName = teamList[i];
+    var finish = existingFinishes[teamName] !== undefined ? existingFinishes[teamName] : "";
+    var row = postseasonDataStart + i;
+
+    sheet.getRange(row, 1).setValue(teamName);
+    sheet.getRange(row, 2).setValue(finish);
+
+    // Column 3: Formula to convert finish to points
+    // Champion/1st=10, Runner-up/2nd=7.5, Semifinal/3rd-4th=5, Quarterfinal/5th-8th=2.5, else 0
+    var pointsFormula = '=IF(B' + row + '="","",IF(OR(B' + row + '=1,REGEXMATCH(LOWER(B' + row + '),"champion|1st|first")),10,' +
+                        'IF(OR(B' + row + '=2,REGEXMATCH(LOWER(B' + row + '),"runner|2nd|second")),7.5,' +
+                        'IF(OR(B' + row + '=3,B' + row + '=4,REGEXMATCH(LOWER(B' + row + '),"semi|3rd|4th")),5,' +
+                        'IF(OR(AND(ISNUMBER(B' + row + '),B' + row + '>=5,B' + row + '<=8),REGEXMATCH(LOWER(B' + row + '),"quarter|5th|6th|7th|8th")),2.5,0)))))';
+    sheet.getRange(row, 3).setFormula(pointsFormula);
   }
 
   // Apply formatting
-  sheet.getRange(postseasonDataStart, 1, 8, 2).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
+  sheet.getRange(postseasonDataStart, 1, numTeams, 1).setBackground("#f0f0f0");  // Teams are auto-populated (read-only)
+  sheet.getRange(postseasonDataStart, 2, numTeams, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);  // Finish is editable
+  sheet.getRange(postseasonDataStart, 3, numTeams, 1).setBackground("#e8f4f8");  // Points is formula (light blue)
+  sheet.getRange(postseasonDataStart, 3, numTeams, 1).setHorizontalAlignment("center");
+
+  // Create named range for VLOOKUP (includes all 3 columns)
+  var postseasonRange = sheet.getRange(postseasonDataStart, 1, numTeams, 3);
+  sheet.getParent().setNamedRange(RETENTION_CONFIG.POSTSEASON_TABLE_NAME, postseasonRange);
+
+  Logger.log("Created Postseason table with " + numTeams + " teams at rows " + postseasonDataStart + "-" + (postseasonDataStart + numTeams - 1));
 
   // ===== INSTRUCTIONS SECTION =====
   var instructionsRow = postseasonDataStart + 10;
@@ -478,24 +532,39 @@ function refreshRetentionFormulas() {
     var playerName = sheet.getRange(row, 1).getValue();
     if (!playerName || playerName === "") continue;
 
-    // TS Total = Base + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_TS_TOTAL).setFormula("=MIN(20,MAX(0,D" + row + "+E" + row + "))");
+    // V2.1: Postseason Success = VLOOKUP from PostseasonResults table
+    sheet.getRange(row, cols.COL_POSTSEASON).setFormula(
+      "=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",PostseasonResults,3,FALSE),0))"
+    );
+
+    // TS Total = Regular Season + Postseason + Modifier (capped 0-20)
+    sheet.getRange(row, cols.COL_TS_TOTAL).setFormula(
+      "=MIN(20,MAX(0,D" + row + "+E" + row + "+F" + row + "))"
+    );
 
     // PT Total = Base + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_PT_TOTAL).setFormula("=MIN(20,MAX(0,G" + row + "+H" + row + "))");
+    sheet.getRange(row, cols.COL_PT_TOTAL).setFormula(
+      "=MIN(20,MAX(0,H" + row + "+I" + row + "))"
+    );
 
     // Performance Total = Base + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_PERF_TOTAL).setFormula("=MIN(20,MAX(0,J" + row + "+K" + row + "))");
+    sheet.getRange(row, cols.COL_PERF_TOTAL).setFormula(
+      "=MIN(20,MAX(0,K" + row + "+L" + row + "))"
+    );
 
     // Manual Total = 12% Chemistry + 21% Direction (weighted)
-    sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula("=ROUND(N" + row + "*0.12+O" + row + "*0.21,1)");
+    sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula(
+      "=ROUND(O" + row + "*0.12+P" + row + "*0.21,1)"
+    );
 
     // Direction = VLOOKUP from Team Direction table
-    sheet.getRange(row, cols.COL_DIRECTION).setFormula("=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))");
+    sheet.getRange(row, cols.COL_DIRECTION).setFormula(
+      "=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))"
+    );
 
     // Final Grade = Weighted formula × 5 for d100 scale
     sheet.getRange(row, cols.COL_FINAL_GRADE).setFormula(
-      "=ROUND((F" + row + "*0.18+I" + row + "*0.32+L" + row + "*0.17)*5+P" + row + ",0)"
+      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17)*5+Q" + row + ",0)"
     );
 
     rowsUpdated++;
@@ -532,4 +601,41 @@ function findTeamDirectionSection(sheet) {
   }
 
   return -1;
+}
+
+/**
+ * Get unique teams from player list on sheet
+ * V2.1: Reads from Column B of the retention sheet
+ * Returns array of unique team names in alphabetical order
+ */
+function getUniqueTeamsFromSheet(sheet, startRow, playerCount) {
+  try {
+    if (playerCount === 0) {
+      Logger.log("WARNING: No players on sheet");
+      return [];
+    }
+
+    // Read team names from Column B
+    var cols = RETENTION_CONFIG.OUTPUT;
+    var teamData = sheet.getRange(startRow, cols.COL_TEAM, playerCount, 1).getValues();
+
+    // Get unique teams
+    var teamSet = {};
+    for (var i = 0; i < teamData.length; i++) {
+      var teamName = String(teamData[i][0]).trim();
+      if (teamName) {
+        teamSet[teamName] = true;
+      }
+    }
+
+    // Convert to sorted array
+    var teams = Object.keys(teamSet).sort();
+
+    Logger.log("Found " + teams.length + " unique teams from player list: " + teams.join(", "));
+    return teams;
+
+  } catch (e) {
+    Logger.log("Error getting teams from sheet: " + e.toString());
+    return [];
+  }
 }

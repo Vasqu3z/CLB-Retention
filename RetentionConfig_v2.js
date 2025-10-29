@@ -12,6 +12,11 @@
 // - Draft expectations: Performance vs draft round expectations
 // - Team Direction: Table at bottom, one score per team (VLOOKUP)
 //
+// V2.1 CHANGES:
+// - Split Team Success into 2 columns: Regular Season (D) + Postseason (E, VLOOKUP)
+// - Auto-populate team lists in Team Direction and Postseason tables
+// - Total columns: 19 (was 18)
+//
 // REFERENCES: Main CONFIG object from Stats Processing spreadsheet
 // - Sheet names from CONFIG (Player Data, Hitting, Pitching, etc.)
 // - Box score settings from CONFIG (spreadsheet ID, cell ranges)
@@ -21,7 +26,7 @@
 var RETENTION_CONFIG = {
 
   // ===== VERSION INFO =====
-  VERSION: "2.0",
+  VERSION: "2.1",
   VERSION_DATE: "2025-10-28",
 
   // ===== NO SHEET NAMES HERE - USE CONFIG OBJECT =====
@@ -125,7 +130,9 @@ var RETENTION_CONFIG = {
   // Located in Retention Grades sheet (dynamically found at bottom)
   // Format: Team Name (Col A) | Postseason Finish (Col B)
   // Accepts: numbers (1-8) or text ("Champion", "1st", "Semifinal", etc.)
+  // V2.1: Auto-populated with team list, read via VLOOKUP
   POSTSEASON_SEARCH_TEXT: "Postseason Results",  // Header text to search for
+  POSTSEASON_TABLE_NAME: "PostseasonResults",    // Named range for VLOOKUP
 
   // ===== WEIGHTED GRADING SYSTEM V2 =====
   // Factor weights (must sum to 1.0)
@@ -380,10 +387,12 @@ var RETENTION_CONFIG = {
   // ===== TEAM DIRECTION TABLE =====
   // New section at bottom of sheet
   // One score per team (0-20), all players on team inherit same score via VLOOKUP
+  // V2.1: Auto-populated with team list from Team Data sheet
   TEAM_DIRECTION_TABLE: {
     SEARCH_TEXT: "Team Direction",
     HEADER_TEXT: "Team Direction Scores (0-20)",
-    DESCRIPTION: "Enter direction score for each team. All players on that team inherit this score via VLOOKUP."
+    DESCRIPTION: "Enter direction score for each team. All players on that team inherit this score via VLOOKUP.",
+    TABLE_NAME: "TeamDirection"  // Named range for VLOOKUP
   },
 
   // ===== LEAGUE CONTEXT =====
@@ -409,32 +418,33 @@ var RETENTION_CONFIG = {
     CHEMISTRY_COL_WIDTH: 80,
     DIRECTION_COL_WIDTH: 80,
 
-    // ===== COLUMN POSITIONS V2 =====
-    // New layout with Draft/Trade Value at Column C
-    // Star Points removed entirely
+    // ===== COLUMN POSITIONS V2.1 =====
+    // Team Success split into Regular Season + Postseason (2 columns)
+    // Total: 19 columns
 
     // Auto-calculated columns (cleared on update)
     COL_PLAYER: 1,              // A - Player name
     COL_TEAM: 2,                // B - Team name
-    COL_DRAFT_VALUE: 3,         // C - Draft/Trade Value (1-8, manual input) **NEW**
-    COL_TS_BASE: 4,             // D - Team Success base
-    COL_TS_MOD: 5,              // E - Team Success modifier (manual)
-    COL_TS_TOTAL: 6,            // F - Team Success total (formula)
-    COL_PT_BASE: 7,             // G - Play Time base
-    COL_PT_MOD: 8,              // H - Play Time modifier (manual)
-    COL_PT_TOTAL: 9,            // I - Play Time total (formula)
-    COL_PERF_BASE: 10,          // J - Performance base
-    COL_PERF_MOD: 11,           // K - Performance modifier (manual)
-    COL_PERF_TOTAL: 12,         // L - Performance total (formula)
-    COL_AUTO_TOTAL: 13,         // M - Auto total (sum of bases, no star points)
-    COL_CHEMISTRY: 14,          // N - Chemistry (0-20, manual input)
-    COL_DIRECTION: 15,          // O - Direction (0-20, VLOOKUP from table)
-    COL_MANUAL_TOTAL: 16,       // P - Manual total (weighted: 12% chem + 21% dir)
-    COL_FINAL_GRADE: 17,        // Q - Final grade (weighted formula × 5 for d100)
-    COL_DETAILS: 18,            // R - Details
+    COL_DRAFT_VALUE: 3,         // C - Draft/Trade Value (1-8, manual input)
+    COL_REG_SEASON: 4,          // D - Regular Season Success (0-10, from standings) **SPLIT**
+    COL_POSTSEASON: 5,          // E - Postseason Success (0-10, VLOOKUP from table) **SPLIT**
+    COL_TS_MOD: 6,              // F - Team Success modifier (manual)
+    COL_TS_TOTAL: 7,            // G - Team Success total (D+E+F formula)
+    COL_PT_BASE: 8,             // H - Play Time base
+    COL_PT_MOD: 9,              // I - Play Time modifier (manual)
+    COL_PT_TOTAL: 10,           // J - Play Time total (formula)
+    COL_PERF_BASE: 11,          // K - Performance base
+    COL_PERF_MOD: 12,           // L - Performance modifier (manual)
+    COL_PERF_TOTAL: 13,         // M - Performance total (formula)
+    COL_AUTO_TOTAL: 14,         // N - Auto total (sum of bases)
+    COL_CHEMISTRY: 15,          // O - Chemistry (0-20, manual input)
+    COL_DIRECTION: 16,          // P - Direction (0-20, VLOOKUP from table)
+    COL_MANUAL_TOTAL: 17,       // Q - Manual total (weighted: 12% chem + 21% dir)
+    COL_FINAL_GRADE: 18,        // R - Final grade (weighted formula × 5 for d100)
+    COL_DETAILS: 19,            // S - Details
 
     // Total columns
-    TOTAL_COLUMNS: 18,
+    TOTAL_COLUMNS: 19,
 
     // Color coding for final grades (retention probability)
     COLORS: {

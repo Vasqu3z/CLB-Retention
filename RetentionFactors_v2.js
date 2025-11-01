@@ -454,6 +454,18 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
 
   breakdown.total = breakdown.baseTotal + breakdown.autoFlaggingPenalty + breakdown.draftExpectationsMod;
 
+  // V3 DEBUG: Log performance calculation for troubleshooting
+  if (player.name && player.name.indexOf("King") >= 0) {
+    Logger.log("V3 DEBUG Performance for " + player.name + ":");
+    Logger.log("  - Offensive: " + breakdown.offensive);
+    Logger.log("  - Defensive: " + breakdown.defensive);
+    Logger.log("  - Pitching: " + breakdown.pitching);
+    Logger.log("  - Base Total: " + breakdown.baseTotal);
+    Logger.log("  - Auto-flagging penalty: " + breakdown.autoFlaggingPenalty);
+    Logger.log("  - Draft expectations mod: " + breakdown.draftExpectationsMod);
+    Logger.log("  - Total (before cap): " + breakdown.total);
+  }
+
   // Cap at max points
   if (breakdown.total > config.MAX_POINTS) {
     breakdown.total = config.MAX_POINTS;
@@ -462,6 +474,11 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
   // Don't allow negative
   if (breakdown.total < 0) {
     breakdown.total = 0;
+  }
+
+  // V3 DEBUG: Log after capping
+  if (player.name && player.name.indexOf("King") >= 0) {
+    Logger.log("  - Total (after cap): " + breakdown.total);
   }
 
   breakdown.details = detailParts.join(" | ");

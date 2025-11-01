@@ -123,17 +123,7 @@ function calculateRetentionGrades(loadedGameData) {
 
       var stats = playerStats[playerName];
 
-      // V3 DEBUG: Log first player to verify structure
-      if (playerCount === 0) {
-        Logger.log("First player structure check:");
-        Logger.log("  Name: " + playerName);
-        Logger.log("  Team: " + (stats.team || "MISSING"));
-        Logger.log("  Has hitting: " + (!!stats.hitting));
-        Logger.log("  Has pitching: " + (!!stats.pitching));
-        Logger.log("  Has fielding: " + (!!stats.fielding));
-      }
-
-      // V3 UPDATE: Reconstruct player object from playerStats
+      // V3: Cached data already has proper object structure with calculated stats
       var player = {
         name: playerName,
         team: stats.team,

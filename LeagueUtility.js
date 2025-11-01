@@ -718,13 +718,123 @@ function findSheetSection(sheet, searchText) {
  * V3 INTEGRATION:
  * Caches the final processed gameData to PropertiesService
  * so the Retention suite can access it.
+ * Converts array-based stats to object-based with calculated derived stats.
  */
 function cacheCurrentSeasonStats(gameData) {
   try {
+    Logger.log('V3 Integration: Converting playerStats for Retention suite...');
+
+    // Convert playerStats from array-based to object-based with calculated stats
+    var convertedPlayerStats = {};
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var playerDataSheet = ss.getSheetByName(CONFIG.PLAYER_STATS_SHEET);
+
+    // Get player-to-team mapping
+    var playerTeamMap = {};
+    if (playerDataSheet && playerDataSheet.getLastRow() > 1) {
+      var playerData = playerDataSheet.getRange(2, 1, playerDataSheet.getLastRow() - 1, 2).getValues();
+      for (var i = 0; i < playerData.length; i++) {
+        var name = String(playerData[i][0]).trim();
+        var team = String(playerData[i][1]).trim();
+        if (name && team) {
+          playerTeamMap[name] = team;
+        }
+      }
+    }
+
+    // Convert each player's stats
+    for (var playerName in gameData.playerStats) {
+      if (!gameData.playerStats.hasOwnProperty(playerName)) continue;
+
+      var rawStats = gameData.playerStats[playerName];
+      var team = playerTeamMap[playerName] || "";
+
+      // Convert hitting array to object with calculated stats
+      // Array: [AB, H, HR, RBI, BB, K, ROB, DP, TB]
+      var ab = rawStats.hitting[0] || 0;
+      var h = rawStats.hitting[1] || 0;
+      var hr = rawStats.hitting[2] || 0;
+      var rbi = rawStats.hitting[3] || 0;
+      var bb = rawStats.hitting[4] || 0;
+      var k = rawStats.hitting[5] || 0;
+      var rob = rawStats.hitting[6] || 0;
+      var dp = rawStats.hitting[7] || 0;
+      var tb = rawStats.hitting[8] || 0;
+
+      var avg = ab > 0 ? h / ab : 0;
+      var obp = ab > 0 ? rob / ab : 0;
+      var slg = ab > 0 ? tb / ab : 0;
+      var ops = obp + slg;
+
+      // Convert pitching array to object with calculated stats
+      // Array: [IP, BF, H, HR, R, BB, K]
+      var ip = rawStats.pitching[0] || 0;
+      var bf = rawStats.pitching[1] || 0;
+      var pHits = rawStats.pitching[2] || 0;
+      var pHR = rawStats.pitching[3] || 0;
+      var r = rawStats.pitching[4] || 0;
+      var pBB = rawStats.pitching[5] || 0;
+      var pK = rawStats.pitching[6] || 0;
+
+      var era = ip > 0 ? (r * 7) / ip : 0;
+      var whip = ip > 0 ? (pHits + pBB) / ip : 0;
+      var baa = bf > 0 ? pHits / bf : 0;
+
+      // Convert fielding array to object
+      // Array: [NP, E, SB]
+      var np = rawStats.fielding[0] || 0;
+      var e = rawStats.fielding[1] || 0;
+      var sb = rawStats.fielding[2] || 0;
+
+      // Create converted stats object
+      convertedPlayerStats[playerName] = {
+        team: team,
+        hitting: {
+          GP: rawStats.gamesPlayed || 0,
+          AB: ab,
+          H: h,
+          HR: hr,
+          RBI: rbi,
+          BB: bb,
+          K: k,
+          ROB: rob,
+          DP: dp,
+          TB: tb,
+          AVG: avg,
+          OBP: obp,
+          SLG: slg,
+          OPS: ops
+        },
+        pitching: {
+          GP: rawStats.gamesPlayed || 0,
+          IP: ip,
+          BF: bf,
+          H: pHits,
+          HR: pHR,
+          R: r,
+          BB: pBB,
+          K: pK,
+          W: rawStats.wins || 0,
+          L: rawStats.losses || 0,
+          SV: rawStats.saves || 0,
+          ERA: era,
+          WHIP: whip,
+          BAA: baa
+        },
+        fielding: {
+          GP: rawStats.gamesPlayed || 0,
+          NP: np,
+          E: e,
+          SB: sb
+        }
+      };
+    }
+
+    Logger.log('V3 Integration: Converted ' + Object.keys(convertedPlayerStats).length + ' players');
+
     var dataToCache = {
-      playerStats: gameData.playerStats,
+      playerStats: convertedPlayerStats,
       teamStatsWithH2H: gameData.teamStatsWithH2H
-      // We don't need scheduleData for retention
     };
 
     var jsonData = JSON.stringify(dataToCache);

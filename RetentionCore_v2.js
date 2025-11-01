@@ -916,6 +916,7 @@ function calculateLeaguePercentilesFromCache(playerStats, teamStats) {
   leagueStats.fielding.netDefense = netDefenseList.sort(function(a, b) { return a - b; });
 
   Logger.log("Percentile calculation from cache complete - Hitters: " + avgList.length + ", Pitchers: " + eraList.length + ", Fielders: " + netDefenseList.length);
+  Logger.log("V3 DEBUG: Qualified player counts - Hitters (AB>=" + minAB + "): " + avgList.length + ", Pitchers (IP>=" + minIP + "): " + eraList.length + ", Fielders (GP>=" + minGP + "): " + netDefenseList.length);
 
   return leagueStats;
 }

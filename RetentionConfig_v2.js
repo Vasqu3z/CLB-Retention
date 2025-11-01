@@ -56,13 +56,16 @@ var RETENTION_CONFIG = {
     return CONFIG.STATS_COLUMN_MAPS.FIELDING_COLUMNS;
   },
 
-  TEAM_DATA_COLUMNS: {
-    // Columns in Team Data sheet
-    TEAM_NAME: 1,      // Column A
-    CAPTAIN: 2,        // Column B - Captain Name (not used)
-    GP: 3,             // Column C - Games Played
-    WINS: 4,           // Column D - Wins
-    LOSSES: 5          // Column E - Losses
+  // V3 UPDATE: Team Data columns moved to CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET
+  // Reference centralized config instead of duplicating
+  get TEAM_DATA_COLUMNS() {
+    return {
+      TEAM_NAME: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.TEAM_NAME_COL,
+      CAPTAIN: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.CAPTAIN_COL,
+      GP: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.GP_COL,
+      WINS: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.WINS_COL,
+      LOSSES: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.LOSSES_COL
+    };
   },
 
   // ===== BOX SCORE INTEGRATION =====

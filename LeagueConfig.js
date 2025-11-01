@@ -149,7 +149,11 @@ var CONFIG = {
     TEAM_STATS_SHEET: {
       DATA_START_ROW: 2,
       TEAM_NAME_COL: 1,           // Column A
-      GPWL_START_COL: 3,          // Column C - GP, W, L
+      CAPTAIN_COL: 2,             // Column B - Captain Name
+      GP_COL: 3,                  // Column C - Games Played
+      WINS_COL: 4,                // Column D - Wins
+      LOSSES_COL: 5,              // Column E - Losses
+      GPWL_START_COL: 3,          // Column C - GP, W, L (for range operations)
       GPWL_NUM_COLS: 3,
       HITTING_START_COL: 6,       // Column F - Hitting stats
       HITTING_NUM_COLS: 9,

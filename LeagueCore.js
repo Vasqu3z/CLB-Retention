@@ -19,7 +19,6 @@ function onOpen() {
       .addSubMenu(ui.createMenu('⭐ Retention')
           .addItem('🏆 Calculate Final Retention Grades', 'calculateFinalRetentionGrades')
           .addSeparator()
-          .addItem('Calculate Retention Grades (Legacy)', 'calculateRetentionGrades')
           .addItem('Refresh Formulas', 'refreshRetentionFormulas')
           .addItem('Rebuild Sheet Formatting', 'rebuildRetentionSheet')
           .addSeparator()

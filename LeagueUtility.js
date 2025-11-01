@@ -751,18 +751,19 @@ function cacheCurrentSeasonStats(gameData) {
 
       // Convert hitting array to object with calculated stats
       // Array: [AB, H, HR, RBI, BB, K, ROB, DP, TB]
+      // NOTE: ROB = Hits Robbed (defensive plays against player), NOT Reached On Base
       var ab = rawStats.hitting[0] || 0;
       var h = rawStats.hitting[1] || 0;
       var hr = rawStats.hitting[2] || 0;
       var rbi = rawStats.hitting[3] || 0;
       var bb = rawStats.hitting[4] || 0;
       var k = rawStats.hitting[5] || 0;
-      var rob = rawStats.hitting[6] || 0;
+      var rob = rawStats.hitting[6] || 0;  // Hits Robbed (nice plays against player)
       var dp = rawStats.hitting[7] || 0;
       var tb = rawStats.hitting[8] || 0;
 
       var avg = ab > 0 ? h / ab : 0;
-      var obp = ab > 0 ? rob / ab : 0;
+      var obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;  // FIXED: Correct OBP formula
       var slg = ab > 0 ? tb / ab : 0;
       var ops = obp + slg;
 

@@ -59,12 +59,14 @@ function processAllGameSheetsOnce() {
       ).getValues();
 
       // Read team totals
-      var team1Totals = sheet.getRange(CONFIG.BOX_SCORE_TEAM1_TOTALS).getValues()[0];
-      var team2Totals = sheet.getRange(CONFIG.BOX_SCORE_TEAM2_TOTALS).getValues()[0];
+      // Box score layout: Row 39 = Away team, Row 50 = Home team
+      var team1Totals = sheet.getRange(CONFIG.BOX_SCORE_TEAM1_TOTALS).getValues()[0];  // Row 39 = Away
+      var team2Totals = sheet.getRange(CONFIG.BOX_SCORE_TEAM2_TOTALS).getValues()[0];  // Row 50 = Home
 
       // Read team pitching/fielding totals
-      var team1PitchField = sheet.getRange(CONFIG.BOX_SCORE_TEAM1_PITCHING).getValues()[0];
-      var team2PitchField = sheet.getRange(CONFIG.BOX_SCORE_TEAM2_PITCHING).getValues()[0];
+      // Box score layout: Row 16 = Away team, Row 27 = Home team
+      var team1PitchField = sheet.getRange(CONFIG.BOX_SCORE_TEAM1_PITCHING).getValues()[0];  // Row 16 = Away
+      var team2PitchField = sheet.getRange(CONFIG.BOX_SCORE_TEAM2_PITCHING).getValues()[0];  // Row 27 = Home
 
       // Read W/L/S data
       var wlsData = sheet.getRange(CONFIG.BOX_SCORE_WLS_DATA).getValues();
@@ -80,10 +82,10 @@ function processAllGameSheetsOnce() {
         homeRuns: homeRuns,
         hittingData: hittingData,
         pitchFieldData: pitchFieldData,
-        awayTeamTotals: team2Totals,
-        homeTeamTotals: team1Totals,
-        awayTeamPitchField: team2PitchField,
-        homeTeamPitchField: team1PitchField,
+        awayTeamTotals: team1Totals,        // V3 FIX: team1 = Away (row 39)
+        homeTeamTotals: team2Totals,        // V3 FIX: team2 = Home (row 50)
+        awayTeamPitchField: team1PitchField, // V3 FIX: team1 = Away (row 16)
+        homeTeamPitchField: team2PitchField, // V3 FIX: team2 = Home (row 27)
         winningPitcher: winningPitcher,
         losingPitcher: losingPitcher,
         savePitcher: savePitcher

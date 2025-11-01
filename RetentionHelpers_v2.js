@@ -9,89 +9,21 @@
 // - Removed Star Points references
 
 // ===== UTILITY FUNCTIONS =====
+// V3 UPDATE: Generic utility functions moved to LeagueUtility.js
+// Retention-specific wrappers and functions remain here
 
 /**
- * Calculate percentile rank for a value in a sorted array
- */
-function calculatePercentile(value, sortedArray) {
-  if (!sortedArray || sortedArray.length === 0) return 50;
-
-  if (value === null || value === undefined || typeof value !== 'number' || isNaN(value)) {
-    return 0;
-  }
-
-  var n = sortedArray.length;
-  var countBelow = 0;
-  var countEqual = 0;
-
-  for (var i = 0; i < n; i++) {
-    if (sortedArray[i] < value) {
-      countBelow++;
-    } else if (sortedArray[i] === value) {
-      countEqual++;
-    }
-  }
-
-  var percentile = ((countBelow + 0.5 * countEqual) / n) * 100;
-
-  if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS) {
-    Logger.log("Percentile calc: value=" + value + ", below=" + countBelow +
-               ", equal=" + countEqual + ", n=" + n + ", result=" + percentile.toFixed(1));
-  }
-
-  return percentile;
-}
-
-/**
- * Find player index in array by name and team
- */
-function findPlayerIndex(players, name, team) {
-  for (var i = 0; i < players.length; i++) {
-    if (players[i].name === name && players[i].team === team) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-/**
- * Get ordinal suffix for numbers (1st, 2nd, 3rd, etc.)
- */
-function getOrdinalSuffix(num) {
-  var j = num % 10;
-  var k = num % 100;
-
-  if (j === 1 && k !== 11) {
-    return "st";
-  }
-  if (j === 2 && k !== 12) {
-    return "nd";
-  }
-  if (j === 3 && k !== 13) {
-    return "rd";
-  }
-  return "th";
-}
-
-/**
- * Find postseason section in sheet
+ * Find postseason section in sheet (wrapper for findSheetSection)
  */
 function findPostseasonSection(sheet) {
-  try {
-    var lastRow = sheet.getLastRow();
-    var searchRange = sheet.getRange(1, 1, lastRow, 1).getValues();
+  return findSheetSection(sheet, RETENTION_CONFIG.POSTSEASON_SEARCH_TEXT);
+}
 
-    for (var i = 0; i < searchRange.length; i++) {
-      var cellValue = String(searchRange[i][0]);
-      if (cellValue.indexOf(RETENTION_CONFIG.POSTSEASON_SEARCH_TEXT) >= 0) {
-        return i + 1;
-      }
-    }
-  } catch (e) {
-    Logger.log("Error finding postseason section: " + e.toString());
-  }
-
-  return -1;
+/**
+ * Find team direction section in sheet (wrapper for findSheetSection)
+ */
+function findTeamDirectionSection(sheet) {
+  return findSheetSection(sheet, RETENTION_CONFIG.TEAM_DIRECTION_TABLE.SEARCH_TEXT);
 }
 
 // ===== HELP DIALOGS =====

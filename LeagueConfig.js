@@ -83,7 +83,138 @@ var CONFIG = {
   ],
 
   // Transaction tracking
-  PLAYER_TEAM_SNAPSHOT_PROPERTY: "playerTeamSnapshot"
+  PLAYER_TEAM_SNAPSHOT_PROPERTY: "playerTeamSnapshot",
+
+  // ===== STATS SHEET COLUMN MAPPINGS =====
+  // Define exact column structure for each stats sheet
+  // CRITICAL: Update these if sheet structure changes
+  STATS_COLUMN_MAPS: {
+    HITTING_COLUMNS: {
+      // Columns in 🧮 Hitting sheet
+      PLAYER_NAME: 1,    // Column A
+      TEAM: 2,           // Column B
+      GP: 3,             // Column C - Games Played
+      AB: 4,             // Column D - At Bats
+      H: 5,              // Column E - Hits
+      HR: 6,             // Column F - Home Runs
+      RBI: 7,            // Column G - Runs Batted In
+      BB: 8,             // Column H - Walks
+      K: 9,              // Column I - Strikeouts
+      ROB: 10,           // Column J - Reached on Base
+      DP: 11,            // Column K - Double Plays
+      TB: 12,            // Column L - Total Bases
+      AVG: 13,           // Column M - Batting Average
+      OBP: 14,           // Column N - On-Base Percentage
+      SLG: 15,           // Column O - Slugging Percentage
+      OPS: 16            // Column P - On-Base Plus Slugging
+    },
+
+    PITCHING_COLUMNS: {
+      // Columns in 🧮 Pitching sheet
+      PLAYER_NAME: 1,    // Column A
+      TEAM: 2,           // Column B
+      GP: 3,             // Column C - Games Played
+      W: 4,              // Column D - Wins
+      L: 5,              // Column E - Losses
+      SV: 6,             // Column F - Saves
+      ERA: 7,            // Column G - Earned Run Average
+      IP: 8,             // Column H - Innings Pitched
+      BF: 9,             // Column I - Batters Faced
+      H: 10,             // Column J - Hits Allowed
+      HR: 11,            // Column K - Home Runs Allowed
+      R: 12,             // Column L - Runs Allowed
+      BB: 13,            // Column M - Walks Allowed
+      K: 14,             // Column N - Strikeouts
+      BAA: 15,           // Column O - Batting Average Against
+      WHIP: 16           // Column P - Walks + Hits per IP
+    },
+
+    FIELDING_COLUMNS: {
+      // Columns in 🧮 Fielding & Running sheet
+      PLAYER_NAME: 1,    // Column A
+      TEAM: 2,           // Column B
+      GP: 3,             // Column C - Games Played
+      NP: 4,             // Column D - Nice Plays
+      E: 5,              // Column E - Errors
+      SB: 6              // Column F - Stolen Bases
+    }
+  },
+
+  // ===== SHEET STRUCTURE LAYOUTS =====
+  // Define exact layout of all output sheets to eliminate magic numbers
+  // All column numbers and row positions centralized here
+  SHEET_STRUCTURE: {
+    // Team Data/Stats sheet layout
+    TEAM_STATS_SHEET: {
+      DATA_START_ROW: 2,
+      TEAM_NAME_COL: 1,           // Column A
+      GPWL_START_COL: 3,          // Column C - GP, W, L
+      GPWL_NUM_COLS: 3,
+      HITTING_START_COL: 6,       // Column F - Hitting stats
+      HITTING_NUM_COLS: 9,
+      PITCHING_START_COL: 15,     // Column O - Pitching stats
+      PITCHING_NUM_COLS: 7,
+      FIELDING_START_COL: 22,     // Column V - Fielding stats
+      FIELDING_NUM_COLS: 3
+    },
+
+    // League Hub (Rankings) sheet layout
+    LEAGUE_HUB: {
+      HEADER_ROW: 1,
+      STANDINGS_HEADER_ROW: 3,
+      STANDINGS_START_ROW: 4,
+      STANDINGS: {
+        START_COL: 1,             // Column A
+        NUM_COLS: 8,              // Rank, Team, W, L, Win%, RS, RA, Diff
+        RANK_WIDTH: 50,
+        TEAM_WIDTH: 175
+      },
+      LEADERS_BATTING: {
+        START_COL: 10,            // Column J
+        WIDTH: 300
+      },
+      LEADERS_PITCHING: {
+        START_COL: 12,            // Column L
+        WIDTH: 300
+      },
+      LEADERS_FIELDING: {
+        START_COL: 14,            // Column N
+        WIDTH: 300
+      }
+    },
+
+    // League Schedule sheet layout
+    LEAGUE_SCHEDULE: {
+      HEADER_ROW: 1,
+      STANDINGS_HEADER_ROW: 3,
+      STANDINGS_START_ROW: 4,
+      STANDINGS: {
+        START_COL: 1,             // Column A
+        NUM_COLS: 8               // Rank, Team, W, L, Win%, RS, RA, Diff
+      },
+      COMPLETED_GAMES: {
+        START_COL: 10,            // Column J
+        WIDTH: 300
+      },
+      SCHEDULED_GAMES: {
+        START_COL: 12,            // Column L
+        WIDTH: 300
+      }
+    },
+
+    // Player Data sheet layout
+    PLAYER_STATS_SHEET: {
+      HEADER_ROW: 1,
+      DATA_START_ROW: 2
+    },
+
+    // Team Sheets layout
+    TEAM_SHEETS: {
+      HEADER_ROW: 1,
+      DATA_START_ROW: 2,
+      PLAYER_COL_WIDTH: 175
+    }
+  }
 };
 
 // Global cache for spreadsheet objects and processed game data

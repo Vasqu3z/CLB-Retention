@@ -40,57 +40,20 @@ var RETENTION_CONFIG = {
   // CONFIG.LEAGUE_HUB_SHEET (for standings data)
 
   // ===== STATS SHEET COLUMN MAPPINGS =====
-  // Define exact column structure for each stats sheet
-  // CRITICAL: Update these if sheet structure changes
+  // V3 UPDATE: Column maps moved to CONFIG.STATS_COLUMN_MAPS (LeagueConfig.js)
+  // These are now references to the centralized config
+  // DO NOT MODIFY - edit CONFIG.STATS_COLUMN_MAPS instead
 
-  HITTING_COLUMNS: {
-    // Columns in 🧮 Hitting sheet
-    PLAYER_NAME: 1,    // Column A
-    TEAM: 2,           // Column B
-    GP: 3,             // Column C - Games Played
-    AB: 4,             // Column D - At Bats
-    H: 5,              // Column E - Hits
-    HR: 6,             // Column F - Home Runs
-    RBI: 7,            // Column G - Runs Batted In
-    BB: 8,             // Column H - Walks
-    K: 9,              // Column I - Strikeouts
-    ROB: 10,           // Column J - Reached on Base
-    DP: 11,            // Column K - Double Plays
-    TB: 12,            // Column L - Total Bases
-    AVG: 13,           // Column M - Batting Average
-    OBP: 14,           // Column N - On-Base Percentage
-    SLG: 15,           // Column O - Slugging Percentage
-    OPS: 16            // Column P - On-Base Plus Slugging
+  get HITTING_COLUMNS() {
+    return CONFIG.STATS_COLUMN_MAPS.HITTING_COLUMNS;
   },
 
-  PITCHING_COLUMNS: {
-    // Columns in 🧮 Pitching sheet
-    PLAYER_NAME: 1,    // Column A
-    TEAM: 2,           // Column B
-    GP: 3,             // Column C - Games Played
-    W: 4,              // Column D - Wins
-    L: 5,              // Column E - Losses
-    SV: 6,             // Column F - Saves
-    ERA: 7,            // Column G - Earned Run Average
-    IP: 8,             // Column H - Innings Pitched
-    BF: 9,             // Column I - Batters Faced
-    H: 10,             // Column J - Hits Allowed
-    HR: 11,            // Column K - Home Runs Allowed
-    R: 12,             // Column L - Runs Allowed
-    BB: 13,            // Column M - Walks Allowed
-    K: 14,             // Column N - Strikeouts
-    BAA: 15,           // Column O - Batting Average Against
-    WHIP: 16           // Column P - Walks + Hits per IP
+  get PITCHING_COLUMNS() {
+    return CONFIG.STATS_COLUMN_MAPS.PITCHING_COLUMNS;
   },
 
-  FIELDING_COLUMNS: {
-    // Columns in 🧮 Fielding & Running sheet
-    PLAYER_NAME: 1,    // Column A
-    TEAM: 2,           // Column B
-    GP: 3,             // Column C - Games Played
-    NP: 4,             // Column D - Nice Plays
-    E: 5,              // Column E - Errors
-    SB: 6              // Column F - Stolen Bases
+  get FIELDING_COLUMNS() {
+    return CONFIG.STATS_COLUMN_MAPS.FIELDING_COLUMNS;
   },
 
   TEAM_DATA_COLUMNS: {
@@ -498,6 +461,58 @@ var RETENTION_CONFIG = {
     MAX_REASONABLE_GAMES: 20,
     MAX_REASONABLE_AB: 100,
     MAX_REASONABLE_IP: 60
+  },
+
+  // ===== SHEET STRUCTURE LAYOUTS =====
+  // V3 UPDATE: Centralized layout definitions to eliminate magic numbers
+  SHEET_STRUCTURE: {
+    // Input data sources from other sheets
+    INPUT_SOURCES: {
+      // League Hub standings data (for regular season points)
+      // Used in RetentionCore_v2.js to read team standings
+      LEAGUE_HUB_STANDINGS: {
+        START_ROW: 4,       // First data row after header
+        START_COL: 1,       // Column A (Rank, Team)
+        NUM_ROWS: 8,        // 8 teams in league
+        NUM_COLS: 2         // Rank + Team name
+      }
+    },
+
+    // Output sheet layout for Retention Grades sheet
+    OUTPUT_LAYOUT: {
+      HEADER_ROW: 5,          // Row where data table headers start (from OUTPUT config)
+      DATA_START_ROW: 6,      // Row where player data starts (from OUTPUT config)
+
+      // Column headers (full list for reference)
+      HEADERS: [
+        "Player",
+        "Team",
+        "Draft/Trade\nValue (1-8)",
+        "Regular\nSeason",
+        "Postseason",
+        "TS\nMod",
+        "TS\nTotal",
+        "PT\nBase",
+        "PT\nMod",
+        "PT\nTotal",
+        "Perf\nBase",
+        "Perf\nMod",
+        "Perf\nTotal",
+        "Auto\nTotal",
+        "Chemistry\n(0-20)",
+        "Direction\n(0-20)",
+        "Manual\nTotal",
+        "Final\nGrade",
+        "Details"
+      ]
+    },
+
+    // Search logic for dynamic sections
+    SEARCH_LOGIC: {
+      SECTION_HEADER_SEARCH_COL: 1,    // Column A - where section headers are found
+      POSTSEASON_HEADER_TEXT: "Postseason Results",
+      TEAM_DIRECTION_HEADER_TEXT: "Team Direction"
+    }
   },
 
   // ===== FUTURE INTEGRATION HOOKS =====

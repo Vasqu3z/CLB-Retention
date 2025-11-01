@@ -311,17 +311,18 @@ function getLeagueLeaders(hittingSheet, pitchingSheet, fieldingSheet, teamStats)
   var hittingLastRow = hittingSheet.getLastRow();
   if (hittingLastRow > 1) {
     var hittingData = hittingSheet.getRange(2, 1, hittingLastRow - 1, 16).getValues();
+    var hCols = CONFIG.STATS_COLUMN_MAPS.HITTING_COLUMNS;
     for (var i = 0; i < hittingData.length; i++) {
-      var playerName = String(hittingData[i][0]).trim();
-      var team = String(hittingData[i][1]).trim();
-      var gp = hittingData[i][2];
-      var ab = hittingData[i][3];
-      var hits = hittingData[i][4];
-      var hr = hittingData[i][5];
-      var rbi = hittingData[i][6];
-      var obp = hittingData[i][13];
-      var slg = hittingData[i][14];
-      var ops = hittingData[i][15];
+      var playerName = String(hittingData[i][hCols.PLAYER_NAME - 1]).trim();
+      var team = String(hittingData[i][hCols.TEAM - 1]).trim();
+      var gp = hittingData[i][hCols.GP - 1];
+      var ab = hittingData[i][hCols.AB - 1];
+      var hits = hittingData[i][hCols.H - 1];
+      var hr = hittingData[i][hCols.HR - 1];
+      var rbi = hittingData[i][hCols.RBI - 1];
+      var obp = hittingData[i][hCols.OBP - 1];
+      var slg = hittingData[i][hCols.SLG - 1];
+      var ops = hittingData[i][hCols.OPS - 1];
       
       if (playerName && typeof gp === 'number' && gp > 0 && teamStats[team]) {
         var teamGP = teamStats[team].gamesPlayed;
@@ -352,17 +353,18 @@ function getLeagueLeaders(hittingSheet, pitchingSheet, fieldingSheet, teamStats)
   var pitchingLastRow = pitchingSheet.getLastRow();
   if (pitchingLastRow > 1) {
     var pitchingData = pitchingSheet.getRange(2, 1, pitchingLastRow - 1, 16).getValues();
+    var pCols = CONFIG.STATS_COLUMN_MAPS.PITCHING_COLUMNS;
     for (var i = 0; i < pitchingData.length; i++) {
-      var playerName = String(pitchingData[i][0]).trim();
-      var team = String(pitchingData[i][1]).trim();
-      var gp = pitchingData[i][2];
-      var wins = pitchingData[i][3];
-      var losses = pitchingData[i][4];
-      var saves = pitchingData[i][5];
-      var era = pitchingData[i][6];
-      var ip = pitchingData[i][7];
-      var baa = pitchingData[i][14];
-      var whip = pitchingData[i][15];
+      var playerName = String(pitchingData[i][pCols.PLAYER_NAME - 1]).trim();
+      var team = String(pitchingData[i][pCols.TEAM - 1]).trim();
+      var gp = pitchingData[i][pCols.GP - 1];
+      var wins = pitchingData[i][pCols.W - 1];
+      var losses = pitchingData[i][pCols.L - 1];
+      var saves = pitchingData[i][pCols.SV - 1];
+      var era = pitchingData[i][pCols.ERA - 1];
+      var ip = pitchingData[i][pCols.IP - 1];
+      var baa = pitchingData[i][pCols.BAA - 1];
+      var whip = pitchingData[i][pCols.WHIP - 1];
       
       if (playerName && typeof gp === 'number' && gp > 0 && teamStats[team]) {
         var teamGP = teamStats[team].gamesPlayed;
@@ -396,13 +398,14 @@ function getLeagueLeaders(hittingSheet, pitchingSheet, fieldingSheet, teamStats)
   var fieldingLastRow = fieldingSheet.getLastRow();
   if (fieldingLastRow > 1) {
     var fieldingData = fieldingSheet.getRange(2, 1, fieldingLastRow - 1, 6).getValues();
+    var fCols = CONFIG.STATS_COLUMN_MAPS.FIELDING_COLUMNS;
     for (var i = 0; i < fieldingData.length; i++) {
-      var playerName = String(fieldingData[i][0]).trim();
-      var team = String(fieldingData[i][1]).trim();
-      var gp = fieldingData[i][2];
-      var nicePlays = fieldingData[i][3];
-      var errors = fieldingData[i][4];
-      var stolenBases = fieldingData[i][5];
+      var playerName = String(fieldingData[i][fCols.PLAYER_NAME - 1]).trim();
+      var team = String(fieldingData[i][fCols.TEAM - 1]).trim();
+      var gp = fieldingData[i][fCols.GP - 1];
+      var nicePlays = fieldingData[i][fCols.NP - 1];
+      var errors = fieldingData[i][fCols.E - 1];
+      var stolenBases = fieldingData[i][fCols.SB - 1];
       
       if (playerName && typeof gp === 'number' && gp > 0) {
         if (typeof nicePlays === 'number' && !isNaN(nicePlays) && nicePlays > 0) {
@@ -607,4 +610,96 @@ function formatIP(value) {
 
 function formatDecimal(value) {
   return value.toFixed(2);
+}
+
+// ===== ADDITIONAL UTILITY FUNCTIONS (V3 - consolidated from RetentionHelpers) =====
+
+/**
+ * Calculate percentile rank for a value in a sorted array
+ * @param {number} value - The value to rank
+ * @param {Array<number>} sortedArray - Sorted array of values
+ * @return {number} Percentile rank (0-100)
+ */
+function calculatePercentile(value, sortedArray) {
+  if (!sortedArray || sortedArray.length === 0) return 50;
+
+  if (value === null || value === undefined || typeof value !== 'number' || isNaN(value)) {
+    return 0;
+  }
+
+  var n = sortedArray.length;
+  var countBelow = 0;
+  var countEqual = 0;
+
+  for (var i = 0; i < n; i++) {
+    if (sortedArray[i] < value) {
+      countBelow++;
+    } else if (sortedArray[i] === value) {
+      countEqual++;
+    }
+  }
+
+  var percentile = ((countBelow + 0.5 * countEqual) / n) * 100;
+  return percentile;
+}
+
+/**
+ * Find player index in array by name and team
+ * @param {Array} players - Array of player objects
+ * @param {string} name - Player name
+ * @param {string} team - Team name
+ * @return {number} Index of player, or -1 if not found
+ */
+function findPlayerIndex(players, name, team) {
+  for (var i = 0; i < players.length; i++) {
+    if (players[i].name === name && players[i].team === team) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Get ordinal suffix for numbers (1st, 2nd, 3rd, etc.)
+ * @param {number} num - The number to get suffix for
+ * @return {string} Ordinal suffix (st, nd, rd, th)
+ */
+function getOrdinalSuffix(num) {
+  var j = num % 10;
+  var k = num % 100;
+
+  if (j === 1 && k !== 11) {
+    return "st";
+  }
+  if (j === 2 && k !== 12) {
+    return "nd";
+  }
+  if (j === 3 && k !== 13) {
+    return "rd";
+  }
+  return "th";
+}
+
+/**
+ * Find a section in a sheet by searching for header text in column A
+ * @param {Sheet} sheet - The sheet to search
+ * @param {string} searchText - The text to search for
+ * @return {number} Row number where section starts, or -1 if not found
+ */
+function findSheetSection(sheet, searchText) {
+  try {
+    var lastRow = sheet.getLastRow();
+    var searchRange = sheet.getRange(1, 1, lastRow, 1).getValues();
+
+    for (var i = 0; i < searchRange.length; i++) {
+      var cellValue = String(searchRange[i][0]);
+      if (cellValue.indexOf(searchText) >= 0) {
+        return i + 1;
+      }
+    }
+  } catch (e) {
+    logError("Find Section", "Error finding section: " + e.toString(), searchText);
+  }
+
+  return -1;
 }

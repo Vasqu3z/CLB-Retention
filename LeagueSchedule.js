@@ -35,13 +35,30 @@ function updateLeagueSchedule() {
 function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek, boxScoreSpreadsheetUrl) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var scheduleSheet = ss.getSheetByName(CONFIG.LEAGUE_SCHEDULE_SHEET);
-  
+
   if (!scheduleSheet) {
     scheduleSheet = ss.insertSheet(CONFIG.LEAGUE_SCHEDULE_SHEET);
   }
-  
-  scheduleSheet.clear();
-  
+
+  // V3 UPDATE: Targeted Clear - preserve user formatting outside managed columns
+  // Clear only the data-managed zones instead of entire sheet
+  var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_SCHEDULE;
+  var maxRows = scheduleSheet.getMaxRows();
+
+  // Clear Standings zone (Columns A-H from row 1 to end)
+  if (maxRows > 0) {
+    scheduleSheet.getRange(1, layout.STANDINGS.START_COL, maxRows, layout.STANDINGS.NUM_COLS)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Completed Games zone (Column J from row 1 to end)
+    scheduleSheet.getRange(1, layout.COMPLETED_GAMES.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Scheduled Games zone (Column L from row 1 to end)
+    scheduleSheet.getRange(1, layout.SCHEDULED_GAMES.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+  }
+
   var currentRow = 1;
   
   // STANDINGS HEADER (left) and SCHEDULED GAMES HEADER (right)

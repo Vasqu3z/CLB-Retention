@@ -1,50 +1,6 @@
 // ===== GAME PROCESSOR MODULE =====
 // Master game sheet processor - reads all games once and returns all needed data
-
-// ===== Read entire game sheet once =====
-function readCompleteGameData(sheet) {
-  // Read the entire data range in ONE operation (B3:R50)
-  // This covers all game data we need
-  var fullData = sheet.getRange(3, 2, 48, 17).getValues(); // B3:R50
-  
-  return {
-    // Team info (B3:F4) - rows 0-1
-    awayTeam: String(fullData[0][0]).trim(),  // B3
-    homeTeam: String(fullData[1][0]).trim(),  // B4
-    awayRuns: fullData[0][4],                  // F3
-    homeRuns: fullData[1][4],                  // F4
-    
-    // Pitching/Fielding data (B6:R27) - rows 3-24
-    pitchFieldData: fullData.slice(3, 25).map(function(row) {
-      return [
-        String(row[0]).trim(),  // Player name (B)
-        row[7],  row[8],  row[9],  row[10], row[11], row[12], row[13], // Pitching (I-O)
-        row[14], row[15], row[16]  // Fielding (P-R)
-      ];
-    }),
-    
-    // Hitting data (B29:K50) - rows 26-47
-    hittingData: fullData.slice(26, 48).map(function(row) {
-      return [
-        String(row[0]).trim(),  // Player name (B)
-        row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9] // Stats (C-K)
-      ];
-    }),
-    
-    // Team totals (C39:K39 and C50:K50) - rows 36 and 47
-    awayTeamTotals: fullData[36].slice(1, 10),  // C39:K39
-    homeTeamTotals: fullData[47].slice(1, 10),  // C50:K50
-    
-    // Team pitching/fielding (I16:R16 and I27:R27) - rows 13 and 24
-    awayTeamPitchField: fullData[13].slice(7, 17),  // I16:R16
-    homeTeamPitchField: fullData[24].slice(7, 17),  // I27:R27
-    
-    // W/L/S data (M48:R50) - rows 45-47
-    winningPitcher: String(fullData[46][12]).trim(),  // N49
-    losingPitcher: String(fullData[47][15]).trim(),   // Q50
-    savePitcher: String(fullData[46][15]).trim()      // Q49
-  };
-}
+// V3 UPDATE: 100% config-driven I/O, no hardcoded ranges
 
 // ===== MASTER FUNCTION: Process all game sheets once =====
 function processAllGameSheetsOnce() {
@@ -73,18 +29,73 @@ function processAllGameSheetsOnce() {
   for (var g = 0; g < gameSheets.length; g++) {
     var sheet = gameSheets[g];
     var sheetName = sheet.getName();
-    
+
     try {
-      // Read all game data in ONE operation
-      var gameData = readCompleteGameData(sheet);
-      
+      // V3 UPDATE: Config-driven I/O - read all game data using CONFIG variables
+
+      // Read team info (B3:F4)
+      var teamInfoRange = sheet.getRange(CONFIG.BOX_SCORE_TEAM_INFO).getValues();
+      var awayTeam = String(teamInfoRange[0][0]).trim();
+      var homeTeam = String(teamInfoRange[1][0]).trim();
+      var awayRuns = teamInfoRange[0][4];
+      var homeRuns = teamInfoRange[1][4];
+
+      // Read hitting data (skip header row by using +1 offset)
+      var hittingStartRow = CONFIG.BOX_SCORE_HITTING_START_ROW + 1;
+      var hittingData = sheet.getRange(
+        hittingStartRow,
+        CONFIG.BOX_SCORE_HITTING_START_COL,
+        CONFIG.BOX_SCORE_HITTING_NUM_ROWS - 1,
+        CONFIG.BOX_SCORE_HITTING_NUM_COLS
+      ).getValues();
+
+      // Read pitching/fielding data (skip header row by using +1 offset)
+      var pitchFieldStartRow = CONFIG.BOX_SCORE_PITCHING_FIELDING_START_ROW + 1;
+      var pitchFieldData = sheet.getRange(
+        pitchFieldStartRow,
+        CONFIG.BOX_SCORE_PITCHING_FIELDING_START_COL,
+        CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_ROWS - 1,
+        CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_COLS
+      ).getValues();
+
+      // Read team totals
+      var team1Totals = sheet.getRange(CONFIG.BOX_SCORE_TEAM1_TOTALS).getValues()[0];
+      var team2Totals = sheet.getRange(CONFIG.BOX_SCORE_TEAM2_TOTALS).getValues()[0];
+
+      // Read team pitching/fielding totals
+      var team1PitchField = sheet.getRange(CONFIG.BOX_SCORE_TEAM1_PITCHING).getValues()[0];
+      var team2PitchField = sheet.getRange(CONFIG.BOX_SCORE_TEAM2_PITCHING).getValues()[0];
+
+      // Read W/L/S data
+      var wlsData = sheet.getRange(CONFIG.BOX_SCORE_WLS_DATA).getValues();
+      var winningPitcher = String(wlsData[1][1]).trim();
+      var losingPitcher = String(wlsData[2][4]).trim();
+      var savePitcher = String(wlsData[1][4]).trim();
+
+      // Create gameData object
+      var gameData = {
+        awayTeam: awayTeam,
+        homeTeam: homeTeam,
+        awayRuns: awayRuns,
+        homeRuns: homeRuns,
+        hittingData: hittingData,
+        pitchFieldData: pitchFieldData,
+        awayTeamTotals: team2Totals,
+        homeTeamTotals: team1Totals,
+        awayTeamPitchField: team2PitchField,
+        homeTeamPitchField: team1PitchField,
+        winningPitcher: winningPitcher,
+        losingPitcher: losingPitcher,
+        savePitcher: savePitcher
+      };
+
       // Extract week number
       var weekMatch = sheetName.match(/W(\d+)/);
       var weekNum = weekMatch ? parseInt(weekMatch[1]) : 999;
       var weekKey = "Week " + weekNum;
-      
+
       if (!result.gamesByWeek[weekKey]) result.gamesByWeek[weekKey] = [];
-      
+
       // Determine winner/loser
       var team1 = gameData.homeTeam;
       var team2 = gameData.awayTeam;
@@ -255,12 +266,14 @@ function initializeScheduleData(ss, boxScoreSS) {
 
 function processPlayerStatsFromData(gameData, playerStats) {
   var playersInThisGame = {};
-  
+
   // Process hitting stats
+  // Data format: [PlayerName, AB, H, HR, RBI, BB, K, ROB, DP, TB]
   for (var i = 0; i < gameData.hittingData.length; i++) {
-    var playerName = gameData.hittingData[i][0];
+    var playerName = String(gameData.hittingData[i][0]).trim();
     if (playerName && playerStats[playerName]) {
       playersInThisGame[playerName] = true;
+      // Hitting stats are at indices 1-9 (9 stats: AB, H, HR, RBI, BB, K, ROB, DP, TB)
       for (var s = 0; s < 9; s++) {
         var val = gameData.hittingData[i][s + 1];
         if (typeof val === 'number' && !isNaN(val)) {
@@ -269,36 +282,39 @@ function processPlayerStatsFromData(gameData, playerStats) {
       }
     }
   }
-  
+
   // Process pitching and fielding stats
+  // V3 UPDATE: Data format: [PlayerName, ...unused (cols C-H)..., IP, BF, H, HR, R, BB, K, NP, E, SB]
+  // Pitching at indices 7-13 (7 stats: IP, BF, H, HR, R, BB, K)
+  // Fielding at indices 14-16 (3 stats: NP, E, SB)
   for (var i = 0; i < gameData.pitchFieldData.length; i++) {
-    var playerName = gameData.pitchFieldData[i][0];
+    var playerName = String(gameData.pitchFieldData[i][0]).trim();
     if (playerName && playerStats[playerName]) {
       playersInThisGame[playerName] = true;
-      
-      // Pitching stats (indices 1-7)
+
+      // Pitching stats (columns I-O: IP, BF, H, HR, R, BB, K)
       for (var s = 0; s < 7; s++) {
-        var val = gameData.pitchFieldData[i][s + 1];
+        var val = gameData.pitchFieldData[i][s + 7];
         if (typeof val === 'number' && !isNaN(val)) {
           playerStats[playerName].pitching[s] += val;
         }
       }
-      
-      // Fielding stats (indices 8-10)
+
+      // Fielding stats (columns P-R: NP, E, SB)
       for (var s = 0; s < 3; s++) {
-        var val = gameData.pitchFieldData[i][s + 8];
+        var val = gameData.pitchFieldData[i][s + 14];
         if (typeof val === 'number' && !isNaN(val)) {
           playerStats[playerName].fielding[s] += val;
         }
       }
-      
+
       // Win/Loss/Save tracking
       if (playerName === gameData.winningPitcher) playerStats[playerName].wins++;
       if (playerName === gameData.losingPitcher) playerStats[playerName].losses++;
       if (playerName === gameData.savePitcher) playerStats[playerName].saves++;
     }
   }
-  
+
   // Count games played
   for (var playerName in playersInThisGame) {
     playerStats[playerName].gamesPlayed++;

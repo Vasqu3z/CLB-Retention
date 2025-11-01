@@ -20,9 +20,30 @@ function updateLeagueHubFromCache(teamStatsWithH2H, gamesByWeek, scheduleData, b
   if (!standingsSheet) {
     standingsSheet = ss.insertSheet(CONFIG.LEAGUE_HUB_SHEET);
   }
-  
-  standingsSheet.clear();
-  
+
+  // V3 UPDATE: Targeted Clear - preserve user formatting outside managed columns
+  // Clear only the data-managed zones instead of entire sheet
+  var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
+  var maxRows = standingsSheet.getMaxRows();
+
+  // Clear Standings zone (Columns A-H from row 1 to end)
+  if (maxRows > 0) {
+    standingsSheet.getRange(1, layout.STANDINGS.START_COL, maxRows, layout.STANDINGS.NUM_COLS)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Batting Leaders zone (Column J from row 1 to end)
+    standingsSheet.getRange(1, layout.LEADERS_BATTING.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Pitching Leaders zone (Column L from row 1 to end)
+    standingsSheet.getRange(1, layout.LEADERS_PITCHING.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Fielding Leaders zone (Column N from row 1 to end)
+    standingsSheet.getRange(1, layout.LEADERS_FIELDING.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+  }
+
   var currentRow = 1;
   
   // Sort teams by standings

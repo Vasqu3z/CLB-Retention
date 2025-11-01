@@ -586,3 +586,90 @@ function applyDraftExpectations(offensivePercentile, draftValue) {
 
   return 0;
 }
+
+// ===== V3 WRAPPER FUNCTIONS =====
+// These wrappers convert teamStats (from cache) into the format expected by the original functions
+
+/**
+ * V3 HELPER: Build standings data from teamStats object
+ * Returns object mapping team name to standing (1-8)
+ */
+function getStandingsFromTeamStats(teamStats) {
+  var standings = {};
+
+  // Sort teams by standings (using compareTeamsByStandings function from LeagueUtility.js)
+  var teamOrder = [];
+  for (var teamName in teamStats) {
+    if (teamStats[teamName].gamesPlayed > 0) {
+      teamOrder.push(teamName);
+    }
+  }
+
+  teamOrder.sort(function(teamA, teamB) {
+    return compareTeamsByStandings(teamA, teamB, teamStats);
+  });
+
+  // Assign standings (1-8)
+  for (var i = 0; i < teamOrder.length; i++) {
+    standings[teamOrder[i]] = i + 1;
+  }
+
+  return standings;
+}
+
+/**
+ * V3 HELPER: Convert teamStats to teamData format
+ * Extracts gamesPlayed, wins, losses, winPct
+ */
+function convertTeamStatsToTeamData(teamStats) {
+  var teamData = {};
+
+  for (var teamName in teamStats) {
+    var stats = teamStats[teamName];
+    teamData[teamName] = {
+      gamesPlayed: stats.gamesPlayed || 0,
+      wins: stats.wins || 0,
+      losses: stats.losses || 0,
+      winPct: stats.gamesPlayed > 0 ? (stats.wins / stats.gamesPlayed) : 0
+    };
+  }
+
+  return teamData;
+}
+
+/**
+ * V3 WRAPPER: calculateTeamSuccess using cached teamStats
+ */
+function calculateTeamSuccessV3(player, teamStats) {
+  // Convert teamStats to the formats expected by the original function
+  var teamData = convertTeamStatsToTeamData(teamStats);
+  var standingsData = getStandingsFromTeamStats(teamStats);
+
+  // Read postseason data (still from sheet - not cached)
+  var postseasonData = getPostseasonData();
+
+  // Call original function
+  return calculateTeamSuccess(player, teamData, standingsData, postseasonData);
+}
+
+/**
+ * V3 WRAPPER: calculatePlayTime using cached teamStats
+ */
+function calculatePlayTimeV3(player, teamStats, lineupData) {
+  // Convert teamStats to teamData format
+  var teamData = convertTeamStatsToTeamData(teamStats);
+
+  // Call original function
+  return calculatePlayTime(player, teamData, lineupData);
+}
+
+/**
+ * V3 WRAPPER: calculatePerformance using cached teamStats
+ */
+function calculatePerformanceV3(player, leagueStats, teamStats, draftValue) {
+  // Build standings data from teamStats
+  var standingsData = getStandingsFromTeamStats(teamStats);
+
+  // Call original function
+  return calculatePerformance(player, leagueStats, standingsData, draftValue);
+}

@@ -17,7 +17,7 @@ function onOpen() {
           .addItem('⚠️ Detect Missing Transactions', 'detectMissingTransactions'))
       // Retention (collapsed)
       .addSubMenu(ui.createMenu('⭐ Retention')
-          .addItem('🚀 Calculate Final Grades v3', 'calculateFinalRetentionGrades')
+          .addItem('🏆 Calculate Final Retention Grades', 'calculateFinalRetentionGrades')
           .addSeparator()
           .addItem('Calculate Retention Grades (Legacy)', 'calculateRetentionGrades')
           .addItem('Refresh Formulas', 'refreshRetentionFormulas')

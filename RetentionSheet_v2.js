@@ -232,14 +232,15 @@ function applyDataFormatting(sheet, startRow, numRows) {
   sheet.getRange(startRow, cols.COL_PERF_MOD, numRows, 1).setValues(perfModToWrite);
   sheet.getRange(startRow, cols.COL_CHEMISTRY, numRows, 1).setValues(chemToWrite);
 
-  // Add VLOOKUP formulas for Direction column
+  // V3 UPDATE: Batch VLOOKUP formulas for Direction column (eliminates N+1 loop)
+  var directionFormulas = [];
   for (var i = 0; i < numRows; i++) {
     var row = startRow + i;
     // VLOOKUP to Team Direction table (will be created at bottom)
     // Format: =IFERROR(VLOOKUP(B{row},TeamDirectionRange,2,FALSE),0)
-    // We'll set this after creating the Team Direction table
-    sheet.getRange(row, cols.COL_DIRECTION).setFormula("=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))");
+    directionFormulas.push(["=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))"]);
   }
+  sheet.getRange(startRow, cols.COL_DIRECTION, numRows, 1).setFormulas(directionFormulas);
 
   // Apply colors to manual input columns (batch operations)
   sheet.getRange(startRow, cols.COL_DRAFT_VALUE, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
@@ -451,14 +452,22 @@ function applyFinalGradeFormatting(sheet, startRow, numRows) {
   var finalGradeCol = RETENTION_CONFIG.OUTPUT.COL_FINAL_GRADE;
   var finalGrades = sheet.getRange(startRow, finalGradeCol, numRows, 1).getValues();
 
+  // V3 UPDATE: Batch background colors (eliminates N+1 loop)
+  var backgroundColors = [];
+
   for (var i = 0; i < finalGrades.length; i++) {
     var finalGrade = finalGrades[i][0];
 
     if (typeof finalGrade === 'number' && !isNaN(finalGrade)) {
       var color = RETENTION_CONFIG.getGradeColor(finalGrade);
-      sheet.getRange(startRow + i, finalGradeCol).setBackground(color);
+      backgroundColors.push([color]);
+    } else {
+      backgroundColors.push(["#ffffff"]); // Default white
     }
   }
+
+  // V3 UPDATE: Apply all background colors in one batched operation
+  sheet.getRange(startRow, finalGradeCol, numRows, 1).setBackgrounds(backgroundColors);
 }
 
 /**

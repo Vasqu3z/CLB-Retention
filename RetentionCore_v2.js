@@ -42,10 +42,36 @@ function calculateRetentionGrades(loadedGameData) {
     Logger.log("=== RETENTION GRADES V3 CALCULATION START ===");
 
     Logger.log("Step 1/3: Loading data from cache...");
+
+    // V3 VALIDATION: Check if cached data exists and has correct structure
+    if (!loadedGameData) {
+      throw new Error("No cached data provided. Please run 'Update All' first to cache season data.");
+    }
+
+    if (!loadedGameData.playerStats) {
+      throw new Error("Cached data missing playerStats. Please run 'Update All' to rebuild cache.");
+    }
+
+    if (!loadedGameData.teamStatsWithH2H) {
+      throw new Error("Cached data missing teamStatsWithH2H. Please run 'Update All' to rebuild cache.");
+    }
+
     var playerStats = loadedGameData.playerStats; // This is an OBJECT, not an array
     var teamStats = loadedGameData.teamStatsWithH2H; // Contains W, L, Standings
-    Logger.log("Loaded " + Object.keys(playerStats).length + " players from cache");
-    Logger.log("Loaded " + Object.keys(teamStats).length + " teams from cache");
+
+    var playerCount = Object.keys(playerStats).length;
+    var teamCount = Object.keys(teamStats).length;
+
+    Logger.log("Loaded " + playerCount + " players from cache");
+    Logger.log("Loaded " + teamCount + " teams from cache");
+
+    if (playerCount === 0) {
+      throw new Error("No players found in cached data. Please ensure games have been processed and run 'Update All'.");
+    }
+
+    if (teamCount === 0) {
+      throw new Error("No teams found in cached data. Please ensure games have been processed and run 'Update All'.");
+    }
 
     // V3 UPDATE: We still need lineup data and percentiles
     Logger.log("Step 2/3: Loading supporting data...");
@@ -85,6 +111,7 @@ function calculateRetentionGrades(loadedGameData) {
     }
 
     Logger.log("Step 3/3: Calculating retention grades...");
+    Logger.log("Processing " + Object.keys(playerStats).length + " players from cache");
 
     // V3 UPDATE: Calculate grades for each player (loop over playerStats object)
     var retentionGrades = [];
@@ -95,6 +122,16 @@ function calculateRetentionGrades(loadedGameData) {
       if (!playerStats.hasOwnProperty(playerName)) continue;
 
       var stats = playerStats[playerName];
+
+      // V3 DEBUG: Log first player to verify structure
+      if (playerCount === 0) {
+        Logger.log("First player structure check:");
+        Logger.log("  Name: " + playerName);
+        Logger.log("  Team: " + (stats.team || "MISSING"));
+        Logger.log("  Has hitting: " + (!!stats.hitting));
+        Logger.log("  Has pitching: " + (!!stats.pitching));
+        Logger.log("  Has fielding: " + (!!stats.fielding));
+      }
 
       // V3 UPDATE: Reconstruct player object from playerStats
       var player = {
@@ -1046,7 +1083,12 @@ function writePlayerData(sheet, retentionGrades) {
 
   var numRows = retentionGrades.length;
 
-  if (numRows === 0) return;
+  if (numRows === 0) {
+    Logger.log("WARNING: No retention grades to write (0 players)");
+    return;
+  }
+
+  Logger.log("Writing " + numRows + " players to Retention sheet");
 
   // Write auto-calculated columns only (batch operations)
   // V2.1: Write Regular Season, Postseason will be VLOOKUP formula

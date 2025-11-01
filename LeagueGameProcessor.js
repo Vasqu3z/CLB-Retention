@@ -284,15 +284,18 @@ function processPlayerStatsFromData(gameData, playerStats) {
   }
 
   // Process pitching and fielding stats
-  // V3 UPDATE: Data format: [PlayerName, ...unused (cols C-H)..., IP, BF, H, HR, R, BB, K, NP, E, SB]
-  // Pitching at indices 7-13 (7 stats: IP, BF, H, HR, R, BB, K)
-  // Fielding at indices 14-16 (3 stats: NP, E, SB)
+  // Box score columns: B=Name, C-H=unused, I-O=Pitching (7 cols), P-R=Fielding (3 cols)
+  // After reading from box score starting at col B with 17 cols total:
+  //   Index 0 = PlayerName (col B)
+  //   Indices 1-6 = Unused cols (C-H)
+  //   Indices 7-13 = Pitching stats (cols I-O): IP, BF, H, HR, R, BB, K
+  //   Indices 14-16 = Fielding stats (cols P-R): NP, E, SB
   for (var i = 0; i < gameData.pitchFieldData.length; i++) {
     var playerName = String(gameData.pitchFieldData[i][0]).trim();
     if (playerName && playerStats[playerName]) {
       playersInThisGame[playerName] = true;
 
-      // Pitching stats (columns I-O: IP, BF, H, HR, R, BB, K)
+      // Pitching stats start at column I (index 7 in our 17-column read)
       for (var s = 0; s < 7; s++) {
         var val = gameData.pitchFieldData[i][s + 7];
         if (typeof val === 'number' && !isNaN(val)) {
@@ -300,7 +303,7 @@ function processPlayerStatsFromData(gameData, playerStats) {
         }
       }
 
-      // Fielding stats (columns P-R: NP, E, SB)
+      // Fielding stats start at column P (index 14 in our 17-column read)
       for (var s = 0; s < 3; s++) {
         var val = gameData.pitchFieldData[i][s + 14];
         if (typeof val === 'number' && !isNaN(val)) {

@@ -312,6 +312,21 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
 
     offensivePercentile = avgPercentile;
 
+    // V3 DEBUG: Log percentile details for troubleshooting
+    if (player.name && player.name.indexOf("King") >= 0) {
+      Logger.log("V3 DEBUG Hitting Percentiles for " + player.name + ":");
+      if (percentiles.length >= 6) {
+        Logger.log("  - AVG: " + player.hitting.avg.toFixed(3) + " = " + percentiles[0].toFixed(1) + "%");
+        Logger.log("  - OBP: " + player.hitting.obp.toFixed(3) + " = " + percentiles[1].toFixed(1) + "%");
+        Logger.log("  - SLG: " + player.hitting.slg.toFixed(3) + " = " + percentiles[2].toFixed(1) + "%");
+        Logger.log("  - OPS: " + player.hitting.ops.toFixed(3) + " = " + percentiles[3].toFixed(1) + "%");
+        Logger.log("  - HR: " + player.hitting.hr + " = " + percentiles[4].toFixed(1) + "%");
+        Logger.log("  - RBI: " + player.hitting.rbi + " = " + percentiles[5].toFixed(1) + "%");
+      }
+      Logger.log("  - Average: " + avgPercentile.toFixed(1) + "%");
+      Logger.log("  - Pool size: " + (leagueStats.hitting.avg ? leagueStats.hitting.avg.length : 0) + " qualified hitters");
+    }
+
     var offConfig = config.OFFENSIVE;
     if (avgPercentile >= offConfig.ELITE.threshold) {
       breakdown.offensive = offConfig.ELITE.points;

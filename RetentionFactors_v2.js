@@ -362,6 +362,17 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
       defPercentile = calculatePercentile(netDefense, leagueStats.fielding.netDefense);
     }
 
+    // V3 DEBUG: Log fielding details
+    if (player.name && player.name.indexOf("King") >= 0) {
+      Logger.log("V3 DEBUG Fielding for " + player.name + ":");
+      Logger.log("  - NP: " + np);
+      Logger.log("  - E: " + e);
+      Logger.log("  - GP (fielding): " + player.fielding.gp);
+      Logger.log("  - Net Defense: " + netDefense.toFixed(3));
+      Logger.log("  - Percentile: " + defPercentile.toFixed(1) + "%");
+      Logger.log("  - Pool size: " + leagueStats.fielding.netDefense.length + " qualified fielders");
+    }
+
     var defConfig = config.DEFENSIVE;
     if (defPercentile >= defConfig.GOLD_GLOVE.threshold) {
       breakdown.defensive = defConfig.GOLD_GLOVE.points;

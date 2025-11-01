@@ -14,6 +14,7 @@ var CONFIG = {
   LEAGUE_SCHEDULE_SHEET: "Schedule",
   SEASON_SCHEDULE_SHEET: "Season Schedule",
   TRANSACTION_LOG_SHEET: "Transaction Log",
+  RETENTION_GRADES_SHEET: "Retention Grades",
 
   // External spreadsheet containing box scores (game sheets)
   BOX_SCORE_SPREADSHEET_ID: "17x5VoZxGV88RYAiHEcq0M-rxSyZ0fp66OktmJk2AaEU",

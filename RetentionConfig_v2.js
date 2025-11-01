@@ -68,28 +68,15 @@ var RETENTION_CONFIG = {
     };
   },
 
-  // ===== BOX SCORE INTEGRATION =====
-  // For reading lineup positions from box score sheets
-  // REFERENCES CONFIG.BOX_SCORE_* values - DO NOT HARDCODE
-  BOX_SCORE: {
-    // Hitting data structure:
-    // - CONFIG.BOX_SCORE_HITTING_START_ROW = 29 (header row)
-    // - Rows 30-38: Away team lineup (9 batters)
-    // - Row 39: Away team totals (skip)
-    // - Row 40: Header for home team (skip)
-    // - Rows 41-49: Home team lineup (9 batters)
-    // - Row 50: Home team totals (skip)
-
-    // Away team lineup
-    AWAY_LINEUP_START_OFFSET: 1,        // Start 1 row after header (row 30)
-    AWAY_LINEUP_PLAYER_COUNT: 9,        // 9 batters in lineup
-
-    // Home team lineup
-    HOME_LINEUP_START_OFFSET: 12,       // Start 12 rows after header (row 41 = 29 + 12)
-    HOME_LINEUP_PLAYER_COUNT: 9,        // 9 batters in lineup
-
-    // Player names are in column B (from CONFIG.BOX_SCORE_HITTING_START_COL)
-    // Uses CONFIG.BOX_SCORE_HITTING_START_COL directly in code
+  // V3 UPDATE: Box score lineup positions moved to CONFIG (LeagueConfig.js)
+  // Reference centralized config instead of duplicating
+  get BOX_SCORE() {
+    return {
+      AWAY_LINEUP_START_OFFSET: CONFIG.BOX_SCORE_AWAY_LINEUP_START_OFFSET,
+      AWAY_LINEUP_PLAYER_COUNT: CONFIG.BOX_SCORE_AWAY_LINEUP_PLAYER_COUNT,
+      HOME_LINEUP_START_OFFSET: CONFIG.BOX_SCORE_HOME_LINEUP_START_OFFSET,
+      HOME_LINEUP_PLAYER_COUNT: CONFIG.BOX_SCORE_HOME_LINEUP_PLAYER_COUNT
+    };
   },
 
   // ===== POSTSEASON DATA (MANUAL INPUT) =====
@@ -386,6 +373,19 @@ var RETENTION_CONFIG = {
     TYPICAL_ROSTER_SIZE: 11,    // Players per team
     EXPECTED_TOTAL_PLAYERS: 88, // 8 teams * 11 players (may vary 85-100)
     PLAYOFF_TEAMS: 4            // Half the league makes playoffs
+  },
+
+  // ===== PLAYER FILTERING =====
+  PLAYER_FILTERING: {
+    // V3 UPDATE: Control whether to include players without teams
+    // Set to false to match v2 behavior (exclude teamless players)
+    // Set to true to include all players regardless of team assignment
+    INCLUDE_PLAYERS_WITHOUT_TEAMS: false,
+
+    // Why this matters:
+    // - Including teamless players affects percentile calculations for ALL players
+    // - Teamless players typically can't be evaluated fairly (no team success, no lineup data)
+    // - Default (false) matches original v2 behavior
   },
 
   // ===== OUTPUT FORMATTING V2 =====

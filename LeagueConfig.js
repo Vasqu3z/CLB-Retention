@@ -65,6 +65,19 @@ var CONFIG = {
   BOX_SCORE_TEAM1_PITCHING: "I16:R16",
   BOX_SCORE_TEAM2_PITCHING: "I27:R27",
 
+  // Box score lineup positions (for Retention and other systems)
+  // Hitting data structure:
+  // - Row 29: Header row
+  // - Rows 30-38: Away team lineup (9 batters)
+  // - Row 39: Away team totals (skip)
+  // - Row 40: Header for home team (skip)
+  // - Rows 41-49: Home team lineup (9 batters)
+  // - Row 50: Home team totals (skip)
+  BOX_SCORE_AWAY_LINEUP_START_OFFSET: 1,        // Start 1 row after header (row 30)
+  BOX_SCORE_AWAY_LINEUP_PLAYER_COUNT: 9,        // 9 batters in lineup
+  BOX_SCORE_HOME_LINEUP_START_OFFSET: 12,       // Start 12 rows after header (row 41 = 29 + 12)
+  BOX_SCORE_HOME_LINEUP_PLAYER_COUNT: 9,        // 9 batters in lineup
+
   // Game sheet validation settings
   VALIDATE_TEAM_NAMES: true,
   VALIDATE_RUNS: true,

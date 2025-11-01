@@ -123,6 +123,13 @@ function calculateRetentionGrades(loadedGameData) {
 
       var stats = playerStats[playerName];
 
+      // V3 FIX: Filter out players without teams (match v2 behavior)
+      if (!RETENTION_CONFIG.PLAYER_FILTERING.INCLUDE_PLAYERS_WITHOUT_TEAMS) {
+        if (!stats.team || stats.team.trim() === "") {
+          continue;  // Skip players without teams
+        }
+      }
+
       // V3: Cached data already has proper object structure with calculated stats
       var player = {
         name: playerName,
@@ -859,6 +866,13 @@ function calculateLeaguePercentilesFromCache(playerStats, teamStats) {
     if (!playerStats.hasOwnProperty(playerName)) continue;
 
     var stats = playerStats[playerName];
+
+    // V3 FIX: Filter out players without teams from percentile calculations (match v2 behavior)
+    if (!RETENTION_CONFIG.PLAYER_FILTERING.INCLUDE_PLAYERS_WITHOUT_TEAMS) {
+      if (!stats.team || stats.team.trim() === "") {
+        continue;  // Skip players without teams
+      }
+    }
 
     // Hitting stats (if qualified)
     if (stats.hitting && stats.hitting.AB >= minAB) {

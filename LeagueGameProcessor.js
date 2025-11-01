@@ -31,48 +31,53 @@ function processAllGameSheetsOnce() {
     var sheetName = sheet.getName();
 
     try {
-      // V3 UPDATE: Config-driven I/O - read all game data using CONFIG variables
+      // V3 UPDATE: PERFORMANCE OPTIMIZED - Single batch read of entire game sheet
+      // Read B3:R50 once (48 rows × 17 columns = 816 cells)
+      // This replaces 8 separate reads with 1 consolidated read
+      var batchData = sheet.getRange("B3:R50").getValues();
 
-      // Read team info (B3:F4)
-      var teamInfoRange = sheet.getRange(CONFIG.BOX_SCORE_TEAM_INFO).getValues();
-      var awayTeam = String(teamInfoRange[0][0]).trim();
-      var homeTeam = String(teamInfoRange[1][0]).trim();
-      var awayRuns = teamInfoRange[0][4];
-      var homeRuns = teamInfoRange[1][4];
+      // ===== Extract team info from batch (rows 3-4 in sheet = indices 0-1 in batch) =====
+      // Team info is at B3:F4 (columns B-F = indices 0-4)
+      var awayTeam = String(batchData[0][0]).trim();  // B3
+      var homeTeam = String(batchData[1][0]).trim();  // B4
+      var awayRuns = batchData[0][4];                 // F3
+      var homeRuns = batchData[1][4];                 // F4
 
-      // Read hitting data (skip header row by using +1 offset)
-      var hittingStartRow = CONFIG.BOX_SCORE_HITTING_START_ROW + 1;
-      var hittingData = sheet.getRange(
-        hittingStartRow,
-        CONFIG.BOX_SCORE_HITTING_START_COL,
-        CONFIG.BOX_SCORE_HITTING_NUM_ROWS - 1,
-        CONFIG.BOX_SCORE_HITTING_NUM_COLS
-      ).getValues();
+      // ===== Extract hitting data from batch =====
+      // Hitting starts at row 30 (index 27 in batch, since batch starts at row 3)
+      // We need rows 30-50 (21 rows), columns B-K (10 columns, indices 0-9)
+      var hittingStartIndex = CONFIG.BOX_SCORE_HITTING_START_ROW + 1 - 3; // +1 for header skip, -3 for batch offset
+      var hittingData = [];
+      for (var h = 0; h < CONFIG.BOX_SCORE_HITTING_NUM_ROWS - 1; h++) {
+        hittingData.push(batchData[hittingStartIndex + h].slice(0, CONFIG.BOX_SCORE_HITTING_NUM_COLS));
+      }
 
-      // Read pitching/fielding data (skip header row by using +1 offset)
-      var pitchFieldStartRow = CONFIG.BOX_SCORE_PITCHING_FIELDING_START_ROW + 1;
-      var pitchFieldData = sheet.getRange(
-        pitchFieldStartRow,
-        CONFIG.BOX_SCORE_PITCHING_FIELDING_START_COL,
-        CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_ROWS - 1,
-        CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_COLS
-      ).getValues();
+      // ===== Extract pitching/fielding data from batch =====
+      // Pitching/fielding starts at row 7 (index 4 in batch)
+      // We need rows 7-27 (21 rows), columns B-R (17 columns, indices 0-16)
+      var pitchFieldStartIndex = CONFIG.BOX_SCORE_PITCHING_FIELDING_START_ROW + 1 - 3; // +1 for header skip, -3 for batch offset
+      var pitchFieldData = [];
+      for (var p = 0; p < CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_ROWS - 1; p++) {
+        pitchFieldData.push(batchData[pitchFieldStartIndex + p].slice(0, CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_COLS));
+      }
 
-      // Read team totals
-      // Box score layout: Row 39 = Away team, Row 50 = Home team
-      var team1Totals = sheet.getRange(CONFIG.BOX_SCORE_TEAM1_TOTALS).getValues()[0];  // Row 39 = Away
-      var team2Totals = sheet.getRange(CONFIG.BOX_SCORE_TEAM2_TOTALS).getValues()[0];  // Row 50 = Home
+      // ===== Extract team totals from batch =====
+      // Team1 totals (Away) at row 39 (index 36 in batch), columns C-R (indices 1-16)
+      // Team2 totals (Home) at row 50 (index 47 in batch), columns C-R (indices 1-16)
+      var team1Totals = batchData[36].slice(1, 17);  // Row 39 = Away
+      var team2Totals = batchData[47].slice(1, 17);  // Row 50 = Home
 
-      // Read team pitching/fielding totals
-      // Box score layout: Row 16 = Away team, Row 27 = Home team
-      var team1PitchField = sheet.getRange(CONFIG.BOX_SCORE_TEAM1_PITCHING).getValues()[0];  // Row 16 = Away
-      var team2PitchField = sheet.getRange(CONFIG.BOX_SCORE_TEAM2_PITCHING).getValues()[0];  // Row 27 = Home
+      // ===== Extract team pitching/fielding totals from batch =====
+      // Team1 pitching (Away) at row 16 (index 13 in batch), columns I-R (indices 7-16)
+      // Team2 pitching (Home) at row 27 (index 24 in batch), columns I-R (indices 7-16)
+      var team1PitchField = batchData[13].slice(7, 17);  // Row 16 = Away
+      var team2PitchField = batchData[24].slice(7, 17);  // Row 27 = Home
 
-      // Read W/L/S data
-      var wlsData = sheet.getRange(CONFIG.BOX_SCORE_WLS_DATA).getValues();
-      var winningPitcher = String(wlsData[1][1]).trim();
-      var losingPitcher = String(wlsData[2][4]).trim();
-      var savePitcher = String(wlsData[1][4]).trim();
+      // ===== Extract W/L/S data from batch =====
+      // WLS data at rows 48-50 (indices 45-47 in batch), columns M-R (indices 11-16)
+      var winningPitcher = String(batchData[46][12]).trim();  // N49 (index 46, col 12)
+      var losingPitcher = String(batchData[47][15]).trim();   // R50 (index 47, col 15)
+      var savePitcher = String(batchData[46][15]).trim();     // R49 (index 46, col 15)
 
       // Create gameData object
       var gameData = {

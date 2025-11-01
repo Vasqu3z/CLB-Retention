@@ -298,82 +298,8 @@ function updateLeagueHubFromCache(gameData) {
 
   var weeksToShow = Math.min(weekKeys.length, CONFIG.RECENT_SCHEDULE_WEEKS);
 
-  // ===== BUILD ALL RICH TEXT FIRST, THEN APPLY =====
-  var recentResultsData = [];
-  
-  for (var w = 0; w < weeksToShow; w++) {
-    var weekKey = weekKeys[w];
-    var games = gamesByWeek[weekKey];
-    
-    // Week header
-    recentResultsData.push({
-      row: currentRow,
-      type: "header",
-      text: weekKey
-    });
-    currentRow++;
-    
-    // Games
-    for (var g = 0; g < games.length; g++) {
-      var game = games[g];
-      
-      var resultText = game.team1 + ": " + game.runs1 + " || " + game.team2 + ": " + game.runs2;
-      var gameUrl = boxScoreUrl + "#gid=" + game.sheetId;
-      
-      var homeTeamEnd = game.team1.length;
-      var homeScoreEnd = homeTeamEnd + 2 + String(game.runs1).length;
-      var awayTeamStart = resultText.indexOf(game.team2);
-      
-      var homeStyle = SpreadsheetApp.newTextStyle()
-        .setForegroundColor(game.winner === game.team1 ? "#0B6623" : "#8B0000")
-        .setBold(true)
-        .build();
-      
-      var awayStyle = SpreadsheetApp.newTextStyle()
-        .setForegroundColor(game.winner === game.team2 ? "#0B6623" : "#8B0000")
-        .setBold(true)
-        .build();
-      
-      var richTextBuilder = SpreadsheetApp.newRichTextValue()
-        .setText(resultText)
-        .setLinkUrl(gameUrl);
-      
-      richTextBuilder.setTextStyle(0, homeScoreEnd, homeStyle);
-      richTextBuilder.setTextStyle(awayTeamStart, resultText.length, awayStyle);
-      
-      var richText = richTextBuilder.build();
-      
-      recentResultsData.push({
-        row: currentRow,
-        type: "game",
-        richText: richText,
-        alternating: g % 2 === 1
-      });
-      
-      currentRow++;
-    }
-    currentRow++;
-  }
-  
-  // ===== WRITE ALL RECENT RESULTS =====
-  for (var i = 0; i < recentResultsData.length; i++) {
-    var item = recentResultsData[i];
-    var gameRange = standingsSheet.getRange(item.row, 1, 1, 8);
-    gameRange.merge().setVerticalAlignment("middle");
-    
-    if (item.type === "header") {
-      gameRange.setValue(item.text)
-        .setFontWeight("bold")
-        .setBackground("#e8e8e8")
-        .setHorizontalAlignment("left")
-        .setBorder(false, false, true, false, false, false, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-    } else {
-      gameRange.setRichTextValue(item.richText);
-      if (item.alternating) {
-        gameRange.setBackground("#f3f3f3");
-      }
-    }
-  }
+  // V3 UPDATE: 3-Pass Batch System for Rich Text - eliminates N+1 loops
+  buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, currentRow, boxScoreUrl);
   
   // ===== SET COLUMN WIDTHS =====
   standingsSheet.setColumnWidth(1, CONFIG.LEAGUE_HUB_RANK_WIDTH);
@@ -390,6 +316,89 @@ function updateLeagueHubFromCache(gameData) {
   
   logInfo("Step 4", "Updated " + CONFIG.LEAGUE_HUB_SHEET);
   SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.LEAGUE_HUB_SHEET + " updated!", "Step 4 Complete", 3);
+}
+
+// ===== V3: 3-Pass Batch System for Recent Results =====
+// Eliminates N+1 Rich Text loops by batching all operations
+function buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, startRow, boxScoreUrl) {
+  // PASS 1: Build all data structures
+  var rowData = [];
+  var currentRow = startRow;
+
+  for (var w = 0; w < weeksToShow; w++) {
+    var weekKey = weekKeys[w];
+    var games = gamesByWeek[weekKey];
+
+    // Week header
+    rowData.push({
+      row: currentRow,
+      type: "header",
+      text: weekKey
+    });
+    currentRow++;
+
+    // Games
+    for (var g = 0; g < games.length; g++) {
+      var game = games[g];
+
+      var resultText = game.team1 + ": " + game.runs1 + " || " + game.team2 + ": " + game.runs2;
+      var gameUrl = boxScoreUrl + "#gid=" + game.sheetId;
+
+      var homeTeamEnd = game.team1.length;
+      var homeScoreEnd = homeTeamEnd + 2 + String(game.runs1).length;
+      var awayTeamStart = resultText.indexOf(game.team2);
+
+      var homeStyle = SpreadsheetApp.newTextStyle()
+        .setForegroundColor(game.winner === game.team1 ? "#0B6623" : "#8B0000")
+        .setBold(true)
+        .build();
+
+      var awayStyle = SpreadsheetApp.newTextStyle()
+        .setForegroundColor(game.winner === game.team2 ? "#0B6623" : "#8B0000")
+        .setBold(true)
+        .build();
+
+      var richTextBuilder = SpreadsheetApp.newRichTextValue()
+        .setText(resultText)
+        .setLinkUrl(gameUrl);
+
+      richTextBuilder.setTextStyle(0, homeScoreEnd, homeStyle);
+      richTextBuilder.setTextStyle(awayTeamStart, resultText.length, awayStyle);
+
+      rowData.push({
+        row: currentRow,
+        type: "game",
+        richText: richTextBuilder.build(),
+        alternating: g % 2 === 1
+      });
+
+      currentRow++;
+    }
+    currentRow++;
+  }
+
+  // PASS 2: Batch write all data and formatting
+  // First, merge all cells and set vertical alignment in one pass
+  for (var i = 0; i < rowData.length; i++) {
+    var item = rowData[i];
+    var gameRange = standingsSheet.getRange(item.row, 1, 1, 8);
+    gameRange.merge().setVerticalAlignment("middle");
+
+    if (item.type === "header") {
+      // Headers: plain text with formatting
+      gameRange.setValue(item.text)
+        .setFontWeight("bold")
+        .setBackground("#e8e8e8")
+        .setHorizontalAlignment("left")
+        .setBorder(false, false, true, false, false, false, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+    } else {
+      // Games: rich text
+      gameRange.setRichTextValue(item.richText);
+      if (item.alternating) {
+        gameRange.setBackground("#f3f3f3");
+      }
+    }
+  }
 }
 
 // ===== OLD: Legacy function for manual execution (calls game processor) =====

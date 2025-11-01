@@ -2,18 +2,16 @@
 // Step 4: Update standings, league leaders, and recent results
 
 // ===== Update from cached data (called by updateAll) =====
-function updateLeagueHubFromCache(teamStatsWithH2H, gamesByWeek, scheduleData, boxScoreUrl) {
+// V3 UPDATE: Now accepts full gameData object for in-memory performance
+function updateLeagueHubFromCache(gameData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var hittingStatsSheet = ss.getSheetByName(CONFIG.HITTING_STATS_SHEET);
-  var pitchingStatsSheet = ss.getSheetByName(CONFIG.PITCHING_STATS_SHEET);
-  var fieldingStatsSheet = ss.getSheetByName(CONFIG.FIELDING_STATS_SHEET);
-  
-  if (!hittingStatsSheet || !pitchingStatsSheet || !fieldingStatsSheet) {
-    logError("Step 4", "Required stats sheets not found", "Missing one or more sheets");
-    SpreadsheetApp.getUi().alert("Required stats sheets not found!");
-    return;
-  }
-  
+
+  // V3 UPDATE: Extract variables from gameData object
+  var teamStatsWithH2H = gameData.teamStatsWithH2H;
+  var gamesByWeek = gameData.gamesByWeek;
+  var scheduleData = gameData.scheduleData;
+  var boxScoreUrl = gameData.boxScoreUrl;
+
   logInfo("Step 4", "Building League Hub from cached data");
   
   var standingsSheet = ss.getSheetByName(CONFIG.LEAGUE_HUB_SHEET);
@@ -57,8 +55,9 @@ function updateLeagueHubFromCache(teamStatsWithH2H, gamesByWeek, scheduleData, b
   teamOrder.sort(function(teamA, teamB) {
     return compareTeamsByStandings(teamA, teamB, teamStatsWithH2H);
   });
-  
-  var leagueLeaders = getLeagueLeaders(hittingStatsSheet, pitchingStatsSheet, fieldingStatsSheet, teamStatsWithH2H);
+
+  // V3 UPDATE: Pass in-memory playerStats instead of sheet references
+  var leagueLeaders = getLeagueLeaders(gameData.playerStats, teamStatsWithH2H);
   
   // ===== HEADERS =====
   standingsSheet.getRange(currentRow, 1, 1, 8).merge()
@@ -399,7 +398,8 @@ function updateLeagueHub() {
   // It's kept for backwards compatibility and manual menu execution
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
-    updateLeagueHubFromCache(gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.scheduleData, gameData.boxScoreUrl);
+    // V3 UPDATE: Pass full gameData object
+    updateLeagueHubFromCache(gameData);
   }
 }
 

@@ -301,123 +301,133 @@ function compareTeamsByStandings(teamA, teamB, teamStats) {
 
 // ===== LEAGUE LEADERS & FORMATTING =====
 
-function getLeagueLeaders(hittingSheet, pitchingSheet, fieldingSheet, teamStats) {
+// V3 UPDATE: Refactored to use in-memory playerStats instead of reading sheets
+function getLeagueLeaders(playerStats, teamStats) {
   var leaders = {
     batting: { obp: [], hits: [], hr: [], rbi: [], slg: [], ops: [] },
     pitching: { ip: [], wins: [], losses: [], saves: [], era: [], whip: [], baa: [] },
     fielding: { nicePlays: [], errors: [], stolenBases: [] }
   };
-  
-  var hittingLastRow = hittingSheet.getLastRow();
-  if (hittingLastRow > 1) {
-    var hittingData = hittingSheet.getRange(2, 1, hittingLastRow - 1, 16).getValues();
-    var hCols = CONFIG.STATS_COLUMN_MAPS.HITTING_COLUMNS;
-    for (var i = 0; i < hittingData.length; i++) {
-      var playerName = String(hittingData[i][hCols.PLAYER_NAME - 1]).trim();
-      var team = String(hittingData[i][hCols.TEAM - 1]).trim();
-      var gp = hittingData[i][hCols.GP - 1];
-      var ab = hittingData[i][hCols.AB - 1];
-      var hits = hittingData[i][hCols.H - 1];
-      var hr = hittingData[i][hCols.HR - 1];
-      var rbi = hittingData[i][hCols.RBI - 1];
-      var obp = hittingData[i][hCols.OBP - 1];
-      var slg = hittingData[i][hCols.SLG - 1];
-      var ops = hittingData[i][hCols.OPS - 1];
-      
-      if (playerName && typeof gp === 'number' && gp > 0 && teamStats[team]) {
-        var teamGP = teamStats[team].gamesPlayed;
-        var qualifyingAB = teamGP * CONFIG.MIN_AB_MULTIPLIER;
-        
-        if (typeof obp === 'number' && !isNaN(obp) && ab >= qualifyingAB) {
-          leaders.batting.obp.push({ name: playerName, team: team, value: obp });
-        }
-        if (typeof hits === 'number' && !isNaN(hits) && hits > 0) {
-          leaders.batting.hits.push({ name: playerName, team: team, value: hits });
-        }
-        if (typeof hr === 'number' && !isNaN(hr) && hr > 0) {
-          leaders.batting.hr.push({ name: playerName, team: team, value: hr });
-        }
-        if (typeof rbi === 'number' && !isNaN(rbi) && rbi > 0) {
-          leaders.batting.rbi.push({ name: playerName, team: team, value: rbi });
-        }
-        if (typeof slg === 'number' && !isNaN(slg) && ab >= qualifyingAB) {
-          leaders.batting.slg.push({ name: playerName, team: team, value: slg });
-        }
-        if (typeof ops === 'number' && !isNaN(ops) && ab >= qualifyingAB) {
-          leaders.batting.ops.push({ name: playerName, team: team, value: ops });
-        }
-      }
+
+  // Get player-to-team mapping from Player Data sheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var playerDataSheet = ss.getSheetByName(CONFIG.PLAYER_STATS_SHEET);
+  if (!playerDataSheet) return leaders;
+
+  var lastRow = playerDataSheet.getLastRow();
+  if (lastRow < 2) return leaders;
+
+  var playerTeamData = playerDataSheet.getRange(2, 1, lastRow - 1, 2).getValues();
+  var playerTeamMap = {};
+  for (var i = 0; i < playerTeamData.length; i++) {
+    var playerName = String(playerTeamData[i][0]).trim();
+    var team = String(playerTeamData[i][1]).trim();
+    if (playerName && team) {
+      playerTeamMap[playerName] = team;
     }
   }
-  
-  var pitchingLastRow = pitchingSheet.getLastRow();
-  if (pitchingLastRow > 1) {
-    var pitchingData = pitchingSheet.getRange(2, 1, pitchingLastRow - 1, 16).getValues();
-    var pCols = CONFIG.STATS_COLUMN_MAPS.PITCHING_COLUMNS;
-    for (var i = 0; i < pitchingData.length; i++) {
-      var playerName = String(pitchingData[i][pCols.PLAYER_NAME - 1]).trim();
-      var team = String(pitchingData[i][pCols.TEAM - 1]).trim();
-      var gp = pitchingData[i][pCols.GP - 1];
-      var wins = pitchingData[i][pCols.W - 1];
-      var losses = pitchingData[i][pCols.L - 1];
-      var saves = pitchingData[i][pCols.SV - 1];
-      var era = pitchingData[i][pCols.ERA - 1];
-      var ip = pitchingData[i][pCols.IP - 1];
-      var baa = pitchingData[i][pCols.BAA - 1];
-      var whip = pitchingData[i][pCols.WHIP - 1];
-      
-      if (playerName && typeof gp === 'number' && gp > 0 && teamStats[team]) {
-        var teamGP = teamStats[team].gamesPlayed;
-        var qualifyingIP = teamGP * CONFIG.MIN_IP_MULTIPLIER;
-        
-        if (typeof ip === 'number' && !isNaN(ip) && ip > 0) {
-          leaders.pitching.ip.push({ name: playerName, team: team, value: ip });
-        }
-        if (typeof wins === 'number' && !isNaN(wins) && wins > 0) {
-          leaders.pitching.wins.push({ name: playerName, team: team, value: wins });
-        }
-        if (typeof losses === 'number' && !isNaN(losses) && losses > 0) {
-          leaders.pitching.losses.push({ name: playerName, team: team, value: losses });
-        }
-        if (typeof saves === 'number' && !isNaN(saves) && saves > 0) {
-          leaders.pitching.saves.push({ name: playerName, team: team, value: saves });
-        }
-        if (typeof era === 'number' && !isNaN(era) && ip >= qualifyingIP) {
-          leaders.pitching.era.push({ name: playerName, team: team, value: era });
-        }
-        if (typeof whip === 'number' && !isNaN(whip) && ip >= qualifyingIP) {
-          leaders.pitching.whip.push({ name: playerName, team: team, value: whip });
-        }
-        if (typeof baa === 'number' && !isNaN(baa) && ip >= qualifyingIP) {
-          leaders.pitching.baa.push({ name: playerName, team: team, value: baa });
-        }
-      }
+
+  // V3: Process stats from in-memory playerStats object
+  for (var playerName in playerStats) {
+    var stats = playerStats[playerName];
+    var team = playerTeamMap[playerName];
+    if (!team || !teamStats[team]) continue;
+
+    var gp = stats.gamesPlayed;
+    if (gp === 0) continue;
+
+    var teamGP = teamStats[team].gamesPlayed;
+
+    // Process hitting stats
+    var ab = stats.hitting[0];  // AB
+    var hits = stats.hitting[1];  // H
+    var hr = stats.hitting[2];  // HR
+    var rbi = stats.hitting[3];  // RBI
+    var bb = stats.hitting[4];  // BB
+    var rob = stats.hitting[6];  // ROB
+    var tb = stats.hitting[8];  // TB
+
+    var qualifyingAB = teamGP * CONFIG.MIN_AB_MULTIPLIER;
+
+    // Calculate derived stats
+    var avg = ab > 0 ? hits / ab : 0;
+    var obp = ab > 0 ? rob / ab : 0;
+    var slg = ab > 0 ? tb / ab : 0;
+    var ops = obp + slg;
+
+    if (typeof obp === 'number' && !isNaN(obp) && ab >= qualifyingAB) {
+      leaders.batting.obp.push({ name: playerName, team: team, value: obp });
     }
-  }
-  
-  var fieldingLastRow = fieldingSheet.getLastRow();
-  if (fieldingLastRow > 1) {
-    var fieldingData = fieldingSheet.getRange(2, 1, fieldingLastRow - 1, 6).getValues();
-    var fCols = CONFIG.STATS_COLUMN_MAPS.FIELDING_COLUMNS;
-    for (var i = 0; i < fieldingData.length; i++) {
-      var playerName = String(fieldingData[i][fCols.PLAYER_NAME - 1]).trim();
-      var team = String(fieldingData[i][fCols.TEAM - 1]).trim();
-      var gp = fieldingData[i][fCols.GP - 1];
-      var nicePlays = fieldingData[i][fCols.NP - 1];
-      var errors = fieldingData[i][fCols.E - 1];
-      var stolenBases = fieldingData[i][fCols.SB - 1];
-      
-      if (playerName && typeof gp === 'number' && gp > 0) {
-        if (typeof nicePlays === 'number' && !isNaN(nicePlays) && nicePlays > 0) {
-          leaders.fielding.nicePlays.push({ name: playerName, team: team, value: nicePlays });
-        }
-        if (typeof errors === 'number' && !isNaN(errors) && errors > 0) {
-          leaders.fielding.errors.push({ name: playerName, team: team, value: errors });
-        }
-        if (typeof stolenBases === 'number' && !isNaN(stolenBases) && stolenBases > 0) {
-          leaders.fielding.stolenBases.push({ name: playerName, team: team, value: stolenBases });
-        }
-      }
+    if (typeof hits === 'number' && !isNaN(hits) && hits > 0) {
+      leaders.batting.hits.push({ name: playerName, team: team, value: hits });
+    }
+    if (typeof hr === 'number' && !isNaN(hr) && hr > 0) {
+      leaders.batting.hr.push({ name: playerName, team: team, value: hr });
+    }
+    if (typeof rbi === 'number' && !isNaN(rbi) && rbi > 0) {
+      leaders.batting.rbi.push({ name: playerName, team: team, value: rbi });
+    }
+    if (typeof slg === 'number' && !isNaN(slg) && ab >= qualifyingAB) {
+      leaders.batting.slg.push({ name: playerName, team: team, value: slg });
+    }
+    if (typeof ops === 'number' && !isNaN(ops) && ab >= qualifyingAB) {
+      leaders.batting.ops.push({ name: playerName, team: team, value: ops });
+    }
+
+    // Process pitching stats
+    var ip = stats.pitching[0];  // IP
+    var bf = stats.pitching[1];  // BF
+    var h_allowed = stats.pitching[2];  // H
+    var hr_allowed = stats.pitching[3];  // HR
+    var r_allowed = stats.pitching[4];  // R
+    var bb_allowed = stats.pitching[5];  // BB
+    var k = stats.pitching[6];  // K
+    var wins = stats.wins;
+    var losses = stats.losses;
+    var saves = stats.saves;
+
+    var qualifyingIP = teamGP * CONFIG.MIN_IP_MULTIPLIER;
+
+    // Calculate derived pitching stats
+    var era = ip > 0 ? (r_allowed * 7) / ip : 0;  // 7-inning games
+    var whip = ip > 0 ? (bb_allowed + h_allowed) / ip : 0;
+    var baa = bf > 0 ? h_allowed / bf : 0;
+
+    if (typeof ip === 'number' && !isNaN(ip) && ip > 0) {
+      leaders.pitching.ip.push({ name: playerName, team: team, value: ip });
+    }
+    if (typeof wins === 'number' && !isNaN(wins) && wins > 0) {
+      leaders.pitching.wins.push({ name: playerName, team: team, value: wins });
+    }
+    if (typeof losses === 'number' && !isNaN(losses) && losses > 0) {
+      leaders.pitching.losses.push({ name: playerName, team: team, value: losses });
+    }
+    if (typeof saves === 'number' && !isNaN(saves) && saves > 0) {
+      leaders.pitching.saves.push({ name: playerName, team: team, value: saves });
+    }
+    if (typeof era === 'number' && !isNaN(era) && ip >= qualifyingIP) {
+      leaders.pitching.era.push({ name: playerName, team: team, value: era });
+    }
+    if (typeof whip === 'number' && !isNaN(whip) && ip >= qualifyingIP) {
+      leaders.pitching.whip.push({ name: playerName, team: team, value: whip });
+    }
+    if (typeof baa === 'number' && !isNaN(baa) && ip >= qualifyingIP) {
+      leaders.pitching.baa.push({ name: playerName, team: team, value: baa });
+    }
+
+    // Process fielding stats
+    var nicePlays = stats.fielding[0];  // NP
+    var errors = stats.fielding[1];  // E
+    var stolenBases = stats.fielding[2];  // SB
+
+    if (typeof nicePlays === 'number' && !isNaN(nicePlays) && nicePlays > 0) {
+      leaders.fielding.nicePlays.push({ name: playerName, team: team, value: nicePlays });
+    }
+    if (typeof errors === 'number' && !isNaN(errors) && errors > 0) {
+      leaders.fielding.errors.push({ name: playerName, team: team, value: errors });
+    }
+    if (typeof stolenBases === 'number' && !isNaN(stolenBases) && stolenBases > 0) {
+      leaders.fielding.stolenBases.push({ name: playerName, team: team, value: stolenBases });
     }
   }
   
@@ -702,4 +712,29 @@ function findSheetSection(sheet, searchText) {
   }
 
   return -1;
+}
+
+/**
+ * V3 INTEGRATION:
+ * Caches the final processed gameData to PropertiesService
+ * so the Retention suite can access it.
+ */
+function cacheCurrentSeasonStats(gameData) {
+  try {
+    var dataToCache = {
+      playerStats: gameData.playerStats,
+      teamStatsWithH2H: gameData.teamStatsWithH2H
+      // We don't need scheduleData for retention
+    };
+
+    var jsonData = JSON.stringify(dataToCache);
+
+    // Save to ScriptProperties, which is available to all scripts in the project
+    PropertiesService.getScriptProperties().setProperty('CURRENT_SEASON_STATS', jsonData);
+
+    logInfo('V3 Integration', 'Successfully cached current season stats for Retention suite');
+
+  } catch (e) {
+    logError('V3 Integration', 'Could not cache season stats: ' + e.toString(), 'N/A');
+  }
 }

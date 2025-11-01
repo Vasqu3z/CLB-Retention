@@ -5,19 +5,11 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Player Stats')
-      // Top-level quick actions
+      // V3 UPDATE: Simplified menu - removed step-by-step updates
       .addItem('🚀 Update All', 'updateAll')
       .addItem('📊 Compare Players', 'showPlayerComparison')
+      .addItem('🔧 Recalculate All Formulas', 'recalculateFormulas')
       .addSeparator()
-      // Step-by-step updates (collapsed)
-      .addSubMenu(ui.createMenu('📋 Step-by-Step Updates')
-          .addItem('Step 1: Update All Player Stats', 'updateAllPlayerStats')
-          .addItem('Step 2: Update All Team Stats', 'updateAllTeamStats')
-          .addItem('Step 3: Update Team Sheets', 'updateTeamSheets')
-          .addItem('Step 4: Update League Hub', 'updateLeagueHub')
-          .addItem('Step 5: Update League Schedule', 'updateLeagueSchedule')
-          .addSeparator()
-          .addItem('🔧 Recalculate All Formulas', 'recalculateFormulas'))
       // Transactions (collapsed)
       .addSubMenu(ui.createMenu('💰 Transactions')
           .addItem('📝 Record Transaction', 'recordTransaction')
@@ -93,7 +85,8 @@ function updateAll() {
     // ===== STEP 4: Update league hub (using cached data) =====
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Update All", -1);
     var step4Start = new Date();
-    updateLeagueHubFromCache(gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.scheduleData, gameData.boxScoreUrl);
+    // V3 UPDATE: Pass full gameData object for in-memory performance
+    updateLeagueHubFromCache(gameData);
     var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
     
@@ -123,17 +116,8 @@ function updateAll() {
     SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
     logInfo("Update All", "Completed successfully in " + totalTime + "s");
 
-    // V3 UPDATE: Persist final season data for Retention analysis
-    try {
-      var finalSeasonData = {
-        playerStats: gameData.playerStats,
-        teamStatsWithH2H: gameData.teamStatsWithH2H
-      };
-      PropertiesService.getScriptProperties().setProperty('FINAL_SEASON_DATA', JSON.stringify(finalSeasonData));
-      logInfo("Update All", "Final season data cached for Retention analysis");
-    } catch (e) {
-      logWarning("Update All", "Failed to cache final season data: " + e.toString(), "N/A");
-    }
+    // V3 INTEGRATION: Cache final data for Retention suite
+    cacheCurrentSeasonStats(gameData);
 
   } catch (e) {
     logError("Update All", e.toString(), "N/A");
@@ -210,7 +194,8 @@ function quickUpdate() {
     
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Quick Update", -1);
     var step4Start = new Date();
-    updateLeagueHubFromCache(gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.scheduleData, gameData.boxScoreUrl);
+    // V3 UPDATE: Pass full gameData object for in-memory performance
+    updateLeagueHubFromCache(gameData);
     var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
     
@@ -335,7 +320,8 @@ function updateLeagueHub() {
   // Manual execution - process games fresh
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
-    updateLeagueHubFromCache(gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.scheduleData, gameData.boxScoreUrl);
+    // V3 UPDATE: Pass full gameData object for in-memory performance
+    updateLeagueHubFromCache(gameData);
   }
 }
 
@@ -371,12 +357,12 @@ function calculateFinalRetentionGrades() {
 
   try {
     // Load cached final season data
-    var jsonData = PropertiesService.getScriptProperties().getProperty('FINAL_SEASON_DATA');
+    var jsonData = PropertiesService.getScriptProperties().getProperty('CURRENT_SEASON_STATS');
 
     if (!jsonData) {
       ui.alert(
         '❌ No Cached Data Found',
-        'Final season data not found in cache.\n\n' +
+        'Current season stats not found in cache.\n\n' +
         'Please run "🚀 Update All" first to cache the season data, then try again.',
         ui.ButtonSet.OK
       );

@@ -351,7 +351,7 @@ function getLeagueLeaders(playerStats, teamStats) {
 
     // Calculate derived stats
     var avg = ab > 0 ? hits / ab : 0;
-    var obp = ab > 0 ? rob / ab : 0;
+    var obp = (ab + bb) > 0 ? (hits + bb) / (ab + bb) : 0;  // FIXED: Correct OBP formula (H+BB)/(AB+BB)
     var slg = ab > 0 ? tb / ab : 0;
     var ops = obp + slg;
 

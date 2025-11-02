@@ -313,7 +313,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
     offensivePercentile = avgPercentile;
 
     // V3 DEBUG: Log percentile details for troubleshooting
-    if (player.name && player.name.indexOf("King") >= 0) {
+    if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS && player.name && player.name.indexOf("King") >= 0) {
       Logger.log("V3 DEBUG Hitting Percentiles for " + player.name + ":");
       if (percentiles.length >= 6) {
         Logger.log("  - AVG: " + player.hitting.avg.toFixed(3) + " = " + percentiles[0].toFixed(1) + "%");
@@ -363,7 +363,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
     }
 
     // V3 DEBUG: Log fielding details
-    if (player.name && player.name.indexOf("King") >= 0) {
+    if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS && player.name && player.name.indexOf("King") >= 0) {
       Logger.log("V3 DEBUG Fielding for " + player.name + ":");
       Logger.log("  - NP: " + np);
       Logger.log("  - E: " + e);
@@ -481,7 +481,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
   breakdown.total = breakdown.baseTotal + breakdown.autoFlaggingPenalty + breakdown.draftExpectationsMod;
 
   // V3 DEBUG: Log performance calculation for troubleshooting
-  if (player.name && player.name.indexOf("King") >= 0) {
+  if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS && player.name && player.name.indexOf("King") >= 0) {
     Logger.log("V3 DEBUG Performance for " + player.name + ":");
     Logger.log("  - Offensive: " + breakdown.offensive);
     Logger.log("  - Defensive: " + breakdown.defensive);
@@ -503,7 +503,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
   }
 
   // V3 DEBUG: Log after capping
-  if (player.name && player.name.indexOf("King") >= 0) {
+  if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS && player.name && player.name.indexOf("King") >= 0) {
     Logger.log("  - Total (after cap): " + breakdown.total);
   }
 

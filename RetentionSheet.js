@@ -148,7 +148,7 @@ function buildRetentionSheetFromScratch(retentionGrades) {
 /**
  * Apply formatting to data rows
  * Uses batch operations for performance
- * V2: Updated for new column layout
+ * Updated for new column layout
  */
 function applyDataFormatting(sheet, startRow, numRows) {
   var cols = RETENTION_CONFIG.OUTPUT;
@@ -282,8 +282,8 @@ function applyDataFormatting(sheet, startRow, numRows) {
 
 /**
  * Add postseason section, Team Direction table, and instructions at bottom of sheet
- * V2.1: Auto-populates team lists from player data on sheet
- * RESTORED: Previously entered postseason and direction data (preserves scores)
+ * Auto-populates team lists from player data on sheet
+ * Previously entered postseason and direction data (preserves scores)
  */
 function addBottomSections(sheet, playerCount, existingPostseasonData, existingDirectionData) {
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
@@ -464,7 +464,7 @@ function applyFinalGradeFormatting(sheet, startRow, numRows) {
 
 /**
  * REBUILD SHEET: Force full rebuild of formatting
- * V2: Preserves Team Direction data
+ * Preserves Team Direction data
  */
 function rebuildRetentionSheet() {
   var ui = SpreadsheetApp.getUi();
@@ -494,7 +494,7 @@ function rebuildRetentionSheet() {
 
 /**
  * Refresh formulas in the retention sheet
- * V2: Uses weighted formulas
+ * Uses weighted formulas
  */
 function refreshRetentionFormulas() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -592,7 +592,7 @@ function findTeamDirectionSection(sheet) {
 
 /**
  * Get unique teams from player list on sheet
- * V2.1: Reads from Column B of the retention sheet
+ * Reads from Column B of the retention sheet
  * Returns array of unique team names in alphabetical order
  */
 function getUniqueTeamsFromSheet(sheet, startRow, playerCount) {

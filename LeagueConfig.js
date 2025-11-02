@@ -1,20 +1,20 @@
-// ===== BASEBALL STATS MANAGER - CONFIGURATION =====
+// ===== LEAGUE HUB - CONFIGURATION =====
 // All configuration settings and global variables
 
 var CONFIG = {
-  // Sheet names in THIS spreadsheet (the stats workbook)
+  // Sheet names in THIS spreadsheet
   ERROR_LOG_SHEET: "Error Log",
   PLAYER_STATS_SHEET: "Player Data",
+  TEAM_STATS_SHEET: "Team Data",
+  TEAM_SHEET_TEMPLATE: "Team Sheet",
+  SEASON_SCHEDULE_SHEET: "Season Schedule",
   HITTING_STATS_SHEET: "🧮 Hitting",
   PITCHING_STATS_SHEET: "🧮 Pitching",
   FIELDING_STATS_SHEET: "🧮 Fielding & Running",
-  TEAM_STATS_SHEET: "Team Data",
-  TEAM_SHEET_TEMPLATE: "Team Sheet",
-  LEAGUE_HUB_SHEET: "Rankings",
-  LEAGUE_SCHEDULE_SHEET: "Schedule",
-  SEASON_SCHEDULE_SHEET: "Season Schedule",
-  TRANSACTION_LOG_SHEET: "Transaction Log",
-  RETENTION_GRADES_SHEET: "Retention Grades",
+  LEAGUE_HUB_SHEET: "🏆 Rankings",
+  LEAGUE_SCHEDULE_SHEET: "📅 Schedule",
+  RETENTION_GRADES_SHEET: "🎲 Retention",
+  TRANSACTION_LOG_SHEET: "🔀 Transactions",
 
   // External spreadsheet containing box scores (game sheets)
   BOX_SCORE_SPREADSHEET_ID: "17x5VoZxGV88RYAiHEcq0M-rxSyZ0fp66OktmJk2AaEU",
@@ -28,10 +28,10 @@ var CONFIG = {
   LEAGUE_HUB_TEAM_WIDTH: 175,
 
   // Progress update frequency
-  PROGRESS_UPDATE_FREQUENCY: 8,
+  PROGRESS_UPDATE_FREQUENCY: 4,
 
   // Recent schedule weeks to show on League Hub
-  RECENT_SCHEDULE_WEEKS: 2,
+  RECENT_SCHEDULE_WEEKS: 1,
 
   // Data validation thresholds
   MAX_GAMES_PER_SEASON: 14,

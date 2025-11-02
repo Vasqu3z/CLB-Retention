@@ -85,22 +85,22 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     "Player",
     "Team",
     "Draft/Trade\nValue (1-8)",
-    "Regular Season\nSuccess (0-10)",  // SPLIT from TS
-    "Postseason\nSuccess (0-10)",      // SPLIT, VLOOKUP
-    "TS Mod\n(manual)",          // No validation
-    "TS Total\n(0-20)",
-    "Play Time\n(Base 0-20)",
-    "PT Mod\n(manual)",          // No validation
-    "PT Total\n(0-20)",
-    "Performance\n(Base 0-20)",  // Renamed from Awards
-    "Perf Mod\n(manual)",        // No validation
-    "Perf Total\n(0-20)",
-    "Auto Total\n(0-60)",
-    "Chemistry\n(0-20)",
-    "Direction\n(0-20)",         // VLOOKUP from table
-    "Manual Total\n(weighted)",  // Weighted formula
-    "FINAL GRADE\n(d100)",       // Weighted × 5
-    "Details"
+    "Record\n(0-10)",  
+    "Postseason\n(0-10)",      
+    "Success\nModifier",            // No validation
+    "Success\nGrade",
+    "Play Time\nBase (0-20)",
+    "Play Time\nModifier",          // No validation
+    "Play Time\nGrade",
+    "Performance\nBase (0-20)",     // Formerly "Awards"
+    "Performance\nModifier",        // No validation
+    "Performance\nGrade",
+    "Automatic\nGrades (0-60)",
+    "Chemistry\nGrade (0-20)",
+    "Direction\nGrade (0-20)",      // VLOOKUP from table
+    "Manual\nGrades",               // Weighted formula
+    "FINAL\nGRADE",                 // Weighted × 5
+    "Automatic Grade Details"
   ];
 
   sheet.getRange(headerRow, 1, 1, headers.length)
@@ -148,6 +148,7 @@ function buildRetentionSheetFromScratch(retentionGrades) {
 /**
  * Apply formatting to data rows
  * Uses batch operations for performance
+ * Updated for new column layout
  */
 function applyDataFormatting(sheet, startRow, numRows) {
   var cols = RETENTION_CONFIG.OUTPUT;
@@ -282,7 +283,7 @@ function applyDataFormatting(sheet, startRow, numRows) {
 /**
  * Add postseason section, Team Direction table, and instructions at bottom of sheet
  * Auto-populates team lists from player data on sheet
- * RESTORED: Previously entered postseason and direction data (preserves scores)
+ * Previously entered postseason and direction data (preserves scores)
  */
 function addBottomSections(sheet, playerCount, existingPostseasonData, existingDirectionData) {
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
@@ -493,7 +494,7 @@ function rebuildRetentionSheet() {
 
 /**
  * Refresh formulas in the retention sheet
- * Uses weighted grading formulas
+ * Uses weighted formulas
  */
 function refreshRetentionFormulas() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();

@@ -1,33 +1,29 @@
-// ===== RETENTION GRADE CONFIGURATION V2 =====
-// Configuration for CLB Player Retention Probability System v2
-// Each factor has a weighted contribution to final grade (0-100 d100 scale)
+// ===== RETENTION GRADE CONFIGURATION =====
+// Configuration for CLB Player Retention Probability System
+// Each factor has a weighted contribution to final grade (5-95 d100 scale)
 //
-// MAJOR CHANGES FROM V1:
-// - Removed: Star Points column (Column I eliminated)
-// - Added: Draft/Trade Value column (Column C, manual input 1-8)
-// - Renamed: "Awards" → "Performance" throughout
-// - Weighted grading: TS(18%) + PT(32%) + Perf(17%) + Chem(12%) + Dir(21%)
-// - Team Success: 10/10 split (was 8/12 regular/postseason)
-// - Auto-flagging: Elite players on bad teams get performance penalty
-// - Draft expectations: Performance vs draft round expectations
-// - Team Direction: Table at bottom, one score per team (VLOOKUP)
+// WEIGHTED GRADING FORMULA:
+// - Team Success: 18% weight (Regular Season 10pts + Postseason 10pts + Modifier)
+// - Play Time: 32% weight (Games Played + Usage Quality + Modifier)
+// - Performance: 17% weight (Offensive + Defensive + Pitching + Modifier)
+// - Chemistry: 12% weight (Manual input 0-20)
+// - Team Direction: 21% weight (VLOOKUP from team table 0-20)
 //
-// V2.1 CHANGES:
-// - Split Team Success into 2 columns: Regular Season (D) + Postseason (E, VLOOKUP)
-// - Auto-populate team lists in Team Direction and Postseason tables
-// - Total columns: 19 (was 18)
+// SYSTEM FEATURES:
+// - Auto-flagging: Elite players on struggling teams receive retention penalty
+// - Draft expectations: Performance modifiers based on draft position vs actual performance
+// - Team Direction table: One score per team, inherited by all players via VLOOKUP
+// - Postseason table: Playoff results converted to points, inherited via VLOOKUP
 //
-// REFERENCES: Main CONFIG object from Stats Processing spreadsheet
-// - Sheet names from CONFIG (Player Data, Hitting, Pitching, etc.)
-// - Box score settings from CONFIG (spreadsheet ID, cell ranges)
-//
-// RULE: Never hardcode thresholds - always reference this config or CONFIG
+// CONFIGURATION DEPENDENCIES:
+// - Delegates to CONFIG for sheet names and column definitions (LeagueConfig.js)
+// - Never hardcode thresholds - always reference this config or CONFIG
 
 var RETENTION_CONFIG = {
 
   // ===== VERSION INFO =====
-  VERSION: "2.1",
-  VERSION_DATE: "2025-10-28",
+  VERSION: "3.0",
+  VERSION_DATE: "2025-11-02",
 
   // ===== NO SHEET NAMES HERE - USE CONFIG OBJECT =====
   // Sheet names are defined in main CONFIG.js and referenced via:
@@ -40,101 +36,54 @@ var RETENTION_CONFIG = {
   // CONFIG.LEAGUE_HUB_SHEET (for standings data)
 
   // ===== STATS SHEET COLUMN MAPPINGS =====
-  // Define exact column structure for each stats sheet
-  // CRITICAL: Update these if sheet structure changes
+  // Column maps moved to CONFIG.STATS_COLUMN_MAPS (LeagueConfig.js)
+  // These are now references to the centralized config
+  // DO NOT MODIFY - edit CONFIG.STATS_COLUMN_MAPS instead
 
-  HITTING_COLUMNS: {
-    // Columns in 🧮 Hitting sheet
-    PLAYER_NAME: 1,    // Column A
-    TEAM: 2,           // Column B
-    GP: 3,             // Column C - Games Played
-    AB: 4,             // Column D - At Bats
-    H: 5,              // Column E - Hits
-    HR: 6,             // Column F - Home Runs
-    RBI: 7,            // Column G - Runs Batted In
-    BB: 8,             // Column H - Walks
-    K: 9,              // Column I - Strikeouts
-    ROB: 10,           // Column J - Reached on Base
-    DP: 11,            // Column K - Double Plays
-    TB: 12,            // Column L - Total Bases
-    AVG: 13,           // Column M - Batting Average
-    OBP: 14,           // Column N - On-Base Percentage
-    SLG: 15,           // Column O - Slugging Percentage
-    OPS: 16            // Column P - On-Base Plus Slugging
+  get HITTING_COLUMNS() {
+    return CONFIG.STATS_COLUMN_MAPS.HITTING_COLUMNS;
   },
 
-  PITCHING_COLUMNS: {
-    // Columns in 🧮 Pitching sheet
-    PLAYER_NAME: 1,    // Column A
-    TEAM: 2,           // Column B
-    GP: 3,             // Column C - Games Played
-    W: 4,              // Column D - Wins
-    L: 5,              // Column E - Losses
-    SV: 6,             // Column F - Saves
-    ERA: 7,            // Column G - Earned Run Average
-    IP: 8,             // Column H - Innings Pitched
-    BF: 9,             // Column I - Batters Faced
-    H: 10,             // Column J - Hits Allowed
-    HR: 11,            // Column K - Home Runs Allowed
-    R: 12,             // Column L - Runs Allowed
-    BB: 13,            // Column M - Walks Allowed
-    K: 14,             // Column N - Strikeouts
-    BAA: 15,           // Column O - Batting Average Against
-    WHIP: 16           // Column P - Walks + Hits per IP
+  get PITCHING_COLUMNS() {
+    return CONFIG.STATS_COLUMN_MAPS.PITCHING_COLUMNS;
   },
 
-  FIELDING_COLUMNS: {
-    // Columns in 🧮 Fielding & Running sheet
-    PLAYER_NAME: 1,    // Column A
-    TEAM: 2,           // Column B
-    GP: 3,             // Column C - Games Played
-    NP: 4,             // Column D - Nice Plays
-    E: 5,              // Column E - Errors
-    SB: 6              // Column F - Stolen Bases
+  get FIELDING_COLUMNS() {
+    return CONFIG.STATS_COLUMN_MAPS.FIELDING_COLUMNS;
   },
 
-  TEAM_DATA_COLUMNS: {
-    // Columns in Team Data sheet
-    TEAM_NAME: 1,      // Column A
-    CAPTAIN: 2,        // Column B - Captain Name (not used)
-    GP: 3,             // Column C - Games Played
-    WINS: 4,           // Column D - Wins
-    LOSSES: 5          // Column E - Losses
+  // Team Data columns moved to CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET
+  // Reference centralized config instead of duplicating
+  get TEAM_DATA_COLUMNS() {
+    return {
+      TEAM_NAME: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.TEAM_NAME_COL,
+      CAPTAIN: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.CAPTAIN_COL,
+      GP: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.GP_COL,
+      WINS: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.WINS_COL,
+      LOSSES: CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET.LOSSES_COL
+    };
   },
 
-  // ===== BOX SCORE INTEGRATION =====
-  // For reading lineup positions from box score sheets
-  // REFERENCES CONFIG.BOX_SCORE_* values - DO NOT HARDCODE
-  BOX_SCORE: {
-    // Hitting data structure:
-    // - CONFIG.BOX_SCORE_HITTING_START_ROW = 29 (header row)
-    // - Rows 30-38: Away team lineup (9 batters)
-    // - Row 39: Away team totals (skip)
-    // - Row 40: Header for home team (skip)
-    // - Rows 41-49: Home team lineup (9 batters)
-    // - Row 50: Home team totals (skip)
-
-    // Away team lineup
-    AWAY_LINEUP_START_OFFSET: 1,        // Start 1 row after header (row 30)
-    AWAY_LINEUP_PLAYER_COUNT: 9,        // 9 batters in lineup
-
-    // Home team lineup
-    HOME_LINEUP_START_OFFSET: 12,       // Start 12 rows after header (row 41 = 29 + 12)
-    HOME_LINEUP_PLAYER_COUNT: 9,        // 9 batters in lineup
-
-    // Player names are in column B (from CONFIG.BOX_SCORE_HITTING_START_COL)
-    // Uses CONFIG.BOX_SCORE_HITTING_START_COL directly in code
+  // Box score lineup positions moved to CONFIG (LeagueConfig.js)
+  // Reference centralized config instead of duplicating
+  get BOX_SCORE() {
+    return {
+      AWAY_LINEUP_START_OFFSET: CONFIG.BOX_SCORE_AWAY_LINEUP_START_OFFSET,
+      AWAY_LINEUP_PLAYER_COUNT: CONFIG.BOX_SCORE_AWAY_LINEUP_PLAYER_COUNT,
+      HOME_LINEUP_START_OFFSET: CONFIG.BOX_SCORE_HOME_LINEUP_START_OFFSET,
+      HOME_LINEUP_PLAYER_COUNT: CONFIG.BOX_SCORE_HOME_LINEUP_PLAYER_COUNT
+    };
   },
 
   // ===== POSTSEASON DATA (MANUAL INPUT) =====
   // Located in Retention Grades sheet (dynamically found at bottom)
   // Format: Team Name (Col A) | Postseason Finish (Col B)
   // Accepts: numbers (1-8) or text ("Champion", "1st", "Semifinal", etc.)
-  // V2.1: Auto-populated with team list, read via VLOOKUP
+  // Auto-populated with team list, read via VLOOKUP
   POSTSEASON_SEARCH_TEXT: "Postseason Results",  // Header text to search for
   POSTSEASON_TABLE_NAME: "PostseasonResults",    // Named range for VLOOKUP
 
-  // ===== WEIGHTED GRADING SYSTEM V2 =====
+  // ===== WEIGHTED GRADING SYSTEM =====
   // Factor weights (must sum to 1.0)
   // Final Grade = (weighted sum) × 5 for d100 scale (0-100)
   FACTOR_WEIGHTS: {
@@ -292,7 +241,7 @@ var RETENTION_CONFIG = {
     }
   },
 
-  // ===== AUTO-FLAGGING SYSTEM V2 =====
+  // ===== AUTO-FLAGGING SYSTEM =====
   // Detects flight risk for elite players on struggling teams
   // Applies automatic performance penalty
   AUTO_FLAGGING: {
@@ -315,7 +264,7 @@ var RETENTION_CONFIG = {
     }
   },
 
-  // ===== DRAFT EXPECTATIONS SYSTEM V2 =====
+  // ===== DRAFT EXPECTATIONS SYSTEM =====
   // Compares performance to acquisition cost (draft round)
   // 3-tier system based on player's perceived value vs team's perceived value
   // High: Situation-based (good/bad fit), Mid/Late: Self-worth based (overvalued/undervalued)
@@ -356,7 +305,7 @@ var RETENTION_CONFIG = {
   // ===== MANUAL MODIFIERS =====
   // Adjustments for subjective factors not captured by stats
   // Applied AFTER base calculation, capped at 0-20 per category
-  // V2 CHANGE: No data validation on modifier columns
+  // No data validation on modifier columns
   MODIFIERS: {
     TEAM_SUCCESS: {
       MIN: -5,
@@ -404,7 +353,7 @@ var RETENTION_CONFIG = {
   // ===== TEAM DIRECTION TABLE =====
   // New section at bottom of sheet
   // One score per team (0-20), all players on team inherit same score via VLOOKUP
-  // V2.1: Auto-populated with team list from Team Data sheet
+  // Auto-populated with team list from Team Data sheet
   TEAM_DIRECTION_TABLE: {
     SEARCH_TEXT: "Team Direction",
     HEADER_TEXT: "Team Direction Scores (0-20)",
@@ -422,7 +371,20 @@ var RETENTION_CONFIG = {
     PLAYOFF_TEAMS: 4            // Half the league makes playoffs
   },
 
-  // ===== OUTPUT FORMATTING V2 =====
+  // ===== PLAYER FILTERING =====
+  PLAYER_FILTERING: {
+    // Control whether to include players without teams
+    // Set to false to match v2 behavior (exclude teamless players)
+    // Set to true to include all players regardless of team assignment
+    INCLUDE_PLAYERS_WITHOUT_TEAMS: false,
+
+    // Why this matters:
+    // - Including teamless players affects percentile calculations for ALL players
+    // - Teamless players typically can't be evaluated fairly (no team success, no lineup data)
+    // - Default (false) matches original v2 behavior
+  },
+
+  // ===== OUTPUT FORMATTING =====
   OUTPUT: {
     // Column widths
     PLAYER_COL_WIDTH: 150,
@@ -480,7 +442,7 @@ var RETENTION_CONFIG = {
     INSTRUCTIONS_ROW_OFFSET: 3  // Instructions appear N rows after last data row
   },
 
-  // ===== DATA VALIDATION RULES V2 =====
+  // ===== DATA VALIDATION RULES =====
   VALIDATION: {
     // Manual input columns
     CHEMISTRY_MIN: 0,
@@ -490,7 +452,7 @@ var RETENTION_CONFIG = {
     DRAFT_VALUE_MIN: 1,
     DRAFT_VALUE_MAX: 8,
 
-    // V2 CHANGE: No validation on modifier columns (allow any value)
+    // No validation on modifier columns (allow any value)
     MODIFIERS_VALIDATION_ENABLED: false,
 
     // Data quality checks
@@ -498,6 +460,58 @@ var RETENTION_CONFIG = {
     MAX_REASONABLE_GAMES: 20,
     MAX_REASONABLE_AB: 100,
     MAX_REASONABLE_IP: 60
+  },
+
+  // ===== SHEET STRUCTURE LAYOUTS =====
+  // Centralized layout definitions to eliminate magic numbers
+  SHEET_STRUCTURE: {
+    // Input data sources from other sheets
+    INPUT_SOURCES: {
+      // League Hub standings data (for regular season points)
+      // Used in RetentionCore.js to read team standings
+      LEAGUE_HUB_STANDINGS: {
+        START_ROW: 4,       // First data row after header
+        START_COL: 1,       // Column A (Rank, Team)
+        NUM_ROWS: 8,        // 8 teams in league
+        NUM_COLS: 2         // Rank + Team name
+      }
+    },
+
+    // Output sheet layout for Retention Grades sheet
+    OUTPUT_LAYOUT: {
+      HEADER_ROW: 5,          // Row where data table headers start (from OUTPUT config)
+      DATA_START_ROW: 6,      // Row where player data starts (from OUTPUT config)
+
+      // Column headers (full list for reference)
+      HEADERS: [
+        "Player",
+        "Team",
+        "Draft/Trade\nValue (1-8)",
+        "Regular\nSeason",
+        "Postseason",
+        "TS\nMod",
+        "TS\nTotal",
+        "PT\nBase",
+        "PT\nMod",
+        "PT\nTotal",
+        "Perf\nBase",
+        "Perf\nMod",
+        "Perf\nTotal",
+        "Auto\nTotal",
+        "Chemistry\n(0-20)",
+        "Direction\n(0-20)",
+        "Manual\nTotal",
+        "Final\nGrade",
+        "Details"
+      ]
+    },
+
+    // Search logic for dynamic sections
+    SEARCH_LOGIC: {
+      SECTION_HEADER_SEARCH_COL: 1,    // Column A - where section headers are found
+      POSTSEASON_HEADER_TEXT: "Postseason Results",
+      TEAM_DIRECTION_HEADER_TEXT: "Team Direction"
+    }
   },
 
   // ===== FUTURE INTEGRATION HOOKS =====

@@ -35,13 +35,30 @@ function updateLeagueSchedule() {
 function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek, boxScoreSpreadsheetUrl) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var scheduleSheet = ss.getSheetByName(CONFIG.LEAGUE_SCHEDULE_SHEET);
-  
+
   if (!scheduleSheet) {
     scheduleSheet = ss.insertSheet(CONFIG.LEAGUE_SCHEDULE_SHEET);
   }
-  
-  scheduleSheet.clear();
-  
+
+  // Targeted Clear - preserve user formatting outside managed columns
+  // Clear only the data-managed zones instead of entire sheet
+  var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_SCHEDULE;
+  var maxRows = scheduleSheet.getMaxRows();
+
+  // Clear Standings zone (Columns A-H from row 1 to end)
+  if (maxRows > 0) {
+    scheduleSheet.getRange(1, layout.STANDINGS.START_COL, maxRows, layout.STANDINGS.NUM_COLS)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Completed Games zone (Column J from row 1 to end)
+    scheduleSheet.getRange(1, layout.COMPLETED_GAMES.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Scheduled Games zone (Column L from row 1 to end)
+    scheduleSheet.getRange(1, layout.SCHEDULED_GAMES.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+  }
+
   var currentRow = 1;
   
   // STANDINGS HEADER (left) and SCHEDULED GAMES HEADER (right)
@@ -243,122 +260,9 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
       .setFontColor("#999999");
   }
   
-  // COMPLETED GAMES with colored winners/losers - CHRONOLOGICAL ORDER
-  var completedGamesRow = 1;
-  scheduleSheet.getRange(completedGamesRow, 10)
-    .setValue("Completed Games")
-    .setFontWeight("bold")
-    .setFontSize(12)
-    .setVerticalAlignment("middle");
-  completedGamesRow += 2;
-  
+  // 3-Pass Batch System for Completed Games - eliminates N+1 loops
   currentRow = standingsStartRow + standingsData.length + 2;
-  
-  // THIS WEEK'S GAMES
-  var maxCompletedWeek = 0;
-  for (var i = 0; i < scheduleData.length; i++) {
-    if (scheduleData[i].played && scheduleData[i].week > maxCompletedWeek) {
-      maxCompletedWeek = scheduleData[i].week;
-    }
-  }
-  
-  var nextWeek = maxCompletedWeek + 1;
-  var thisWeeksGames = [];
-  
-  for (var i = 0; i < scheduleData.length; i++) {
-    if (scheduleData[i].week == nextWeek && !scheduleData[i].played) {
-      thisWeeksGames.push(scheduleData[i]);
-    }
-  }
-  
-  if (thisWeeksGames.length > 0) {
-    scheduleSheet.getRange(currentRow, 1, 1, 8).merge()
-      .setValue("This Week's Games (Week " + nextWeek + ")")
-      .setFontWeight("bold")
-      .setFontSize(12)
-      .setVerticalAlignment("middle");
-    currentRow++;
-    
-    for (var g = 0; g < thisWeeksGames.length; g++) {
-      var game = thisWeeksGames[g];
-      var matchupText = game.homeTeam + " vs " + game.awayTeam;
-      
-      var gameRange = scheduleSheet.getRange(currentRow, 1, 1, 8);
-      gameRange.merge()
-        .setValue(matchupText)
-        .setVerticalAlignment("middle")
-        .setFontStyle("italic")
-        .setFontColor("#666666");
-      
-      if (g % 2 === 1) {
-        gameRange.setBackground("#f3f3f3");
-      }
-      
-      currentRow++;
-    }
-    
-    currentRow++;
-  }
-
-  var weekKeys = Object.keys(gamesByWeek).sort(function(a, b) {
-    var numA = parseInt(a.replace("Week ", ""));
-    var numB = parseInt(b.replace("Week ", ""));
-    return numA - numB;
-  });
-
-  for (var w = 0; w < weekKeys.length; w++) {
-    var weekKey = weekKeys[w];
-    var games = gamesByWeek[weekKey];
-    
-    scheduleSheet.getRange(completedGamesRow, 10)
-      .setValue(weekKey)
-      .setFontWeight("bold")
-      .setBackground("#e8e8e8")
-      .setHorizontalAlignment("left")
-      .setVerticalAlignment("middle")
-      .setBorder(false, false, true, false, false, false, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-    completedGamesRow++;
-    
-    for (var g = 0; g < games.length; g++) {
-      var game = games[g];
-      
-      var resultText = game.team1 + ": " + game.runs1 + " || " + game.team2 + ": " + game.runs2;
-      var gameUrl = boxScoreSpreadsheetUrl + "#gid=" + game.sheetId;
-      
-      var homeTeamEnd = game.team1.length;
-      var homeScoreEnd = homeTeamEnd + 2 + String(game.runs1).length;
-      var awayTeamStart = resultText.indexOf(game.team2);
-      
-      var homeStyle = SpreadsheetApp.newTextStyle()
-        .setForegroundColor(game.winner === game.team1 ? "#0B6623" : "#8B0000")
-        .setBold(true)
-        .build();
-      
-      var awayStyle = SpreadsheetApp.newTextStyle()
-        .setForegroundColor(game.winner === game.team2 ? "#0B6623" : "#8B0000")
-        .setBold(true)
-        .build();
-      
-      var richTextBuilder = SpreadsheetApp.newRichTextValue()
-        .setText(resultText)
-        .setLinkUrl(gameUrl);
-      
-      richTextBuilder.setTextStyle(0, homeScoreEnd, homeStyle);
-      richTextBuilder.setTextStyle(awayTeamStart, resultText.length, awayStyle);
-      
-      var richText = richTextBuilder.build();
-      
-      var gameRange = scheduleSheet.getRange(completedGamesRow, 10);
-      gameRange.setVerticalAlignment("middle").setRichTextValue(richText);
-      
-      if (g % 2 === 1) {
-        gameRange.setBackground("#f3f3f3");
-      }
-      
-      completedGamesRow++;
-    }
-    completedGamesRow++;
-  }
+  writeScheduleToSheet(scheduleSheet, scheduleData, gamesByWeek, boxScoreSpreadsheetUrl, currentRow);
   
   // Set column widths
   scheduleSheet.setColumnWidth(1, CONFIG.LEAGUE_HUB_RANK_WIDTH);
@@ -373,6 +277,150 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
   scheduleSheet.setColumnWidth(12, 300);  // Column L - Scheduled Games
   
   logInfo("Step 5", "Created/updated League Schedule sheet");
+}
+
+// ===== 3-Pass Batch System for Completed Games and This Week's Games =====
+// Eliminates N+1 Rich Text loops by batching all operations
+function writeScheduleToSheet(scheduleSheet, scheduleData, gamesByWeek, boxScoreSpreadsheetUrl, startRow) {
+  // COMPLETED GAMES HEADER
+  var completedGamesRow = 1;
+  scheduleSheet.getRange(completedGamesRow, 10)
+    .setValue("Completed Games")
+    .setFontWeight("bold")
+    .setFontSize(12)
+    .setVerticalAlignment("middle");
+  completedGamesRow += 2;
+
+  var currentRow = startRow;
+
+  // THIS WEEK'S GAMES
+  var maxCompletedWeek = 0;
+  for (var i = 0; i < scheduleData.length; i++) {
+    if (scheduleData[i].played && scheduleData[i].week > maxCompletedWeek) {
+      maxCompletedWeek = scheduleData[i].week;
+    }
+  }
+
+  var nextWeek = maxCompletedWeek + 1;
+  var thisWeeksGames = [];
+
+  for (var i = 0; i < scheduleData.length; i++) {
+    if (scheduleData[i].week == nextWeek && !scheduleData[i].played) {
+      thisWeeksGames.push(scheduleData[i]);
+    }
+  }
+
+  if (thisWeeksGames.length > 0) {
+    scheduleSheet.getRange(currentRow, 1, 1, 8).merge()
+      .setValue("This Week's Games (Week " + nextWeek + ")")
+      .setFontWeight("bold")
+      .setFontSize(12)
+      .setVerticalAlignment("middle");
+    currentRow++;
+
+    for (var g = 0; g < thisWeeksGames.length; g++) {
+      var game = thisWeeksGames[g];
+      var matchupText = game.homeTeam + " vs " + game.awayTeam;
+
+      var gameRange = scheduleSheet.getRange(currentRow, 1, 1, 8);
+      gameRange.merge()
+        .setValue(matchupText)
+        .setVerticalAlignment("middle")
+        .setFontStyle("italic")
+        .setFontColor("#666666");
+
+      if (g % 2 === 1) {
+        gameRange.setBackground("#f3f3f3");
+      }
+
+      currentRow++;
+    }
+
+    currentRow++;
+  }
+
+  // PASS 1: Build all completed game data structures
+  var weekKeys = Object.keys(gamesByWeek).sort(function(a, b) {
+    var numA = parseInt(a.replace("Week ", ""));
+    var numB = parseInt(b.replace("Week ", ""));
+    return numA - numB;
+  });
+
+  var completedGamesData = [];
+
+  for (var w = 0; w < weekKeys.length; w++) {
+    var weekKey = weekKeys[w];
+    var games = gamesByWeek[weekKey];
+
+    // Week header
+    completedGamesData.push({
+      row: completedGamesRow,
+      type: "header",
+      text: weekKey
+    });
+    completedGamesRow++;
+
+    // Games
+    for (var g = 0; g < games.length; g++) {
+      var game = games[g];
+
+      var resultText = game.team1 + ": " + game.runs1 + " || " + game.team2 + ": " + game.runs2;
+      var gameUrl = boxScoreSpreadsheetUrl + "#gid=" + game.sheetId;
+
+      var homeTeamEnd = game.team1.length;
+      var homeScoreEnd = homeTeamEnd + 2 + String(game.runs1).length;
+      var awayTeamStart = resultText.indexOf(game.team2);
+
+      var homeStyle = SpreadsheetApp.newTextStyle()
+        .setForegroundColor(game.winner === game.team1 ? "#0B6623" : "#8B0000")
+        .setBold(true)
+        .build();
+
+      var awayStyle = SpreadsheetApp.newTextStyle()
+        .setForegroundColor(game.winner === game.team2 ? "#0B6623" : "#8B0000")
+        .setBold(true)
+        .build();
+
+      var richTextBuilder = SpreadsheetApp.newRichTextValue()
+        .setText(resultText)
+        .setLinkUrl(gameUrl);
+
+      richTextBuilder.setTextStyle(0, homeScoreEnd, homeStyle);
+      richTextBuilder.setTextStyle(awayTeamStart, resultText.length, awayStyle);
+
+      completedGamesData.push({
+        row: completedGamesRow,
+        type: "game",
+        richText: richTextBuilder.build(),
+        alternating: g % 2 === 1
+      });
+
+      completedGamesRow++;
+    }
+    completedGamesRow++;
+  }
+
+  // PASS 2: Batch write all completed games data and formatting
+  for (var i = 0; i < completedGamesData.length; i++) {
+    var item = completedGamesData[i];
+    var gameRange = scheduleSheet.getRange(item.row, 10);
+    gameRange.setVerticalAlignment("middle");
+
+    if (item.type === "header") {
+      // Headers: plain text with formatting
+      gameRange.setValue(item.text)
+        .setFontWeight("bold")
+        .setBackground("#e8e8e8")
+        .setHorizontalAlignment("left")
+        .setBorder(false, false, true, false, false, false, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+    } else {
+      // Games: rich text
+      gameRange.setRichTextValue(item.richText);
+      if (item.alternating) {
+        gameRange.setBackground("#f3f3f3");
+      }
+    }
+  }
 }
 
 // ===== INITIALIZE SEASON SCHEDULE SHEET =====

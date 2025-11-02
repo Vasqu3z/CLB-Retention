@@ -1,16 +1,8 @@
-// ===== RETENTION GRADES V2 - SHEET BUILDING & FORMATTING =====
+// ===== RETENTION GRADES - SHEET BUILDING & FORMATTING =====
 // Sheet creation, formatting, Team Direction table, and bottom sections
 //
-// Dependencies: RetentionConfig_v2.js, RetentionCore_v2.js
+// Dependencies: RetentionConfig.js, RetentionCore.js
 //
-// V2 CHANGES:
-// - New column layout with Draft/Trade Value at Column C
-// - Removed Star Points column
-// - Added Team Direction table at bottom
-// - Updated headers to say "Performance" instead of "Awards"
-// - V2 weighted formulas
-// - No data validation on modifier columns
-
 /**
  * BUILD FROM SCRATCH: Full sheet creation with all formatting
  * PRESERVES: Postseason data and Team Direction data if it exists
@@ -92,22 +84,22 @@ function buildRetentionSheetFromScratch(retentionGrades) {
   var headers = [
     "Player",
     "Team",
-    "Draft/Trade\nValue (1-8)",  // V2: NEW
-    "Regular Season\nSuccess (0-10)",  // V2.1: SPLIT from TS
-    "Postseason\nSuccess (0-10)",      // V2.1: SPLIT, VLOOKUP
-    "TS Mod\n(manual)",          // V2: No validation
+    "Draft/Trade\nValue (1-8)",
+    "Regular Season\nSuccess (0-10)",  // SPLIT from TS
+    "Postseason\nSuccess (0-10)",      // SPLIT, VLOOKUP
+    "TS Mod\n(manual)",          // No validation
     "TS Total\n(0-20)",
     "Play Time\n(Base 0-20)",
-    "PT Mod\n(manual)",          // V2: No validation
+    "PT Mod\n(manual)",          // No validation
     "PT Total\n(0-20)",
-    "Performance\n(Base 0-20)",  // V2: Renamed from Awards
-    "Perf Mod\n(manual)",        // V2: No validation
+    "Performance\n(Base 0-20)",  // Renamed from Awards
+    "Perf Mod\n(manual)",        // No validation
     "Perf Total\n(0-20)",
     "Auto Total\n(0-60)",
     "Chemistry\n(0-20)",
-    "Direction\n(0-20)",         // V2: VLOOKUP from table
-    "Manual Total\n(weighted)",  // V2: Weighted formula
-    "FINAL GRADE\n(d100)",       // V2: Weighted × 5
+    "Direction\n(0-20)",         // VLOOKUP from table
+    "Manual Total\n(weighted)",  // Weighted formula
+    "FINAL GRADE\n(d100)",       // Weighted × 5
     "Details"
   ];
 
@@ -169,7 +161,7 @@ function applyDataFormatting(sheet, startRow, numRows) {
   }
 
   // Apply alternating row colors to auto-calculated columns (batch operation)
-  // V2.1: Updated for split TS columns
+  // Updated for split TS columns
   // NOTE: COL_FINAL_GRADE excluded - gets grade-based colors from applyFinalGradeFormatting
   var autoCalcColumns = [
     cols.COL_PLAYER, cols.COL_TEAM,
@@ -185,7 +177,7 @@ function applyDataFormatting(sheet, startRow, numRows) {
   }
 
   // Center-align numeric columns (batch operations)
-  // V2.1: Updated for split TS columns
+  // Updated for split TS columns
   var numericColumns = [
     cols.COL_REG_SEASON, cols.COL_POSTSEASON, cols.COL_TS_TOTAL,
     cols.COL_PT_BASE, cols.COL_PT_TOTAL,
@@ -232,14 +224,15 @@ function applyDataFormatting(sheet, startRow, numRows) {
   sheet.getRange(startRow, cols.COL_PERF_MOD, numRows, 1).setValues(perfModToWrite);
   sheet.getRange(startRow, cols.COL_CHEMISTRY, numRows, 1).setValues(chemToWrite);
 
-  // Add VLOOKUP formulas for Direction column
+  // Batch VLOOKUP formulas for Direction column (eliminates N+1 loop)
+  var directionFormulas = [];
   for (var i = 0; i < numRows; i++) {
     var row = startRow + i;
     // VLOOKUP to Team Direction table (will be created at bottom)
     // Format: =IFERROR(VLOOKUP(B{row},TeamDirectionRange,2,FALSE),0)
-    // We'll set this after creating the Team Direction table
-    sheet.getRange(row, cols.COL_DIRECTION).setFormula("=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))");
+    directionFormulas.push(["=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))"]);
   }
+  sheet.getRange(startRow, cols.COL_DIRECTION, numRows, 1).setFormulas(directionFormulas);
 
   // Apply colors to manual input columns (batch operations)
   sheet.getRange(startRow, cols.COL_DRAFT_VALUE, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
@@ -296,7 +289,7 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
   var sectionStartRow = dataStartRow + playerCount + RETENTION_CONFIG.OUTPUT.INSTRUCTIONS_ROW_OFFSET;
 
-  // V2.1: Get unique teams from player list on sheet (Column B)
+  // Get unique teams from player list on sheet (Column B)
   var teamList = getUniqueTeamsFromSheet(sheet, dataStartRow, playerCount);
 
   // ===== TEAM DIRECTION TABLE (NEW IN V2) =====
@@ -326,7 +319,7 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
     .setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER)
     .setHorizontalAlignment("center");
 
-  // V2.1: Auto-populate with team list and restore existing direction scores
+  // Auto-populate with team list and restore existing direction scores
   var directionDataStart = directionStartRow + 3;
   var numTeams = teamList.length;
 
@@ -397,7 +390,7 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
     .setBackground(RETENTION_CONFIG.OUTPUT.COLORS.HEADER)
     .setHorizontalAlignment("center");
 
-  // V2.1: Auto-populate with team list and restore existing finishes
+  // Auto-populate with team list and restore existing finishes
   var postseasonDataStart = postseasonStartRow + 3;
 
   // Build existing postseason finishes map
@@ -451,14 +444,22 @@ function applyFinalGradeFormatting(sheet, startRow, numRows) {
   var finalGradeCol = RETENTION_CONFIG.OUTPUT.COL_FINAL_GRADE;
   var finalGrades = sheet.getRange(startRow, finalGradeCol, numRows, 1).getValues();
 
+  // Batch background colors (eliminates N+1 loop)
+  var backgroundColors = [];
+
   for (var i = 0; i < finalGrades.length; i++) {
     var finalGrade = finalGrades[i][0];
 
     if (typeof finalGrade === 'number' && !isNaN(finalGrade)) {
       var color = RETENTION_CONFIG.getGradeColor(finalGrade);
-      sheet.getRange(startRow + i, finalGradeCol).setBackground(color);
+      backgroundColors.push([color]);
+    } else {
+      backgroundColors.push(["#ffffff"]); // Default white
     }
   }
+
+  // Apply all background colors in one batched operation
+  sheet.getRange(startRow, finalGradeCol, numRows, 1).setBackgrounds(backgroundColors);
 }
 
 /**
@@ -518,7 +519,7 @@ function refreshRetentionFormulas() {
     var playerName = sheet.getRange(row, 1).getValue();
     if (!playerName || playerName === "") continue;
 
-    // V2.1: Postseason Success = VLOOKUP from PostseasonResults table
+    // Postseason Success = VLOOKUP from PostseasonResults table
     sheet.getRange(row, cols.COL_POSTSEASON).setFormula(
       "=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",PostseasonResults,3,FALSE),0))"
     );

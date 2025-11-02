@@ -59,10 +59,11 @@ function updateAllTeamStatsFromCache(teamStats) {
   }
   
   var numTeams = teamOrder.length;
-  teamStatsSheet.getRange(2, 3, numTeams, 3).setValues(allGPWL);
-  teamStatsSheet.getRange(2, 6, numTeams, 9).setValues(allHitting);
-  teamStatsSheet.getRange(2, 15, numTeams, 7).setValues(allPitching);
-  teamStatsSheet.getRange(2, 22, numTeams, 3).setValues(allFielding);
+  var layout = CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET;
+  teamStatsSheet.getRange(layout.DATA_START_ROW, layout.GPWL_START_COL, numTeams, layout.GPWL_NUM_COLS).setValues(allGPWL);
+  teamStatsSheet.getRange(layout.DATA_START_ROW, layout.HITTING_START_COL, numTeams, layout.HITTING_NUM_COLS).setValues(allHitting);
+  teamStatsSheet.getRange(layout.DATA_START_ROW, layout.PITCHING_START_COL, numTeams, layout.PITCHING_NUM_COLS).setValues(allPitching);
+  teamStatsSheet.getRange(layout.DATA_START_ROW, layout.FIELDING_START_COL, numTeams, layout.FIELDING_NUM_COLS).setValues(allFielding);
   
   logInfo("Step 2", "Updated " + numTeams + " teams");
   SpreadsheetApp.getActiveSpreadsheet().toast("Updated " + numTeams + " teams!", "Step 2 Complete", 3);

@@ -2,27 +2,46 @@
 // Step 4: Update standings, league leaders, and recent results
 
 // ===== Update from cached data (called by updateAll) =====
-function updateLeagueHubFromCache(teamStatsWithH2H, gamesByWeek, scheduleData, boxScoreUrl) {
+// Now accepts full gameData object for in-memory performance
+function updateLeagueHubFromCache(gameData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var hittingStatsSheet = ss.getSheetByName(CONFIG.HITTING_STATS_SHEET);
-  var pitchingStatsSheet = ss.getSheetByName(CONFIG.PITCHING_STATS_SHEET);
-  var fieldingStatsSheet = ss.getSheetByName(CONFIG.FIELDING_STATS_SHEET);
-  
-  if (!hittingStatsSheet || !pitchingStatsSheet || !fieldingStatsSheet) {
-    logError("Step 4", "Required stats sheets not found", "Missing one or more sheets");
-    SpreadsheetApp.getUi().alert("Required stats sheets not found!");
-    return;
-  }
-  
+
+  // Extract variables from gameData object
+  var teamStatsWithH2H = gameData.teamStatsWithH2H;
+  var gamesByWeek = gameData.gamesByWeek;
+  var scheduleData = gameData.scheduleData;
+  var boxScoreUrl = gameData.boxScoreUrl;
+
   logInfo("Step 4", "Building League Hub from cached data");
   
   var standingsSheet = ss.getSheetByName(CONFIG.LEAGUE_HUB_SHEET);
   if (!standingsSheet) {
     standingsSheet = ss.insertSheet(CONFIG.LEAGUE_HUB_SHEET);
   }
-  
-  standingsSheet.clear();
-  
+
+  // Targeted Clear - preserve user formatting outside managed columns
+  // Clear only the data-managed zones instead of entire sheet
+  var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
+  var maxRows = standingsSheet.getMaxRows();
+
+  // Clear Standings zone (Columns A-H from row 1 to end)
+  if (maxRows > 0) {
+    standingsSheet.getRange(1, layout.STANDINGS.START_COL, maxRows, layout.STANDINGS.NUM_COLS)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Batting Leaders zone (Column J from row 1 to end)
+    standingsSheet.getRange(1, layout.LEADERS_BATTING.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Pitching Leaders zone (Column L from row 1 to end)
+    standingsSheet.getRange(1, layout.LEADERS_PITCHING.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+
+    // Clear Fielding Leaders zone (Column N from row 1 to end)
+    standingsSheet.getRange(1, layout.LEADERS_FIELDING.START_COL, maxRows, 1)
+      .clearContent().clearFormat().clearNote();
+  }
+
   var currentRow = 1;
   
   // Sort teams by standings
@@ -36,8 +55,9 @@ function updateLeagueHubFromCache(teamStatsWithH2H, gamesByWeek, scheduleData, b
   teamOrder.sort(function(teamA, teamB) {
     return compareTeamsByStandings(teamA, teamB, teamStatsWithH2H);
   });
-  
-  var leagueLeaders = getLeagueLeaders(hittingStatsSheet, pitchingStatsSheet, fieldingStatsSheet, teamStatsWithH2H);
+
+  // Pass in-memory playerStats instead of sheet references
+  var leagueLeaders = getLeagueLeaders(gameData.playerStats, teamStatsWithH2H);
   
   // ===== HEADERS =====
   standingsSheet.getRange(currentRow, 1, 1, 8).merge()
@@ -278,82 +298,8 @@ function updateLeagueHubFromCache(teamStatsWithH2H, gamesByWeek, scheduleData, b
 
   var weeksToShow = Math.min(weekKeys.length, CONFIG.RECENT_SCHEDULE_WEEKS);
 
-  // ===== BUILD ALL RICH TEXT FIRST, THEN APPLY =====
-  var recentResultsData = [];
-  
-  for (var w = 0; w < weeksToShow; w++) {
-    var weekKey = weekKeys[w];
-    var games = gamesByWeek[weekKey];
-    
-    // Week header
-    recentResultsData.push({
-      row: currentRow,
-      type: "header",
-      text: weekKey
-    });
-    currentRow++;
-    
-    // Games
-    for (var g = 0; g < games.length; g++) {
-      var game = games[g];
-      
-      var resultText = game.team1 + ": " + game.runs1 + " || " + game.team2 + ": " + game.runs2;
-      var gameUrl = boxScoreUrl + "#gid=" + game.sheetId;
-      
-      var homeTeamEnd = game.team1.length;
-      var homeScoreEnd = homeTeamEnd + 2 + String(game.runs1).length;
-      var awayTeamStart = resultText.indexOf(game.team2);
-      
-      var homeStyle = SpreadsheetApp.newTextStyle()
-        .setForegroundColor(game.winner === game.team1 ? "#0B6623" : "#8B0000")
-        .setBold(true)
-        .build();
-      
-      var awayStyle = SpreadsheetApp.newTextStyle()
-        .setForegroundColor(game.winner === game.team2 ? "#0B6623" : "#8B0000")
-        .setBold(true)
-        .build();
-      
-      var richTextBuilder = SpreadsheetApp.newRichTextValue()
-        .setText(resultText)
-        .setLinkUrl(gameUrl);
-      
-      richTextBuilder.setTextStyle(0, homeScoreEnd, homeStyle);
-      richTextBuilder.setTextStyle(awayTeamStart, resultText.length, awayStyle);
-      
-      var richText = richTextBuilder.build();
-      
-      recentResultsData.push({
-        row: currentRow,
-        type: "game",
-        richText: richText,
-        alternating: g % 2 === 1
-      });
-      
-      currentRow++;
-    }
-    currentRow++;
-  }
-  
-  // ===== WRITE ALL RECENT RESULTS =====
-  for (var i = 0; i < recentResultsData.length; i++) {
-    var item = recentResultsData[i];
-    var gameRange = standingsSheet.getRange(item.row, 1, 1, 8);
-    gameRange.merge().setVerticalAlignment("middle");
-    
-    if (item.type === "header") {
-      gameRange.setValue(item.text)
-        .setFontWeight("bold")
-        .setBackground("#e8e8e8")
-        .setHorizontalAlignment("left")
-        .setBorder(false, false, true, false, false, false, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-    } else {
-      gameRange.setRichTextValue(item.richText);
-      if (item.alternating) {
-        gameRange.setBackground("#f3f3f3");
-      }
-    }
-  }
+  // 3-Pass Batch System for Rich Text - eliminates N+1 loops
+  buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, currentRow, boxScoreUrl);
   
   // ===== SET COLUMN WIDTHS =====
   standingsSheet.setColumnWidth(1, CONFIG.LEAGUE_HUB_RANK_WIDTH);
@@ -372,13 +318,97 @@ function updateLeagueHubFromCache(teamStatsWithH2H, gamesByWeek, scheduleData, b
   SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.LEAGUE_HUB_SHEET + " updated!", "Step 4 Complete", 3);
 }
 
+// ===== 3-Pass Batch System for Recent Results =====
+// Eliminates N+1 Rich Text loops by batching all operations
+function buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, startRow, boxScoreUrl) {
+  // PASS 1: Build all data structures
+  var rowData = [];
+  var currentRow = startRow;
+
+  for (var w = 0; w < weeksToShow; w++) {
+    var weekKey = weekKeys[w];
+    var games = gamesByWeek[weekKey];
+
+    // Week header
+    rowData.push({
+      row: currentRow,
+      type: "header",
+      text: weekKey
+    });
+    currentRow++;
+
+    // Games
+    for (var g = 0; g < games.length; g++) {
+      var game = games[g];
+
+      var resultText = game.team1 + ": " + game.runs1 + " || " + game.team2 + ": " + game.runs2;
+      var gameUrl = boxScoreUrl + "#gid=" + game.sheetId;
+
+      var homeTeamEnd = game.team1.length;
+      var homeScoreEnd = homeTeamEnd + 2 + String(game.runs1).length;
+      var awayTeamStart = resultText.indexOf(game.team2);
+
+      var homeStyle = SpreadsheetApp.newTextStyle()
+        .setForegroundColor(game.winner === game.team1 ? "#0B6623" : "#8B0000")
+        .setBold(true)
+        .build();
+
+      var awayStyle = SpreadsheetApp.newTextStyle()
+        .setForegroundColor(game.winner === game.team2 ? "#0B6623" : "#8B0000")
+        .setBold(true)
+        .build();
+
+      var richTextBuilder = SpreadsheetApp.newRichTextValue()
+        .setText(resultText)
+        .setLinkUrl(gameUrl);
+
+      richTextBuilder.setTextStyle(0, homeScoreEnd, homeStyle);
+      richTextBuilder.setTextStyle(awayTeamStart, resultText.length, awayStyle);
+
+      rowData.push({
+        row: currentRow,
+        type: "game",
+        richText: richTextBuilder.build(),
+        alternating: g % 2 === 1
+      });
+
+      currentRow++;
+    }
+    currentRow++;
+  }
+
+  // PASS 2: Batch write all data and formatting
+  // First, merge all cells and set vertical alignment in one pass
+  for (var i = 0; i < rowData.length; i++) {
+    var item = rowData[i];
+    var gameRange = standingsSheet.getRange(item.row, 1, 1, 8);
+    gameRange.merge().setVerticalAlignment("middle");
+
+    if (item.type === "header") {
+      // Headers: plain text with formatting
+      gameRange.setValue(item.text)
+        .setFontWeight("bold")
+        .setBackground("#e8e8e8")
+        .setHorizontalAlignment("left")
+        .setBorder(false, false, true, false, false, false, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+    } else {
+      // Games: rich text
+      gameRange.setRichTextValue(item.richText);
+      if (item.alternating) {
+        gameRange.setBackground("#f3f3f3");
+      }
+    }
+  }
+}
+
 // ===== OLD: Legacy function for manual execution (calls game processor) =====
 function updateLeagueHub() {
   // This function is now just a wrapper that calls the game processor
   // It's kept for backwards compatibility and manual menu execution
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
-    updateLeagueHubFromCache(gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.scheduleData, gameData.boxScoreUrl);
+    // Pass full gameData object
+    updateLeagueHubFromCache(gameData);
   }
 }
 

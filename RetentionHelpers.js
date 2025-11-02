@@ -1,97 +1,24 @@
-// ===== RETENTION GRADES V2 - HELPER FUNCTIONS & UTILITIES =====
+// ===== RETENTION GRADES - HELPER FUNCTIONS & UTILITIES =====
 // Utility functions, help dialogs, and debug tools
 //
-// Dependencies: RetentionConfig_v2.js
+// Dependencies: RetentionConfig.js
 //
-// V2 CHANGES:
-// - Updated help dialogs for v2 features
-// - Added help for Draft Value and Team Direction
-// - Removed Star Points references
-
 // ===== UTILITY FUNCTIONS =====
+// Generic utility functions moved to LeagueUtility.js
+// Retention-specific wrappers and functions remain here
 
 /**
- * Calculate percentile rank for a value in a sorted array
- */
-function calculatePercentile(value, sortedArray) {
-  if (!sortedArray || sortedArray.length === 0) return 50;
-
-  if (value === null || value === undefined || typeof value !== 'number' || isNaN(value)) {
-    return 0;
-  }
-
-  var n = sortedArray.length;
-  var countBelow = 0;
-  var countEqual = 0;
-
-  for (var i = 0; i < n; i++) {
-    if (sortedArray[i] < value) {
-      countBelow++;
-    } else if (sortedArray[i] === value) {
-      countEqual++;
-    }
-  }
-
-  var percentile = ((countBelow + 0.5 * countEqual) / n) * 100;
-
-  if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS) {
-    Logger.log("Percentile calc: value=" + value + ", below=" + countBelow +
-               ", equal=" + countEqual + ", n=" + n + ", result=" + percentile.toFixed(1));
-  }
-
-  return percentile;
-}
-
-/**
- * Find player index in array by name and team
- */
-function findPlayerIndex(players, name, team) {
-  for (var i = 0; i < players.length; i++) {
-    if (players[i].name === name && players[i].team === team) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-/**
- * Get ordinal suffix for numbers (1st, 2nd, 3rd, etc.)
- */
-function getOrdinalSuffix(num) {
-  var j = num % 10;
-  var k = num % 100;
-
-  if (j === 1 && k !== 11) {
-    return "st";
-  }
-  if (j === 2 && k !== 12) {
-    return "nd";
-  }
-  if (j === 3 && k !== 13) {
-    return "rd";
-  }
-  return "th";
-}
-
-/**
- * Find postseason section in sheet
+ * Find postseason section in sheet (wrapper for findSheetSection)
  */
 function findPostseasonSection(sheet) {
-  try {
-    var lastRow = sheet.getLastRow();
-    var searchRange = sheet.getRange(1, 1, lastRow, 1).getValues();
+  return findSheetSection(sheet, RETENTION_CONFIG.POSTSEASON_SEARCH_TEXT);
+}
 
-    for (var i = 0; i < searchRange.length; i++) {
-      var cellValue = String(searchRange[i][0]);
-      if (cellValue.indexOf(RETENTION_CONFIG.POSTSEASON_SEARCH_TEXT) >= 0) {
-        return i + 1;
-      }
-    }
-  } catch (e) {
-    Logger.log("Error finding postseason section: " + e.toString());
-  }
-
-  return -1;
+/**
+ * Find team direction section in sheet (wrapper for findSheetSection)
+ */
+function findTeamDirectionSection(sheet) {
+  return findSheetSection(sheet, RETENTION_CONFIG.TEAM_DIRECTION_TABLE.SEARCH_TEXT);
 }
 
 // ===== HELP DIALOGS =====
@@ -176,7 +103,7 @@ function showAutoFlaggingHelp() {
     'Viewing Flags:\n' +
     'Check the Details column (R) for "Auto-flag: -X pts (flight risk)" messages.\n\n' +
     'Configuration:\n' +
-    'Thresholds can be adjusted in RetentionConfig_v2.js AUTO_FLAGGING section.';
+    'Thresholds can be adjusted in RetentionConfig.js AUTO_FLAGGING section.';
 
   ui.alert('Auto-Flagging Help', helpText, ui.ButtonSet.OK);
 }
@@ -434,11 +361,11 @@ function showVersionInfo() {
     '• Smart Update preserves Team Direction data\n' +
     '• 19 columns total (was 18)\n\n' +
     'File Structure:\n' +
-    '• RetentionConfig_v2.js (configuration)\n' +
-    '• RetentionCore_v2.js (data & calculation engine)\n' +
-    '• RetentionFactors_v2.js (factor calculations)\n' +
-    '• RetentionSheet_v2.js (sheet building)\n' +
-    '• RetentionHelpers_v2.js (utilities)\n\n' +
+    '• RetentionConfig.js (configuration)\n' +
+    '• RetentionCore.js (data & calculation engine)\n' +
+    '• RetentionFactors.js (factor calculations)\n' +
+    '• RetentionSheet.js (sheet building)\n' +
+    '• RetentionHelpers.js (utilities)\n\n' +
     'Load Order:\n' +
     'Config → Core → Factors → Sheet → Helpers';
 

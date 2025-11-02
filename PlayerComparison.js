@@ -2,13 +2,13 @@
 // Player comparison dialog and data retrieval
 
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('PlayerComparison')
+  return HtmlService.createHtmlOutputFromFile('PlayerComparisonApp')
     .setTitle('Player Comparison Tool')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function showPlayerComparison() {
-  var html = HtmlService.createHtmlOutputFromFile('PlayerComparison')
+  var html = HtmlService.createHtmlOutputFromFile('PlayerComparisonApp')
     .setWidth(800)
     .setHeight(600)
     .setTitle('Player Comparison Tool');
@@ -138,4 +138,5 @@ function getPlayerStats(playerNames) {
   }
   
   return results;
+
 }

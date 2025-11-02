@@ -1,4 +1,4 @@
-// ===== BASEBALL STATS MANAGER - CORE SCRIPT =====
+// ===== LEAGUE HUB - CORE SCRIPT =====
 // Core functionality: Menu and Update All orchestrator
 
 // ===== MENU =====
@@ -17,7 +17,7 @@ function onOpen() {
           .addItem('⚠️ Detect Missing Transactions', 'detectMissingTransactions'))
       // Retention (collapsed)
       .addSubMenu(ui.createMenu('⭐ Retention')
-          .addItem('🏆 Calculate Final Retention Grades', 'calculateFinalRetentionGrades')
+          .addItem('🏆 Calculate Retention Grades', 'calculateFinalRetentionGrades')
           .addSeparator()
           .addItem('Refresh Formulas', 'refreshRetentionFormulas')
           .addItem('Rebuild Sheet Formatting', 'rebuildRetentionSheet'))
@@ -384,4 +384,5 @@ function calculateFinalRetentionGrades() {
       ui.ButtonSet.OK
     );
   }
+
 }

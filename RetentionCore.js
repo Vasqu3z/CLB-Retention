@@ -1,15 +1,11 @@
-// ===== RETENTION GRADES V2 - CORE CALCULATION ENGINE =====
+// ===== RETENTION GRADES - CORE CALCULATION ENGINE =====
 // Main calculation logic, data loading, and Smart Update system
 //
-// Dependencies: RetentionConfig_v2.js (must be loaded first)
-// Related files: RetentionFactors_v2.js, RetentionSheet_v2.js, RetentionHelpers_v2.js
+// This module orchestrates retention grade calculations using cached game data.
+// Calculations use in-memory data structures for optimal performance.
 //
-// V2 CHANGES:
-// - Removed star points calculation
-// - Added draft/trade value reading
-// - Renamed "Awards" to "Performance"
-// - Uses weighted grading formula
-// - Preserves existing Smart Update system
+// Dependencies: RetentionConfig.js, LeagueConfig.js
+// Related modules: RetentionFactors.js, RetentionSheet.js, RetentionHelpers.js
 
 // ===== PERFORMANCE OPTIMIZATION: CACHING =====
 var LINEUP_DATA_CACHE = null;
@@ -38,12 +34,12 @@ function calculateRetentionGrades(loadedGameData) {
       ss.toast("Starting retention grade calculation v3...", "Processing", 3);
     }
 
-    // V3 UPDATE: Load data from cache instead of re-reading sheets
+    // Load data from cache instead of re-reading sheets
     Logger.log("=== RETENTION GRADES V3 CALCULATION START ===");
 
     Logger.log("Step 1/3: Loading data from cache...");
 
-    // V3 VALIDATION: Check if cached data exists and has correct structure
+    // Check if cached data exists and has correct structure
     if (!loadedGameData) {
       throw new Error("No cached data provided. Please run 'Update All' first to cache season data.");
     }
@@ -73,12 +69,12 @@ function calculateRetentionGrades(loadedGameData) {
       throw new Error("No teams found in cached data. Please ensure games have been processed and run 'Update All'.");
     }
 
-    // V3 UPDATE: We still need lineup data and percentiles
+    // We still need lineup data and percentiles
     Logger.log("Step 2/3: Loading supporting data...");
     var lineupData = getLineupPositionData(); // This reads box scores (not cached)
     Logger.log("Loaded lineup data for " + Object.keys(lineupData).length + " player-team combinations");
 
-    var leagueStats = calculateLeaguePercentilesFromCache(playerStats, teamStats); // V3: New function
+    var leagueStats = calculateLeaguePercentilesFromCache(playerStats, teamStats); // New function
     Logger.log("Percentiles calculated from cache - Hitters: " + (leagueStats.hitting.avg ? leagueStats.hitting.avg.length : 0) +
                ", Pitchers: " + (leagueStats.pitching.era ? leagueStats.pitching.era.length : 0));
 
@@ -113,7 +109,7 @@ function calculateRetentionGrades(loadedGameData) {
     Logger.log("Step 3/3: Calculating retention grades...");
     Logger.log("Processing " + Object.keys(playerStats).length + " players from cache");
 
-    // V3 UPDATE: Calculate grades for each player (loop over playerStats object)
+    // Calculate grades for each player (loop over playerStats object)
     var retentionGrades = [];
     var playerCount = 0;
     var totalPlayers = Object.keys(playerStats).length;
@@ -123,14 +119,14 @@ function calculateRetentionGrades(loadedGameData) {
 
       var stats = playerStats[playerName];
 
-      // V3 FIX: Filter out players without teams (match v2 behavior)
+      // Filter out players without teams (match v2 behavior)
       if (!RETENTION_CONFIG.PLAYER_FILTERING.INCLUDE_PLAYERS_WITHOUT_TEAMS) {
         if (!stats.team || stats.team.trim() === "") {
           continue;  // Skip players without teams
         }
       }
 
-      // V3: Cached data already has proper object structure with calculated stats
+      // Cached data already has proper object structure with calculated stats
       var player = {
         name: playerName,
         team: stats.team,
@@ -174,14 +170,14 @@ function calculateRetentionGrades(loadedGameData) {
         }
       };
 
-      // V3 UPDATE: Calculate each factor (functions in RetentionFactors_v2.js)
+      // Calculate each factor (functions in RetentionFactors.js)
       // Pass teamStats instead of separate teamData, standingsData, postseasonData
-      var teamSuccess = calculateTeamSuccessV3(player, teamStats);
-      var playTime = calculatePlayTimeV3(player, teamStats, lineupData);
+      var teamSuccess = calculateTeamSuccess(player, teamStats);
+      var playTime = calculatePlayTime(player, teamStats, lineupData);
 
       // Get draft value for this player (if exists from previous run)
       var draftValue = existingDraftValues[player.name] || "";
-      var performance = calculatePerformanceV3(player, leagueStats, teamStats, draftValue);
+      var performance = calculatePerformance(player, leagueStats, teamStats, draftValue);
 
       retentionGrades.push({
         playerName: player.name,
@@ -820,7 +816,7 @@ function calculateLeaguePercentiles() {
 /**
  * V3 HELPER: Calculate league percentiles from in-memory playerStats object
  * instead of re-reading the sheets.
- * This is the cached version used by calculateRetentionGradesV3.
+ * This is the cached version used by calculateRetentionGrades.
  */
 function calculateLeaguePercentilesFromCache(playerStats, teamStats) {
   Logger.log("Calculating league percentiles from cached playerStats...");
@@ -867,7 +863,7 @@ function calculateLeaguePercentilesFromCache(playerStats, teamStats) {
 
     var stats = playerStats[playerName];
 
-    // V3 FIX: Filter out players without teams from percentile calculations (match v2 behavior)
+    // Filter out players without teams from percentile calculations (match v2 behavior)
     if (!RETENTION_CONFIG.PLAYER_FILTERING.INCLUDE_PLAYERS_WITHOUT_TEAMS) {
       if (!stats.team || stats.team.trim() === "") {
         continue;  // Skip players without teams
@@ -1005,8 +1001,8 @@ function updateRetentionData(sheet, retentionGrades) {
     }
   }
 
-  // CRITICAL: Only clear auto-calculated columns, preserve manual inputs
-  // V2.1: Manual columns (PRESERVED): C (draft value), F, I, L (modifiers), O (chemistry), P (direction via VLOOKUP)
+  // Only clear auto-calculated columns, preserve manual inputs
+  // Manual columns (PRESERVED): C (draft value), F, I, L (modifiers), O (chemistry), P (direction via VLOOKUP)
 
   var numRows = lastDataRow - dataStartRow + 1;
 
@@ -1061,7 +1057,7 @@ function writePlayerData(sheet, retentionGrades) {
   });
 
   // Prepare data arrays for batch writing (only auto-calculated columns)
-  // V2.1: Split TS into Regular Season + Postseason
+  // Split TS into Regular Season + Postseason
   var playerNames = [];
   var teams = [];
   var regSeasonValues = [];
@@ -1080,7 +1076,7 @@ function writePlayerData(sheet, retentionGrades) {
 
     playerNames.push([grade.playerName]);
     teams.push([grade.team]);
-    regSeasonValues.push([grade.teamSuccess.regularSeason.toFixed(1)]);  // V2.1: Split TS
+    regSeasonValues.push([grade.teamSuccess.regularSeason.toFixed(1)]);  // Split TS
     // Postseason will be VLOOKUP formula, not written here
     ptBaseValues.push([grade.playTime.total.toFixed(1)]);
     perfBaseValues.push([grade.performance.total.toFixed(1)]);
@@ -1098,7 +1094,7 @@ function writePlayerData(sheet, retentionGrades) {
   Logger.log("Writing " + numRows + " players to Retention sheet");
 
   // Write auto-calculated columns only (batch operations)
-  // V2.1: Write Regular Season, Postseason will be VLOOKUP formula
+  // Write Regular Season, Postseason will be VLOOKUP formula
   sheet.getRange(dataStartRow, cols.COL_PLAYER, numRows, 1).setValues(playerNames);
   sheet.getRange(dataStartRow, cols.COL_TEAM, numRows, 1).setValues(teams);
   sheet.getRange(dataStartRow, cols.COL_REG_SEASON, numRows, 1).setValues(regSeasonValues);  // D
@@ -1108,7 +1104,7 @@ function writePlayerData(sheet, retentionGrades) {
   sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).setValues(autoTotalValues);
   sheet.getRange(dataStartRow, cols.COL_DETAILS, numRows, 1).setValues(detailsValues);
 
-  // V3 UPDATE: Batch all formulas for performance (eliminates N+1 loops)
+  // Batch all formulas for performance (eliminates N+1 loops)
   // Build formula arrays
   var postseasonFormulas = [];
   var tsTotalFormulas = [];
@@ -1152,7 +1148,7 @@ function writePlayerData(sheet, retentionGrades) {
     ]);
   }
 
-  // V3 UPDATE: Apply all formulas in batched operations
+  // Apply all formulas in batched operations
   sheet.getRange(dataStartRow, cols.COL_POSTSEASON, numRows, 1).setFormulas(postseasonFormulas);
   sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).setFormulas(tsTotalFormulas);
   sheet.getRange(dataStartRow, cols.COL_PT_TOTAL, numRows, 1).setFormulas(ptTotalFormulas);

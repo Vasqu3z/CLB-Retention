@@ -2,11 +2,11 @@
 // Step 4: Update standings, league leaders, and recent results
 
 // ===== Update from cached data (called by updateAll) =====
-// V3 UPDATE: Now accepts full gameData object for in-memory performance
+// Now accepts full gameData object for in-memory performance
 function updateLeagueHubFromCache(gameData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // V3 UPDATE: Extract variables from gameData object
+  // Extract variables from gameData object
   var teamStatsWithH2H = gameData.teamStatsWithH2H;
   var gamesByWeek = gameData.gamesByWeek;
   var scheduleData = gameData.scheduleData;
@@ -19,7 +19,7 @@ function updateLeagueHubFromCache(gameData) {
     standingsSheet = ss.insertSheet(CONFIG.LEAGUE_HUB_SHEET);
   }
 
-  // V3 UPDATE: Targeted Clear - preserve user formatting outside managed columns
+  // Targeted Clear - preserve user formatting outside managed columns
   // Clear only the data-managed zones instead of entire sheet
   var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
   var maxRows = standingsSheet.getMaxRows();
@@ -56,7 +56,7 @@ function updateLeagueHubFromCache(gameData) {
     return compareTeamsByStandings(teamA, teamB, teamStatsWithH2H);
   });
 
-  // V3 UPDATE: Pass in-memory playerStats instead of sheet references
+  // Pass in-memory playerStats instead of sheet references
   var leagueLeaders = getLeagueLeaders(gameData.playerStats, teamStatsWithH2H);
   
   // ===== HEADERS =====
@@ -298,7 +298,7 @@ function updateLeagueHubFromCache(gameData) {
 
   var weeksToShow = Math.min(weekKeys.length, CONFIG.RECENT_SCHEDULE_WEEKS);
 
-  // V3 UPDATE: 3-Pass Batch System for Rich Text - eliminates N+1 loops
+  // 3-Pass Batch System for Rich Text - eliminates N+1 loops
   buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, currentRow, boxScoreUrl);
   
   // ===== SET COLUMN WIDTHS =====
@@ -318,7 +318,7 @@ function updateLeagueHubFromCache(gameData) {
   SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.LEAGUE_HUB_SHEET + " updated!", "Step 4 Complete", 3);
 }
 
-// ===== V3: 3-Pass Batch System for Recent Results =====
+// ===== 3-Pass Batch System for Recent Results =====
 // Eliminates N+1 Rich Text loops by batching all operations
 function buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, startRow, boxScoreUrl) {
   // PASS 1: Build all data structures
@@ -407,7 +407,7 @@ function updateLeagueHub() {
   // It's kept for backwards compatibility and manual menu execution
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
-    // V3 UPDATE: Pass full gameData object
+    // Pass full gameData object
     updateLeagueHubFromCache(gameData);
   }
 }

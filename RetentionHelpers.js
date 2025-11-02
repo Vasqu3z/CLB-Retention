@@ -1,15 +1,10 @@
-// ===== RETENTION GRADES V2 - HELPER FUNCTIONS & UTILITIES =====
+// ===== RETENTION GRADES - HELPER FUNCTIONS & UTILITIES =====
 // Utility functions, help dialogs, and debug tools
 //
-// Dependencies: RetentionConfig_v2.js
+// Dependencies: RetentionConfig.js
 //
-// V2 CHANGES:
-// - Updated help dialogs for v2 features
-// - Added help for Draft Value and Team Direction
-// - Removed Star Points references
-
 // ===== UTILITY FUNCTIONS =====
-// V3 UPDATE: Generic utility functions moved to LeagueUtility.js
+// Generic utility functions moved to LeagueUtility.js
 // Retention-specific wrappers and functions remain here
 
 /**
@@ -108,7 +103,7 @@ function showAutoFlaggingHelp() {
     'Viewing Flags:\n' +
     'Check the Details column (R) for "Auto-flag: -X pts (flight risk)" messages.\n\n' +
     'Configuration:\n' +
-    'Thresholds can be adjusted in RetentionConfig_v2.js AUTO_FLAGGING section.';
+    'Thresholds can be adjusted in RetentionConfig.js AUTO_FLAGGING section.';
 
   ui.alert('Auto-Flagging Help', helpText, ui.ButtonSet.OK);
 }
@@ -366,11 +361,11 @@ function showVersionInfo() {
     '• Smart Update preserves Team Direction data\n' +
     '• 19 columns total (was 18)\n\n' +
     'File Structure:\n' +
-    '• RetentionConfig_v2.js (configuration)\n' +
-    '• RetentionCore_v2.js (data & calculation engine)\n' +
-    '• RetentionFactors_v2.js (factor calculations)\n' +
-    '• RetentionSheet_v2.js (sheet building)\n' +
-    '• RetentionHelpers_v2.js (utilities)\n\n' +
+    '• RetentionConfig.js (configuration)\n' +
+    '• RetentionCore.js (data & calculation engine)\n' +
+    '• RetentionFactors.js (factor calculations)\n' +
+    '• RetentionSheet.js (sheet building)\n' +
+    '• RetentionHelpers.js (utilities)\n\n' +
     'Load Order:\n' +
     'Config → Core → Factors → Sheet → Helpers';
 

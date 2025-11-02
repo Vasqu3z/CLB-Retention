@@ -5,7 +5,7 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Player Stats')
-      // V3 UPDATE: Simplified menu - removed step-by-step updates
+      // Simplified menu - removed step-by-step updates
       .addItem('🚀 Update All', 'updateAll')
       .addItem('📊 Compare Players', 'showPlayerComparison')
       .addItem('🔧 Recalculate All Formulas', 'recalculateFormulas')
@@ -20,13 +20,7 @@ function onOpen() {
           .addItem('🏆 Calculate Final Retention Grades', 'calculateFinalRetentionGrades')
           .addSeparator()
           .addItem('Refresh Formulas', 'refreshRetentionFormulas')
-          .addItem('Rebuild Sheet Formatting', 'rebuildRetentionSheet')
-          .addSeparator()
-          .addSubMenu(ui.createMenu('📖 Documentation')
-              .addItem('Factor 1: Team Success', 'showTeamSuccessHelp')
-              .addItem('Factor 2: Play Time', 'showPlayTimeHelp')
-              .addItem('Factor 3: Awards', 'showAwardsHelp')
-              .addItem('About Retention System', 'showRetentionSystemHelp')))
+          .addItem('Rebuild Sheet Formatting', 'rebuildRetentionSheet'))
       // Archive & Maintenance (collapsed)
       .addSubMenu(ui.createMenu('📦 Archive & Maintenance')
           .addItem('Archive Current Season', 'archiveCurrentSeason'))
@@ -84,7 +78,7 @@ function updateAll() {
     // ===== STEP 4: Update league hub (using cached data) =====
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Update All", -1);
     var step4Start = new Date();
-    // V3 UPDATE: Pass full gameData object for in-memory performance
+    // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
     var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
@@ -115,7 +109,7 @@ function updateAll() {
     SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
     logInfo("Update All", "Completed successfully in " + totalTime + "s");
 
-    // V3 INTEGRATION: Cache final data for Retention suite
+    // Cache final data for Retention suite
     cacheCurrentSeasonStats(gameData);
 
   } catch (e) {
@@ -193,7 +187,7 @@ function quickUpdate() {
     
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Quick Update", -1);
     var step4Start = new Date();
-    // V3 UPDATE: Pass full gameData object for in-memory performance
+    // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
     var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
@@ -319,7 +313,7 @@ function updateLeagueHub() {
   // Manual execution - process games fresh
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
-    // V3 UPDATE: Pass full gameData object for in-memory performance
+    // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
   }
 }
@@ -375,7 +369,7 @@ function calculateFinalRetentionGrades() {
 
     // Call the refactored retention calculation with cached data
     SpreadsheetApp.getActiveSpreadsheet().toast("Calculating retention grades from cached data...", "Retention v3", -1);
-    calculateRetentionGradesV3(loadedGameData);
+    calculateRetentionGrades(loadedGameData);
 
     ui.alert(
       '✅ Retention Grades Complete',
@@ -397,7 +391,7 @@ function calculateFinalRetentionGrades() {
  * V3 wrapper for calculateRetentionGrades that accepts cached data
  * This bypasses the I/O operations and uses pre-processed data
  */
-function calculateRetentionGradesV3(loadedGameData) {
+function calculateRetentionGrades(loadedGameData) {
   // Call the main retention function with the loaded data
   // The retention function needs to be refactored to accept this parameter
   // For now, we'll call the existing function but this should be updated

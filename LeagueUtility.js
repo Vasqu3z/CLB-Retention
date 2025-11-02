@@ -301,7 +301,7 @@ function compareTeamsByStandings(teamA, teamB, teamStats) {
 
 // ===== LEAGUE LEADERS & FORMATTING =====
 
-// V3 UPDATE: Refactored to use in-memory playerStats instead of reading sheets
+// Refactored to use in-memory playerStats instead of reading sheets
 function getLeagueLeaders(playerStats, teamStats) {
   var leaders = {
     batting: { obp: [], hits: [], hr: [], rbi: [], slg: [], ops: [] },
@@ -327,7 +327,7 @@ function getLeagueLeaders(playerStats, teamStats) {
     }
   }
 
-  // V3: Process stats from in-memory playerStats object
+  // Process stats from in-memory playerStats object
   for (var playerName in playerStats) {
     var stats = playerStats[playerName];
     var team = playerTeamMap[playerName];
@@ -351,7 +351,7 @@ function getLeagueLeaders(playerStats, teamStats) {
 
     // Calculate derived stats
     var avg = ab > 0 ? hits / ab : 0;
-    var obp = (ab + bb) > 0 ? (hits + bb) / (ab + bb) : 0;  // FIXED: Correct OBP formula (H+BB)/(AB+BB)
+    var obp = (ab + bb) > 0 ? (hits + bb) / (ab + bb) : 0;  // Correct OBP formula (H+BB)/(AB+BB)
     var slg = ab > 0 ? tb / ab : 0;
     var ops = obp + slg;
 
@@ -763,7 +763,7 @@ function cacheCurrentSeasonStats(gameData) {
       var tb = rawStats.hitting[8] || 0;
 
       var avg = ab > 0 ? h / ab : 0;
-      var obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;  // FIXED: Correct OBP formula
+      var obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;  // Correct OBP formula
       var slg = ab > 0 ? tb / ab : 0;
       var ops = obp + slg;
 

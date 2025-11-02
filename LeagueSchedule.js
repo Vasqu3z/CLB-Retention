@@ -40,7 +40,7 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
     scheduleSheet = ss.insertSheet(CONFIG.LEAGUE_SCHEDULE_SHEET);
   }
 
-  // V3 UPDATE: Targeted Clear - preserve user formatting outside managed columns
+  // Targeted Clear - preserve user formatting outside managed columns
   // Clear only the data-managed zones instead of entire sheet
   var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_SCHEDULE;
   var maxRows = scheduleSheet.getMaxRows();
@@ -260,7 +260,7 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
       .setFontColor("#999999");
   }
   
-  // V3 UPDATE: 3-Pass Batch System for Completed Games - eliminates N+1 loops
+  // 3-Pass Batch System for Completed Games - eliminates N+1 loops
   currentRow = standingsStartRow + standingsData.length + 2;
   writeScheduleToSheet(scheduleSheet, scheduleData, gamesByWeek, boxScoreSpreadsheetUrl, currentRow);
   
@@ -279,7 +279,7 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
   logInfo("Step 5", "Created/updated League Schedule sheet");
 }
 
-// ===== V3: 3-Pass Batch System for Completed Games and This Week's Games =====
+// ===== 3-Pass Batch System for Completed Games and This Week's Games =====
 // Eliminates N+1 Rich Text loops by batching all operations
 function writeScheduleToSheet(scheduleSheet, scheduleData, gamesByWeek, boxScoreSpreadsheetUrl, startRow) {
   // COMPLETED GAMES HEADER

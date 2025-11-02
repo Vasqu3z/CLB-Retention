@@ -1,6 +1,6 @@
 // ===== GAME PROCESSOR MODULE =====
 // Master game sheet processor - reads all games once and returns all needed data
-// V3 UPDATE: 100% config-driven I/O, no hardcoded ranges
+// 100% config-driven I/O, no hardcoded ranges
 
 // ===== MASTER FUNCTION: Process all game sheets once =====
 function processAllGameSheetsOnce() {
@@ -31,7 +31,7 @@ function processAllGameSheetsOnce() {
     var sheetName = sheet.getName();
 
     try {
-      // V3 UPDATE: PERFORMANCE OPTIMIZED - Single batch read of entire game sheet
+      // PERFORMANCE OPTIMIZED - Single batch read of entire game sheet
       // Read B3:R50 once (48 rows × 17 columns = 816 cells)
       // This replaces 8 separate reads with 1 consolidated read
       var batchData = sheet.getRange("B3:R50").getValues();
@@ -87,10 +87,10 @@ function processAllGameSheetsOnce() {
         homeRuns: homeRuns,
         hittingData: hittingData,
         pitchFieldData: pitchFieldData,
-        awayTeamTotals: team1Totals,        // V3 FIX: team1 = Away (row 39)
-        homeTeamTotals: team2Totals,        // V3 FIX: team2 = Home (row 50)
-        awayTeamPitchField: team1PitchField, // V3 FIX: team1 = Away (row 16)
-        homeTeamPitchField: team2PitchField, // V3 FIX: team2 = Home (row 27)
+        awayTeamTotals: team1Totals,        // team1 = Away (row 39)
+        homeTeamTotals: team2Totals,        // team2 = Home (row 50)
+        awayTeamPitchField: team1PitchField, // team1 = Away (row 16)
+        homeTeamPitchField: team2PitchField, // team2 = Home (row 27)
         winningPitcher: winningPitcher,
         losingPitcher: losingPitcher,
         savePitcher: savePitcher

@@ -1,15 +1,8 @@
-// ===== RETENTION GRADES V2 - FACTOR CALCULATIONS =====
+// ===== RETENTION GRADES - FACTOR CALCULATIONS =====
 // Individual factor calculation functions with V2 enhancements
 //
-// Dependencies: RetentionConfig_v2.js, RetentionCore_v2.js
+// Dependencies: RetentionConfig.js, RetentionCore.js
 //
-// V2 CHANGES:
-// - Team Success: 10/10 split (regular/postseason)
-// - Play Time: Removed star points component
-// - Performance: Renamed from "Awards", adds auto-flagging and draft expectations
-// - Auto-flagging: Elite players on bad teams get performance penalty
-// - Draft expectations: Performance vs draft round expectations
-
 // ===== FACTOR 1: TEAM SUCCESS (0-20 POINTS) =====
 /**
  * Calculate Team Success score
@@ -153,7 +146,7 @@ function calculatePlayTime(player, teamData, lineupData) {
   }
 
   // Usage quality - lineup position (hitters) or IP/game (pitchers)
-  // V2: Increased to 10 points (from 8)
+  // Increased to 10 points (from 8)
   if (hasLineupData) {
     // METHOD 1: Use actual lineup position from box scores
     var avgLineupPos = lineupData[lineupKey].averagePosition;
@@ -312,7 +305,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
 
     offensivePercentile = avgPercentile;
 
-    // V3 DEBUG: Log percentile details for troubleshooting
+    // Log percentile details for troubleshooting
     if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS && player.name && player.name.indexOf("King") >= 0) {
       Logger.log("V3 DEBUG Hitting Percentiles for " + player.name + ":");
       if (percentiles.length >= 6) {
@@ -362,7 +355,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
       defPercentile = calculatePercentile(netDefense, leagueStats.fielding.netDefense);
     }
 
-    // V3 DEBUG: Log fielding details
+    // Log fielding details
     if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS && player.name && player.name.indexOf("King") >= 0) {
       Logger.log("V3 DEBUG Fielding for " + player.name + ":");
       Logger.log("  - NP: " + np);
@@ -445,7 +438,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
 
   breakdown.baseTotal = breakdown.offensive + breakdown.defensive + breakdown.pitching;
 
-  // ===== V2: AUTO-FLAGGING SYSTEM =====
+  // ===== AUTO-FLAGGING SYSTEM =====
   // Elite players on struggling teams get performance penalty
   if (RETENTION_CONFIG.AUTO_FLAGGING.ENABLED) {
     var standing = standingsData[player.team];
@@ -466,7 +459,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
     }
   }
 
-  // ===== V2: DRAFT EXPECTATIONS SYSTEM =====
+  // ===== DRAFT EXPECTATIONS SYSTEM =====
   // Apply modifier based on performance vs draft round expectations
   if (RETENTION_CONFIG.DRAFT_EXPECTATIONS.ENABLED && offensivePercentile > 0) {
     var draftMod = applyDraftExpectations(offensivePercentile, draftValue);
@@ -480,7 +473,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
 
   breakdown.total = breakdown.baseTotal + breakdown.autoFlaggingPenalty + breakdown.draftExpectationsMod;
 
-  // V3 DEBUG: Log performance calculation for troubleshooting
+  // Log performance calculation for troubleshooting
   if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS && player.name && player.name.indexOf("King") >= 0) {
     Logger.log("V3 DEBUG Performance for " + player.name + ":");
     Logger.log("  - Offensive: " + breakdown.offensive);
@@ -502,7 +495,7 @@ function calculatePerformance(player, leagueStats, standingsData, draftValue) {
     breakdown.total = 0;
   }
 
-  // V3 DEBUG: Log after capping
+  // Log after capping
   if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_DETAILS && player.name && player.name.indexOf("King") >= 0) {
     Logger.log("  - Total (after cap): " + breakdown.total);
   }
@@ -683,7 +676,7 @@ function convertTeamStatsToTeamData(teamStats) {
 /**
  * V3 WRAPPER: calculateTeamSuccess using cached teamStats
  */
-function calculateTeamSuccessV3(player, teamStats) {
+function calculateTeamSuccess(player, teamStats) {
   // Convert teamStats to the formats expected by the original function
   var teamData = convertTeamStatsToTeamData(teamStats);
   var standingsData = getStandingsFromTeamStats(teamStats);
@@ -698,7 +691,7 @@ function calculateTeamSuccessV3(player, teamStats) {
 /**
  * V3 WRAPPER: calculatePlayTime using cached teamStats
  */
-function calculatePlayTimeV3(player, teamStats, lineupData) {
+function calculatePlayTime(player, teamStats, lineupData) {
   // Convert teamStats to teamData format
   var teamData = convertTeamStatsToTeamData(teamStats);
 
@@ -709,7 +702,7 @@ function calculatePlayTimeV3(player, teamStats, lineupData) {
 /**
  * V3 WRAPPER: calculatePerformance using cached teamStats
  */
-function calculatePerformanceV3(player, leagueStats, teamStats, draftValue) {
+function calculatePerformance(player, leagueStats, teamStats, draftValue) {
   // Build standings data from teamStats
   var standingsData = getStandingsFromTeamStats(teamStats);
 

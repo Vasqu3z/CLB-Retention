@@ -101,7 +101,7 @@ var CONFIG = {
 
   // ===== STATS SHEET COLUMN MAPPINGS =====
   // Define exact column structure for each stats sheet
-  // CRITICAL: Update these if sheet structure changes
+  // Update these if sheet structure changes
   STATS_COLUMN_MAPS: {
     HITTING_COLUMNS: {
       // Columns in 🧮 Hitting sheet
@@ -239,5 +239,5 @@ var CONFIG = {
 var _spreadsheetCache = {
   boxScoreSpreadsheet: null,
   gameSheets: null,
-  gameData: null  // NEW: Stores result from processAllGameSheetsOnce()
+  gameData: null  // Stores result from processAllGameSheetsOnce()
 };

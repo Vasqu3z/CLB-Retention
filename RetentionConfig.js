@@ -1,33 +1,29 @@
-// ===== RETENTION GRADE CONFIGURATION V2 =====
-// Configuration for CLB Player Retention Probability System v2
-// Each factor has a weighted contribution to final grade (0-100 d100 scale)
+// ===== RETENTION GRADE CONFIGURATION =====
+// Configuration for CLB Player Retention Probability System
+// Each factor has a weighted contribution to final grade (5-95 d100 scale)
 //
-// MAJOR CHANGES FROM V1:
-// - Removed: Star Points column (Column I eliminated)
-// - Added: Draft/Trade Value column (Column C, manual input 1-8)
-// - Renamed: "Awards" → "Performance" throughout
-// - Weighted grading: TS(18%) + PT(32%) + Perf(17%) + Chem(12%) + Dir(21%)
-// - Team Success: 10/10 split (was 8/12 regular/postseason)
-// - Auto-flagging: Elite players on bad teams get performance penalty
-// - Draft expectations: Performance vs draft round expectations
-// - Team Direction: Table at bottom, one score per team (VLOOKUP)
+// WEIGHTED GRADING FORMULA:
+// - Team Success: 18% weight (Regular Season 10pts + Postseason 10pts + Modifier)
+// - Play Time: 32% weight (Games Played + Usage Quality + Modifier)
+// - Performance: 17% weight (Offensive + Defensive + Pitching + Modifier)
+// - Chemistry: 12% weight (Manual input 0-20)
+// - Team Direction: 21% weight (VLOOKUP from team table 0-20)
 //
-// V2.1 CHANGES:
-// - Split Team Success into 2 columns: Regular Season (D) + Postseason (E, VLOOKUP)
-// - Auto-populate team lists in Team Direction and Postseason tables
-// - Total columns: 19 (was 18)
+// SYSTEM FEATURES:
+// - Auto-flagging: Elite players on struggling teams receive retention penalty
+// - Draft expectations: Performance modifiers based on draft position vs actual performance
+// - Team Direction table: One score per team, inherited by all players via VLOOKUP
+// - Postseason table: Playoff results converted to points, inherited via VLOOKUP
 //
-// REFERENCES: Main CONFIG object from Stats Processing spreadsheet
-// - Sheet names from CONFIG (Player Data, Hitting, Pitching, etc.)
-// - Box score settings from CONFIG (spreadsheet ID, cell ranges)
-//
-// RULE: Never hardcode thresholds - always reference this config or CONFIG
+// CONFIGURATION DEPENDENCIES:
+// - Delegates to CONFIG for sheet names and column definitions (LeagueConfig.js)
+// - Never hardcode thresholds - always reference this config or CONFIG
 
 var RETENTION_CONFIG = {
 
   // ===== VERSION INFO =====
-  VERSION: "2.1",
-  VERSION_DATE: "2025-10-28",
+  VERSION: "3.0",
+  VERSION_DATE: "2025-11-02",
 
   // ===== NO SHEET NAMES HERE - USE CONFIG OBJECT =====
   // Sheet names are defined in main CONFIG.js and referenced via:
@@ -40,7 +36,7 @@ var RETENTION_CONFIG = {
   // CONFIG.LEAGUE_HUB_SHEET (for standings data)
 
   // ===== STATS SHEET COLUMN MAPPINGS =====
-  // V3 UPDATE: Column maps moved to CONFIG.STATS_COLUMN_MAPS (LeagueConfig.js)
+  // Column maps moved to CONFIG.STATS_COLUMN_MAPS (LeagueConfig.js)
   // These are now references to the centralized config
   // DO NOT MODIFY - edit CONFIG.STATS_COLUMN_MAPS instead
 
@@ -56,7 +52,7 @@ var RETENTION_CONFIG = {
     return CONFIG.STATS_COLUMN_MAPS.FIELDING_COLUMNS;
   },
 
-  // V3 UPDATE: Team Data columns moved to CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET
+  // Team Data columns moved to CONFIG.SHEET_STRUCTURE.TEAM_STATS_SHEET
   // Reference centralized config instead of duplicating
   get TEAM_DATA_COLUMNS() {
     return {
@@ -68,7 +64,7 @@ var RETENTION_CONFIG = {
     };
   },
 
-  // V3 UPDATE: Box score lineup positions moved to CONFIG (LeagueConfig.js)
+  // Box score lineup positions moved to CONFIG (LeagueConfig.js)
   // Reference centralized config instead of duplicating
   get BOX_SCORE() {
     return {
@@ -83,11 +79,11 @@ var RETENTION_CONFIG = {
   // Located in Retention Grades sheet (dynamically found at bottom)
   // Format: Team Name (Col A) | Postseason Finish (Col B)
   // Accepts: numbers (1-8) or text ("Champion", "1st", "Semifinal", etc.)
-  // V2.1: Auto-populated with team list, read via VLOOKUP
+  // Auto-populated with team list, read via VLOOKUP
   POSTSEASON_SEARCH_TEXT: "Postseason Results",  // Header text to search for
   POSTSEASON_TABLE_NAME: "PostseasonResults",    // Named range for VLOOKUP
 
-  // ===== WEIGHTED GRADING SYSTEM V2 =====
+  // ===== WEIGHTED GRADING SYSTEM =====
   // Factor weights (must sum to 1.0)
   // Final Grade = (weighted sum) × 5 for d100 scale (0-100)
   FACTOR_WEIGHTS: {
@@ -245,7 +241,7 @@ var RETENTION_CONFIG = {
     }
   },
 
-  // ===== AUTO-FLAGGING SYSTEM V2 =====
+  // ===== AUTO-FLAGGING SYSTEM =====
   // Detects flight risk for elite players on struggling teams
   // Applies automatic performance penalty
   AUTO_FLAGGING: {
@@ -268,7 +264,7 @@ var RETENTION_CONFIG = {
     }
   },
 
-  // ===== DRAFT EXPECTATIONS SYSTEM V2 =====
+  // ===== DRAFT EXPECTATIONS SYSTEM =====
   // Compares performance to acquisition cost (draft round)
   // 3-tier system based on player's perceived value vs team's perceived value
   // High: Situation-based (good/bad fit), Mid/Late: Self-worth based (overvalued/undervalued)
@@ -309,7 +305,7 @@ var RETENTION_CONFIG = {
   // ===== MANUAL MODIFIERS =====
   // Adjustments for subjective factors not captured by stats
   // Applied AFTER base calculation, capped at 0-20 per category
-  // V2 CHANGE: No data validation on modifier columns
+  // No data validation on modifier columns
   MODIFIERS: {
     TEAM_SUCCESS: {
       MIN: -5,
@@ -357,7 +353,7 @@ var RETENTION_CONFIG = {
   // ===== TEAM DIRECTION TABLE =====
   // New section at bottom of sheet
   // One score per team (0-20), all players on team inherit same score via VLOOKUP
-  // V2.1: Auto-populated with team list from Team Data sheet
+  // Auto-populated with team list from Team Data sheet
   TEAM_DIRECTION_TABLE: {
     SEARCH_TEXT: "Team Direction",
     HEADER_TEXT: "Team Direction Scores (0-20)",
@@ -377,7 +373,7 @@ var RETENTION_CONFIG = {
 
   // ===== PLAYER FILTERING =====
   PLAYER_FILTERING: {
-    // V3 UPDATE: Control whether to include players without teams
+    // Control whether to include players without teams
     // Set to false to match v2 behavior (exclude teamless players)
     // Set to true to include all players regardless of team assignment
     INCLUDE_PLAYERS_WITHOUT_TEAMS: false,
@@ -388,7 +384,7 @@ var RETENTION_CONFIG = {
     // - Default (false) matches original v2 behavior
   },
 
-  // ===== OUTPUT FORMATTING V2 =====
+  // ===== OUTPUT FORMATTING =====
   OUTPUT: {
     // Column widths
     PLAYER_COL_WIDTH: 150,
@@ -446,7 +442,7 @@ var RETENTION_CONFIG = {
     INSTRUCTIONS_ROW_OFFSET: 3  // Instructions appear N rows after last data row
   },
 
-  // ===== DATA VALIDATION RULES V2 =====
+  // ===== DATA VALIDATION RULES =====
   VALIDATION: {
     // Manual input columns
     CHEMISTRY_MIN: 0,
@@ -456,7 +452,7 @@ var RETENTION_CONFIG = {
     DRAFT_VALUE_MIN: 1,
     DRAFT_VALUE_MAX: 8,
 
-    // V2 CHANGE: No validation on modifier columns (allow any value)
+    // No validation on modifier columns (allow any value)
     MODIFIERS_VALIDATION_ENABLED: false,
 
     // Data quality checks
@@ -467,12 +463,12 @@ var RETENTION_CONFIG = {
   },
 
   // ===== SHEET STRUCTURE LAYOUTS =====
-  // V3 UPDATE: Centralized layout definitions to eliminate magic numbers
+  // Centralized layout definitions to eliminate magic numbers
   SHEET_STRUCTURE: {
     // Input data sources from other sheets
     INPUT_SOURCES: {
       // League Hub standings data (for regular season points)
-      // Used in RetentionCore_v2.js to read team standings
+      // Used in RetentionCore.js to read team standings
       LEAGUE_HUB_STANDINGS: {
         START_ROW: 4,       // First data row after header
         START_COL: 1,       // Column A (Rank, Team)

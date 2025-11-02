@@ -114,10 +114,9 @@ function showAutoFlaggingHelp() {
 function showWeightedGradingHelp() {
   var ui = SpreadsheetApp.getUi();
 
-  var helpText = 'WEIGHTED GRADING SYSTEM V2\n\n' +
+  var helpText = 'WEIGHTED GRADING SYSTEM\n\n' +
     'Overview:\n' +
-    'V2 replaces the additive system (sum of 5 factors) with a weighted system ' +
-    'where each factor contributes differently to the final grade.\n\n' +
+    'Uses a weighted system where each factor contributes differently to the final grade.\n\n' +
     'Factor Weights:\n' +
     '• Team Success: 18%\n' +
     '• Play Time: 32% (highest weight)\n' +
@@ -128,11 +127,6 @@ function showWeightedGradingHelp() {
     'Auto factors: (TS Total × 0.18 + PT Total × 0.32 + Perf Total × 0.17) × 5\n' +
     'Manual factors: (Chemistry × 0.12 + Direction × 0.21) × 5\n' +
     'Final Grade: Auto + Manual (0-100 scale for d100 rolls)\n\n' +
-    'Key Changes from V1:\n' +
-    '• Play Time is now most important (32% vs 20% in v1)\n' +
-    '• Direction increased to 21% (vs 20% in v1)\n' +
-    '• Star Points removed entirely\n' +
-    '• Team Success split rebalanced to 10/10 (was 8/12)\n\n' +
     'Philosophy:\n' +
     'Playing time and team trajectory are better predictors of retention than ' +
     'single-season performance or team success.';
@@ -146,13 +140,13 @@ function showWeightedGradingHelp() {
 function showModifiersHelp() {
   var ui = SpreadsheetApp.getUi();
 
-  var helpText = 'MODIFIER COLUMNS V2 (Cols E, H, K)\n\n' +
+  var helpText = 'MODIFIER COLUMNS (Cols E, H, K)\n\n' +
     'Purpose:\n' +
     'Adjust auto-calculated scores based on context not captured by stats.\n\n' +
-    'V2 Changes:\n' +
+    'Guidelines:\n' +
     '• No data validation - enter any value\n' +
-    '• Still recommended to stay within -5 to +5 range\n' +
-    '• Each category still capped at 0-20 after modification\n\n' +
+    '• Recommended to stay within -5 to +5 range\n' +
+    '• Each category capped at 0-20 after modification\n\n' +
     'Team Success Modifier (Col E):\n' +
     '• Adjust for injuries, strength of schedule, bad luck\n' +
     '• Example: +2 for team that narrowly missed playoffs\n\n' +
@@ -176,11 +170,11 @@ function showModifiersHelp() {
 function showMainHelp() {
   var ui = SpreadsheetApp.getUi();
 
-  var helpText = 'CLB RETENTION GRADE CALCULATOR V2.0\n\n' +
+  var helpText = 'CLB RETENTION GRADE CALCULATOR\n\n' +
     'Overview:\n' +
     'Calculates retention probability for CLB players on 0-100 d100 scale.\n\n' +
     'Workflow:\n' +
-    '1. Run "Calculate Retention Grades v2" from menu\n' +
+    '1. Run "Calculate Final Retention Grades" from menu\n' +
     '2. Edit Team Direction table at bottom (one score per team)\n' +
     '3. Edit Postseason Results table at bottom\n' +
     '4. Edit manual input columns:\n' +
@@ -189,13 +183,12 @@ function showMainHelp() {
     '   • Chemistry (Col N)\n' +
     '5. Direction (Col O) auto-fills via VLOOKUP\n' +
     '6. Final Grade (Col Q) auto-calculates\n\n' +
-    'V2 Major Changes:\n' +
-    '• Weighted grading system (not additive)\n' +
+    'Key Features:\n' +
+    '• Weighted grading system\n' +
     '• Auto-flagging for elite players on bad teams\n' +
-    '• Team Direction table (replaces per-player input)\n' +
+    '• Team Direction table (one score per team)\n' +
     '• Draft/Trade Value tracking\n' +
-    '• Removed Star Points entirely\n' +
-    '• Team Success 10/10 split (was 8/12)\n\n' +
+    '• Team Success 10/10 split (regular season/postseason)\n\n' +
     'Smart Update:\n' +
     'System preserves manual inputs and formatting on re-runs.\n\n' +
     'More Help:\n' +
@@ -206,7 +199,7 @@ function showMainHelp() {
     '• Weighted Grading Help\n' +
     '• Modifiers Help';
 
-  ui.alert('Retention Calculator v2 Help', helpText, ui.ButtonSet.OK);
+  ui.alert('Retention Calculator Help', helpText, ui.ButtonSet.OK);
 }
 
 // ===== DEBUG FUNCTIONS =====

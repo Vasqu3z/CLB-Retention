@@ -111,7 +111,7 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     .setVerticalAlignment("middle")
     .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
 
-  // Set column widths (V2.1: 19 columns)
+  // Set column widths (19 columns)
   var cols = RETENTION_CONFIG.OUTPUT;
   sheet.setColumnWidth(cols.COL_PLAYER, RETENTION_CONFIG.OUTPUT.PLAYER_COL_WIDTH);
   sheet.setColumnWidth(cols.COL_TEAM, RETENTION_CONFIG.OUTPUT.TEAM_COL_WIDTH);
@@ -148,7 +148,6 @@ function buildRetentionSheetFromScratch(retentionGrades) {
 /**
  * Apply formatting to data rows
  * Uses batch operations for performance
- * V2: Updated for new column layout
  */
 function applyDataFormatting(sheet, startRow, numRows) {
   var cols = RETENTION_CONFIG.OUTPUT;
@@ -282,7 +281,7 @@ function applyDataFormatting(sheet, startRow, numRows) {
 
 /**
  * Add postseason section, Team Direction table, and instructions at bottom of sheet
- * V2.1: Auto-populates team lists from player data on sheet
+ * Auto-populates team lists from player data on sheet
  * RESTORED: Previously entered postseason and direction data (preserves scores)
  */
 function addBottomSections(sheet, playerCount, existingPostseasonData, existingDirectionData) {
@@ -292,7 +291,7 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
   // Get unique teams from player list on sheet (Column B)
   var teamList = getUniqueTeamsFromSheet(sheet, dataStartRow, playerCount);
 
-  // ===== TEAM DIRECTION TABLE (NEW IN V2) =====
+  // ===== TEAM DIRECTION TABLE =====
   var directionStartRow = sectionStartRow;
 
   sheet.getRange(directionStartRow, 1)
@@ -464,12 +463,12 @@ function applyFinalGradeFormatting(sheet, startRow, numRows) {
 
 /**
  * REBUILD SHEET: Force full rebuild of formatting
- * V2: Preserves Team Direction data
+ * Preserves Team Direction data
  */
 function rebuildRetentionSheet() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    'Rebuild Sheet Formatting v2',
+    'Rebuild Sheet Formatting',
     'This will rebuild the Retention Grades sheet from scratch, removing any custom formatting.\n\n' +
     'Player data and manual entries (Draft Value, Chemistry, Modifiers, Team Direction) will be preserved.\n\n' +
     'Continue?',
@@ -494,7 +493,7 @@ function rebuildRetentionSheet() {
 
 /**
  * Refresh formulas in the retention sheet
- * V2: Uses weighted formulas
+ * Uses weighted grading formulas
  */
 function refreshRetentionFormulas() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -592,7 +591,7 @@ function findTeamDirectionSection(sheet) {
 
 /**
  * Get unique teams from player list on sheet
- * V2.1: Reads from Column B of the retention sheet
+ * Reads from Column B of the retention sheet
  * Returns array of unique team names in alphabetical order
  */
 function getUniqueTeamsFromSheet(sheet, startRow, playerCount) {

@@ -134,7 +134,7 @@ var RETENTION_CONFIG = {
   PLAY_TIME: {
     MAX_POINTS: 20,
 
-    // Games played component (0-10 points) - CHANGED: More weight
+    // Games played component (0-10 points)
     // Based on % of CURRENT team's games (mid-season trades penalized)
     // Philosophy: Rewards regular playing time
     GAMES_PLAYED: {
@@ -147,7 +147,7 @@ var RETENTION_CONFIG = {
       MINIMAL: { threshold: 0, points: 0 }           // <25% of games (1-3 games)
     },
 
-    // Usage quality component (0-10 points) - CHANGED: More weight
+    // Usage quality component (0-10 points)
     // Different evaluation for hitters vs pitchers
     USAGE_QUALITY: {
       MAX_POINTS: 10,
@@ -397,7 +397,7 @@ var RETENTION_CONFIG = {
     CHEMISTRY_COL_WIDTH: 80,
     DIRECTION_COL_WIDTH: 80,
 
-    // ===== COLUMN POSITIONS V2.1 =====
+    // ===== COLUMN POSITIONS =====
     // Team Success split into Regular Season + Postseason (2 columns)
     // Total: 19 columns
 
@@ -579,7 +579,7 @@ RETENTION_CONFIG.getGradeColor = function(finalGrade) {
 
 /**
  * Calculate weighted final grade (d95 scale 5-95)
- * V2 FORMULA: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21) * 4.5 + 5
+ * FORMULA: (TS*0.18 + PT*0.32 + Perf*0.17 + Chem*0.12 + Dir*0.21) * 4.5 + 5
  */
 RETENTION_CONFIG.calculateWeightedGrade = function(tsTotal, ptTotal, perfTotal, chemScore, dirScore) {
   var weights = this.FACTOR_WEIGHTS;
@@ -637,7 +637,7 @@ RETENTION_CONFIG.validate = function() {
   }
 
   if (errors.length > 0) {
-    throw new Error("Retention Config V2 Validation Failed:\n" + errors.join("\n"));
+    throw new Error("Retention Config Validation Failed:\n" + errors.join("\n"));
   }
 
   return true;

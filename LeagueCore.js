@@ -326,18 +326,17 @@ function updateLeagueSchedule() {
   }
 }
 
-// ===== V3 UPDATE: RETENTION GRADE CONTROLLER =====
+// ===== RETENTION GRADE CONTROLLER =====
 /**
- * Calculate Final Retention Grades v3
- * This is the new, decoupled workflow that reads from cached season data
- * instead of performing redundant I/O operations.
+ * Calculate Final Retention Grades
+ * Reads from cached season data for optimal performance
  */
 function calculateFinalRetentionGrades() {
   var ui = SpreadsheetApp.getUi();
 
   // Confirm this high-stakes operation
   var response = ui.alert(
-    '🚀 Calculate Final Retention Grades v3',
+    '🚀 Calculate Final Retention Grades',
     'This will calculate retention grades using the cached final season data.\n\n' +
     '⚠️ IMPORTANT: Make sure you have run "Update All" first to ensure the data is current.\n\n' +
     'This is a once-per-season operation. Continue?',
@@ -359,16 +358,16 @@ function calculateFinalRetentionGrades() {
         'Please run "🚀 Update All" first to cache the season data, then try again.',
         ui.ButtonSet.OK
       );
-      logError("Retention v3", "No cached season data found", "N/A");
+      logError("Retention", "No cached season data found", "N/A");
       return;
     }
 
     // Parse the cached data
     var loadedGameData = JSON.parse(jsonData);
-    logInfo("Retention v3", "Loaded cached season data successfully");
+    logInfo("Retention", "Loaded cached season data successfully");
 
-    // Call the refactored retention calculation with cached data
-    SpreadsheetApp.getActiveSpreadsheet().toast("Calculating retention grades from cached data...", "Retention v3", -1);
+    // Call the retention calculation with cached data
+    SpreadsheetApp.getActiveSpreadsheet().toast("Calculating retention grades from cached data...", "Retention", -1);
     calculateRetentionGrades(loadedGameData);
 
     ui.alert(
@@ -378,22 +377,11 @@ function calculateFinalRetentionGrades() {
     );
 
   } catch (e) {
-    logError("Retention v3", "Error calculating retention grades: " + e.toString(), "N/A");
+    logError("Retention", "Error calculating retention grades: " + e.toString(), "N/A");
     ui.alert(
       '❌ Error',
       'Failed to calculate retention grades:\n\n' + e.toString(),
       ui.ButtonSet.OK
     );
   }
-}
-
-/**
- * V3 wrapper for calculateRetentionGrades that accepts cached data
- * This bypasses the I/O operations and uses pre-processed data
- */
-function calculateRetentionGrades(loadedGameData) {
-  // Call the main retention function with the loaded data
-  // The retention function needs to be refactored to accept this parameter
-  // For now, we'll call the existing function but this should be updated
-  calculateRetentionGrades(loadedGameData);
 }

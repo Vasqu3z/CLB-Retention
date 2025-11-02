@@ -31,9 +31,8 @@ function processAllGameSheetsOnce() {
     var sheetName = sheet.getName();
 
     try {
-      // PERFORMANCE OPTIMIZED - Single batch read of entire game sheet
-      // Read B3:R50 once (48 rows × 17 columns = 816 cells)
-      // This replaces 8 separate reads with 1 consolidated read
+      // Single batch read of entire game sheet: B3:R50 (48 rows × 17 columns = 816 cells)
+      // Consolidated read eliminates redundant I/O operations
       var batchData = sheet.getRange("B3:R50").getValues();
 
       // ===== Extract team info from batch (rows 3-4 in sheet = indices 0-1 in batch) =====

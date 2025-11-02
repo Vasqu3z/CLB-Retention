@@ -622,7 +622,7 @@ function formatDecimal(value) {
   return value.toFixed(2);
 }
 
-// ===== ADDITIONAL UTILITY FUNCTIONS (V3 - consolidated from RetentionHelpers) =====
+// ===== ADDITIONAL UTILITY FUNCTIONS =====
 
 /**
  * Calculate percentile rank for a value in a sorted array
@@ -715,14 +715,12 @@ function findSheetSection(sheet, searchText) {
 }
 
 /**
- * V3 INTEGRATION:
- * Caches the final processed gameData to PropertiesService
- * so the Retention suite can access it.
+ * Caches the final processed gameData to PropertiesService for Retention suite access.
  * Converts array-based stats to object-based with calculated derived stats.
  */
 function cacheCurrentSeasonStats(gameData) {
   try {
-    Logger.log('V3 Integration: Converting playerStats for Retention suite...');
+    Logger.log('Converting playerStats for Retention suite...');
 
     // Convert playerStats from array-based to object-based with calculated stats
     var convertedPlayerStats = {};
@@ -831,7 +829,7 @@ function cacheCurrentSeasonStats(gameData) {
       };
     }
 
-    Logger.log('V3 Integration: Converted ' + Object.keys(convertedPlayerStats).length + ' players');
+    Logger.log('Converted ' + Object.keys(convertedPlayerStats).length + ' players for Retention suite');
 
     var dataToCache = {
       playerStats: convertedPlayerStats,
@@ -843,9 +841,9 @@ function cacheCurrentSeasonStats(gameData) {
     // Save to ScriptProperties, which is available to all scripts in the project
     PropertiesService.getScriptProperties().setProperty('CURRENT_SEASON_STATS', jsonData);
 
-    logInfo('V3 Integration', 'Successfully cached current season stats for Retention suite');
+    logInfo('Cache', 'Successfully cached current season stats for Retention suite');
 
   } catch (e) {
-    logError('V3 Integration', 'Could not cache season stats: ' + e.toString(), 'N/A');
+    logError('Cache', 'Could not cache season stats: ' + e.toString(), 'N/A');
   }
 }

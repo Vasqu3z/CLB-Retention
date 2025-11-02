@@ -19,9 +19,9 @@ function clearLineupCache() {
 
 /**
  * MAIN FUNCTION: Calculate retention grades for all players
- * Called from menu: ⭐ Retention → Calculate Retention Grades v2
+ * Called from menu: ⭐ Retention → Calculate Final Retention Grades
  * SMART UPDATE: Only rebuilds formatting if sheet is new/corrupted
- * V3 UPDATE: Accepts loadedGameData parameter to use cached data instead of redundant I/O
+ * Uses cached game data for optimal performance
  */
 function calculateRetentionGrades(loadedGameData) {
   try {
@@ -31,11 +31,11 @@ function calculateRetentionGrades(loadedGameData) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
     if (RETENTION_CONFIG.DEBUG.SHOW_PROGRESS_TOASTS) {
-      ss.toast("Starting retention grade calculation v3...", "Processing", 3);
+      ss.toast("Starting retention grade calculation...", "Processing", 3);
     }
 
     // Load data from cache instead of re-reading sheets
-    Logger.log("=== RETENTION GRADES V3 CALCULATION START ===");
+    Logger.log("=== RETENTION GRADES CALCULATION START ===");
 
     Logger.log("Step 1/3: Loading data from cache...");
 
@@ -215,7 +215,7 @@ function calculateRetentionGrades(loadedGameData) {
       updateRetentionData(sheet, retentionGrades);
     }
 
-    Logger.log("=== RETENTION GRADES V3 CALCULATION COMPLETE ===");
+    Logger.log("=== RETENTION GRADES CALCULATION COMPLETE ===");
 
     // Clear cache
     clearLineupCache();
@@ -497,7 +497,7 @@ function getPostseasonData() {
 }
 
 /**
- * Parse postseason finish into points (V2: 10-point scale)
+ * Parse postseason finish into points (10-point scale)
  * Accepts: numbers (1-8), text ("1st", "champion"), or descriptive text
  */
 function parsePostseasonFinish(finish) {
@@ -549,8 +549,8 @@ function parsePostseasonFinish(finish) {
  * Get lineup position data from box score spreadsheet
  * Returns object mapping "PlayerName|TeamName" to lineup position data
  * CRITICAL: Only counts games where player was on CURRENT team
- * OPTIMIZED: Batch reads, caching, single-pass processing
- * USES CONFIG FOR ALL BOX SCORE REFERENCES
+ * Uses batch reads and caching for performance
+ * All box score references use CONFIG definitions
  */
 function getLineupPositionData() {
   // Return cached data if available
@@ -814,7 +814,7 @@ function calculateLeaguePercentiles() {
 }
 
 /**
- * V3 HELPER: Calculate league percentiles from in-memory playerStats object
+ * Calculate league percentiles from in-memory playerStats object
  * instead of re-reading the sheets.
  * This is the cached version used by calculateRetentionGrades.
  */
@@ -913,7 +913,9 @@ function calculateLeaguePercentilesFromCache(playerStats, teamStats) {
 
   Logger.log("Percentile calculation from cache complete - Hitters: " + avgList.length + ", Pitchers: " + eraList.length + ", Fielders: " + netDefenseList.length);
   if (RETENTION_CONFIG.DEBUG.ENABLE_LOGGING) {
-    Logger.log("V3 DEBUG: Qualified player counts - Hitters (AB>=" + minAB + "): " + avgList.length + ", Pitchers (IP>=" + minIP + "): " + eraList.length + ", Fielders (GP>=" + minGP + "): " + netDefenseList.length);
+    if (RETENTION_CONFIG.DEBUG.LOG_PERCENTILE_CALCULATIONS) {
+      Logger.log("Qualified player counts - Hitters (AB>=" + minAB + "): " + avgList.length + ", Pitchers (IP>=" + minIP + "): " + eraList.length + ", Fielders (GP>=" + minGP + "): " + netDefenseList.length);
+    }
   }
 
   return leagueStats;
@@ -975,10 +977,10 @@ function isRetentionSheetFormatted(sheet) {
 
 /**
  * UPDATE DATA ONLY: Preserves formatting AND postseason data AND manual inputs
- * V2: Also preserves Draft/Trade Value and Team Direction table
+ * Preserves Draft/Trade Value and Team Direction table
  */
 function updateRetentionData(sheet, retentionGrades) {
-  Logger.log("Updating retention data v2 (preserving formatting, postseason, and manual inputs)");
+  Logger.log("Updating retention data (preserving formatting, postseason, and manual inputs)");
 
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
   var cols = RETENTION_CONFIG.OUTPUT;
@@ -1042,7 +1044,7 @@ function updateRetentionData(sheet, retentionGrades) {
 /**
  * Write player data rows to sheet
  * CRITICAL: Only writes to AUTO-CALCULATED columns, preserves MANUAL columns
- * V2: Preserves Draft Value, uses Performance instead of Awards
+ * Preserves Draft Value, uses Performance factor
  */
 function writePlayerData(sheet, retentionGrades) {
   var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;

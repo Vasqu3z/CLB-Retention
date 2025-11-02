@@ -111,7 +111,7 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     .setVerticalAlignment("middle")
     .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
 
-  // Set column widths (V2.1: 19 columns)
+  // Set column widths (19 columns)
   var cols = RETENTION_CONFIG.OUTPUT;
   sheet.setColumnWidth(cols.COL_PLAYER, RETENTION_CONFIG.OUTPUT.PLAYER_COL_WIDTH);
   sheet.setColumnWidth(cols.COL_TEAM, RETENTION_CONFIG.OUTPUT.TEAM_COL_WIDTH);
@@ -292,7 +292,7 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
   // Get unique teams from player list on sheet (Column B)
   var teamList = getUniqueTeamsFromSheet(sheet, dataStartRow, playerCount);
 
-  // ===== TEAM DIRECTION TABLE (NEW IN V2) =====
+  // ===== TEAM DIRECTION TABLE =====
   var directionStartRow = sectionStartRow;
 
   sheet.getRange(directionStartRow, 1)
@@ -469,7 +469,7 @@ function applyFinalGradeFormatting(sheet, startRow, numRows) {
 function rebuildRetentionSheet() {
   var ui = SpreadsheetApp.getUi();
   var response = ui.alert(
-    'Rebuild Sheet Formatting v2',
+    'Rebuild Sheet Formatting',
     'This will rebuild the Retention Grades sheet from scratch, removing any custom formatting.\n\n' +
     'Player data and manual entries (Draft Value, Chemistry, Modifiers, Team Direction) will be preserved.\n\n' +
     'Continue?',

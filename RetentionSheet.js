@@ -85,8 +85,8 @@ function buildRetentionSheetFromScratch(retentionGrades) {
     "Player",
     "Team",
     "Draft/Trade\nValue (1-8)",
-    "Regular Season\nSuccess (0-10)",  // SPLIT from TS
-    "Postseason\nSuccess (0-10)",      // SPLIT, VLOOKUP
+    "Regular Season\nSuccess (0-10)",  
+    "Postseason\nSuccess (0-10)",      
     "TS Mod\n(manual)",          // No validation
     "TS Total\n(0-20)",
     "Play Time\n(Base 0-20)",

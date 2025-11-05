@@ -493,12 +493,12 @@ function rebuildRetentionSheet() {
 }
 
 /**
- * Refresh formulas in the retention sheet
- * Uses weighted formulas
+ * Refresh formulas in the retention sheet using batch operations
+ * Uses weighted formulas with single-pass setFormulas() calls
  */
 function refreshRetentionFormulas() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = activeSpreadsheet.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
 
   if (!sheet) {
     SpreadsheetApp.getUi().alert("Retention Grades sheet not found. Please run 'Calculate Retention Grades' first.");
@@ -514,54 +514,60 @@ function refreshRetentionFormulas() {
     return;
   }
 
+  var playerNames = sheet.getRange(dataStartRow, 1, lastRow - dataStartRow + 1, 1).getValues();
+
+  var postseasonFormulas = [];
+  var tsTotalFormulas = [];
+  var ptTotalFormulas = [];
+  var perfTotalFormulas = [];
+  var manualTotalFormulas = [];
+  var directionFormulas = [];
+  var finalGradeFormulas = [];
+
   var rowsUpdated = 0;
-  for (var row = dataStartRow; row <= lastRow; row++) {
-    var playerName = sheet.getRange(row, 1).getValue();
-    if (!playerName || playerName === "") continue;
 
-    // Postseason Success = VLOOKUP from PostseasonResults table
-    sheet.getRange(row, cols.COL_POSTSEASON).setFormula(
-      "=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",PostseasonResults,3,FALSE),0))"
-    );
+  for (var i = 0; i < playerNames.length; i++) {
+    var playerName = playerNames[i][0];
+    if (!playerName || playerName === "") {
+      postseasonFormulas.push([""]);
+      tsTotalFormulas.push([""]);
+      ptTotalFormulas.push([""]);
+      perfTotalFormulas.push([""]);
+      manualTotalFormulas.push([""]);
+      directionFormulas.push([""]);
+      finalGradeFormulas.push([""]);
+      continue;
+    }
 
-    // TS Total = Regular Season + Postseason + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_TS_TOTAL).setFormula(
-      "=MIN(20,MAX(0,D" + row + "+E" + row + "+F" + row + "))"
-    );
+    var row = dataStartRow + i;
 
-    // PT Total = Base + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_PT_TOTAL).setFormula(
-      "=MIN(20,MAX(0,H" + row + "+I" + row + "))"
-    );
-
-    // Performance Total = Base + Modifier (capped 0-20)
-    sheet.getRange(row, cols.COL_PERF_TOTAL).setFormula(
-      "=MIN(20,MAX(0,K" + row + "+L" + row + "))"
-    );
-
-    // Manual Total = (12% Chemistry + 21% Direction) × 4.5 for d95 scale
-    sheet.getRange(row, cols.COL_MANUAL_TOTAL).setFormula(
-      "=ROUND((O" + row + "*0.12+P" + row + "*0.21)*4.5,1)"
-    );
-
-    // Direction = VLOOKUP from Team Direction table
-    sheet.getRange(row, cols.COL_DIRECTION).setFormula(
-      "=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))"
-    );
-
-    // Final Grade = Weighted formula × 4.5 + 5 for d95 scale (5-95 range)
-    sheet.getRange(row, cols.COL_FINAL_GRADE).setFormula(
-      "=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17+O" + row + "*0.12+P" + row + "*0.21)*4.5+5,0)"
-    );
+    postseasonFormulas.push(["=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",PostseasonResults,3,FALSE),0))"]);
+    tsTotalFormulas.push(["=MIN(20,MAX(0,D" + row + "+E" + row + "+F" + row + "))"]);
+    ptTotalFormulas.push(["=MIN(20,MAX(0,H" + row + "+I" + row + "))"]);
+    perfTotalFormulas.push(["=MIN(20,MAX(0,K" + row + "+L" + row + "))"]);
+    manualTotalFormulas.push(["=ROUND((O" + row + "*0.12+P" + row + "*0.21)*4.5,1)"]);
+    directionFormulas.push(["=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))"]);
+    finalGradeFormulas.push(["=ROUND((G" + row + "*0.18+J" + row + "*0.32+M" + row + "*0.17+O" + row + "*0.12+P" + row + "*0.21)*4.5+5,0)"]);
 
     rowsUpdated++;
+  }
+
+  var numRows = playerNames.length;
+  if (numRows > 0) {
+    sheet.getRange(dataStartRow, cols.COL_POSTSEASON, numRows, 1).setFormulas(postseasonFormulas);
+    sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).setFormulas(tsTotalFormulas);
+    sheet.getRange(dataStartRow, cols.COL_PT_TOTAL, numRows, 1).setFormulas(ptTotalFormulas);
+    sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL, numRows, 1).setFormulas(perfTotalFormulas);
+    sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL, numRows, 1).setFormulas(manualTotalFormulas);
+    sheet.getRange(dataStartRow, cols.COL_DIRECTION, numRows, 1).setFormulas(directionFormulas);
+    sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE, numRows, 1).setFormulas(finalGradeFormulas);
   }
 
   if (rowsUpdated > 0) {
     applyFinalGradeFormatting(sheet, dataStartRow, rowsUpdated);
   }
 
-  SpreadsheetApp.getActiveSpreadsheet().toast(
+  activeSpreadsheet.toast(
     "Formulas refreshed for " + rowsUpdated + " players using v2 weighted system",
     "✅ Refresh Complete",
     5

@@ -47,15 +47,15 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
 
   // Clear Standings zone (Columns A-H from row 1 to end)
   if (maxRows > 0) {
-    scheduleSheet.getRange(1, layout.STANDINGS.START_COL, maxRows, layout.STANDINGS.NUM_COLS)
+    scheduleSheet.getRange(1, layout.STANDINGS.START_COL + 1, maxRows, layout.STANDINGS.NUM_COLS)
       .clearContent().clearFormat().clearNote();
 
     // Clear Completed Games zone (Column J from row 1 to end)
-    scheduleSheet.getRange(1, layout.COMPLETED_GAMES.START_COL, maxRows, 1)
+    scheduleSheet.getRange(1, layout.COMPLETED_GAMES.START_COL + 1, maxRows, 1)
       .clearContent().clearFormat().clearNote();
 
     // Clear Scheduled Games zone (Column L from row 1 to end)
-    scheduleSheet.getRange(1, layout.SCHEDULED_GAMES.START_COL, maxRows, 1)
+    scheduleSheet.getRange(1, layout.SCHEDULED_GAMES.START_COL + 1, maxRows, 1)
       .clearContent().clearFormat().clearNote();
   }
 

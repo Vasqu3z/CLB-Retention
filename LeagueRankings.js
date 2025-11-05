@@ -26,19 +26,19 @@ function updateLeagueHubFromCache(gameData) {
 
   // Clear Standings zone (Columns A-H from row 1 to end)
   if (maxRows > 0) {
-    standingsSheet.getRange(1, layout.STANDINGS.START_COL, maxRows, layout.STANDINGS.NUM_COLS)
+    standingsSheet.getRange(1, layout.STANDINGS.START_COL + 1, maxRows, layout.STANDINGS.NUM_COLS)
       .clearContent().clearFormat().clearNote();
 
     // Clear Batting Leaders zone (Column J from row 1 to end)
-    standingsSheet.getRange(1, layout.LEADERS_BATTING.START_COL, maxRows, 1)
+    standingsSheet.getRange(1, layout.LEADERS_BATTING.START_COL + 1, maxRows, 1)
       .clearContent().clearFormat().clearNote();
 
     // Clear Pitching Leaders zone (Column L from row 1 to end)
-    standingsSheet.getRange(1, layout.LEADERS_PITCHING.START_COL, maxRows, 1)
+    standingsSheet.getRange(1, layout.LEADERS_PITCHING.START_COL + 1, maxRows, 1)
       .clearContent().clearFormat().clearNote();
 
     // Clear Fielding Leaders zone (Column N from row 1 to end)
-    standingsSheet.getRange(1, layout.LEADERS_FIELDING.START_COL, maxRows, 1)
+    standingsSheet.getRange(1, layout.LEADERS_FIELDING.START_COL + 1, maxRows, 1)
       .clearContent().clearFormat().clearNote();
   }
 

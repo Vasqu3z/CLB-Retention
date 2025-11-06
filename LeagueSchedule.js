@@ -21,10 +21,10 @@ function updateLeagueScheduleFromCache(scheduleData, teamStatsWithH2H, gamesByWe
   SpreadsheetApp.getActiveSpreadsheet().toast("League Schedule updated!", "Step 5 Complete", 3);
 }
 
-// ===== OLD: Legacy function for manual execution (calls game processor) =====
+/**
+ * Manual execution entry point for League Schedule updates
+ */
 function updateLeagueSchedule() {
-  // This function is now just a wrapper that calls the game processor
-  // It's kept for backwards compatibility and manual menu execution
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
     updateLeagueScheduleFromCache(gameData.scheduleData, gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.boxScoreUrl);
@@ -47,15 +47,15 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
 
   // Clear Standings zone (Columns A-H from row 1 to end)
   if (maxRows > 0) {
-    scheduleSheet.getRange(1, layout.STANDINGS.START_COL, maxRows, layout.STANDINGS.NUM_COLS)
+    scheduleSheet.getRange(1, layout.STANDINGS.START_COL + 1, maxRows, layout.STANDINGS.NUM_COLS)
       .clearContent().clearFormat().clearNote();
 
     // Clear Completed Games zone (Column J from row 1 to end)
-    scheduleSheet.getRange(1, layout.COMPLETED_GAMES.START_COL, maxRows, 1)
+    scheduleSheet.getRange(1, layout.COMPLETED_GAMES.START_COL + 1, maxRows, 1)
       .clearContent().clearFormat().clearNote();
 
     // Clear Scheduled Games zone (Column L from row 1 to end)
-    scheduleSheet.getRange(1, layout.SCHEDULED_GAMES.START_COL, maxRows, 1)
+    scheduleSheet.getRange(1, layout.SCHEDULED_GAMES.START_COL + 1, maxRows, 1)
       .clearContent().clearFormat().clearNote();
   }
 
@@ -260,7 +260,6 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
       .setFontColor("#999999");
   }
   
-  // 3-Pass Batch System for Completed Games - eliminates N+1 loops
   currentRow = standingsStartRow + standingsData.length + 2;
   writeScheduleToSheet(scheduleSheet, scheduleData, gamesByWeek, boxScoreSpreadsheetUrl, currentRow);
   
@@ -279,10 +278,10 @@ function createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek
   logInfo("Step 5", "Created/updated League Schedule sheet");
 }
 
-// ===== 3-Pass Batch System for Completed Games and This Week's Games =====
-// Eliminates N+1 Rich Text loops by batching all operations
+/**
+ * Write completed games and this week's games to schedule sheet
+ */
 function writeScheduleToSheet(scheduleSheet, scheduleData, gamesByWeek, boxScoreSpreadsheetUrl, startRow) {
-  // COMPLETED GAMES HEADER
   var completedGamesRow = 1;
   scheduleSheet.getRange(completedGamesRow, 10)
     .setValue("Completed Games")
@@ -450,15 +449,14 @@ function initializeSeasonSchedule() {
   return scheduleSheet;
 }
 
-// ===== DEPRECATED: Old combined function (kept for backwards compatibility) =====
+/**
+ * Legacy function for backwards compatibility
+ */
 function generateLeagueSchedulePage() {
-  // This function is now deprecated but kept for backwards compatibility
-  // The new approach processes everything in GameProcessor.js
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var boxScoreSS = getBoxScoreSpreadsheet();
   if (!boxScoreSS) return null;
-  
-  // If called from old code, process games and return minimal data
+
   var gameData = processAllGameSheetsOnce();
   if (!gameData) return null;
   
@@ -471,14 +469,15 @@ function generateLeagueSchedulePage() {
   
   return {
     schedule: gameData.scheduleData,
-    h2hMatrix: {}, // Not used anymore
+    h2hMatrix: {},
     teamNames: teamNames,
     boxScoreUrl: gameData.boxScoreUrl
   };
 }
 
-// ===== DEPRECATED: Old function signature (kept for backwards compatibility) =====
+/**
+ * Legacy function name for backwards compatibility
+ */
 function createLeagueScheduleSheet(scheduleData, teamStats, gamesByWeek, boxScoreSpreadsheetUrl) {
-  // Redirect to new function
   createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek, boxScoreSpreadsheetUrl);
 }

@@ -1,12 +1,11 @@
 // ===== PLAYER COMPARISON TOOL =====
-// Player comparison dialog and data retrieval
+// Purpose: Provides player comparison dialog with optimized data retrieval
+// Dependencies: LeagueConfig.js, PlayerComparisonApp.html
+// Entry Point(s): showPlayerComparison, getPlayerStats
 
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('PlayerComparisonApp')
-    .setTitle('Player Comparison Tool')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-}
-
+/**
+ * Display the player comparison modal dialog
+ */
 function showPlayerComparison() {
   var html = HtmlService.createHtmlOutputFromFile('PlayerComparisonApp')
     .setWidth(800)
@@ -15,18 +14,32 @@ function showPlayerComparison() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Player Comparison');
 }
 
+/**
+ * Web app entry point
+ * @returns {HtmlOutput} The player comparison web app
+ */
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('PlayerComparisonApp')
+    .setTitle('Player Comparison Tool')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/**
+ * Get list of all players sorted alphabetically
+ * @returns {Array<object>} Array of player objects with name and team
+ */
 function getPlayerList() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var playerSheet = ss.getSheetByName(CONFIG.PLAYER_STATS_SHEET);
-  
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var playerSheet = activeSpreadsheet.getSheetByName(CONFIG.PLAYER_STATS_SHEET);
+
   if (!playerSheet) return [];
-  
+
   var lastRow = playerSheet.getLastRow();
   if (lastRow < 2) return [];
-  
+
   var playerData = playerSheet.getRange(2, 1, lastRow - 1, 2).getValues();
   var players = [];
-  
+
   for (var i = 0; i < playerData.length; i++) {
     var name = String(playerData[i][0]).trim();
     var team = String(playerData[i][1]).trim();
@@ -34,109 +47,141 @@ function getPlayerList() {
       players.push({name: name, team: team});
     }
   }
-  
+
   players.sort(function(a, b) {
     return a.name.localeCompare(b.name);
   });
-  
+
   return players;
 }
 
+/**
+ * Get player stats using Read-Once pattern
+ * Reads each stat sheet once and builds an in-memory map
+ * @param {Array<string>} playerNames - Array of player names to retrieve stats for
+ * @returns {Array<object>} Array of player stat objects
+ */
 function getPlayerStats(playerNames) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var hittingSheet = ss.getSheetByName(CONFIG.HITTING_STATS_SHEET);
-  var pitchingSheet = ss.getSheetByName(CONFIG.PITCHING_STATS_SHEET);
-  var fieldingSheet = ss.getSheetByName(CONFIG.FIELDING_STATS_SHEET);
-  
-  var results = [];
-  
-  for (var p = 0; p < playerNames.length; p++) {
-    var playerName = playerNames[p];
-    var playerData = {
-      name: playerName,
-      hitting: {},
-      pitching: {},
-      fielding: {}
-    };
-    
-    if (hittingSheet) {
-      var hittingLastRow = hittingSheet.getLastRow();
-      if (hittingLastRow > 1) {
-        var hittingData = hittingSheet.getRange(2, 1, hittingLastRow - 1, 16).getValues();
-        for (var i = 0; i < hittingData.length; i++) {
-          if (String(hittingData[i][0]).trim() === playerName) {
-            playerData.hitting = {
-              team: String(hittingData[i][1]),
-              gp: hittingData[i][2],
-              ab: hittingData[i][3],
-              h: hittingData[i][4],
-              hr: hittingData[i][5],
-              rbi: hittingData[i][6],
-              bb: hittingData[i][7],
-              k: hittingData[i][8],
-              rob: hittingData[i][9],
-              dp: hittingData[i][10],
-              tb: hittingData[i][11],
-              avg: hittingData[i][12],
-              obp: hittingData[i][13],
-              slg: hittingData[i][14],
-              ops: hittingData[i][15]
-            };
-            break;
-          }
-        }
-      }
-    }
-    
-    if (pitchingSheet) {
-      var pitchingLastRow = pitchingSheet.getLastRow();
-      if (pitchingLastRow > 1) {
-        var pitchingData = pitchingSheet.getRange(2, 1, pitchingLastRow - 1, 16).getValues();
-        for (var i = 0; i < pitchingData.length; i++) {
-          if (String(pitchingData[i][0]).trim() === playerName) {
-            playerData.pitching = {
-              gp: pitchingData[i][2],
-              w: pitchingData[i][3],
-              l: pitchingData[i][4],
-              sv: pitchingData[i][5],
-              era: pitchingData[i][6],
-              ip: pitchingData[i][7],
-              bf: pitchingData[i][8],
-              h: pitchingData[i][9],
-              hr: pitchingData[i][10],
-              r: pitchingData[i][11],
-              bb: pitchingData[i][12],
-              k: pitchingData[i][13],
-              baa: pitchingData[i][14],
-              whip: pitchingData[i][15]
-            };
-            break;
-          }
-        }
-      }
-    }
-    
-    if (fieldingSheet) {
-      var fieldingLastRow = fieldingSheet.getLastRow();
-      if (fieldingLastRow > 1) {
-        var fieldingData = fieldingSheet.getRange(2, 1, fieldingLastRow - 1, 6).getValues();
-        for (var i = 0; i < fieldingData.length; i++) {
-          if (String(fieldingData[i][0]).trim() === playerName) {
-            playerData.fielding = {
-              gp: fieldingData[i][2],
-              np: fieldingData[i][3],
-              e: fieldingData[i][4],
-              sb: fieldingData[i][5]
-            };
-            break;
-          }
-        }
-      }
-    }
-    
-    results.push(playerData);
-  }
-  
-  return results;
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var hittingSheet = activeSpreadsheet.getSheetByName(CONFIG.HITTING_STATS_SHEET);
+  var pitchingSheet = activeSpreadsheet.getSheetByName(CONFIG.PITCHING_STATS_SHEET);
+  var fieldingSheet = activeSpreadsheet.getSheetByName(CONFIG.FIELDING_STATS_SHEET);
 
+  var playerStatsMap = {};
+
+  var hMap = CONFIG.SHEET_STRUCTURE.PLAYER_COMPARISON.HITTING_MAP;
+  var pMap = CONFIG.SHEET_STRUCTURE.PLAYER_COMPARISON.PITCHING_MAP;
+  var fMap = CONFIG.SHEET_STRUCTURE.PLAYER_COMPARISON.FIELDING_MAP;
+
+  if (hittingSheet && hittingSheet.getLastRow() > 1) {
+    var hittingLastRow = hittingSheet.getLastRow();
+    var hittingData = hittingSheet.getRange(2, 1, hittingLastRow - 1, 16).getValues();
+
+    for (var i = 0; i < hittingData.length; i++) {
+      var playerName = String(hittingData[i][0]).trim();
+      if (!playerName) continue;
+
+      playerStatsMap[playerName] = {
+        name: playerName,
+        hitting: {
+          team: String(hittingData[i][hMap.team]),
+          gp: hittingData[i][hMap.gp],
+          ab: hittingData[i][hMap.ab],
+          h: hittingData[i][hMap.h],
+          hr: hittingData[i][hMap.hr],
+          rbi: hittingData[i][hMap.rbi],
+          bb: hittingData[i][hMap.bb],
+          k: hittingData[i][hMap.k],
+          rob: hittingData[i][hMap.rob],
+          dp: hittingData[i][hMap.dp],
+          tb: hittingData[i][hMap.tb],
+          avg: hittingData[i][hMap.avg],
+          obp: hittingData[i][hMap.obp],
+          slg: hittingData[i][hMap.slg],
+          ops: hittingData[i][hMap.ops]
+        },
+        pitching: {},
+        fielding: {}
+      };
+    }
+  }
+
+  if (pitchingSheet && pitchingSheet.getLastRow() > 1) {
+    var pitchingLastRow = pitchingSheet.getLastRow();
+    var pitchingData = pitchingSheet.getRange(2, 1, pitchingLastRow - 1, 16).getValues();
+
+    for (var i = 0; i < pitchingData.length; i++) {
+      var playerName = String(pitchingData[i][0]).trim();
+      if (!playerName) continue;
+
+      if (!playerStatsMap[playerName]) {
+        playerStatsMap[playerName] = {
+          name: playerName,
+          hitting: {},
+          pitching: {},
+          fielding: {}
+        };
+      }
+
+      playerStatsMap[playerName].pitching = {
+        gp: pitchingData[i][pMap.gp],
+        w: pitchingData[i][pMap.w],
+        l: pitchingData[i][pMap.l],
+        sv: pitchingData[i][pMap.sv],
+        era: pitchingData[i][pMap.era],
+        ip: pitchingData[i][pMap.ip],
+        bf: pitchingData[i][pMap.bf],
+        h: pitchingData[i][pMap.h],
+        hr: pitchingData[i][pMap.hr],
+        r: pitchingData[i][pMap.r],
+        bb: pitchingData[i][pMap.bb],
+        k: pitchingData[i][pMap.k],
+        baa: pitchingData[i][pMap.baa],
+        whip: pitchingData[i][pMap.whip]
+      };
+    }
+  }
+
+  if (fieldingSheet && fieldingSheet.getLastRow() > 1) {
+    var fieldingLastRow = fieldingSheet.getLastRow();
+    var fieldingData = fieldingSheet.getRange(2, 1, fieldingLastRow - 1, 6).getValues();
+
+    for (var i = 0; i < fieldingData.length; i++) {
+      var playerName = String(fieldingData[i][0]).trim();
+      if (!playerName) continue;
+
+      if (!playerStatsMap[playerName]) {
+        playerStatsMap[playerName] = {
+          name: playerName,
+          hitting: {},
+          pitching: {},
+          fielding: {}
+        };
+      }
+
+      playerStatsMap[playerName].fielding = {
+        gp: fieldingData[i][fMap.gp],
+        np: fieldingData[i][fMap.np],
+        e: fieldingData[i][fMap.e],
+        sb: fieldingData[i][fMap.sb]
+      };
+    }
+  }
+
+  var results = [];
+  for (var playerIndex = 0; playerIndex < playerNames.length; playerIndex++) {
+    var playerName = playerNames[playerIndex];
+    if (playerStatsMap[playerName]) {
+      results.push(playerStatsMap[playerName]);
+    } else {
+      results.push({
+        name: playerName,
+        hitting: {},
+        pitching: {},
+        fielding: {}
+      });
+    }
+  }
+
+  return results;
 }

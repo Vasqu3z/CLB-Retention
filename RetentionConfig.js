@@ -397,30 +397,30 @@ var RETENTION_CONFIG = {
     CHEMISTRY_COL_WIDTH: 100,
     DIRECTION_COL_WIDTH: 100,
 
-    // ===== COLUMN POSITIONS =====
+    // ===== COLUMN POSITIONS (0-BASED INDEXING) =====
     // Team Success split into Regular Season + Postseason (2 columns)
     // Total: 19 columns
 
-    // Auto-calculated columns (cleared on update)
-    COL_PLAYER: 1,              // A - Player name
-    COL_TEAM: 2,                // B - Team name
-    COL_DRAFT_VALUE: 3,         // C - Draft/Trade Value (1-8, manual input)
-    COL_REG_SEASON: 4,          // D - Regular Season Success (0-10, from standings) **SPLIT**
-    COL_POSTSEASON: 5,          // E - Postseason Success (0-10, VLOOKUP from table) **SPLIT**
-    COL_TS_MOD: 6,              // F - Team Success modifier (manual)
-    COL_TS_TOTAL: 7,            // G - Team Success total (D+E+F formula)
-    COL_PT_BASE: 8,             // H - Play Time base
-    COL_PT_MOD: 9,              // I - Play Time modifier (manual)
-    COL_PT_TOTAL: 10,           // J - Play Time total (formula)
-    COL_PERF_BASE: 11,          // K - Performance base
-    COL_PERF_MOD: 12,           // L - Performance modifier (manual)
-    COL_PERF_TOTAL: 13,         // M - Performance total (formula)
-    COL_AUTO_TOTAL: 14,         // N - Auto total (sum of bases)
-    COL_CHEMISTRY: 15,          // O - Chemistry (0-20, manual input)
-    COL_DIRECTION: 16,          // P - Direction (0-20, VLOOKUP from table)
-    COL_MANUAL_TOTAL: 17,       // Q - Manual total (weighted: 12% chem + 21% dir)
-    COL_FINAL_GRADE: 18,        // R - Final grade (weighted formula × 5 for d100)
-    COL_DETAILS: 19,            // S - Details
+    // Auto-calculated columns
+    COL_PLAYER: 0,              // Column A (1) - Player name
+    COL_TEAM: 1,                // Column B (2) - Team name
+    COL_DRAFT_VALUE: 2,         // Column C (3) - Draft/Trade Value (1-8, manual input)
+    COL_REG_SEASON: 3,          // Column D (4) - Regular Season Success (0-10, from standings) **SPLIT**
+    COL_POSTSEASON: 4,          // Column E (5) - Postseason Success (0-10, VLOOKUP from table) **SPLIT**
+    COL_TS_MOD: 5,              // Column F (6) - Team Success modifier (manual)
+    COL_TS_TOTAL: 6,            // Column G (7) - Team Success total (D+E+F formula)
+    COL_PT_BASE: 7,             // Column H (8) - Play Time base
+    COL_PT_MOD: 8,              // Column I (9) - Play Time modifier (manual)
+    COL_PT_TOTAL: 9,            // Column J (10) - Play Time total (formula)
+    COL_PERF_BASE: 10,          // Column K (11) - Performance base
+    COL_PERF_MOD: 11,           // Column L (12) - Performance modifier (manual)
+    COL_PERF_TOTAL: 12,         // Column M (13) - Performance total (formula)
+    COL_AUTO_TOTAL: 13,         // Column N (14) - Auto total (sum of bases)
+    COL_CHEMISTRY: 14,          // Column O (15) - Chemistry (0-20, manual input)
+    COL_DIRECTION: 15,          // Column P (16) - Direction (0-20, VLOOKUP from table)
+    COL_MANUAL_TOTAL: 16,       // Column Q (17) - Manual total (weighted: 12% chem + 21% dir)
+    COL_FINAL_GRADE: 17,        // Column R (18) - Final grade (weighted formula × 5 for d100)
+    COL_DETAILS: 18,            // Column S (19) - Details
 
     // Total columns
     TOTAL_COLUMNS: 19,
@@ -471,7 +471,7 @@ var RETENTION_CONFIG = {
       // Used in RetentionCore.js to read team standings
       LEAGUE_HUB_STANDINGS: {
         START_ROW: 4,       // First data row after header
-        START_COL: 1,       // Column A (Rank, Team)
+        START_COL: 0,       // Column A (1) - Rank, Team
         NUM_ROWS: 8,        // 8 teams in league
         NUM_COLS: 2         // Rank + Team name
       }
@@ -508,7 +508,7 @@ var RETENTION_CONFIG = {
 
     // Search logic for dynamic sections
     SEARCH_LOGIC: {
-      SECTION_HEADER_SEARCH_COL: 1,    // Column A - where section headers are found
+      SECTION_HEADER_SEARCH_COL: 0,    // Column A (1) - where section headers are found
       POSTSEASON_HEADER_TEXT: "Postseason Results",
       TEAM_DIRECTION_HEADER_TEXT: "Team Direction"
     }

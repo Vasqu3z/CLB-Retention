@@ -1,8 +1,10 @@
 // ===== LEAGUE HUB - CONFIGURATION =====
-// All configuration settings and global variables
+// Purpose: Centralized configuration for all CLB League Hub modules
+// Dependencies: None (base configuration file)
+// Entry Point(s): Accessed by all modules via CONFIG object
 
 var CONFIG = {
-  // Sheet names in THIS spreadsheet
+  // ===== SHEET NAMES =====
   ERROR_LOG_SHEET: "Error Log",
   PLAYER_STATS_SHEET: "Player Data",
   TEAM_STATS_SHEET: "Team Data",
@@ -21,6 +23,11 @@ var CONFIG = {
 
   // Prefix for game sheets in the box score spreadsheet
   GAME_SHEET_PREFIX: "#",
+
+  // ===== DEBUG SETTINGS =====
+  DEBUG: {
+    ENABLE_LOGGING: true
+  },
 
   // Column widths
   PLAYER_COLUMN_WIDTH: 175,
@@ -48,7 +55,8 @@ var CONFIG = {
   MAX_PLAYERS_PER_ROSTER: 11,
   WARN_ON_ROSTER_OVERFLOW: true,
 
-  // Box score cell locations
+  // ===== BOX SCORE CELL LOCATIONS =====
+  BOX_SCORE_MASTER_RANGE: "B3:R50",
   BOX_SCORE_TEAM_INFO: "B3:F4",
   BOX_SCORE_WLS_DATA: "M48:R50",
   BOX_SCORE_WINNER_DATA: "N48:N50",
@@ -99,80 +107,75 @@ var CONFIG = {
   // Transaction tracking
   PLAYER_TEAM_SNAPSHOT_PROPERTY: "playerTeamSnapshot",
 
-  // ===== STATS SHEET COLUMN MAPPINGS =====
-  // Define exact column structure for each stats sheet
-  // Update these if sheet structure changes
+  // ===== STATS SHEET COLUMN MAPPINGS (0-BASED INDEXING) =====
+  // All column indices are 0-based to eliminate [col - 1] offsets
   STATS_COLUMN_MAPS: {
     HITTING_COLUMNS: {
-      // Columns in 🧮 Hitting sheet
-      PLAYER_NAME: 1,    // Column A
-      TEAM: 2,           // Column B
-      GP: 3,             // Column C - Games Played
-      AB: 4,             // Column D - At Bats
-      H: 5,              // Column E - Hits
-      HR: 6,             // Column F - Home Runs
-      RBI: 7,            // Column G - Runs Batted In
-      BB: 8,             // Column H - Walks
-      K: 9,              // Column I - Strikeouts
-      ROB: 10,           // Column J - Reached on Base
-      DP: 11,            // Column K - Double Plays
-      TB: 12,            // Column L - Total Bases
-      AVG: 13,           // Column M - Batting Average
-      OBP: 14,           // Column N - On-Base Percentage
-      SLG: 15,           // Column O - Slugging Percentage
-      OPS: 16            // Column P - On-Base Plus Slugging
+      PLAYER_NAME: 0,    // Column A (1)
+      TEAM: 1,           // Column B (2)
+      GP: 2,             // Column C (3) - Games Played
+      AB: 3,             // Column D (4) - At Bats
+      H: 4,              // Column E (5) - Hits
+      HR: 5,             // Column F (6) - Home Runs
+      RBI: 6,            // Column G (7) - Runs Batted In
+      BB: 7,             // Column H (8) - Walks
+      K: 8,              // Column I (9) - Strikeouts
+      ROB: 9,            // Column J (10) - Reached on Base
+      DP: 10,            // Column K (11) - Double Plays
+      TB: 11,            // Column L (12) - Total Bases
+      AVG: 12,           // Column M (13) - Batting Average
+      OBP: 13,           // Column N (14) - On-Base Percentage
+      SLG: 14,           // Column O (15) - Slugging Percentage
+      OPS: 15            // Column P (16) - On-Base Plus Slugging
     },
 
     PITCHING_COLUMNS: {
-      // Columns in 🧮 Pitching sheet
-      PLAYER_NAME: 1,    // Column A
-      TEAM: 2,           // Column B
-      GP: 3,             // Column C - Games Played
-      W: 4,              // Column D - Wins
-      L: 5,              // Column E - Losses
-      SV: 6,             // Column F - Saves
-      ERA: 7,            // Column G - Earned Run Average
-      IP: 8,             // Column H - Innings Pitched
-      BF: 9,             // Column I - Batters Faced
-      H: 10,             // Column J - Hits Allowed
-      HR: 11,            // Column K - Home Runs Allowed
-      R: 12,             // Column L - Runs Allowed
-      BB: 13,            // Column M - Walks Allowed
-      K: 14,             // Column N - Strikeouts
-      BAA: 15,           // Column O - Batting Average Against
-      WHIP: 16           // Column P - Walks + Hits per IP
+      PLAYER_NAME: 0,    // Column A (1)
+      TEAM: 1,           // Column B (2)
+      GP: 2,             // Column C (3) - Games Played
+      W: 3,              // Column D (4) - Wins
+      L: 4,              // Column E (5) - Losses
+      SV: 5,             // Column F (6) - Saves
+      ERA: 6,            // Column G (7) - Earned Run Average
+      IP: 7,             // Column H (8) - Innings Pitched
+      BF: 8,             // Column I (9) - Batters Faced
+      H: 9,              // Column J (10) - Hits Allowed
+      HR: 10,            // Column K (11) - Home Runs Allowed
+      R: 11,             // Column L (12) - Runs Allowed
+      BB: 12,            // Column M (13) - Walks Allowed
+      K: 13,             // Column N (14) - Strikeouts
+      BAA: 14,           // Column O (15) - Batting Average Against
+      WHIP: 15           // Column P (16) - Walks + Hits per IP
     },
 
     FIELDING_COLUMNS: {
-      // Columns in 🧮 Fielding & Running sheet
-      PLAYER_NAME: 1,    // Column A
-      TEAM: 2,           // Column B
-      GP: 3,             // Column C - Games Played
-      NP: 4,             // Column D - Nice Plays
-      E: 5,              // Column E - Errors
-      SB: 6              // Column F - Stolen Bases
+      PLAYER_NAME: 0,    // Column A (1)
+      TEAM: 1,           // Column B (2)
+      GP: 2,             // Column C (3) - Games Played
+      NP: 3,             // Column D (4) - Nice Plays
+      E: 4,              // Column E (5) - Errors
+      SB: 5              // Column F (6) - Stolen Bases
     }
   },
 
-  // ===== SHEET STRUCTURE LAYOUTS =====
-  // Define exact layout of all output sheets to eliminate magic numbers
-  // All column numbers and row positions centralized here
+  // ===== SHEET STRUCTURE LAYOUTS (0-BASED INDEXING) =====
+  // All column numbers are 0-based to eliminate magic offsets
   SHEET_STRUCTURE: {
     // Team Data/Stats sheet layout
     TEAM_STATS_SHEET: {
       DATA_START_ROW: 2,
-      TEAM_NAME_COL: 1,           // Column A
-      CAPTAIN_COL: 2,             // Column B - Captain Name
-      GP_COL: 3,                  // Column C - Games Played
-      WINS_COL: 4,                // Column D - Wins
-      LOSSES_COL: 5,              // Column E - Losses
-      GPWL_START_COL: 3,          // Column C - GP, W, L (for range operations)
+      TEAM_NAME_COL: 0,           // Column A (1)
+      CAPTAIN_COL: 1,             // Column B (2) - Captain Name
+      GP_COL: 2,                  // Column C (3) - Games Played
+      WINS_COL: 3,                // Column D (4) - Wins
+      LOSSES_COL: 4,              // Column E (5) - Losses
+      GPWL_START_COL: 2,          // Column C (3) - GP, W, L (for range operations)
       GPWL_NUM_COLS: 3,
-      HITTING_START_COL: 6,       // Column F - Hitting stats
+      HITTING_START_COL: 5,       // Column F (6) - Hitting stats
       HITTING_NUM_COLS: 9,
-      PITCHING_START_COL: 15,     // Column O - Pitching stats
+      PITCHING_START_COL: 14,     // Column O (15) - Pitching stats
       PITCHING_NUM_COLS: 7,
-      FIELDING_START_COL: 22,     // Column V - Fielding stats
+      FIELDING_START_COL: 21,     // Column V (22) - Fielding stats
       FIELDING_NUM_COLS: 3
     },
 
@@ -182,21 +185,21 @@ var CONFIG = {
       STANDINGS_HEADER_ROW: 3,
       STANDINGS_START_ROW: 4,
       STANDINGS: {
-        START_COL: 1,             // Column A
+        START_COL: 0,             // Column A (1)
         NUM_COLS: 8,              // Rank, Team, W, L, Win%, RS, RA, Diff
         RANK_WIDTH: 50,
         TEAM_WIDTH: 175
       },
       LEADERS_BATTING: {
-        START_COL: 10,            // Column J
+        START_COL: 9,             // Column J (10)
         WIDTH: 300
       },
       LEADERS_PITCHING: {
-        START_COL: 12,            // Column L
+        START_COL: 11,            // Column L (12)
         WIDTH: 300
       },
       LEADERS_FIELDING: {
-        START_COL: 14,            // Column N
+        START_COL: 13,            // Column N (14)
         WIDTH: 300
       }
     },
@@ -207,15 +210,15 @@ var CONFIG = {
       STANDINGS_HEADER_ROW: 3,
       STANDINGS_START_ROW: 4,
       STANDINGS: {
-        START_COL: 1,             // Column A
+        START_COL: 0,             // Column A (1)
         NUM_COLS: 8               // Rank, Team, W, L, Win%, RS, RA, Diff
       },
       COMPLETED_GAMES: {
-        START_COL: 10,            // Column J
+        START_COL: 9,             // Column J (10)
         WIDTH: 300
       },
       SCHEDULED_GAMES: {
-        START_COL: 12,            // Column L
+        START_COL: 11,            // Column L (12)
         WIDTH: 300
       }
     },
@@ -223,21 +226,48 @@ var CONFIG = {
     // Player Data sheet layout
     PLAYER_STATS_SHEET: {
       HEADER_ROW: 1,
-      DATA_START_ROW: 2
+      DATA_START_ROW: 2,
+      PLAYER_NAME_COL: 0,         // Column A (1)
+      TEAM_NAME_COL: 1,           // Column B (2)
+      DATA_START_COL: 2,          // Column C (3) - First stat (GP)
+      TOTAL_STAT_COLUMNS: 23      // GP (1) + Hitting (9) + WLS (3) + Pitching (7) + Fielding (3)
     },
 
     // Team Sheets layout
     TEAM_SHEETS: {
       HEADER_ROW: 1,
       DATA_START_ROW: 2,
-      PLAYER_COL_WIDTH: 175
+      PLAYER_COL_WIDTH: 175,
+      STANDINGS_START_ROW: 4,
+      STANDINGS_START_COL: 16,    // Column Q (17)
+      STANDINGS_NUM_COLS: 7,
+      SCHEDULE_START_COL: 16,     // Column Q (17)
+      SCHEDULE_NUM_COLS: 7
+    },
+
+    // Player Comparison sheet layout
+    PLAYER_COMPARISON: {
+      // Maps stat keys to their 0-based index in the Hitting sheet
+      HITTING_MAP: {
+        team: 1, gp: 2, ab: 3, h: 4, hr: 5, rbi: 6, bb: 7, k: 8,
+        rob: 9, dp: 10, tb: 11, avg: 12, obp: 13, slg: 14, ops: 15
+      },
+      // Maps stat keys to their 0-based index in the Pitching sheet
+      PITCHING_MAP: {
+        gp: 2, w: 3, l: 4, sv: 5, era: 6, ip: 7, bf: 8, h: 9,
+        hr: 10, r: 11, bb: 12, k: 13, baa: 14, whip: 15
+      },
+      // Maps stat keys to their 0-based index in the Fielding sheet
+      FIELDING_MAP: {
+        gp: 2, np: 3, e: 4, sb: 5
+      }
     }
   }
 };
 
-// Global cache for spreadsheet objects and processed game data
+// ===== GLOBAL CACHE =====
 var _spreadsheetCache = {
   boxScoreSpreadsheet: null,
   gameSheets: null,
-  gameData: null  // Stores result from processAllGameSheetsOnce()
+  gameData: null
 };

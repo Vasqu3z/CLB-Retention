@@ -96,9 +96,9 @@ function updateTeamSheetsFromCache(teamStatsWithH2H, scheduleData, boxScoreUrl) 
         }
       } catch (e) {}
       
-      var teamHittingData = filterAndSortTeamData(hittingData.rows, teamName, true);
-      var teamPitchingData = filterAndSortTeamData(pitchingData.rows, teamName, true);
-      var teamFieldingData = filterAndSortTeamData(fieldingData.rows, teamName, true);
+      var teamHittingData = filterAndSortTeamData(hittingData.rows, teamName, CONFIG.STATS_COLUMN_MAPS.HITTING_COLUMNS.TEAM, true);
+      var teamPitchingData = filterAndSortTeamData(pitchingData.rows, teamName, CONFIG.STATS_COLUMN_MAPS.PITCHING_COLUMNS.TEAM, true);
+      var teamFieldingData = filterAndSortTeamData(fieldingData.rows, teamName, CONFIG.STATS_COLUMN_MAPS.FIELDING_COLUMNS.TEAM, true);
       
       // ===== ROSTER SIZE VALIDATION =====
       if (CONFIG.WARN_ON_ROSTER_OVERFLOW && teamHittingData.length > CONFIG.MAX_PLAYERS_PER_ROSTER) {
@@ -260,10 +260,10 @@ function updateTeamSheetsFromCache(teamStatsWithH2H, scheduleData, boxScoreUrl) 
   }
 }
 
-// ===== OLD: Legacy function for manual execution (calls game processor) =====
+/**
+ * Manual execution entry point for Team Sheets updates
+ */
 function updateTeamSheets() {
-  // This function is now just a wrapper that calls the game processor
-  // It's kept for backwards compatibility and manual menu execution
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
     updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);

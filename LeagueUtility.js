@@ -242,15 +242,23 @@ function removeColumnFromArray(arr, columnIndex) {
   return result;
 }
 
-function filterAndSortTeamData(allData, teamName, removeTeamColumn) {
+/**
+ * Filter and sort team data from a data array
+ * @param {Array<Array>} allData - The data array to filter
+ * @param {string} teamName - The team name to filter by
+ * @param {number} teamColumnIndex - The 0-based index of the team column
+ * @param {boolean} removeTeamColumn - Whether to remove the team column from results
+ * @returns {Array<Array>} Filtered and sorted data
+ */
+function filterAndSortTeamData(allData, teamName, teamColumnIndex, removeTeamColumn) {
   var filtered = [];
-  
+
   for (var i = 0; i < allData.length; i++) {
-    if (String(allData[i][1]).trim() === teamName) {
+    if (String(allData[i][teamColumnIndex]).trim() === teamName) {
       if (removeTeamColumn) {
         var rowWithoutTeam = [];
         for (var j = 0; j < allData[i].length; j++) {
-          if (j !== 1) rowWithoutTeam.push(allData[i][j]);
+          if (j !== teamColumnIndex) rowWithoutTeam.push(allData[i][j]);
         }
         filtered.push(rowWithoutTeam);
       } else {
@@ -258,11 +266,11 @@ function filterAndSortTeamData(allData, teamName, removeTeamColumn) {
       }
     }
   }
-  
+
   filtered.sort(function(a, b) {
     return String(a[0]).localeCompare(String(b[0]));
   });
-  
+
   return filtered;
 }
 

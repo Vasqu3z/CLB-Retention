@@ -89,8 +89,8 @@ function calculateRetentionGrades(loadedGameData) {
         var numRows = Math.max(0, lastRow - dataStartRow + 1);
 
         if (numRows > 0) {
-          var playerNames = sheet.getRange(dataStartRow, RETENTION_CONFIG.OUTPUT.COL_PLAYER, numRows, 1).getValues();
-          var draftValues = sheet.getRange(dataStartRow, RETENTION_CONFIG.OUTPUT.COL_DRAFT_VALUE, numRows, 1).getValues();
+          var playerNames = sheet.getRange(dataStartRow, RETENTION_CONFIG.OUTPUT.COL_PLAYER + 1, numRows, 1).getValues();
+          var draftValues = sheet.getRange(dataStartRow, RETENTION_CONFIG.OUTPUT.COL_DRAFT_VALUE + 1, numRows, 1).getValues();
 
           for (var i = 0; i < numRows; i++) {
             var playerName = String(playerNames[i][0]).trim();
@@ -1106,8 +1106,6 @@ function writePlayerData(sheet, retentionGrades) {
   sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).setValues(autoTotalValues);
   sheet.getRange(dataStartRow, cols.COL_DETAILS, numRows, 1).setValues(detailsValues);
 
-  // Batch all formulas for performance (eliminates N+1 loops)
-  // Build formula arrays
   var postseasonFormulas = [];
   var tsTotalFormulas = [];
   var ptTotalFormulas = [];

@@ -400,9 +400,8 @@ var RETENTION_CONFIG = {
     // ===== COLUMN POSITIONS (0-BASED INDEXING) =====
     // Team Success split into Regular Season + Postseason (2 columns)
     // Total: 19 columns
-    // All column indices are 0-based to maintain architectural consistency with LeagueConfig
 
-    // Auto-calculated columns (cleared on update)
+    // Auto-calculated columns
     COL_PLAYER: 0,              // Column A (1) - Player name
     COL_TEAM: 1,                // Column B (2) - Team name
     COL_DRAFT_VALUE: 2,         // Column C (3) - Draft/Trade Value (1-8, manual input)

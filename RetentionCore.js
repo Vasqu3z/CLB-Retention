@@ -1106,8 +1106,6 @@ function writePlayerData(sheet, retentionGrades) {
   sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).setValues(autoTotalValues);
   sheet.getRange(dataStartRow, cols.COL_DETAILS, numRows, 1).setValues(detailsValues);
 
-  // Batch all formulas for performance (eliminates N+1 loops)
-  // Build formula arrays
   var postseasonFormulas = [];
   var tsTotalFormulas = [];
   var ptTotalFormulas = [];

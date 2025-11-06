@@ -260,10 +260,10 @@ function updateTeamSheetsFromCache(teamStatsWithH2H, scheduleData, boxScoreUrl) 
   }
 }
 
-// ===== OLD: Legacy function for manual execution (calls game processor) =====
+/**
+ * Manual execution entry point for Team Sheets updates
+ */
 function updateTeamSheets() {
-  // This function is now just a wrapper that calls the game processor
-  // It's kept for backwards compatibility and manual menu execution
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
     updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);

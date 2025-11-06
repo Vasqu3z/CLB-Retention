@@ -298,7 +298,6 @@ function updateLeagueHubFromCache(gameData) {
 
   var weeksToShow = Math.min(weekKeys.length, CONFIG.RECENT_SCHEDULE_WEEKS);
 
-  // 3-Pass Batch System for Rich Text - eliminates N+1 loops
   buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, currentRow, boxScoreUrl);
   
   // ===== SET COLUMN WIDTHS =====
@@ -318,12 +317,11 @@ function updateLeagueHubFromCache(gameData) {
   SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.LEAGUE_HUB_SHEET + " updated!", "Step 4 Complete", 3);
 }
 
-// ===== 3-Pass Batch System for Recent Results =====
-// Eliminates N+1 Rich Text loops by batching all operations
+/**
+ * Build recent results section with rich text formatting
+ */
 function buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, startRow, boxScoreUrl) {
   var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
-
-  // PASS 1: Build all data structures
   var rowData = [];
   var currentRow = startRow;
 
@@ -400,19 +398,19 @@ function buildRecentResults(standingsSheet, gamesByWeek, weekKeys, weeksToShow, 
   }
 }
 
-// ===== OLD: Legacy function for manual execution (calls game processor) =====
+/**
+ * Manual execution entry point for League Hub updates
+ */
 function updateLeagueHub() {
-  // This function is now just a wrapper that calls the game processor
-  // It's kept for backwards compatibility and manual menu execution
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
-    // Pass full gameData object
     updateLeagueHubFromCache(gameData);
   }
 }
 
-// ===== DEPRECATED: Renamed for clarity =====
+/**
+ * Legacy function name for backwards compatibility
+ */
 function updateStandingsAndScoreboard() {
-  // Backwards compatibility wrapper
   updateLeagueHub();
 }

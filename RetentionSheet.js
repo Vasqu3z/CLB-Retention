@@ -173,7 +173,7 @@ function applyDataFormatting(sheet, startRow, numRows) {
   ];
 
   for (var c = 0; c < autoCalcColumns.length; c++) {
-    sheet.getRange(startRow, autoCalcColumns[c], numRows, 1).setBackgrounds(bgColors);
+    sheet.getRange(startRow, autoCalcColumns[c] + 1, numRows, 1).setBackgrounds(bgColors);
   }
 
   // Center-align numeric columns (batch operations)
@@ -186,16 +186,16 @@ function applyDataFormatting(sheet, startRow, numRows) {
   ];
 
   for (var c = 0; c < numericColumns.length; c++) {
-    sheet.getRange(startRow, numericColumns[c], numRows, 1).setHorizontalAlignment("center");
+    sheet.getRange(startRow, numericColumns[c] + 1, numRows, 1).setHorizontalAlignment("center");
   }
 
   // Read all manual input columns at once (batch read)
-  var draftValues = sheet.getRange(startRow, cols.COL_DRAFT_VALUE, numRows, 1).getValues();
-  var tsModValues = sheet.getRange(startRow, cols.COL_TS_MOD, numRows, 1).getValues();
-  var ptModValues = sheet.getRange(startRow, cols.COL_PT_MOD, numRows, 1).getValues();
-  var perfModValues = sheet.getRange(startRow, cols.COL_PERF_MOD, numRows, 1).getValues();
-  var chemValues = sheet.getRange(startRow, cols.COL_CHEMISTRY, numRows, 1).getValues();
-  var dirValues = sheet.getRange(startRow, cols.COL_DIRECTION, numRows, 1).getValues();
+  var draftValues = sheet.getRange(startRow, cols.COL_DRAFT_VALUE + 1, numRows, 1).getValues();
+  var tsModValues = sheet.getRange(startRow, cols.COL_TS_MOD + 1, numRows, 1).getValues();
+  var ptModValues = sheet.getRange(startRow, cols.COL_PT_MOD + 1, numRows, 1).getValues();
+  var perfModValues = sheet.getRange(startRow, cols.COL_PERF_MOD + 1, numRows, 1).getValues();
+  var chemValues = sheet.getRange(startRow, cols.COL_CHEMISTRY + 1, numRows, 1).getValues();
+  var dirValues = sheet.getRange(startRow, cols.COL_DIRECTION + 1, numRows, 1).getValues();
 
   // Prepare arrays for batch writing
   var draftToWrite = [];
@@ -218,11 +218,11 @@ function applyDataFormatting(sheet, startRow, numRows) {
   }
 
   // Write manual columns (batch operations)
-  sheet.getRange(startRow, cols.COL_DRAFT_VALUE, numRows, 1).setValues(draftToWrite);
-  sheet.getRange(startRow, cols.COL_TS_MOD, numRows, 1).setValues(tsModToWrite);
-  sheet.getRange(startRow, cols.COL_PT_MOD, numRows, 1).setValues(ptModToWrite);
-  sheet.getRange(startRow, cols.COL_PERF_MOD, numRows, 1).setValues(perfModToWrite);
-  sheet.getRange(startRow, cols.COL_CHEMISTRY, numRows, 1).setValues(chemToWrite);
+  sheet.getRange(startRow, cols.COL_DRAFT_VALUE + 1, numRows, 1).setValues(draftToWrite);
+  sheet.getRange(startRow, cols.COL_TS_MOD + 1, numRows, 1).setValues(tsModToWrite);
+  sheet.getRange(startRow, cols.COL_PT_MOD + 1, numRows, 1).setValues(ptModToWrite);
+  sheet.getRange(startRow, cols.COL_PERF_MOD + 1, numRows, 1).setValues(perfModToWrite);
+  sheet.getRange(startRow, cols.COL_CHEMISTRY + 1, numRows, 1).setValues(chemToWrite);
 
   // Batch VLOOKUP formulas for Direction column (eliminates N+1 loop)
   var directionFormulas = [];
@@ -232,23 +232,23 @@ function applyDataFormatting(sheet, startRow, numRows) {
     // Format: =IFERROR(VLOOKUP(B{row},TeamDirectionRange,2,FALSE),0)
     directionFormulas.push(["=IF(B" + row + "=\"\",0,IFERROR(VLOOKUP(B" + row + ",TeamDirection,2,FALSE),0))"]);
   }
-  sheet.getRange(startRow, cols.COL_DIRECTION, numRows, 1).setFormulas(directionFormulas);
+  sheet.getRange(startRow, cols.COL_DIRECTION + 1, numRows, 1).setFormulas(directionFormulas);
 
   // Apply colors to manual input columns (batch operations)
-  sheet.getRange(startRow, cols.COL_DRAFT_VALUE, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
-  sheet.getRange(startRow, cols.COL_TS_MOD, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.MODIFIER);
-  sheet.getRange(startRow, cols.COL_PT_MOD, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.MODIFIER);
-  sheet.getRange(startRow, cols.COL_PERF_MOD, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.MODIFIER);
-  sheet.getRange(startRow, cols.COL_CHEMISTRY, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
-  sheet.getRange(startRow, cols.COL_DIRECTION, numRows, 1).setBackground("#e8f4f8"); // Light blue for VLOOKUP
+  sheet.getRange(startRow, cols.COL_DRAFT_VALUE + 1, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
+  sheet.getRange(startRow, cols.COL_TS_MOD + 1, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.MODIFIER);
+  sheet.getRange(startRow, cols.COL_PT_MOD + 1, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.MODIFIER);
+  sheet.getRange(startRow, cols.COL_PERF_MOD + 1, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.MODIFIER);
+  sheet.getRange(startRow, cols.COL_CHEMISTRY + 1, numRows, 1).setBackground(RETENTION_CONFIG.OUTPUT.COLORS.EDITABLE);
+  sheet.getRange(startRow, cols.COL_DIRECTION + 1, numRows, 1).setBackground("#e8f4f8"); // Light blue for VLOOKUP
 
   // Center-align manual input columns
-  sheet.getRange(startRow, cols.COL_DRAFT_VALUE, numRows, 1).setHorizontalAlignment("center");
-  sheet.getRange(startRow, cols.COL_TS_MOD, numRows, 1).setHorizontalAlignment("center");
-  sheet.getRange(startRow, cols.COL_PT_MOD, numRows, 1).setHorizontalAlignment("center");
-  sheet.getRange(startRow, cols.COL_PERF_MOD, numRows, 1).setHorizontalAlignment("center");
-  sheet.getRange(startRow, cols.COL_CHEMISTRY, numRows, 1).setHorizontalAlignment("center");
-  sheet.getRange(startRow, cols.COL_DIRECTION, numRows, 1).setHorizontalAlignment("center");
+  sheet.getRange(startRow, cols.COL_DRAFT_VALUE + 1, numRows, 1).setHorizontalAlignment("center");
+  sheet.getRange(startRow, cols.COL_TS_MOD + 1, numRows, 1).setHorizontalAlignment("center");
+  sheet.getRange(startRow, cols.COL_PT_MOD + 1, numRows, 1).setHorizontalAlignment("center");
+  sheet.getRange(startRow, cols.COL_PERF_MOD + 1, numRows, 1).setHorizontalAlignment("center");
+  sheet.getRange(startRow, cols.COL_CHEMISTRY + 1, numRows, 1).setHorizontalAlignment("center");
+  sheet.getRange(startRow, cols.COL_DIRECTION + 1, numRows, 1).setHorizontalAlignment("center");
 
   // Add data validation
   // Draft Value validation (1-8 or blank)
@@ -271,11 +271,11 @@ function applyDataFormatting(sheet, startRow, numRows) {
     .setHelpText("Enter a value between 0 and 20")
     .build();
 
-  sheet.getRange(startRow, cols.COL_DRAFT_VALUE, numRows, 1).setDataValidation(draftRule);
-  sheet.getRange(startRow, cols.COL_TS_MOD, numRows, 1).setDataValidation(modifierRule);
-  sheet.getRange(startRow, cols.COL_PT_MOD, numRows, 1).setDataValidation(modifierRule);
-  sheet.getRange(startRow, cols.COL_PERF_MOD, numRows, 1).setDataValidation(modifierRule);
-  sheet.getRange(startRow, cols.COL_CHEMISTRY, numRows, 1).setDataValidation(chemistryRule);
+  sheet.getRange(startRow, cols.COL_DRAFT_VALUE + 1, numRows, 1).setDataValidation(draftRule);
+  sheet.getRange(startRow, cols.COL_TS_MOD + 1, numRows, 1).setDataValidation(modifierRule);
+  sheet.getRange(startRow, cols.COL_PT_MOD + 1, numRows, 1).setDataValidation(modifierRule);
+  sheet.getRange(startRow, cols.COL_PERF_MOD + 1, numRows, 1).setDataValidation(modifierRule);
+  sheet.getRange(startRow, cols.COL_CHEMISTRY + 1, numRows, 1).setDataValidation(chemistryRule);
 
   // Direction is VLOOKUP - no validation needed
 }
@@ -442,7 +442,7 @@ function addBottomSections(sheet, playerCount, existingPostseasonData, existingD
  */
 function applyFinalGradeFormatting(sheet, startRow, numRows) {
   var finalGradeCol = RETENTION_CONFIG.OUTPUT.COL_FINAL_GRADE;
-  var finalGrades = sheet.getRange(startRow, finalGradeCol, numRows, 1).getValues();
+  var finalGrades = sheet.getRange(startRow, finalGradeCol + 1, numRows, 1).getValues();
 
   // Batch background colors (eliminates N+1 loop)
   var backgroundColors = [];
@@ -459,7 +459,7 @@ function applyFinalGradeFormatting(sheet, startRow, numRows) {
   }
 
   // Apply all background colors in one batched operation
-  sheet.getRange(startRow, finalGradeCol, numRows, 1).setBackgrounds(backgroundColors);
+  sheet.getRange(startRow, finalGradeCol + 1, numRows, 1).setBackgrounds(backgroundColors);
 }
 
 /**
@@ -554,13 +554,13 @@ function refreshRetentionFormulas() {
 
   var numRows = playerNames.length;
   if (numRows > 0) {
-    sheet.getRange(dataStartRow, cols.COL_POSTSEASON, numRows, 1).setFormulas(postseasonFormulas);
-    sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).setFormulas(tsTotalFormulas);
-    sheet.getRange(dataStartRow, cols.COL_PT_TOTAL, numRows, 1).setFormulas(ptTotalFormulas);
-    sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL, numRows, 1).setFormulas(perfTotalFormulas);
-    sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL, numRows, 1).setFormulas(manualTotalFormulas);
-    sheet.getRange(dataStartRow, cols.COL_DIRECTION, numRows, 1).setFormulas(directionFormulas);
-    sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE, numRows, 1).setFormulas(finalGradeFormulas);
+    sheet.getRange(dataStartRow, cols.COL_POSTSEASON + 1, numRows, 1).setFormulas(postseasonFormulas);
+    sheet.getRange(dataStartRow, cols.COL_TS_TOTAL + 1, numRows, 1).setFormulas(tsTotalFormulas);
+    sheet.getRange(dataStartRow, cols.COL_PT_TOTAL + 1, numRows, 1).setFormulas(ptTotalFormulas);
+    sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL + 1, numRows, 1).setFormulas(perfTotalFormulas);
+    sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL + 1, numRows, 1).setFormulas(manualTotalFormulas);
+    sheet.getRange(dataStartRow, cols.COL_DIRECTION + 1, numRows, 1).setFormulas(directionFormulas);
+    sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE + 1, numRows, 1).setFormulas(finalGradeFormulas);
   }
 
   if (rowsUpdated > 0) {
@@ -610,7 +610,7 @@ function getUniqueTeamsFromSheet(sheet, startRow, playerCount) {
 
     // Read team names from Column B
     var cols = RETENTION_CONFIG.OUTPUT;
-    var teamData = sheet.getRange(startRow, cols.COL_TEAM, playerCount, 1).getValues();
+    var teamData = sheet.getRange(startRow, cols.COL_TEAM + 1, playerCount, 1).getValues();
 
     // Get unique teams
     var teamSet = {};

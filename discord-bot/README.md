@@ -29,6 +29,16 @@ View comprehensive team statistics including:
 ### `/standings`
 Display current league standings with rankings, records, win percentages, games back, and run differential.
 
+## Quick Start - Hosting Options
+
+**Want to get your bot running 24/7 for FREE?**
+
+👉 **Recommended:** Follow the **[Oracle Cloud Free Tier Guide](ORACLE-CLOUD-DEPLOY.md)** - Completely free forever, generous resources, full control.
+
+**Other Options:**
+- **[Railway Deployment](RAILWAY-DEPLOY.md)** - Easiest setup (~$5/month)
+- **[All Hosting Options](HOSTING-GUIDE.md)** - Compare free and paid options
+
 ## Setup Instructions
 
 ### 1. Prerequisites

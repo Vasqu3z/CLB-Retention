@@ -262,29 +262,30 @@ export function createStandingsEmbed(standings) {
   const firstPlaceWins = parseInt(standings[0].wins);
   const firstPlaceLosses = parseInt(standings[0].losses);
 
-  // Helper function to pad strings for alignment
-  const pad = (str, length) => str.toString().padEnd(length, ' ');
-
-  // Build table with monospace formatting
-  let table = '```\n';
-  table += `${pad('RK', 3)} ${pad('TEAM', 20)} ${pad('W-L', 8)} ${pad('PCT', 5)} ${pad('GB', 5)} ${pad('RD', 5)}\n`;
-  table += '─'.repeat(52) + '\n';
+  const teamNames = [];
+  const gamesBack = [];
+  const runDiffs = [];
 
   standings.forEach(team => {
     const wins = parseInt(team.wins);
     const losses = parseInt(team.losses);
     const gb = team.rank == 1 ? '-' : (((firstPlaceWins - wins) + (losses - firstPlaceLosses)) / 2).toFixed(1);
 
-    // Use medal emoji for top 3, otherwise rank number
-    const rankDisplay = team.rank <= 3 ? rankEmojis[team.rank - 1] : team.rank.toString().padStart(2, ' ');
+    // Use medal emoji for top 3
+    const rankEmoji = team.rank <= 3 ? rankEmojis[team.rank - 1] + ' ' : '';
 
-    const record = `${team.wins}-${team.losses}`;
-    table += `${pad(rankDisplay, 3)} ${pad(team.team, 20)} ${pad(record, 8)} ${pad(team.winPct, 5)} ${pad(gb, 5)} ${pad(team.runDiff, 5)}\n`;
+    // Each entry needs same number of lines for alignment (2 lines each)
+    teamNames.push(`${rankEmoji}**${team.team}**\n${team.wins}-${team.losses} (${team.winPct})`);
+    gamesBack.push(`\n${gb}`);
+    runDiffs.push(`\n${team.runDiff}\n`); // Extra line at end for rightmost column
   });
 
-  table += '```';
-
-  embed.setDescription(table);
+  // 3-column layout with horizontal separators
+  embed.addFields(
+    { name: 'Team', value: teamNames.join('\n─────────\n'), inline: true },
+    { name: 'Games Back', value: gamesBack.join('\n─────────\n'), inline: true },
+    { name: 'Run Differential', value: runDiffs.join('\n─────────\n'), inline: true }
+  );
 
   return embed;
 }
@@ -333,25 +334,21 @@ export function createRankingsEmbed(statLabel, leaders, format) {
   // Medal emojis for top 3
   const rankEmojis = ['🥇', '🥈', '🥉'];
 
-  // Helper function to pad strings for alignment
-  const pad = (str, length) => str.toString().padEnd(length, ' ');
-
-  // Build table with monospace formatting
-  let table = '```\n';
-  table += `${pad('RK', 3)} ${pad('PLAYER', 22)} ${pad('TEAM', 18)} ${pad(statLabel.toUpperCase(), 8)}\n`;
-  table += '─'.repeat(55) + '\n';
+  const names = [];
+  const values = [];
 
   leaders.forEach((leader, index) => {
-    // Use medal emoji for top 3, otherwise rank number
-    const rankDisplay = index < 3 ? rankEmojis[index] : `${index + 1}.`;
-    const formattedValue = formatValue(leader.value, format);
-
-    table += `${pad(rankDisplay, 3)} ${pad(leader.name, 22)} ${pad(leader.team, 18)} ${pad(formattedValue, 8)}\n`;
+    const rankEmoji = index < 3 ? rankEmojis[index] + ' ' : `${index + 1}. `;
+    names.push(`${rankEmoji}**${leader.name}**\n(${leader.team})`);
+    // Each entry needs same number of lines for alignment, extra line at end for rightmost column
+    values.push(`\n${formatValue(leader.value, format)}\n`);
   });
 
-  table += '```';
-
-  embed.setDescription(table);
+  // 2-column layout with horizontal separators
+  embed.addFields(
+    { name: 'Name', value: names.join('\n─────────\n'), inline: true },
+    { name: statLabel, value: values.join('\n─────────\n'), inline: true }
+  );
 
   return embed;
 }

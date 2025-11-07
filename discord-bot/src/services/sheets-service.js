@@ -280,17 +280,20 @@ class SheetsService {
   }
 
   async getStandings() {
-    const data = await this.getSheetData(SHEET_NAMES.RANKINGS, 'A2:G');
+    // Rankings sheet structure: Row 1 = Title, Row 2 = Empty, Row 3 = Headers, Row 4+ = Data
+    // Columns: Rank, Team, W, L, Win%, RS, RA, Diff
+    const data = await this.getSheetData(SHEET_NAMES.RANKINGS, 'A4:H');
     return data
-      .filter(row => row[0] && row[0].trim())
-      .map((row, index) => ({
-        rank: index + 1,
-        team: row[0]?.trim() || '',
-        wins: row[1] || '0',
-        losses: row[2] || '0',
-        winPct: row[3] || '.000',
-        gamesBack: row[4] || '-',
-        runDiff: row[5] || '0'
+      .filter(row => row[0] && row[1] && row[1].trim()) // Filter valid rows with team names
+      .map(row => ({
+        rank: row[0] || '',
+        team: row[1]?.trim() || '',
+        wins: row[2] || '0',
+        losses: row[3] || '0',
+        winPct: row[4] || '.000',
+        runsScored: row[5] || '0',
+        runsAllowed: row[6] || '0',
+        runDiff: row[7] || '0'
       }));
   }
 

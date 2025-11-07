@@ -4,24 +4,24 @@ import { createRankingsEmbed, createErrorEmbed } from '../utils/embed-builder.js
 
 const RANKING_STATS = {
   // Batting
-  'obp': { category: 'batting', label: 'OBP', format: '.000' },
-  'hits': { category: 'batting', label: 'Hits', format: 'int' },
-  'hr': { category: 'batting', label: 'Home Runs', format: 'int' },
-  'rbi': { category: 'batting', label: 'RBI', format: 'int' },
-  'slg': { category: 'batting', label: 'SLG', format: '.000' },
-  'ops': { category: 'batting', label: 'OPS', format: '.000' },
+  'obp': { category: 'batting', label: 'OBP', fullName: 'On-Base Percentage', format: '.000' },
+  'hits': { category: 'batting', label: 'H', fullName: 'Hits', format: 'int' },
+  'hr': { category: 'batting', label: 'HR', fullName: 'Home Runs', format: 'int' },
+  'rbi': { category: 'batting', label: 'RBI', fullName: 'Runs Batted In', format: 'int' },
+  'slg': { category: 'batting', label: 'SLG', fullName: 'Slugging Percentage', format: '.000' },
+  'ops': { category: 'batting', label: 'OPS', fullName: 'On-Base Plus Slugging', format: '.000' },
   // Pitching
-  'ip': { category: 'pitching', label: 'Innings Pitched', format: 'decimal' },
-  'wins': { category: 'pitching', label: 'Wins', format: 'int' },
-  'losses': { category: 'pitching', label: 'Losses', format: 'int' },
-  'saves': { category: 'pitching', label: 'Saves', format: 'int' },
-  'era': { category: 'pitching', label: 'ERA', format: '.00' },
-  'whip': { category: 'pitching', label: 'WHIP', format: '.00' },
-  'baa': { category: 'pitching', label: 'BAA', format: '.000' },
+  'ip': { category: 'pitching', label: 'IP', fullName: 'Innings Pitched', format: 'decimal' },
+  'wins': { category: 'pitching', label: 'W', fullName: 'Wins', format: 'int' },
+  'losses': { category: 'pitching', label: 'L', fullName: 'Losses', format: 'int' },
+  'saves': { category: 'pitching', label: 'SV', fullName: 'Saves', format: 'int' },
+  'era': { category: 'pitching', label: 'ERA', fullName: 'Earned Run Average', format: '.00' },
+  'whip': { category: 'pitching', label: 'WHIP', fullName: 'Walks + Hits per Inning Pitched', format: '.00' },
+  'baa': { category: 'pitching', label: 'BAA', fullName: 'Batting Average Against', format: '.000' },
   // Fielding
-  'niceplays': { category: 'fielding', label: 'Nice Plays', format: 'int' },
-  'errors': { category: 'fielding', label: 'Errors', format: 'int' },
-  'stolenbases': { category: 'fielding', label: 'Stolen Bases', format: 'int' }
+  'niceplays': { category: 'fielding', label: 'NP', fullName: 'Nice Plays', format: 'int' },
+  'errors': { category: 'fielding', label: 'E', fullName: 'Errors', format: 'int' },
+  'stolenbases': { category: 'fielding', label: 'SB', fullName: 'Stolen Bases', format: 'int' }
 };
 
 export const data = new SlashCommandBuilder()
@@ -41,11 +41,13 @@ export async function autocomplete(interaction) {
 
     const choices = Object.entries(RANKING_STATS)
       .filter(([key, value]) =>
-        key.includes(focusedValue) || value.label.toLowerCase().includes(focusedValue)
+        key.includes(focusedValue) ||
+        value.label.toLowerCase().includes(focusedValue) ||
+        value.fullName.toLowerCase().includes(focusedValue)
       )
       .slice(0, 25)
       .map(([key, value]) => ({
-        name: value.label,
+        name: `${value.label} - ${value.fullName}`,
         value: key
       }));
 

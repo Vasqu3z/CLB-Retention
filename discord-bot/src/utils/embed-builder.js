@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { STAT_LABELS } from '../config/league-config.js';
+import sheetsService from '../services/sheets-service.js';
 
 const COLORS = {
   PRIMARY: 0x0099FF,
@@ -9,13 +10,19 @@ const COLORS = {
   INFO: 0x00FFFF
 };
 
-export function createPlayerStatsEmbed(playerData) {
+export async function createPlayerStatsEmbed(playerData) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
     .setTitle(`${playerData.name}`)
     .setDescription(`**Team:** ${playerData.team}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
+
+  // Add player headshot thumbnail
+  const playerImageUrl = await sheetsService.getImageUrl(playerData.name, 'player');
+  if (playerImageUrl) {
+    embed.setThumbnail(playerImageUrl);
+  }
 
   const hasHittingStats = Object.values(playerData.hitting).some(val => val !== '0');
   if (hasHittingStats) {
@@ -131,13 +138,19 @@ export function createPlayerStatsEmbed(playerData) {
   return embed;
 }
 
-export function createTeamStatsEmbed(teamData) {
+export async function createTeamStatsEmbed(teamData) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
     .setTitle(`${teamData.name}`)
     .setDescription(`**General Manager:** ${teamData.captain}\n**Record:** ${teamData.wins}-${teamData.losses} (${(parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3)})`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
+
+  // Add team icon thumbnail
+  const teamImageUrl = await sheetsService.getImageUrl(teamData.name, 'team');
+  if (teamImageUrl) {
+    embed.setThumbnail(teamImageUrl);
+  }
 
   // Team Hitting - 3 columns with bold values
   if (teamData.hitting) {
@@ -243,12 +256,18 @@ export function createTeamStatsEmbed(teamData) {
   return embed;
 }
 
-export function createStandingsEmbed(standings) {
+export async function createStandingsEmbed(standings) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.INFO)
     .setTitle('League Standings')
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
+
+  // Add league logo thumbnail
+  const leagueImageUrl = await sheetsService.getImageUrl('League', 'league');
+  if (leagueImageUrl) {
+    embed.setThumbnail(leagueImageUrl);
+  }
 
   if (standings.length === 0) {
     embed.setDescription('No standings available yet.');
@@ -301,12 +320,18 @@ export function createInfoEmbed(title, message) {
     .setTimestamp();
 }
 
-export function createRankingsEmbed(statLabel, leaders, format) {
+export async function createRankingsEmbed(statLabel, leaders, format) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
     .setTitle(`League Leaders - ${statLabel}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
+
+  // Add league logo thumbnail
+  const leagueImageUrl = await sheetsService.getImageUrl('League', 'league');
+  if (leagueImageUrl) {
+    embed.setThumbnail(leagueImageUrl);
+  }
 
   if (leaders.length === 0) {
     embed.setDescription('No qualified players for this stat.');
@@ -348,13 +373,19 @@ export function createRankingsEmbed(statLabel, leaders, format) {
   return embed;
 }
 
-export function createRosterEmbed(roster) {
+export async function createRosterEmbed(roster) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
     .setTitle(`${roster.teamName} Roster`)
     .setDescription(`General Manager: ${roster.captain}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
+
+  // Add team icon thumbnail
+  const teamImageUrl = await sheetsService.getImageUrl(roster.teamName, 'team');
+  if (teamImageUrl) {
+    embed.setThumbnail(teamImageUrl);
+  }
 
   const playerList = roster.players.map((player, index) => `${index + 1}. ${player}`).join('\n');
 
@@ -372,6 +403,21 @@ export async function createScheduleEmbed(games, filter, filterValue) {
     .setColor(COLORS.INFO)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
+
+  // Add image based on filter type
+  if (filter.type === 'team') {
+    // Team schedule - use team icon
+    const teamImageUrl = await sheetsService.getImageUrl(filterValue, 'team');
+    if (teamImageUrl) {
+      embed.setThumbnail(teamImageUrl);
+    }
+  } else {
+    // League schedule - use league logo
+    const leagueImageUrl = await sheetsService.getImageUrl('League', 'league');
+    if (leagueImageUrl) {
+      embed.setThumbnail(leagueImageUrl);
+    }
+  }
 
   // Set title based on filter type
   let title = 'League Schedule';

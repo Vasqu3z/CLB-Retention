@@ -18,7 +18,7 @@ export async function execute(interaction) {
       return;
     }
 
-    const embed = createStandingsEmbed(standings);
+    const embed = await createStandingsEmbed(standings);
     await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();

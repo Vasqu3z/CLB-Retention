@@ -491,9 +491,19 @@ export async function createScheduleEmbed(games, filter, filterValue) {
             // Show full matchup
             gameText = `${game.homeTeam} vs ${game.awayTeam} (${team1Score}-${team2Score})`;
           }
+
+          // Add box score link if available
+          if (game.boxScoreUrl) {
+            gameText += ` [Box Score](${game.boxScoreUrl})`;
+          }
         } else {
           // Fallback if parsing fails
           gameText = `${game.homeTeam} vs ${game.awayTeam} (Completed)`;
+
+          // Add box score link if available
+          if (game.boxScoreUrl) {
+            gameText += ` [Box Score](${game.boxScoreUrl})`;
+          }
         }
       } else {
         // Upcoming game

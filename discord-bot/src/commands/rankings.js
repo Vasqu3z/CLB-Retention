@@ -77,7 +77,7 @@ export async function execute(interaction) {
       return;
     }
 
-    const embed = createRankingsEmbed(statInfo.label, rankings, statInfo.format);
+    const embed = await createRankingsEmbed(statInfo.label, rankings, statInfo.format);
     await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();

@@ -47,7 +47,7 @@ export async function execute(interaction) {
       return;
     }
 
-    const embed = createTeamStatsEmbed(teamStats);
+    const embed = await createTeamStatsEmbed(teamStats);
     await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();

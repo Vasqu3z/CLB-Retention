@@ -53,7 +53,7 @@ export async function execute(interaction) {
       return;
     }
 
-    const embed = createRosterEmbed(roster);
+    const embed = await createRosterEmbed(roster);
     await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();

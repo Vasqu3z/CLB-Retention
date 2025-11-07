@@ -570,6 +570,7 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
     const hittingText =
       `\`\`\`\n` +
       `     ${p1Name.padEnd(13)} ${p2Name}\n` +
+      `${'─'.repeat(32)}\n` +
       `GP:  ${gp.p1.padEnd(13)} ${gp.p2}\n` +
       `AB:  ${ab.p1.padEnd(13)} ${ab.p2}\n` +
       `AVG: ${avg.p1.padEnd(13)} ${avg.p2}\n` +
@@ -625,6 +626,7 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
     const pitchingText =
       `\`\`\`\n` +
       `      ${p1Name.padEnd(13)} ${p2Name}\n` +
+      `${'─'.repeat(34)}\n` +
       `GP:   ${gp.p1.padEnd(13)} ${gp.p2}\n` +
       `IP:   ${ip.p1.padEnd(13)} ${ip.p2}\n` +
       `W:    ${w.p1.padEnd(13)} ${w.p2}\n` +
@@ -670,6 +672,7 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
     const fieldingText =
       `\`\`\`\n` +
       `    ${p1Name.padEnd(13)} ${p2Name}\n` +
+      `${'─'.repeat(30)}\n` +
       `GP: ${gp.p1.padEnd(13)} ${gp.p2}\n` +
       `NP: ${np.p1.padEnd(13)} ${np.p2}\n` +
       `E:  ${e.p1.padEnd(13)} ${e.p2}\n` +

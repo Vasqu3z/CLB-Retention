@@ -21,12 +21,12 @@ export async function autocomplete(interaction) {
     const teams = await sheetsService.getAllTeamNames();
     const teamOptions = teams
       .filter(team => team.captain && team.captain.trim() !== '' && team.captain !== 'Unknown') // Filter out teams without captains
+      .filter(team => team.name.toLowerCase().includes(focusedValue) || team.captain.toLowerCase().includes(focusedValue))
+      .slice(0, 25)
       .map(team => ({
-        name: team.name,
+        name: `${team.name} - ${team.captain}`,
         value: team.name
-      }))
-      .filter(opt => opt.name.toLowerCase().includes(focusedValue))
-      .slice(0, 25);
+      }));
 
     await interaction.respond(teamOptions);
   } catch (error) {

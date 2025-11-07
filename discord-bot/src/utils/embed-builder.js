@@ -263,10 +263,10 @@ export async function createStandingsEmbed(standings) {
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
-  // Add league logo thumbnail
+  // Add league logo as full image (not thumbnail to avoid breaking monospace table spacing)
   const leagueImageUrl = await sheetsService.getImageUrl('League', 'league');
   if (leagueImageUrl) {
-    embed.setThumbnail(leagueImageUrl);
+    embed.setImage(leagueImageUrl);
   }
 
   if (standings.length === 0) {
@@ -327,10 +327,10 @@ export async function createRankingsEmbed(statLabel, leaders, format) {
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
-  // Add league logo thumbnail
+  // Add league logo as full image (not thumbnail to avoid breaking monospace table spacing)
   const leagueImageUrl = await sheetsService.getImageUrl('League', 'league');
   if (leagueImageUrl) {
-    embed.setThumbnail(leagueImageUrl);
+    embed.setImage(leagueImageUrl);
   }
 
   if (leaders.length === 0) {

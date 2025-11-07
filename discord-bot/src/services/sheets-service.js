@@ -498,16 +498,19 @@ class SheetsService {
     // Read Season Schedule sheet and League Schedule sheet
     const [scheduleData, leagueScheduleData] = await Promise.all([
       this.getSheetData(SHEET_NAMES.SEASON_SCHEDULE, 'A2:C'), // Week, Home Team, Away Team
-      this.getSheetData(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J') // Completed Games column
+      this.getSheetData(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:K') // Completed Games column (J) and Box Score URL column (K)
     ]);
 
     // Parse completed games from League Schedule to determine which games are played
-    const completedGames = new Set();
+    // Store both the game result and box score URL
+    const completedGamesMap = new Map();
     leagueScheduleData.forEach(row => {
-      const cell = row[0];
-      if (cell && typeof cell === 'string' && cell.includes('||')) {
+      const gameResult = row[0];
+      const boxScoreUrl = row[1];
+      if (gameResult && typeof gameResult === 'string' && gameResult.includes('||')) {
         // Format: "Team1: Score1 || Team2: Score2"
-        completedGames.add(cell);
+        // Store both result and URL (if available)
+        completedGamesMap.set(gameResult, boxScoreUrl || null);
       }
     });
 
@@ -520,19 +523,16 @@ class SheetsService {
         const awayTeam = row[2].trim();
 
         // Check if this game is completed
-        const gameKey1 = `${homeTeam}: `;
-        const gameKey2 = `${awayTeam}: `;
         let played = false;
         let result = null;
         let boxScoreUrl = null;
 
         // Find matching completed game
-        for (const completedGame of completedGames) {
-          if (completedGame.includes(homeTeam) && completedGame.includes(awayTeam)) {
+        for (const [gameResult, url] of completedGamesMap.entries()) {
+          if (gameResult.includes(homeTeam) && gameResult.includes(awayTeam)) {
             played = true;
-            result = completedGame;
-            // Box score URL would need to be parsed from the sheet if available
-            // For now, we'll handle it in the embed builder
+            result = gameResult;
+            boxScoreUrl = url;
             break;
           }
         }
@@ -542,7 +542,8 @@ class SheetsService {
           homeTeam,
           awayTeam,
           played,
-          result
+          result,
+          boxScoreUrl
         };
       });
 

@@ -17,76 +17,110 @@ export function createPlayerStatsEmbed(playerData) {
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
-  // Helper to pad labels for alignment
-  const padLabel = (label, length = 18) => label.padEnd(length, ' ');
-
   const hasHittingStats = Object.values(playerData.hitting).some(val => val !== '0');
   if (hasHittingStats) {
-    const hittingBlock = '```\n' +
-      `${padLabel('Games:')} ${playerData.hitting.gp}\n` +
-      `${padLabel('At Bats:')} ${playerData.hitting.ab}\n` +
-      `${padLabel('Hits:')} ${playerData.hitting.h}\n` +
-      `${padLabel('Home Runs:')} ${playerData.hitting.hr}\n` +
-      `${padLabel('RBI:')} ${playerData.hitting.rbi}\n` +
-      `${padLabel('Walks:')} ${playerData.hitting.bb}\n` +
-      `${padLabel('Strikeouts:')} ${playerData.hitting.k}\n` +
-      `${padLabel('Total Bases:')} ${playerData.hitting.tb}\n` +
-      `${padLabel('ROB:')} ${playerData.hitting.rob}\n` +
-      `${padLabel('Double Plays:')} ${playerData.hitting.dp}\n` +
-      '---\n' +
-      `${padLabel('Batting Avg:')} ${playerData.hitting.avg}\n` +
-      `${padLabel('On-Base %:')} ${playerData.hitting.obp}\n` +
-      `${padLabel('Slugging %:')} ${playerData.hitting.slg}\n` +
-      `${padLabel('OPS:')} ${playerData.hitting.ops}` +
-      '\n```';
+    const hittingStats = [
+      `Games: **${playerData.hitting.gp}**`,
+      `At Bats: **${playerData.hitting.ab}**`,
+      `Hits: **${playerData.hitting.h}**`,
+      `Home Runs: **${playerData.hitting.hr}**`,
+      `RBI: **${playerData.hitting.rbi}**`,
+      `Walks: **${playerData.hitting.bb}**`,
+      `Strikeouts: **${playerData.hitting.k}**`,
+      ''
+    ];
 
-    embed.addFields({
-      name: 'Hitting Stats',
-      value: hittingBlock,
-      inline: true
-    });
+    const calculatedStats = [
+      `Batting Avg: **${playerData.hitting.avg}**`,
+      `On-Base %: **${playerData.hitting.obp}**`,
+      `Slugging %: **${playerData.hitting.slg}**`,
+      `OPS: **${playerData.hitting.ops}**`
+    ];
+
+    const advancedStats = [
+      `Total Bases: **${playerData.hitting.tb}**`,
+      `ROB: **${playerData.hitting.rob}**`,
+      `Double Plays: **${playerData.hitting.dp}**`
+    ];
+
+    embed.addFields(
+      {
+        name: 'Hitting Stats',
+        value: hittingStats.join('\n'),
+        inline: true
+      },
+      {
+        name: 'Rate Stats',
+        value: calculatedStats.join('\n'),
+        inline: true
+      },
+      {
+        name: 'Advanced',
+        value: advancedStats.join('\n'),
+        inline: true
+      }
+    );
   }
 
   const hasPitchingStats = Object.values(playerData.pitching).some(val => val !== '0');
   if (hasPitchingStats) {
-    const pitchingBlock = '```\n' +
-      `${padLabel('Games:')} ${playerData.pitching.gp}\n` +
-      `${padLabel('Wins:')} ${playerData.pitching.w}\n` +
-      `${padLabel('Losses:')} ${playerData.pitching.l}\n` +
-      `${padLabel('Saves:')} ${playerData.pitching.sv}\n` +
-      `${padLabel('Innings:')} ${playerData.pitching.ip}\n` +
-      `${padLabel('Batters Faced:')} ${playerData.pitching.bf}\n` +
-      `${padLabel('Hits Allowed:')} ${playerData.pitching.h}\n` +
-      `${padLabel('Walks Allowed:')} ${playerData.pitching.bb}\n` +
-      `${padLabel('Strikeouts:')} ${playerData.pitching.k}\n` +
-      `${padLabel('Home Runs:')} ${playerData.pitching.hr}\n` +
-      `${padLabel('Runs Allowed:')} ${playerData.pitching.r}\n` +
-      '---\n' +
-      `${padLabel('ERA:')} ${playerData.pitching.era}\n` +
-      `${padLabel('WHIP:')} ${playerData.pitching.whip}\n` +
-      `${padLabel('BAvg Against:')} ${playerData.pitching.baa}` +
-      '\n```';
+    const pitchingStats = [
+      `Games: **${playerData.pitching.gp}**`,
+      `Wins: **${playerData.pitching.w}**`,
+      `Losses: **${playerData.pitching.l}**`,
+      `Saves: **${playerData.pitching.sv}**`,
+      `Innings: **${playerData.pitching.ip}**`,
+      `Strikeouts: **${playerData.pitching.k}**`,
+      ''
+    ];
 
-    embed.addFields({
-      name: 'Pitching Stats',
-      value: pitchingBlock,
-      inline: true
-    });
+    const pitchingAdvanced = [
+      `ERA: **${playerData.pitching.era}**`,
+      `WHIP: **${playerData.pitching.whip}**`,
+      `BAvg Against: **${playerData.pitching.baa}**`,
+      ''
+    ];
+
+    const pitchingDetails = [
+      `Batters Faced: **${playerData.pitching.bf}**`,
+      `Hits Allowed: **${playerData.pitching.h}**`,
+      `Walks Allowed: **${playerData.pitching.bb}**`,
+      `Home Runs: **${playerData.pitching.hr}**`,
+      `Runs Allowed: **${playerData.pitching.r}**`
+    ];
+
+    embed.addFields(
+      {
+        name: 'Pitching Stats',
+        value: pitchingStats.join('\n'),
+        inline: true
+      },
+      {
+        name: 'Rate Stats',
+        value: pitchingAdvanced.join('\n'),
+        inline: true
+      },
+      {
+        name: 'Details',
+        value: pitchingDetails.join('\n'),
+        inline: true
+      }
+    );
   }
 
   const hasFieldingStats = Object.values(playerData.fielding).some(val => val !== '0');
   if (hasFieldingStats) {
-    const fieldingBlock = '```\n' +
-      `${padLabel('Games:')} ${playerData.fielding.gp}\n` +
-      `${padLabel('Nice Plays:')} ${playerData.fielding.np}\n` +
-      `${padLabel('Errors:')} ${playerData.fielding.e}\n` +
-      `${padLabel('Stolen Bases:')} ${playerData.fielding.sb}` +
-      '\n```';
+    const fieldingStats = [
+      `Games: **${playerData.fielding.gp}**`,
+      `Nice Plays: **${playerData.fielding.np}**`,
+      `Errors: **${playerData.fielding.e}**`,
+      `Stolen Bases: **${playerData.fielding.sb}**`
+    ].join('\n');
 
     embed.addFields({
       name: 'Fielding & Baserunning',
-      value: fieldingBlock,
-      inline: true
+      value: fieldingStats,
+      inline: false
     });
   }
 
@@ -101,77 +135,108 @@ export function createTeamStatsEmbed(teamData) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
     .setTitle(`${teamData.name}`)
-    .setDescription(`**General Manager:** ${teamData.captain}`)
+    .setDescription(`**General Manager:** ${teamData.captain}\n**Record:** ${teamData.wins}-${teamData.losses} (${(parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3)})`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
-  // Helper to pad labels for alignment
-  const padLabel = (label, length = 22) => label.padEnd(length, ' ');
-
-  // Team Hitting with monospace code block
+  // Team Hitting - 3 columns with bold values
   if (teamData.hitting) {
-    const winPct = (parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3);
-    const hittingBlock = '```\n' +
-      `${padLabel('Record:')} ${teamData.wins}-${teamData.losses} (${winPct})\n` +
-      `${padLabel('Runs:')} ${teamData.hitting.runsScored}\n` +
-      `${padLabel('Runs/Game:')} ${teamData.hitting.runsPerGame}\n` +
-      `${padLabel('At Bats:')} ${teamData.hitting.ab}\n` +
-      `${padLabel('Hits:')} ${teamData.hitting.h}\n` +
-      `${padLabel('Home Runs:')} ${teamData.hitting.hr}\n` +
-      `${padLabel('RBI:')} ${teamData.hitting.rbi}\n` +
-      `${padLabel('Total Bases:')} ${teamData.hitting.tb}\n` +
-      `${padLabel('Walks:')} ${teamData.hitting.bb}\n` +
-      `${padLabel('Strikeouts:')} ${teamData.hitting.k}\n` +
-      '---\n' +
-      `${padLabel('Batting Avg:')} ${teamData.hitting.avg}\n` +
-      `${padLabel('On-Base %:')} ${teamData.hitting.obp}\n` +
-      `${padLabel('Slugging %:')} ${teamData.hitting.slg}\n` +
-      `${padLabel('OPS:')} ${teamData.hitting.ops}` +
-      '\n```';
+    const countingStats = [
+      `Runs: **${teamData.hitting.runsScored}**`,
+      `Runs/Game: **${teamData.hitting.runsPerGame}**`,
+      `At Bats: **${teamData.hitting.ab}**`,
+      `Hits: **${teamData.hitting.h}**`,
+      `Home Runs: **${teamData.hitting.hr}**`,
+      `RBI: **${teamData.hitting.rbi}**`,
+      ''
+    ];
 
-    embed.addFields({
-      name: 'Team Hitting',
-      value: hittingBlock,
-      inline: true
-    });
+    const rateStats = [
+      `Batting Avg: **${teamData.hitting.avg}**`,
+      `On-Base %: **${teamData.hitting.obp}**`,
+      `Slugging %: **${teamData.hitting.slg}**`,
+      `OPS: **${teamData.hitting.ops}**`
+    ];
+
+    const advancedStats = [
+      `Walks: **${teamData.hitting.bb}**`,
+      `Strikeouts: **${teamData.hitting.k}**`,
+      `Total Bases: **${teamData.hitting.tb}**`
+    ];
+
+    embed.addFields(
+      {
+        name: 'Team Hitting',
+        value: countingStats.join('\n'),
+        inline: true
+      },
+      {
+        name: 'Rate Stats',
+        value: rateStats.join('\n'),
+        inline: true
+      },
+      {
+        name: 'Advanced',
+        value: advancedStats.join('\n'),
+        inline: true
+      }
+    );
   }
 
-  // Team Pitching with monospace code block
+  // Team Pitching - 3 columns with bold values
   if (teamData.pitching) {
-    const pitchingBlock = '```\n' +
-      `${padLabel('Innings:')} ${teamData.pitching.ip}\n` +
-      `${padLabel('Batters Faced:')} ${teamData.pitching.bf}\n` +
-      `${padLabel('Hits Allowed:')} ${teamData.pitching.h}\n` +
-      `${padLabel('Walks Allowed:')} ${teamData.pitching.bb}\n` +
-      `${padLabel('Strikeouts:')} ${teamData.pitching.k}\n` +
-      `${padLabel('Home Runs:')} ${teamData.pitching.hr}\n` +
-      `${padLabel('Runs Allowed:')} ${teamData.pitching.r}\n` +
-      '---\n' +
-      `${padLabel('ERA:')} ${teamData.pitching.era}\n` +
-      `${padLabel('WHIP:')} ${teamData.pitching.whip}\n` +
-      `${padLabel('BAvg Against:')} ${teamData.pitching.baa}` +
-      '\n```';
+    const pitchingStats = [
+      `Innings: **${teamData.pitching.ip}**`,
+      `Batters Faced: **${teamData.pitching.bf}**`,
+      `Strikeouts: **${teamData.pitching.k}**`,
+      `Walks Allowed: **${teamData.pitching.bb}**`,
+      `Hits Allowed: **${teamData.pitching.h}**`,
+      ''
+    ];
 
-    embed.addFields({
-      name: 'Team Pitching',
-      value: pitchingBlock,
-      inline: true
-    });
+    const rateStats = [
+      `ERA: **${teamData.pitching.era}**`,
+      `WHIP: **${teamData.pitching.whip}**`,
+      `BAvg Against: **${teamData.pitching.baa}**`
+    ];
+
+    const detailStats = [
+      `Home Runs: **${teamData.pitching.hr}**`,
+      `Runs Allowed: **${teamData.pitching.r}**`
+    ];
+
+    embed.addFields(
+      {
+        name: 'Team Pitching',
+        value: pitchingStats.join('\n'),
+        inline: true
+      },
+      {
+        name: 'Rate Stats',
+        value: rateStats.join('\n'),
+        inline: true
+      },
+      {
+        name: 'Details',
+        value: detailStats.join('\n'),
+        inline: true
+      }
+    );
   }
 
-  // Team Fielding with monospace code block
+  // Team Fielding with bold values
   if (teamData.fielding) {
-    const fieldingBlock = '```\n' +
-      `${padLabel('Nice Plays:')} ${teamData.fielding.np}\n` +
-      `${padLabel('Nice Plays/Game:')} ${teamData.fielding.npPerGame}\n` +
-      `${padLabel('Errors:')} ${teamData.fielding.e}\n` +
-      `${padLabel('Stolen Bases:')} ${teamData.fielding.sb}` +
-      '\n```';
+    const fieldingStats = [
+      `Nice Plays: **${teamData.fielding.np}**`,
+      `Nice Plays/Game: **${teamData.fielding.npPerGame}**`,
+      `Errors: **${teamData.fielding.e}**`,
+      `Stolen Bases: **${teamData.fielding.sb}**`
+    ].join('\n');
 
     embed.addFields({
-      name: 'Team Fielding',
-      value: fieldingBlock,
-      inline: true
+      name: 'Team Fielding & Baserunning',
+      value: fieldingStats,
+      inline: false
     });
   }
 

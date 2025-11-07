@@ -18,6 +18,7 @@ export async function autocomplete(interaction) {
     const focusedValue = interaction.options.getFocused().toLowerCase();
 
     const teams = await sheetsService.getAllTeamNames();
+    console.log(`Got ${teams.length} teams from sheet`);
 
     const filtered = teams
       .filter(team => team.name.toLowerCase().includes(focusedValue))
@@ -26,6 +27,11 @@ export async function autocomplete(interaction) {
         name: `${team.name} (Captain: ${team.captain})`,
         value: team.name
       }));
+
+    console.log(`Sending ${filtered.length} teams to autocomplete`);
+    if (filtered.length > 0) {
+      console.log('First autocomplete option:', filtered[0]);
+    }
 
     await interaction.respond(filtered);
   } catch (error) {
@@ -39,6 +45,7 @@ export async function execute(interaction) {
 
   try {
     const teamName = interaction.options.getString('teamname');
+    console.log(`Execute teamstats for: "${teamName}" (type: ${typeof teamName})`);
     const teamStats = await sheetsService.getTeamStats(teamName);
 
     if (!teamStats) {

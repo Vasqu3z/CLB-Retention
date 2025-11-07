@@ -246,10 +246,10 @@ export function createInfoEmbed(title, message) {
     .setTimestamp();
 }
 
-export async function createRankingsEmbed(statLabel, leaders, format) {
+export async function createRankingsEmbed(statFullName, leaders, format, statLabel = null) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
-    .setTitle(`League Leaders - ${statLabel}`)
+    .setTitle(`League Leaders - ${statFullName}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
@@ -274,9 +274,12 @@ export async function createRankingsEmbed(statLabel, leaders, format) {
   // Helper function to pad strings for alignment
   const pad = (str, length) => str.toString().padEnd(length, ' ');
 
+  // Use abbreviated label for table column, or fallback to full name if not provided
+  const columnHeader = (statLabel || statFullName).toUpperCase();
+
   // Build table with monospace formatting (no emojis for consistent spacing)
   let table = '```\n';
-  table += `${pad('RK', EMBED_FORMATTING.RANKINGS_RANK_WIDTH)} ${pad('PLAYER', EMBED_FORMATTING.RANKINGS_NAME_WIDTH + 7)} ${pad('TEAM', EMBED_FORMATTING.RANKINGS_TEAM_WIDTH + 5)} ${pad(statLabel.toUpperCase(), EMBED_FORMATTING.RANKINGS_STAT_WIDTH + 2)}\n`;
+  table += `${pad('RK', EMBED_FORMATTING.RANKINGS_RANK_WIDTH)} ${pad('PLAYER', EMBED_FORMATTING.RANKINGS_NAME_WIDTH + 7)} ${pad('TEAM', EMBED_FORMATTING.RANKINGS_TEAM_WIDTH + 5)} ${pad(columnHeader, EMBED_FORMATTING.RANKINGS_STAT_WIDTH + 2)}\n`;
   table += EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.RANKINGS_TOTAL_WIDTH + 12) + '\n';
 
   leaders.forEach((leader, index) => {

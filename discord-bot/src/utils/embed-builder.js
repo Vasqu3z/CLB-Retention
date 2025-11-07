@@ -370,41 +370,49 @@ export async function createScheduleEmbed(games, filter, filterValue) {
           const team2Name = team2Match[1].trim();
           const team2Score = team2Match[2];
 
-          const winner = parseInt(team1Score) > parseInt(team2Score) ? team1Name : team2Name;
-
-          if (filter.type === 'team') {
-            // Show opponent and result
-            const opponent = game.homeTeam.toLowerCase().includes(filterValue.toLowerCase()) ? game.awayTeam : game.homeTeam;
-            const isHome = game.homeTeam.toLowerCase().includes(filterValue.toLowerCase());
-            const resultLabel = winner.toLowerCase().includes(filterValue.toLowerCase()) ? '**W**' : '**L**';
-            gameText = `${isHome ? 'vs' : '@'} ${opponent} (${resultLabel} ${team1Score}-${team2Score})`;
+          // Determine which team is home/away
+          let awayTeam, awayScore, homeTeam, homeScore;
+          if (game.homeTeam.toLowerCase().includes(team1Name.toLowerCase())) {
+            homeTeam = team1Name;
+            homeScore = team1Score;
+            awayTeam = team2Name;
+            awayScore = team2Score;
           } else {
-            // Show full matchup
-            gameText = `${game.homeTeam} vs ${game.awayTeam} (${team1Score}-${team2Score})`;
+            homeTeam = team2Name;
+            homeScore = team2Score;
+            awayTeam = team1Name;
+            awayScore = team1Score;
           }
 
-          // Add box score link if available
+          // Determine winner for bolding
+          const homeWon = parseInt(homeScore) > parseInt(awayScore);
+
+          // Format with entire line as hyperlink
           if (game.boxScoreUrl) {
-            gameText += ` [Box Score](${game.boxScoreUrl})`;
+            if (homeWon) {
+              gameText = `[${awayTeam} ${awayScore} @ **${homeTeam} ${homeScore}**](${game.boxScoreUrl})`;
+            } else {
+              gameText = `[**${awayTeam} ${awayScore}** @ ${homeTeam} ${homeScore}](${game.boxScoreUrl})`;
+            }
+          } else {
+            // No box score URL, just format without link
+            if (homeWon) {
+              gameText = `${awayTeam} ${awayScore} @ **${homeTeam} ${homeScore}**`;
+            } else {
+              gameText = `**${awayTeam} ${awayScore}** @ ${homeTeam} ${homeScore}`;
+            }
           }
         } else {
           // Fallback if parsing fails
-          gameText = `${game.homeTeam} vs ${game.awayTeam} (Completed)`;
-
-          // Add box score link if available
           if (game.boxScoreUrl) {
-            gameText += ` [Box Score](${game.boxScoreUrl})`;
+            gameText = `[${game.awayTeam} @ ${game.homeTeam} (Completed)](${game.boxScoreUrl})`;
+          } else {
+            gameText = `${game.awayTeam} @ ${game.homeTeam} (Completed)`;
           }
         }
       } else {
         // Upcoming game
-        if (filter.type === 'team') {
-          const opponent = game.homeTeam.toLowerCase().includes(filterValue.toLowerCase()) ? game.awayTeam : game.homeTeam;
-          const isHome = game.homeTeam.toLowerCase().includes(filterValue.toLowerCase());
-          gameText = `${isHome ? 'vs' : '@'} ${opponent}`;
-        } else {
-          gameText = `${game.homeTeam} vs ${game.awayTeam}`;
-        }
+        gameText = `${game.awayTeam} @ ${game.homeTeam}`;
       }
 
       scheduleText += `${gameText}\n`;

@@ -449,11 +449,17 @@ export async function createScheduleEmbed(games, filter, filterValue) {
         gameText = `${game.awayTeam} @ ${game.homeTeam}`;
       }
 
-      // For team schedules, put first game on same line as week header
-      if (filter.type === 'team' && gameIndex === 0) {
-        scheduleText += `${gameText}\n`;
+      // Format output based on schedule type
+      if (filter.type === 'team') {
+        // Team schedules: put first game on same line as week header
+        if (gameIndex === 0) {
+          scheduleText += `${gameText}\n`;
+        } else {
+          scheduleText += `${gameText}\n`;
+        }
       } else {
-        scheduleText += `${gameText}\n`;
+        // Week schedules (schedule/scores): add "Game #:" prefix
+        scheduleText += `Game ${gameIndex + 1}: ${gameText}\n`;
       }
     });
   });
@@ -477,44 +483,36 @@ export async function createHeadToHeadEmbed(matchupData) {
   }
 
   // Overall record
-  const recordText = `**Overall Record:** ${matchupData.team1Wins}-${matchupData.team2Wins}\n` +
-    `**${matchupData.team1} Avg:** ${matchupData.avgScoreTeam1} runs/game\n` +
-    `**${matchupData.team2} Avg:** ${matchupData.avgScoreTeam2} runs/game\n` +
-    `**Total Games:** ${matchupData.totalGames}`;
+  const recordText = `Overall Record: **${matchupData.team1Wins}-${matchupData.team2Wins}**\n` +
+    `${matchupData.team1} Avg: **${matchupData.avgScoreTeam1}** runs/game\n` +
+    `${matchupData.team2} Avg: **${matchupData.avgScoreTeam2}** runs/game\n` +
+    `Total Games: **${matchupData.totalGames}**`;
 
   embed.setDescription(recordText);
 
   // List all games
   let gamesText = '';
   matchupData.games.forEach(game => {
-    const team1Lower = matchupData.team1.toLowerCase();
-    const team2Lower = matchupData.team2.toLowerCase();
-
-    // Determine which team is which in this game
-    let displayTeam1, displayScore1, displayTeam2, displayScore2;
-    if (game.team1.toLowerCase().includes(team1Lower)) {
-      displayTeam1 = game.team1;
-      displayScore1 = game.score1;
-      displayTeam2 = game.team2;
-      displayScore2 = game.score2;
-    } else {
-      displayTeam1 = game.team2;
-      displayScore1 = game.score2;
-      displayTeam2 = game.team1;
-      displayScore2 = game.score1;
-    }
+    // Use @ format: away @ home (team1 is away, team2 is home from Discord Schedule format)
+    const awayTeam = game.team1;
+    const awayScore = game.score1;
+    const homeTeam = game.team2;
+    const homeScore = game.score2;
 
     // Bold the winner
-    let gameText;
-    if (displayScore1 > displayScore2) {
-      gameText = `**Week ${game.week}:** **${displayTeam1} ${displayScore1}** vs ${displayTeam2} ${displayScore2}`;
+    let gameResult;
+    if (homeScore > awayScore) {
+      gameResult = `${awayTeam} ${awayScore} @ **${homeTeam} ${homeScore}**`;
     } else {
-      gameText = `**Week ${game.week}:** ${displayTeam1} ${displayScore1} vs **${displayTeam2} ${displayScore2}**`;
+      gameResult = `**${awayTeam} ${awayScore}** @ ${homeTeam} ${homeScore}`;
     }
 
-    // Add box score link if available
+    // Add hyperlink to game result only, not week label
+    let gameText;
     if (game.boxScoreUrl) {
-      gameText = `[${gameText}](${game.boxScoreUrl})`;
+      gameText = `Week ${game.week}: [${gameResult}](${game.boxScoreUrl})`;
+    } else {
+      gameText = `Week ${game.week}: ${gameResult}`;
     }
 
     gamesText += `${gameText}\n`;

@@ -12,7 +12,7 @@ export const SHEET_NAMES = {
   RANKINGS: '🏆 Rankings',
   PLAYER_DATA: 'Player Data',
   SEASON_SCHEDULE: 'Season Schedule',
-  LEAGUE_SCHEDULE: '📅 League Schedule'
+  LEAGUE_SCHEDULE: 'Discord Schedule'  // Hidden sheet without emoji for API compatibility
 };
 
 export const HITTING_COLUMNS = {

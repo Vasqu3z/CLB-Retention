@@ -366,3 +366,109 @@ export function createRosterEmbed(roster) {
 
   return embed;
 }
+
+export async function createScheduleEmbed(games, filter, filterValue) {
+  const embed = new EmbedBuilder()
+    .setColor(COLORS.INFO)
+    .setTimestamp()
+    .setFooter({ text: 'CLB League Hub' });
+
+  // Set title based on filter type
+  let title = 'League Schedule';
+  if (filter.type === 'recent') {
+    title = `Recent Games - Week ${games[0]?.week || '?'}`;
+  } else if (filter.type === 'current') {
+    title = `Current Week - Week ${games[0]?.week || '?'}`;
+  } else if (filter.type === 'upcoming') {
+    title = `Upcoming Games - Week ${games[0]?.week || '?'}`;
+  } else if (filter.type === 'team') {
+    title = `${filterValue} Schedule`;
+  }
+
+  embed.setTitle(title);
+
+  // Group games by week for team schedules
+  const gamesByWeek = {};
+  games.forEach(game => {
+    const weekKey = `Week ${game.week}`;
+    if (!gamesByWeek[weekKey]) {
+      gamesByWeek[weekKey] = [];
+    }
+    gamesByWeek[weekKey].push(game);
+  });
+
+  // Build schedule display
+  const weekKeys = Object.keys(gamesByWeek).sort((a, b) => {
+    const numA = parseInt(a.replace('Week ', ''));
+    const numB = parseInt(b.replace('Week ', ''));
+    return numA - numB;
+  });
+
+  let scheduleText = '';
+
+  weekKeys.forEach(weekKey => {
+    const weekGames = gamesByWeek[weekKey];
+
+    if (filter.type === 'team') {
+      // For team schedules, show week header
+      scheduleText += `**${weekKey}**\n`;
+    }
+
+    weekGames.forEach(game => {
+      let gameText = '';
+
+      if (game.played && game.result) {
+        // Completed game with result
+        // Parse result: "Team1: Score1 || Team2: Score2"
+        const parts = game.result.split('||').map(p => p.trim());
+        const team1Part = parts[0] || '';
+        const team2Part = parts[1] || '';
+
+        const team1Match = team1Part.match(/^(.+):\s*(\d+)$/);
+        const team2Match = team2Part.match(/^(.+):\s*(\d+)$/);
+
+        if (team1Match && team2Match) {
+          const team1Name = team1Match[1].trim();
+          const team1Score = team1Match[2];
+          const team2Name = team2Match[1].trim();
+          const team2Score = team2Match[2];
+
+          const winner = parseInt(team1Score) > parseInt(team2Score) ? team1Name : team2Name;
+
+          if (filter.type === 'team') {
+            // Show opponent and result
+            const opponent = game.homeTeam.toLowerCase().includes(filterValue.toLowerCase()) ? game.awayTeam : game.homeTeam;
+            const isHome = game.homeTeam.toLowerCase().includes(filterValue.toLowerCase());
+            const resultLabel = winner.toLowerCase().includes(filterValue.toLowerCase()) ? '**W**' : '**L**';
+            gameText = `${isHome ? 'vs' : '@'} ${opponent} (${resultLabel} ${team1Score}-${team2Score})`;
+          } else {
+            // Show full matchup
+            gameText = `${game.homeTeam} vs ${game.awayTeam} (${team1Score}-${team2Score})`;
+          }
+        } else {
+          // Fallback if parsing fails
+          gameText = `${game.homeTeam} vs ${game.awayTeam} (Completed)`;
+        }
+      } else {
+        // Upcoming game
+        if (filter.type === 'team') {
+          const opponent = game.homeTeam.toLowerCase().includes(filterValue.toLowerCase()) ? game.awayTeam : game.homeTeam;
+          const isHome = game.homeTeam.toLowerCase().includes(filterValue.toLowerCase());
+          gameText = `${isHome ? 'vs' : '@'} ${opponent}`;
+        } else {
+          gameText = `${game.homeTeam} vs ${game.awayTeam}`;
+        }
+      }
+
+      scheduleText += `${gameText}\n`;
+    });
+
+    if (filter.type === 'team') {
+      scheduleText += '\n';
+    }
+  });
+
+  embed.setDescription(scheduleText || 'No games to display.');
+
+  return embed;
+}

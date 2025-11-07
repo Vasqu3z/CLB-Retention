@@ -493,6 +493,114 @@ class SheetsService {
       players: players.sort()
     };
   }
+
+  async getScheduleData(filter) {
+    // Read Season Schedule sheet and League Schedule sheet
+    const [scheduleData, leagueScheduleData] = await Promise.all([
+      this.getSheetData(SHEET_NAMES.SEASON_SCHEDULE, 'A2:C'), // Week, Home Team, Away Team
+      this.getSheetData(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J') // Completed Games column
+    ]);
+
+    // Parse completed games from League Schedule to determine which games are played
+    const completedGames = new Set();
+    leagueScheduleData.forEach(row => {
+      const cell = row[0];
+      if (cell && typeof cell === 'string' && cell.includes('||')) {
+        // Format: "Team1: Score1 || Team2: Score2"
+        completedGames.add(cell);
+      }
+    });
+
+    // Build schedule with game status
+    const games = scheduleData
+      .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
+      .map(row => {
+        const week = parseInt(row[0]);
+        const homeTeam = row[1].trim();
+        const awayTeam = row[2].trim();
+
+        // Check if this game is completed
+        const gameKey1 = `${homeTeam}: `;
+        const gameKey2 = `${awayTeam}: `;
+        let played = false;
+        let result = null;
+        let boxScoreUrl = null;
+
+        // Find matching completed game
+        for (const completedGame of completedGames) {
+          if (completedGame.includes(homeTeam) && completedGame.includes(awayTeam)) {
+            played = true;
+            result = completedGame;
+            // Box score URL would need to be parsed from the sheet if available
+            // For now, we'll handle it in the embed builder
+            break;
+          }
+        }
+
+        return {
+          week,
+          homeTeam,
+          awayTeam,
+          played,
+          result
+        };
+      });
+
+    // Determine current week (max completed week + 1)
+    const maxCompletedWeek = Math.max(0, ...games.filter(g => g.played).map(g => g.week));
+    const currentWeek = maxCompletedWeek + 1;
+
+    // Filter based on request type
+    switch (filter.type) {
+      case 'recent':
+        // Last completed week
+        return games.filter(g => g.played && g.week === maxCompletedWeek);
+
+      case 'current':
+        // Current week (may have some completed games)
+        return games.filter(g => g.week === currentWeek);
+
+      case 'upcoming':
+        // Next week
+        return games.filter(g => g.week === currentWeek + 1);
+
+      case 'team':
+        // All games for a specific team
+        const teamName = filter.teamName.toLowerCase().trim();
+        return games.filter(g =>
+          g.homeTeam.toLowerCase().includes(teamName) ||
+          g.awayTeam.toLowerCase().includes(teamName)
+        );
+
+      default:
+        return [];
+    }
+  }
+
+  async getImageUrl(name, type) {
+    // Read Image URLs sheet
+    const data = await this.getSheetData('Image URLs', 'A2:C'); // Name, Type, URL
+
+    const normalizedName = name.trim().toLowerCase();
+
+    // Find exact match
+    const match = data.find(row =>
+      row[0]?.toLowerCase().trim() === normalizedName &&
+      row[1]?.toLowerCase().trim() === type
+    );
+
+    if (match && match[2]) {
+      return match[2].trim();
+    }
+
+    // Fall back to default for this type
+    const defaultMatch = data.find(row =>
+      row[0]?.toLowerCase().trim() === `default ${type}` &&
+      row[1]?.toLowerCase().trim() === type
+    );
+
+    return defaultMatch && defaultMatch[2] ? defaultMatch[2].trim() : null;
+  }
 }
 
 export default new SheetsService();

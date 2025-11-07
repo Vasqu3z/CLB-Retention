@@ -10,7 +10,9 @@ export const SHEET_NAMES = {
   FIELDING: '🧮 Fielding & Running',
   TEAM_DATA: 'Team Data',
   RANKINGS: '🏆 Rankings',
-  PLAYER_DATA: 'Player Data'
+  PLAYER_DATA: 'Player Data',
+  SEASON_SCHEDULE: 'Season Schedule',
+  LEAGUE_SCHEDULE: '📅 League Schedule'
 };
 
 export const HITTING_COLUMNS = {

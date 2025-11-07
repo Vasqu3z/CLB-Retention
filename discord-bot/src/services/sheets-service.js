@@ -553,9 +553,14 @@ class SheetsService {
     ]);
 
     // Build schedule with game status - match by row index since sheets are aligned
+    // Map first to preserve indices, then filter
     const games = scheduleData
-      .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
       .map((row, index) => {
+        // Skip empty rows but preserve index alignment
+        if (!row[0] || !row[1] || !row[2]) {
+          return null;
+        }
+
         const week = parseInt(row[0]);
         const homeTeam = row[1].trim();
         const awayTeam = row[2].trim();
@@ -585,7 +590,8 @@ class SheetsService {
           result,
           boxScoreUrl
         };
-      });
+      })
+      .filter(game => game !== null); // Remove null entries from empty rows
 
     // Determine current week (max completed week + 1)
     const maxCompletedWeek = Math.max(0, ...games.filter(g => g.played).map(g => g.week));

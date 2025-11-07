@@ -343,11 +343,14 @@ export async function createScheduleEmbed(games, filter, filterValue) {
 
   let scheduleText = '';
 
-  weekKeys.forEach(weekKey => {
+  weekKeys.forEach((weekKey, weekIndex) => {
     const weekGames = gamesByWeek[weekKey];
 
     if (filter.type === 'team') {
-      // For team schedules, show week header
+      // For team schedules, show compact week header (add spacing before subsequent weeks)
+      if (weekIndex > 0) {
+        scheduleText += '\n';
+      }
       scheduleText += `**${weekKey}**\n`;
     }
 
@@ -417,10 +420,6 @@ export async function createScheduleEmbed(games, filter, filterValue) {
 
       scheduleText += `${gameText}\n`;
     });
-
-    if (filter.type === 'team') {
-      scheduleText += '\n';
-    }
   });
 
   embed.setDescription(scheduleText || 'No games to display.');

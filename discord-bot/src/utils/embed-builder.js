@@ -152,45 +152,77 @@ export function createTeamStatsEmbed(teamData) {
     inline: false
   });
 
-  // Team Hitting: AB, H, HR, RBI, BB, K, ROB, DP, TB (9 stats)
-  if (teamData.hitting && Object.keys(teamData.hitting).length > 0) {
-    const hittingLabels = ['AB', 'H', 'HR', 'RBI', 'BB', 'K', 'ROB', 'DP', 'TB'];
-    const hittingStats = Object.entries(teamData.hitting)
-      .map(([key, value], index) => `**${hittingLabels[index] || key}:** ${value}`)
-      .join('\n');
+  // Team Hitting with rate stats
+  if (teamData.hitting) {
+    const countingStats = [
+      `**R:** ${teamData.hitting.runsScored} (**R/G:** ${teamData.hitting.runsPerGame})`,
+      `**AB:** ${teamData.hitting.ab}  |  **H:** ${teamData.hitting.h}  |  **HR:** ${teamData.hitting.hr}`,
+      `**RBI:** ${teamData.hitting.rbi}  |  **BB:** ${teamData.hitting.bb}  |  **K:** ${teamData.hitting.k}`,
+      ''
+    ];
 
-    embed.addFields({
-      name: '⚾ Team Hitting',
-      value: hittingStats || 'No data',
-      inline: true
-    });
+    const rateStats = [
+      `**AVG:** ${teamData.hitting.avg}`,
+      `**OBP:** ${teamData.hitting.obp}`,
+      `**SLG:** ${teamData.hitting.slg}`,
+      `**OPS:** ${teamData.hitting.ops}`
+    ];
+
+    embed.addFields(
+      {
+        name: '⚾ Team Hitting',
+        value: countingStats.join('\n'),
+        inline: true
+      },
+      {
+        name: '📊 Rate Stats',
+        value: rateStats.join('\n'),
+        inline: true
+      }
+    );
   }
 
-  // Team Pitching: IP, BF, H, HR, R, BB, K (7 stats)
-  if (teamData.pitching && Object.keys(teamData.pitching).length > 0) {
-    const pitchingLabels = ['IP', 'BF', 'H', 'HR', 'R', 'BB', 'K'];
-    const pitchingStats = Object.entries(teamData.pitching)
-      .map(([key, value], index) => `**${pitchingLabels[index] || key}:** ${value}`)
-      .join('\n');
+  // Team Pitching with rate stats
+  if (teamData.pitching) {
+    const countingStats = [
+      `**IP:** ${teamData.pitching.ip}  |  **BF:** ${teamData.pitching.bf}`,
+      `**H:** ${teamData.pitching.h}  |  **HR:** ${teamData.pitching.hr}`,
+      `**R:** ${teamData.pitching.r}  |  **BB:** ${teamData.pitching.bb}  |  **K:** ${teamData.pitching.k}`,
+      ''
+    ];
 
-    embed.addFields({
-      name: '🥎 Team Pitching',
-      value: pitchingStats || 'No data',
-      inline: true
-    });
+    const rateStats = [
+      `**ERA:** ${teamData.pitching.era}`,
+      `**BAA:** ${teamData.pitching.baa}`,
+      `**WHIP:** ${teamData.pitching.whip}`
+    ];
+
+    embed.addFields(
+      {
+        name: '🥎 Team Pitching',
+        value: countingStats.join('\n'),
+        inline: true
+      },
+      {
+        name: '📈 Rate Stats',
+        value: rateStats.join('\n'),
+        inline: true
+      }
+    );
   }
 
-  // Team Fielding: Nice Plays, Errors, Stolen Bases (3 stats)
-  if (teamData.fielding && Object.keys(teamData.fielding).length > 0) {
-    const fieldingLabels = ['Nice Plays', 'Errors', 'Stolen Bases'];
-    const fieldingStats = Object.entries(teamData.fielding)
-      .map(([key, value], index) => `**${fieldingLabels[index] || key}:** ${value}`)
-      .join('\n');
+  // Team Fielding with rate stats
+  if (teamData.fielding) {
+    const fieldingStats = [
+      `**Nice Plays:** ${teamData.fielding.np} (**NP/G:** ${teamData.fielding.npPerGame})`,
+      `**Errors:** ${teamData.fielding.e}`,
+      `**Stolen Bases:** ${teamData.fielding.sb}`
+    ].join('\n');
 
     embed.addFields({
-      name: '🧤 Team Fielding',
-      value: fieldingStats || 'No data',
-      inline: true
+      name: '🧤 Team Fielding & Baserunning',
+      value: fieldingStats,
+      inline: false
     });
   }
 

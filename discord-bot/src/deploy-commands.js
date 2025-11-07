@@ -29,6 +29,32 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
   try {
+    console.log('🧹 Cleaning up old commands...');
+
+    // Delete all global commands first
+    try {
+      await rest.put(
+        Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
+        { body: [] }
+      );
+      console.log('✅ Deleted all global commands.');
+    } catch (error) {
+      console.error('⚠️  Error deleting global commands:', error.message);
+    }
+
+    // Delete all guild commands if DISCORD_GUILD_ID is set
+    if (process.env.DISCORD_GUILD_ID) {
+      try {
+        await rest.put(
+          Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, process.env.DISCORD_GUILD_ID),
+          { body: [] }
+        );
+        console.log('✅ Deleted all guild commands.');
+      } catch (error) {
+        console.error('⚠️  Error deleting guild commands:', error.message);
+      }
+    }
+
     console.log(`🔄 Started refreshing ${commands.length} application (/) commands.`);
 
     let data;

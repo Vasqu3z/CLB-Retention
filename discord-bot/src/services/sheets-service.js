@@ -100,6 +100,10 @@ class SheetsService {
   }
 
   async getPlayerStats(playerName) {
+    if (!playerName) {
+      return null;
+    }
+
     const normalizedName = playerName.trim().toLowerCase();
 
     const [hittingData, pitchingData, fieldingData] = await Promise.all([
@@ -175,6 +179,10 @@ class SheetsService {
   }
 
   async getTeamStats(teamName) {
+    if (!teamName) {
+      return null;
+    }
+
     const normalizedName = teamName.trim().toLowerCase();
     const data = await this.getSheetData(SHEET_NAMES.TEAM_DATA);
 

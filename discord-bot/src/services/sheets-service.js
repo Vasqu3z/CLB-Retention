@@ -640,7 +640,9 @@ class SheetsService {
     );
 
     if (match && match[2]) {
-      return match[2].trim();
+      const url = match[2].trim();
+      console.log(`Found image for ${name} (${type}): ${url}`);
+      return url;
     }
 
     // Fall back to default for this type
@@ -649,7 +651,14 @@ class SheetsService {
       row[1]?.toLowerCase().trim() === type
     );
 
-    return defaultMatch && defaultMatch[2] ? defaultMatch[2].trim() : null;
+    if (defaultMatch && defaultMatch[2]) {
+      const url = defaultMatch[2].trim();
+      console.log(`Using default image for ${type}: ${url}`);
+      return url;
+    }
+
+    console.log(`No image found for ${name} (${type})`);
+    return null;
   }
 }
 

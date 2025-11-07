@@ -152,9 +152,11 @@ export function createTeamStatsEmbed(teamData) {
     inline: false
   });
 
+  // Team Hitting: AB, H, HR, RBI, BB, K, ROB, DP, TB (9 stats)
   if (teamData.hitting && Object.keys(teamData.hitting).length > 0) {
+    const hittingLabels = ['AB', 'H', 'HR', 'RBI', 'BB', 'K', 'ROB', 'DP', 'TB'];
     const hittingStats = Object.entries(teamData.hitting)
-      .map(([key, value]) => `**Stat ${key.replace('stat', '')}:** ${value}`)
+      .map(([key, value], index) => `**${hittingLabels[index] || key}:** ${value}`)
       .join('\n');
 
     embed.addFields({
@@ -164,9 +166,11 @@ export function createTeamStatsEmbed(teamData) {
     });
   }
 
+  // Team Pitching: IP, BF, H, HR, R, BB, K (7 stats)
   if (teamData.pitching && Object.keys(teamData.pitching).length > 0) {
+    const pitchingLabels = ['IP', 'BF', 'H', 'HR', 'R', 'BB', 'K'];
     const pitchingStats = Object.entries(teamData.pitching)
-      .map(([key, value]) => `**Stat ${key.replace('stat', '')}:** ${value}`)
+      .map(([key, value], index) => `**${pitchingLabels[index] || key}:** ${value}`)
       .join('\n');
 
     embed.addFields({
@@ -176,9 +180,11 @@ export function createTeamStatsEmbed(teamData) {
     });
   }
 
+  // Team Fielding: Nice Plays, Errors, Stolen Bases (3 stats)
   if (teamData.fielding && Object.keys(teamData.fielding).length > 0) {
+    const fieldingLabels = ['Nice Plays', 'Errors', 'Stolen Bases'];
     const fieldingStats = Object.entries(teamData.fielding)
-      .map(([key, value]) => `**Stat ${key.replace('stat', '')}:** ${value}`)
+      .map(([key, value], index) => `**${fieldingLabels[index] || key}:** ${value}`)
       .join('\n');
 
     embed.addFields({

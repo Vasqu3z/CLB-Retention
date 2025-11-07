@@ -10,11 +10,19 @@ const COLORS = {
   INFO: 0x00FFFF
 };
 
+// Helper to remove leading zero from rate stats (e.g., ".250" instead of "0.250")
+function formatRateStat(value) {
+  if (typeof value === 'string' && value.startsWith('0.')) {
+    return value.substring(1); // Remove leading "0"
+  }
+  return value;
+}
+
 export async function createPlayerStatsEmbed(playerData) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
     .setTitle(`${playerData.name}`)
-    .setDescription(`**Team:** ${playerData.team}`)
+    .setDescription(`**Team:** ${playerData.team}\n**Games:** ${playerData.hitting.gp || playerData.pitching.gp || playerData.fielding.gp}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
@@ -27,105 +35,49 @@ export async function createPlayerStatsEmbed(playerData) {
   const hasHittingStats = Object.values(playerData.hitting).some(val => val !== '0');
   if (hasHittingStats) {
     const hittingStats = [
-      `Games: **${playerData.hitting.gp}**`,
-      `At Bats: **${playerData.hitting.ab}**`,
-      `Hits: **${playerData.hitting.h}**`,
-      `Home Runs: **${playerData.hitting.hr}**`,
+      `AB: **${playerData.hitting.ab}**`,
+      `AVG: **${playerData.hitting.avg}**`,
+      `HR: **${playerData.hitting.hr}**`,
       `RBI: **${playerData.hitting.rbi}**`,
-      `Walks: **${playerData.hitting.bb}**`,
-      `Strikeouts: **${playerData.hitting.k}**`,
-      ''
-    ];
-
-    const calculatedStats = [
-      `Batting Avg: **${playerData.hitting.avg}**`,
-      `On-Base %: **${playerData.hitting.obp}**`,
-      `Slugging %: **${playerData.hitting.slg}**`,
+      `SLG: **${playerData.hitting.slg}**`,
       `OPS: **${playerData.hitting.ops}**`
-    ];
+    ].join('\n');
 
-    const advancedStats = [
-      `Total Bases: **${playerData.hitting.tb}**`,
-      `ROB: **${playerData.hitting.rob}**`,
-      `Double Plays: **${playerData.hitting.dp}**`
-    ];
-
-    embed.addFields(
-      {
-        name: 'Hitting Stats',
-        value: hittingStats.join('\n'),
-        inline: true
-      },
-      {
-        name: 'Rate Stats',
-        value: calculatedStats.join('\n'),
-        inline: true
-      },
-      {
-        name: 'Advanced',
-        value: advancedStats.join('\n'),
-        inline: true
-      }
-    );
+    embed.addFields({
+      name: 'Hitting Stats',
+      value: hittingStats,
+      inline: false
+    });
   }
 
   const hasPitchingStats = Object.values(playerData.pitching).some(val => val !== '0');
   if (hasPitchingStats) {
     const pitchingStats = [
-      `Games: **${playerData.pitching.gp}**`,
-      `Wins: **${playerData.pitching.w}**`,
-      `Losses: **${playerData.pitching.l}**`,
-      `Saves: **${playerData.pitching.sv}**`,
-      `Innings: **${playerData.pitching.ip}**`,
-      `Strikeouts: **${playerData.pitching.k}**`,
-      ''
-    ];
-
-    const pitchingAdvanced = [
+      `IP: **${playerData.pitching.ip}**`,
+      `W-L: **${playerData.pitching.w}-${playerData.pitching.l}**`,
+      `SV: **${playerData.pitching.sv}**`,
       `ERA: **${playerData.pitching.era}**`,
       `WHIP: **${playerData.pitching.whip}**`,
-      `BAvg Against: **${playerData.pitching.baa}**`,
-      ''
-    ];
+      `BAA: **${playerData.pitching.baa}**`
+    ].join('\n');
 
-    const pitchingDetails = [
-      `Batters Faced: **${playerData.pitching.bf}**`,
-      `Hits Allowed: **${playerData.pitching.h}**`,
-      `Walks Allowed: **${playerData.pitching.bb}**`,
-      `Home Runs: **${playerData.pitching.hr}**`,
-      `Runs Allowed: **${playerData.pitching.r}**`
-    ];
-
-    embed.addFields(
-      {
-        name: 'Pitching Stats',
-        value: pitchingStats.join('\n'),
-        inline: true
-      },
-      {
-        name: 'Rate Stats',
-        value: pitchingAdvanced.join('\n'),
-        inline: true
-      },
-      {
-        name: 'Details',
-        value: pitchingDetails.join('\n'),
-        inline: true
-      }
-    );
+    embed.addFields({
+      name: 'Pitching Stats',
+      value: pitchingStats,
+      inline: false
+    });
   }
 
   const hasFieldingStats = Object.values(playerData.fielding).some(val => val !== '0');
   if (hasFieldingStats) {
     const fieldingStats = [
-      `Games: **${playerData.fielding.gp}**`,
-      `Nice Plays: **${playerData.fielding.np}**`,
-      `Errors: **${playerData.fielding.e}**`,
-      `Stolen Bases: **${playerData.fielding.sb}**`
+      `NP: **${playerData.fielding.np}**`,
+      `E: **${playerData.fielding.e}**`,
+      `SB: **${playerData.fielding.sb}**`
     ].join('\n');
 
     embed.addFields({
-      name: 'Fielding & Baserunning',
+      name: 'Fielding Stats',
       value: fieldingStats,
       inline: false
     });
@@ -142,7 +94,7 @@ export async function createTeamStatsEmbed(teamData) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
     .setTitle(`${teamData.name}`)
-    .setDescription(`**General Manager:** ${teamData.captain}\n**Record:** ${teamData.wins}-${teamData.losses} (${(parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3)})`)
+    .setDescription(`**General Manager:** ${teamData.captain}\n**Record:** ${teamData.wins}-${teamData.losses} (${formatRateStat((parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3))})`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
@@ -152,102 +104,53 @@ export async function createTeamStatsEmbed(teamData) {
     embed.setThumbnail(teamImageUrl);
   }
 
-  // Team Hitting - 3 columns with bold values
+  // Team Hitting
   if (teamData.hitting) {
-    const countingStats = [
-      `Runs: **${teamData.hitting.runsScored}**`,
-      `Runs/Game: **${teamData.hitting.runsPerGame}**`,
-      `At Bats: **${teamData.hitting.ab}**`,
-      `Hits: **${teamData.hitting.h}**`,
-      `Home Runs: **${teamData.hitting.hr}**`,
+    const hittingStats = [
+      `Runs Scored / Game: **${teamData.hitting.runsPerGame}**`,
+      `AB: **${teamData.hitting.ab}**`,
+      `AVG: **${formatRateStat(teamData.hitting.avg)}**`,
+      `HR: **${teamData.hitting.hr}**`,
       `RBI: **${teamData.hitting.rbi}**`,
-      ''
-    ];
-
-    const rateStats = [
-      `Batting Avg: **${teamData.hitting.avg}**`,
-      `On-Base %: **${teamData.hitting.obp}**`,
-      `Slugging %: **${teamData.hitting.slg}**`,
-      `OPS: **${teamData.hitting.ops}**`
-    ];
-
-    const advancedStats = [
-      `Walks: **${teamData.hitting.bb}**`,
-      `Strikeouts: **${teamData.hitting.k}**`,
-      `Total Bases: **${teamData.hitting.tb}**`
-    ];
-
-    embed.addFields(
-      {
-        name: 'Team Hitting',
-        value: countingStats.join('\n'),
-        inline: true
-      },
-      {
-        name: 'Rate Stats',
-        value: rateStats.join('\n'),
-        inline: true
-      },
-      {
-        name: 'Advanced',
-        value: advancedStats.join('\n'),
-        inline: true
-      }
-    );
-  }
-
-  // Team Pitching - 3 columns with bold values
-  if (teamData.pitching) {
-    const pitchingStats = [
-      `Innings: **${teamData.pitching.ip}**`,
-      `Batters Faced: **${teamData.pitching.bf}**`,
-      `Strikeouts: **${teamData.pitching.k}**`,
-      `Walks Allowed: **${teamData.pitching.bb}**`,
-      `Hits Allowed: **${teamData.pitching.h}**`,
-      ''
-    ];
-
-    const rateStats = [
-      `ERA: **${teamData.pitching.era}**`,
-      `WHIP: **${teamData.pitching.whip}**`,
-      `BAvg Against: **${teamData.pitching.baa}**`
-    ];
-
-    const detailStats = [
-      `Home Runs: **${teamData.pitching.hr}**`,
-      `Runs Allowed: **${teamData.pitching.r}**`
-    ];
-
-    embed.addFields(
-      {
-        name: 'Team Pitching',
-        value: pitchingStats.join('\n'),
-        inline: true
-      },
-      {
-        name: 'Rate Stats',
-        value: rateStats.join('\n'),
-        inline: true
-      },
-      {
-        name: 'Details',
-        value: detailStats.join('\n'),
-        inline: true
-      }
-    );
-  }
-
-  // Team Fielding with bold values
-  if (teamData.fielding) {
-    const fieldingStats = [
-      `Nice Plays: **${teamData.fielding.np}**`,
-      `Nice Plays/Game: **${teamData.fielding.npPerGame}**`,
-      `Errors: **${teamData.fielding.e}**`,
-      `Stolen Bases: **${teamData.fielding.sb}**`
+      `SLG: **${formatRateStat(teamData.hitting.slg)}**`,
+      `OPS: **${formatRateStat(teamData.hitting.ops)}**`
     ].join('\n');
 
     embed.addFields({
-      name: 'Team Fielding & Baserunning',
+      name: 'Hitting Stats',
+      value: hittingStats,
+      inline: false
+    });
+  }
+
+  // Team Pitching
+  if (teamData.pitching) {
+    const gp = parseInt(teamData.gp) || 1;
+    const runsAllowedPerGame = (parseInt(teamData.pitching.r) / gp).toFixed(2);
+
+    const pitchingStats = [
+      `Runs Allowed / Game: **${runsAllowedPerGame}**`,
+      `WHIP: **${formatRateStat(teamData.pitching.whip)}**`,
+      `BAA: **${formatRateStat(teamData.pitching.baa)}**`
+    ].join('\n');
+
+    embed.addFields({
+      name: 'Pitching Stats',
+      value: pitchingStats,
+      inline: false
+    });
+  }
+
+  // Team Fielding
+  if (teamData.fielding) {
+    const fieldingStats = [
+      `Nice Plays / Game: **${teamData.fielding.npPerGame}**`,
+      `E: **${teamData.fielding.e}**`,
+      `SB: **${teamData.fielding.sb}**`
+    ].join('\n');
+
+    embed.addFields({
+      name: 'Fielding Stats',
       value: fieldingStats,
       inline: false
     });
@@ -262,12 +165,6 @@ export async function createStandingsEmbed(standings) {
     .setTitle('League Standings')
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
-
-  // Add league logo as full image (not thumbnail to avoid breaking monospace table spacing)
-  const leagueImageUrl = await sheetsService.getImageUrl('League', 'league');
-  if (leagueImageUrl) {
-    embed.setImage(leagueImageUrl);
-  }
 
   if (standings.length === 0) {
     embed.setDescription('No standings available yet.');
@@ -326,12 +223,6 @@ export async function createRankingsEmbed(statLabel, leaders, format) {
     .setTitle(`League Leaders - ${statLabel}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
-
-  // Add league logo as full image (not thumbnail to avoid breaking monospace table spacing)
-  const leagueImageUrl = await sheetsService.getImageUrl('League', 'league');
-  if (leagueImageUrl) {
-    embed.setImage(leagueImageUrl);
-  }
 
   if (leaders.length === 0) {
     embed.setDescription('No qualified players for this stat.');

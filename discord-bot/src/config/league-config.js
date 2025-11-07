@@ -12,7 +12,7 @@ export const SHEET_NAMES = {
   RANKINGS: '🏆 Rankings',
   PLAYER_DATA: 'Player Data',
   SEASON_SCHEDULE: 'Season Schedule',
-  LEAGUE_SCHEDULE: '📅 League Schedule'
+  LEAGUE_SCHEDULE: 'League Schedule'  // Can't use emoji - API parsing issue
 };
 
 export const HITTING_COLUMNS = {

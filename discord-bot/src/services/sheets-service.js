@@ -556,7 +556,7 @@ class SheetsService {
     // Parse Discord Schedule to extract completed games with their week numbers
     // Track week headers as we go through the data
     const completedGames = [];
-    let currentWeek = null;
+    let parsedWeekNumber = null;
 
     leagueScheduleRawData.forEach(row => {
       const cellData = row[0];
@@ -567,14 +567,14 @@ class SheetsService {
       // Check if this is a week header (e.g., "Week 1", "Week 2")
       const weekMatch = text.match(/^Week\s+(\d+)$/i);
       if (weekMatch) {
-        currentWeek = parseInt(weekMatch[1]);
+        parsedWeekNumber = parseInt(weekMatch[1]);
         return;
       }
 
       // Check if this is a game result (contains "||")
       if (text.includes('||')) {
         completedGames.push({
-          week: currentWeek,
+          week: parsedWeekNumber,
           result: text,
           hyperlink: cellData.hyperlink || null
         });

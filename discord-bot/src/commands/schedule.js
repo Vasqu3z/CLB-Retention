@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import sheetsService from '../services/sheets-service.js';
 import { createScheduleEmbed, createErrorEmbed } from '../utils/embed-builder.js';
+import { DISCORD_LIMITS } from '../config/league-config.js';
 
 export const data = new SlashCommandBuilder()
   .setName('schedule')
@@ -48,7 +49,7 @@ export async function autocomplete(interaction) {
     const allOptions = [...staticOptions, ...weekOptions];
     const filtered = allOptions
       .filter(opt => opt.name.toLowerCase().includes(focusedValue))
-      .slice(0, 25);
+      .slice(0, DISCORD_LIMITS.AUTOCOMPLETE_MAX_CHOICES);
 
     await interaction.respond(filtered);
   } catch (error) {

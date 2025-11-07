@@ -29,7 +29,7 @@ export async function autocomplete(interaction) {
     const filtered = teams
       .filter(team => team.captain && team.captain.trim() !== '' && team.captain !== 'Unknown')
       .filter(team => team.name.toLowerCase().includes(focusedValue) || team.captain.toLowerCase().includes(focusedValue))
-      .slice(0, 25)
+      .slice(0, DISCORD_LIMITS.AUTOCOMPLETE_MAX_CHOICES)
       .map(team => ({
         name: `${team.name} - ${team.captain}`,
         value: team.name

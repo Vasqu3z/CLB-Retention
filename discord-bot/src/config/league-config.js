@@ -1,6 +1,22 @@
 /**
- * League configuration mapping to LeagueConfig.js
- * Uses 0-based indexing for consistency with main codebase
+ * @file league-config.js
+ * @description League configuration and constants for CLB League Hub Discord Bot
+ *
+ * Purpose:
+ * - Centralized configuration for sheet names, column mappings, and formatting constants
+ * - Provides type-safe access to Google Sheets structure
+ * - Eliminates magic numbers throughout the codebase (P2: No Magic Numbers)
+ *
+ * Key Responsibilities:
+ * - Define sheet names and column indices (0-based for consistency with arrays)
+ * - Store embed formatting constants (widths, separators, markers)
+ * - Define player qualification thresholds for rankings
+ * - Configure cache behavior and Discord API limits
+ *
+ * Data Dependencies:
+ * - Google Sheets structure (sheet names and column order must match)
+ *
+ * Note: Uses 0-based indexing for consistency with JavaScript arrays.
  * Add +1 when converting to Google Sheets column letters (A=1, B=2, etc.)
  */
 
@@ -118,3 +134,46 @@ export const STAT_LABELS = {
 };
 
 export const DATA_START_ROW = 2;
+
+// Embed formatting constants
+export const EMBED_FORMATTING = {
+  MAX_PLAYER_NAME_LENGTH: 12,
+  MAX_TEAM_NAME_LENGTH: 13,
+  STANDINGS_RANK_WIDTH: 4,
+  STANDINGS_TEAM_WIDTH: 20,
+  STANDINGS_RECORD_WIDTH: 8,
+  STANDINGS_PCT_WIDTH: 5,
+  STANDINGS_GB_WIDTH: 6,
+  STANDINGS_DIFF_WIDTH: 6,
+  STANDINGS_TOTAL_WIDTH: 54,
+  RANKINGS_RANK_WIDTH: 4,
+  RANKINGS_NAME_WIDTH: 13,
+  RANKINGS_TEAM_WIDTH: 13,
+  RANKINGS_STAT_WIDTH: 6,
+  RANKINGS_TOTAL_WIDTH: 42,
+  COMPARE_NAME_WIDTH: 13,
+  COMPARE_STAT_LABEL_WIDTH: 5,
+  COMPARE_VALUE_WIDTH: 13,
+  COMPARE_TOTAL_WIDTH: 32,
+  SEPARATOR_CHAR: '─',
+  BETTER_STAT_MARKER: '*'
+};
+
+// Player qualification thresholds
+export const QUALIFICATION = {
+  MIN_AB_MULTIPLIER: 2.1,  // Minimum AB = team games * multiplier
+  MIN_IP_MULTIPLIER: 1.0   // Minimum IP = team games * multiplier
+};
+
+// Cache configuration
+export const CACHE_CONFIG = {
+  DURATION_MS: 5 * 60 * 1000,  // 5 minutes
+  REFRESH_BATCH_SIZE: 1000     // Max items per batch refresh
+};
+
+// Discord embed limits
+export const DISCORD_LIMITS = {
+  EMBED_DESCRIPTION_MAX: 4096,
+  EMBED_FIELD_VALUE_MAX: 1024,
+  AUTOCOMPLETE_MAX_CHOICES: 25
+};

@@ -502,7 +502,7 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
     .setTitle(`${player1Data.name} vs ${player2Data.name}`)
-    .setDescription(`${player1Data.team} vs ${player2Data.team}`)
+    .setDescription(`${player1Data.name}'s Team: ${player1Data.team}\n${player2Data.name}'s Team: ${player2Data.team}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
@@ -511,24 +511,24 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
     return Object.values(playerData[category]).some(val => val !== '0' && val !== '.000' && val !== '0.00');
   };
 
-  // Helper to compare two values and add visual indicator
+  // Helper to compare two values and add visual indicator (* on right for better value)
   const compareValues = (val1, val2, higherIsBetter = true) => {
     const num1 = parseFloat(val1) || 0;
     const num2 = parseFloat(val2) || 0;
 
     if (num1 === num2) {
-      return { p1: `  ${val1}`, p2: `  ${val2}` };
+      return { p1: val1, p2: val2 };
     }
 
     if (higherIsBetter) {
       return {
-        p1: num1 > num2 ? `> ${val1}` : `  ${val1}`,
-        p2: num2 > num1 ? `> ${val2}` : `  ${val2}`
+        p1: num1 > num2 ? `${val1}*` : val1,
+        p2: num2 > num1 ? `${val2}*` : val2
       };
     } else {
       return {
-        p1: num1 < num2 ? `> ${val1}` : `  ${val1}`,
-        p2: num2 < num1 ? `> ${val2}` : `  ${val2}`
+        p1: num1 < num2 ? `${val1}*` : val1,
+        p2: num2 < num1 ? `${val2}*` : val2
       };
     }
   };
@@ -563,14 +563,19 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
       player2Data.hitting.ops || '.000'
     );
 
+    // Truncate player names to fit in column headers (max 12 chars each)
+    const p1Name = player1Data.name.length > 12 ? player1Data.name.substring(0, 12) : player1Data.name;
+    const p2Name = player2Data.name.length > 12 ? player2Data.name.substring(0, 12) : player2Data.name;
+
     const hittingText =
       `\`\`\`\n` +
-      `GP:  ${gp.p1.padEnd(10)} ${gp.p2}\n` +
-      `AB:  ${ab.p1.padEnd(10)} ${ab.p2}\n` +
-      `AVG: ${avg.p1.padEnd(10)} ${avg.p2}\n` +
-      `HR:  ${hr.p1.padEnd(10)} ${hr.p2}\n` +
-      `RBI: ${rbi.p1.padEnd(10)} ${rbi.p2}\n` +
-      `OPS: ${ops.p1.padEnd(10)} ${ops.p2}\n` +
+      `     ${p1Name.padEnd(13)} ${p2Name}\n` +
+      `GP:  ${gp.p1.padEnd(13)} ${gp.p2}\n` +
+      `AB:  ${ab.p1.padEnd(13)} ${ab.p2}\n` +
+      `AVG: ${avg.p1.padEnd(13)} ${avg.p2}\n` +
+      `HR:  ${hr.p1.padEnd(13)} ${hr.p2}\n` +
+      `RBI: ${rbi.p1.padEnd(13)} ${rbi.p2}\n` +
+      `OPS: ${ops.p1.padEnd(13)} ${ops.p2}\n` +
       `\`\`\``;
 
     embed.addFields({
@@ -613,14 +618,19 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
       false // lower is better
     );
 
+    // Truncate player names to fit in column headers (max 12 chars each)
+    const p1Name = player1Data.name.length > 12 ? player1Data.name.substring(0, 12) : player1Data.name;
+    const p2Name = player2Data.name.length > 12 ? player2Data.name.substring(0, 12) : player2Data.name;
+
     const pitchingText =
       `\`\`\`\n` +
-      `GP:   ${gp.p1.padEnd(10)} ${gp.p2}\n` +
-      `IP:   ${ip.p1.padEnd(10)} ${ip.p2}\n` +
-      `W:    ${w.p1.padEnd(10)} ${w.p2}\n` +
-      `L:    ${l.p1.padEnd(10)} ${l.p2}\n` +
-      `ERA:  ${era.p1.padEnd(10)} ${era.p2}\n` +
-      `WHIP: ${whip.p1.padEnd(10)} ${whip.p2}\n` +
+      `      ${p1Name.padEnd(13)} ${p2Name}\n` +
+      `GP:   ${gp.p1.padEnd(13)} ${gp.p2}\n` +
+      `IP:   ${ip.p1.padEnd(13)} ${ip.p2}\n` +
+      `W:    ${w.p1.padEnd(13)} ${w.p2}\n` +
+      `L:    ${l.p1.padEnd(13)} ${l.p2}\n` +
+      `ERA:  ${era.p1.padEnd(13)} ${era.p2}\n` +
+      `WHIP: ${whip.p1.padEnd(13)} ${whip.p2}\n` +
       `\`\`\``;
 
     embed.addFields({
@@ -653,12 +663,17 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
       player2Data.fielding.sb || '0'
     );
 
+    // Truncate player names to fit in column headers (max 12 chars each)
+    const p1Name = player1Data.name.length > 12 ? player1Data.name.substring(0, 12) : player1Data.name;
+    const p2Name = player2Data.name.length > 12 ? player2Data.name.substring(0, 12) : player2Data.name;
+
     const fieldingText =
       `\`\`\`\n` +
-      `GP: ${gp.p1.padEnd(10)} ${gp.p2}\n` +
-      `NP: ${np.p1.padEnd(10)} ${np.p2}\n` +
-      `E:  ${e.p1.padEnd(10)} ${e.p2}\n` +
-      `SB: ${sb.p1.padEnd(10)} ${sb.p2}\n` +
+      `    ${p1Name.padEnd(13)} ${p2Name}\n` +
+      `GP: ${gp.p1.padEnd(13)} ${gp.p2}\n` +
+      `NP: ${np.p1.padEnd(13)} ${np.p2}\n` +
+      `E:  ${e.p1.padEnd(13)} ${e.p2}\n` +
+      `SB: ${sb.p1.padEnd(13)} ${sb.p2}\n` +
       `\`\`\``;
 
     embed.addFields({

@@ -657,6 +657,10 @@ class SheetsService {
         // All games for a specific week
         return games.filter(g => g.week === filter.weekNumber);
 
+      case 'all':
+        // All games (used for determining completed weeks)
+        return games;
+
       default:
         return [];
     }

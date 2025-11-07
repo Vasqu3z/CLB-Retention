@@ -24,14 +24,25 @@ export async function autocomplete(interaction) {
       { name: 'Upcoming - Next week\'s schedule', value: 'upcoming' }
     ];
 
-    // Week options (weeks 1-20 to cover most leagues)
-    const weekOptions = [];
-    for (let i = 1; i <= 20; i++) {
-      weekOptions.push({
-        name: `Week ${i}`,
-        value: `week${i}`
-      });
-    }
+    // Get all games to determine which weeks are unplayed
+    const allGames = await sheetsService.getScheduleData({ type: 'all' });
+
+    // Find the current week (last completed week + 1)
+    const maxCompletedWeek = Math.max(0, ...allGames.filter(g => g.played).map(g => g.week));
+    const currentWeek = maxCompletedWeek + 1;
+
+    // Find all future/unplayed weeks
+    const futureWeeks = [...new Set(
+      allGames
+        .filter(game => !game.played && game.week > maxCompletedWeek)
+        .map(game => game.week)
+    )].sort((a, b) => a - b);
+
+    // Create autocomplete options for future weeks
+    const weekOptions = futureWeeks.map(week => ({
+      name: `Week ${week}`,
+      value: `week${week}`
+    }));
 
     // Combine and filter
     const allOptions = [...staticOptions, ...weekOptions];
@@ -59,6 +70,29 @@ export async function execute(interaction) {
     } else if (filterValue.startsWith('week')) {
       // Extract week number from value like "week1", "week2", etc.
       const weekNumber = parseInt(filterValue.replace('week', ''));
+
+      // Check if this week has completed games (redirect to /scores behavior)
+      const allGames = await sheetsService.getScheduleData({ type: 'all' });
+      const weekGames = allGames.filter(g => g.week === weekNumber);
+      const allGamesCompleted = weekGames.length > 0 && weekGames.every(g => g.played);
+
+      if (allGamesCompleted) {
+        // This is a past week - show scores
+        filter = { type: 'week', weekNumber: weekNumber };
+        const games = await sheetsService.getScheduleData(filter);
+
+        if (!games || games.length === 0) {
+          const errorEmbed = createErrorEmbed(`No games found for Week ${weekNumber}.`);
+          await interaction.editReply({ embeds: [errorEmbed] });
+          return;
+        }
+
+        const embed = await createScheduleEmbed(games, filter, filterValue);
+        await interaction.editReply({ embeds: [embed] });
+        sheetsService.refreshCache();
+        return;
+      }
+
       filter = { type: 'week', weekNumber: weekNumber };
     } else {
       // Unknown filter

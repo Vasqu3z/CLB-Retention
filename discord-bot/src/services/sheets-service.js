@@ -545,90 +545,46 @@ class SheetsService {
   }
 
   async getScheduleData(filter) {
-    // Read Season Schedule sheet and League Schedule sheet with hyperlinks
-    const [scheduleData, leagueScheduleRawData] = await Promise.all([
+    // Read Season Schedule sheet (master schedule) and Discord Schedule column J (completed games with hyperlinks)
+    // The sheets mirror each other row-by-row
+    const [scheduleData, leagueScheduleData] = await Promise.all([
       this.getSheetData(SHEET_NAMES.SEASON_SCHEDULE, 'A2:C'), // Week, Home Team, Away Team
-      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'A2:K') // Read full rows including Week, teams, and completed game data
+      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J2:J') // ONLY column J (completed games with hyperlinks)
     ]);
 
-    // Build a map of completed games using Week + Home + Away as the key for robust matching
-    console.log(`📊 Reading ${leagueScheduleRawData.length} rows from Discord Schedule`);
-    if (leagueScheduleRawData.length > 0) {
-      console.log(`📋 First row sample:`, JSON.stringify(leagueScheduleRawData[0]?.slice(0, 3)));
-    }
+    console.log(`📊 Read ${scheduleData.length} games from Season Schedule, ${leagueScheduleData.length} results from Discord Schedule`);
 
-    const completedGamesMap = new Map();
-    leagueScheduleRawData.forEach((row, index) => {
-      // Columns: A=Week, B=Home, C=Away, ..., J=Result (index 9)
-      // Each cell is an object: { text: string, hyperlink: string|null }
-      const weekCell = row[0];
-      const homeCell = row[1];
-      const awayCell = row[2];
-      const resultCell = row[9];
-
-      // Debug first few rows
-      if (index < 3) {
-        console.log(`Row ${index}:`, {
-          week: weekCell?.text,
-          home: homeCell?.text,
-          away: awayCell?.text,
-          result: resultCell?.text?.substring(0, 30),
-          hasLink: !!resultCell?.hyperlink
-        });
-      }
-
-      // Check if we have all required data
-      if (weekCell && weekCell.text && homeCell && homeCell.text &&
-          awayCell && awayCell.text && resultCell && resultCell.text) {
-
-        const weekText = weekCell.text.trim();
-        const homeTeam = homeCell.text.trim().toLowerCase();
-        const awayTeam = awayCell.text.trim().toLowerCase();
-        const resultText = resultCell.text.trim();
-
-        // Only process if result contains the score format
-        if (resultText.includes('||')) {
-          // Parse week number from text (might be "Week 1" or just "1")
-          const weekNum = parseInt(weekText.replace(/\D/g, ''));
-
-          if (!isNaN(weekNum)) {
-            const key = `${weekNum}|${homeTeam}|${awayTeam}`;
-            completedGamesMap.set(key, {
-              result: resultText,
-              boxScoreUrl: resultCell.hyperlink || null
-            });
-          }
-        }
-      }
-    });
-
-    console.log(`✅ Built completed games map with ${completedGamesMap.size} entries`);
-
-    // Build schedule with game status - match by week + teams
+    // Build schedule with game status - match by row index since sheets mirror each other
     const games = scheduleData
-      .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
       .map((row, index) => {
+        // Skip empty rows but preserve index
+        if (!row[0] || !row[1] || !row[2]) {
+          return null;
+        }
+
         const week = parseInt(row[0]);
         const homeTeam = row[1].trim();
         const awayTeam = row[2].trim();
-
-        // Look up completed game data using week + teams
-        const key = `${week}|${homeTeam.toLowerCase()}|${awayTeam.toLowerCase()}`;
-        const completedData = completedGamesMap.get(key);
-
-        // Debug first few lookups
-        if (index < 3) {
-          console.log(`Lookup ${index}: key="${key}", found=${!!completedData}`);
-        }
 
         let played = false;
         let result = null;
         let boxScoreUrl = null;
 
-        if (completedData) {
-          played = true;
-          result = completedData.result;
-          boxScoreUrl = completedData.boxScoreUrl;
+        // Get corresponding completed game data by matching row index
+        const leagueRow = leagueScheduleData[index];
+        if (leagueRow && leagueRow[0]) {
+          const cellData = leagueRow[0]; // This is an object: { text: string, hyperlink: string|null }
+
+          // Debug first few matches
+          if (index < 3) {
+            console.log(`Row ${index}: ${homeTeam} vs ${awayTeam} - Result: ${cellData.text?.substring(0, 40)}, HasLink: ${!!cellData.hyperlink}`);
+          }
+
+          if (cellData.text && cellData.text.includes('||')) {
+            played = true;
+            result = cellData.text;
+            boxScoreUrl = cellData.hyperlink || null;
+          }
         }
 
         return {
@@ -639,7 +595,8 @@ class SheetsService {
           result,
           boxScoreUrl
         };
-      });
+      })
+      .filter(game => game !== null); // Remove null entries from empty rows
 
     // Determine current week (max completed week + 1)
     const maxCompletedWeek = Math.max(0, ...games.filter(g => g.played).map(g => g.week));

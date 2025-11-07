@@ -552,14 +552,30 @@ class SheetsService {
     ]);
 
     // Build a map of completed games using Week + Home + Away as the key for robust matching
+    console.log(`📊 Reading ${leagueScheduleRawData.length} rows from Discord Schedule`);
+    if (leagueScheduleRawData.length > 0) {
+      console.log(`📋 First row sample:`, JSON.stringify(leagueScheduleRawData[0]?.slice(0, 3)));
+    }
+
     const completedGamesMap = new Map();
-    leagueScheduleRawData.forEach(row => {
+    leagueScheduleRawData.forEach((row, index) => {
       // Columns: A=Week, B=Home, C=Away, ..., J=Result (index 9)
       // Each cell is an object: { text: string, hyperlink: string|null }
       const weekCell = row[0];
       const homeCell = row[1];
       const awayCell = row[2];
       const resultCell = row[9];
+
+      // Debug first few rows
+      if (index < 3) {
+        console.log(`Row ${index}:`, {
+          week: weekCell?.text,
+          home: homeCell?.text,
+          away: awayCell?.text,
+          result: resultCell?.text?.substring(0, 30),
+          hasLink: !!resultCell?.hyperlink
+        });
+      }
 
       // Check if we have all required data
       if (weekCell && weekCell.text && homeCell && homeCell.text &&
@@ -586,10 +602,12 @@ class SheetsService {
       }
     });
 
+    console.log(`✅ Built completed games map with ${completedGamesMap.size} entries`);
+
     // Build schedule with game status - match by week + teams
     const games = scheduleData
       .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
-      .map(row => {
+      .map((row, index) => {
         const week = parseInt(row[0]);
         const homeTeam = row[1].trim();
         const awayTeam = row[2].trim();
@@ -597,6 +615,11 @@ class SheetsService {
         // Look up completed game data using week + teams
         const key = `${week}|${homeTeam.toLowerCase()}|${awayTeam.toLowerCase()}`;
         const completedData = completedGamesMap.get(key);
+
+        // Debug first few lookups
+        if (index < 3) {
+          console.log(`Lookup ${index}: key="${key}", found=${!!completedData}`);
+        }
 
         let played = false;
         let result = null;

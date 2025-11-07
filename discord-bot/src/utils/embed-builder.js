@@ -431,3 +431,242 @@ export async function createScheduleEmbed(games, filter, filterValue) {
 
   return embed;
 }
+
+export async function createHeadToHeadEmbed(matchupData) {
+  const embed = new EmbedBuilder()
+    .setColor(COLORS.INFO)
+    .setTitle(`${matchupData.team1} vs ${matchupData.team2}`)
+    .setTimestamp()
+    .setFooter({ text: 'CLB League Hub' });
+
+  // Add league logo as thumbnail
+  const leagueImageUrl = await sheetsService.getImageUrl('League', 'league');
+  if (leagueImageUrl) {
+    embed.setThumbnail(leagueImageUrl);
+  }
+
+  // Overall record
+  const recordText = `**Overall Record:** ${matchupData.team1Wins}-${matchupData.team2Wins}\n` +
+    `**${matchupData.team1} Avg:** ${matchupData.avgScoreTeam1} runs/game\n` +
+    `**${matchupData.team2} Avg:** ${matchupData.avgScoreTeam2} runs/game\n` +
+    `**Total Games:** ${matchupData.totalGames}`;
+
+  embed.setDescription(recordText);
+
+  // List all games
+  let gamesText = '';
+  matchupData.games.forEach(game => {
+    const team1Lower = matchupData.team1.toLowerCase();
+    const team2Lower = matchupData.team2.toLowerCase();
+
+    // Determine which team is which in this game
+    let displayTeam1, displayScore1, displayTeam2, displayScore2;
+    if (game.team1.toLowerCase().includes(team1Lower)) {
+      displayTeam1 = game.team1;
+      displayScore1 = game.score1;
+      displayTeam2 = game.team2;
+      displayScore2 = game.score2;
+    } else {
+      displayTeam1 = game.team2;
+      displayScore1 = game.score2;
+      displayTeam2 = game.team1;
+      displayScore2 = game.score1;
+    }
+
+    // Bold the winner
+    let gameText;
+    if (displayScore1 > displayScore2) {
+      gameText = `**Week ${game.week}:** **${displayTeam1} ${displayScore1}** vs ${displayTeam2} ${displayScore2}`;
+    } else {
+      gameText = `**Week ${game.week}:** ${displayTeam1} ${displayScore1} vs **${displayTeam2} ${displayScore2}**`;
+    }
+
+    // Add box score link if available
+    if (game.boxScoreUrl) {
+      gameText = `[${gameText}](${game.boxScoreUrl})`;
+    }
+
+    gamesText += `${gameText}\n`;
+  });
+
+  embed.addFields({
+    name: 'Game Results',
+    value: gamesText || 'No games played yet.',
+    inline: false
+  });
+
+  return embed;
+}
+
+export function createPlayerCompareEmbed(player1Data, player2Data) {
+  const embed = new EmbedBuilder()
+    .setColor(COLORS.PRIMARY)
+    .setTitle(`${player1Data.name} vs ${player2Data.name}`)
+    .setDescription(`${player1Data.team} vs ${player2Data.team}`)
+    .setTimestamp()
+    .setFooter({ text: 'CLB League Hub' });
+
+  // Helper to determine if a player has meaningful stats in a category
+  const hasStats = (playerData, category) => {
+    return Object.values(playerData[category]).some(val => val !== '0' && val !== '.000' && val !== '0.00');
+  };
+
+  // Helper to compare two values and add visual indicator
+  const compareValues = (val1, val2, higherIsBetter = true) => {
+    const num1 = parseFloat(val1) || 0;
+    const num2 = parseFloat(val2) || 0;
+
+    if (num1 === num2) {
+      return { p1: val1, p2: val2 };
+    }
+
+    if (higherIsBetter) {
+      return {
+        p1: num1 > num2 ? `**${val1}**` : val1,
+        p2: num2 > num1 ? `**${val2}**` : val2
+      };
+    } else {
+      return {
+        p1: num1 < num2 ? `**${val1}**` : val1,
+        p2: num2 < num1 ? `**${val2}**` : val2
+      };
+    }
+  };
+
+  // Hitting comparison
+  const p1HasHitting = hasStats(player1Data, 'hitting');
+  const p2HasHitting = hasStats(player2Data, 'hitting');
+
+  if (p1HasHitting || p2HasHitting) {
+    const gp = compareValues(
+      player1Data.hitting.gp || '0',
+      player2Data.hitting.gp || '0'
+    );
+    const ab = compareValues(
+      player1Data.hitting.ab || '0',
+      player2Data.hitting.ab || '0'
+    );
+    const avg = compareValues(
+      player1Data.hitting.avg || '.000',
+      player2Data.hitting.avg || '.000'
+    );
+    const hr = compareValues(
+      player1Data.hitting.hr || '0',
+      player2Data.hitting.hr || '0'
+    );
+    const rbi = compareValues(
+      player1Data.hitting.rbi || '0',
+      player2Data.hitting.rbi || '0'
+    );
+    const ops = compareValues(
+      player1Data.hitting.ops || '.000',
+      player2Data.hitting.ops || '.000'
+    );
+
+    const hittingText =
+      `\`\`\`\n` +
+      `GP:  ${gp.p1.padEnd(10)} ${gp.p2}\n` +
+      `AB:  ${ab.p1.padEnd(10)} ${ab.p2}\n` +
+      `AVG: ${avg.p1.padEnd(10)} ${avg.p2}\n` +
+      `HR:  ${hr.p1.padEnd(10)} ${hr.p2}\n` +
+      `RBI: ${rbi.p1.padEnd(10)} ${rbi.p2}\n` +
+      `OPS: ${ops.p1.padEnd(10)} ${ops.p2}\n` +
+      `\`\`\``;
+
+    embed.addFields({
+      name: 'Hitting Stats',
+      value: hittingText,
+      inline: false
+    });
+  }
+
+  // Pitching comparison
+  const p1HasPitching = hasStats(player1Data, 'pitching');
+  const p2HasPitching = hasStats(player2Data, 'pitching');
+
+  if (p1HasPitching || p2HasPitching) {
+    const gp = compareValues(
+      player1Data.pitching.gp || '0',
+      player2Data.pitching.gp || '0'
+    );
+    const ip = compareValues(
+      player1Data.pitching.ip || '0',
+      player2Data.pitching.ip || '0'
+    );
+    const w = compareValues(
+      player1Data.pitching.w || '0',
+      player2Data.pitching.w || '0'
+    );
+    const l = compareValues(
+      player1Data.pitching.l || '0',
+      player2Data.pitching.l || '0',
+      false // lower is better
+    );
+    const era = compareValues(
+      player1Data.pitching.era || '0.00',
+      player2Data.pitching.era || '0.00',
+      false // lower is better
+    );
+    const whip = compareValues(
+      player1Data.pitching.whip || '0.00',
+      player2Data.pitching.whip || '0.00',
+      false // lower is better
+    );
+
+    const pitchingText =
+      `\`\`\`\n` +
+      `GP:   ${gp.p1.padEnd(10)} ${gp.p2}\n` +
+      `IP:   ${ip.p1.padEnd(10)} ${ip.p2}\n` +
+      `W:    ${w.p1.padEnd(10)} ${w.p2}\n` +
+      `L:    ${l.p1.padEnd(10)} ${l.p2}\n` +
+      `ERA:  ${era.p1.padEnd(10)} ${era.p2}\n` +
+      `WHIP: ${whip.p1.padEnd(10)} ${whip.p2}\n` +
+      `\`\`\``;
+
+    embed.addFields({
+      name: 'Pitching Stats',
+      value: pitchingText,
+      inline: false
+    });
+  }
+
+  // Fielding comparison
+  const p1HasFielding = hasStats(player1Data, 'fielding');
+  const p2HasFielding = hasStats(player2Data, 'fielding');
+
+  if (p1HasFielding || p2HasFielding) {
+    const gp = compareValues(
+      player1Data.fielding.gp || '0',
+      player2Data.fielding.gp || '0'
+    );
+    const np = compareValues(
+      player1Data.fielding.np || '0',
+      player2Data.fielding.np || '0'
+    );
+    const e = compareValues(
+      player1Data.fielding.e || '0',
+      player2Data.fielding.e || '0',
+      false // lower is better
+    );
+    const sb = compareValues(
+      player1Data.fielding.sb || '0',
+      player2Data.fielding.sb || '0'
+    );
+
+    const fieldingText =
+      `\`\`\`\n` +
+      `GP: ${gp.p1.padEnd(10)} ${gp.p2}\n` +
+      `NP: ${np.p1.padEnd(10)} ${np.p2}\n` +
+      `E:  ${e.p1.padEnd(10)} ${e.p2}\n` +
+      `SB: ${sb.p1.padEnd(10)} ${sb.p2}\n` +
+      `\`\`\``;
+
+    embed.addFields({
+      name: 'Fielding Stats',
+      value: fieldingText,
+      inline: false
+    });
+  }
+
+  return embed;
+}

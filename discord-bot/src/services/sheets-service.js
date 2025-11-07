@@ -662,6 +662,102 @@ class SheetsService {
     }
   }
 
+  async getHeadToHeadData(team1Name, team2Name) {
+    // Get all completed games from Discord Schedule
+    const leagueScheduleRawData = await this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J');
+
+    const team1Lower = team1Name.toLowerCase().trim();
+    const team2Lower = team2Name.toLowerCase().trim();
+
+    // Parse Discord Schedule to find games between these two teams
+    const matchupGames = [];
+    let currentWeek = null;
+
+    leagueScheduleRawData.forEach(row => {
+      const cellData = row[0];
+      if (!cellData || !cellData.text) return;
+      const text = cellData.text.trim();
+
+      // Track week headers
+      const weekMatch = text.match(/^Week\s+(\d+)$/i);
+      if (weekMatch) {
+        currentWeek = parseInt(weekMatch[1]);
+        return;
+      }
+
+      // Check if this game involves both teams
+      if (text.includes('||')) {
+        const textLower = text.toLowerCase();
+        if (textLower.includes(team1Lower) && textLower.includes(team2Lower)) {
+          // Parse the result: "Team1: Score1 || Team2: Score2"
+          const parts = text.split('||').map(p => p.trim());
+          if (parts.length === 2) {
+            const team1Result = parts[0].split(':').map(p => p.trim());
+            const team2Result = parts[1].split(':').map(p => p.trim());
+
+            if (team1Result.length === 2 && team2Result.length === 2) {
+              const firstTeam = team1Result[0];
+              const firstScore = parseInt(team1Result[1]);
+              const secondTeam = team2Result[0];
+              const secondScore = parseInt(team2Result[1]);
+
+              matchupGames.push({
+                week: currentWeek,
+                team1: firstTeam,
+                score1: firstScore,
+                team2: secondTeam,
+                score2: secondScore,
+                boxScoreUrl: cellData.hyperlink || null,
+                winner: firstScore > secondScore ? firstTeam : secondTeam
+              });
+            }
+          }
+        }
+      }
+    });
+
+    if (matchupGames.length === 0) {
+      return null;
+    }
+
+    // Calculate head-to-head record
+    let team1Wins = 0;
+    let team2Wins = 0;
+    let totalRunsTeam1 = 0;
+    let totalRunsTeam2 = 0;
+
+    matchupGames.forEach(game => {
+      // Normalize team names for comparison
+      const team1InGame = game.team1.toLowerCase().includes(team1Lower) ? game.team1 : game.team2;
+      const team2InGame = game.team1.toLowerCase().includes(team2Lower) ? game.team1 : game.team2;
+      const score1InGame = game.team1.toLowerCase().includes(team1Lower) ? game.score1 : game.score2;
+      const score2InGame = game.team1.toLowerCase().includes(team2Lower) ? game.score1 : game.score2;
+
+      totalRunsTeam1 += score1InGame;
+      totalRunsTeam2 += score2InGame;
+
+      if (score1InGame > score2InGame) {
+        team1Wins++;
+      } else {
+        team2Wins++;
+      }
+    });
+
+    const avgScoreTeam1 = (totalRunsTeam1 / matchupGames.length).toFixed(1);
+    const avgScoreTeam2 = (totalRunsTeam2 / matchupGames.length).toFixed(1);
+
+    return {
+      team1: team1Name,
+      team2: team2Name,
+      team1Wins,
+      team2Wins,
+      games: matchupGames,
+      avgScoreTeam1,
+      avgScoreTeam2,
+      totalGames: matchupGames.length
+    };
+  }
+
   async getImageUrl(name, type) {
     // Read Image URLs sheet
     const data = await this.getSheetData('Image URLs', 'A2:C'); // Name, Type, URL

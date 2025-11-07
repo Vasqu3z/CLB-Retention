@@ -347,14 +347,11 @@ export async function createScheduleEmbed(games, filter, filterValue) {
     const weekGames = gamesByWeek[weekKey];
 
     if (filter.type === 'team') {
-      // For team schedules, show compact week header (add spacing before subsequent weeks)
-      if (weekIndex > 0) {
-        scheduleText += '\n';
-      }
-      scheduleText += `**${weekKey}**\n`;
+      // For team schedules, show week header inline
+      scheduleText += `**${weekKey}:** `;
     }
 
-    weekGames.forEach(game => {
+    weekGames.forEach((game, gameIndex) => {
       let gameText = '';
 
       if (game.played && game.result) {
@@ -418,7 +415,12 @@ export async function createScheduleEmbed(games, filter, filterValue) {
         gameText = `${game.awayTeam} @ ${game.homeTeam}`;
       }
 
-      scheduleText += `${gameText}\n`;
+      // For team schedules, put first game on same line as week header
+      if (filter.type === 'team' && gameIndex === 0) {
+        scheduleText += `${gameText}\n`;
+      } else {
+        scheduleText += `${gameText}\n`;
+      }
     });
   });
 

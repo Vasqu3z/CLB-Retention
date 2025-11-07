@@ -274,9 +274,10 @@ export function createStandingsEmbed(standings) {
     // Use medal emoji for top 3
     const rankEmoji = team.rank <= 3 ? rankEmojis[team.rank - 1] + ' ' : '';
 
+    // Each entry needs same number of lines for alignment (2 lines each)
     teamNames.push(`${rankEmoji}**${team.team}**\n${team.wins}-${team.losses} (${team.winPct})`);
-    gamesBack.push(gb);
-    runDiffs.push(team.runDiff);
+    gamesBack.push(`\n${gb}`);
+    runDiffs.push(`\n${team.runDiff}`);
   });
 
   // 3-column layout with horizontal separators
@@ -339,7 +340,8 @@ export function createRankingsEmbed(statLabel, leaders, format) {
   leaders.forEach((leader, index) => {
     const rankEmoji = index < 3 ? rankEmojis[index] + ' ' : `${index + 1}. `;
     names.push(`${rankEmoji}**${leader.name}**\n(${leader.team})`);
-    values.push(formatValue(leader.value, format));
+    // Each entry needs same number of lines for alignment (2 lines each)
+    values.push(`\n${formatValue(leader.value, format)}`);
   });
 
   // 2-column layout with horizontal separators

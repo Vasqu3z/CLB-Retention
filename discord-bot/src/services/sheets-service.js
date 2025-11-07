@@ -293,6 +293,203 @@ class SheetsService {
         runDiff: row[5] || '0'
       }));
   }
+
+  async getLeagueLeaders(category, stat) {
+    const [hittingData, pitchingData, fieldingData, playerData, teamData] = await Promise.all([
+      this.getSheetData(SHEET_NAMES.HITTING),
+      this.getSheetData(SHEET_NAMES.PITCHING),
+      this.getSheetData(SHEET_NAMES.FIELDING),
+      this.getSheetData(SHEET_NAMES.PLAYER_DATA, `A${DATA_START_ROW}:B`),
+      this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:C`)
+    ]);
+
+    const leaders = [];
+    const MIN_AB_MULTIPLIER = 2.1;
+    const MIN_IP_MULTIPLIER = 1.0;
+
+    // Create team GP map
+    const teamGPMap = {};
+    teamData.forEach(row => {
+      const teamName = row[0]?.trim();
+      const gp = parseFloat(row[2]) || 0;
+      if (teamName) teamGPMap[teamName] = gp;
+    });
+
+    if (category === 'batting') {
+      hittingData.slice(1).forEach(row => {
+        const playerName = row[HITTING_COLUMNS.PLAYER_NAME];
+        const team = row[HITTING_COLUMNS.TEAM];
+        if (!playerName || !team) return;
+
+        const teamGP = teamGPMap[team] || 0;
+        const ab = parseFloat(row[HITTING_COLUMNS.AB]) || 0;
+        const h = parseFloat(row[HITTING_COLUMNS.H]) || 0;
+        const hr = parseFloat(row[HITTING_COLUMNS.HR]) || 0;
+        const rbi = parseFloat(row[HITTING_COLUMNS.RBI]) || 0;
+        const bb = parseFloat(row[HITTING_COLUMNS.BB]) || 0;
+        const tb = parseFloat(row[HITTING_COLUMNS.TB]) || 0;
+
+        const qualifyingAB = teamGP * MIN_AB_MULTIPLIER;
+
+        let value = 0;
+        let qualified = true;
+
+        switch (stat) {
+          case 'obp':
+            value = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
+            qualified = ab >= qualifyingAB;
+            break;
+          case 'hits':
+            value = h;
+            qualified = h > 0;
+            break;
+          case 'hr':
+            value = hr;
+            qualified = hr > 0;
+            break;
+          case 'rbi':
+            value = rbi;
+            qualified = rbi > 0;
+            break;
+          case 'slg':
+            value = ab > 0 ? tb / ab : 0;
+            qualified = ab >= qualifyingAB;
+            break;
+          case 'ops':
+            const obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
+            const slg = ab > 0 ? tb / ab : 0;
+            value = obp + slg;
+            qualified = ab >= qualifyingAB;
+            break;
+        }
+
+        if (qualified && value > 0) {
+          leaders.push({ name: playerName, team, value });
+        }
+      });
+    } else if (category === 'pitching') {
+      pitchingData.slice(1).forEach(row => {
+        const playerName = row[PITCHING_COLUMNS.PLAYER_NAME];
+        const team = row[PITCHING_COLUMNS.TEAM];
+        if (!playerName || !team) return;
+
+        const teamGP = teamGPMap[team] || 0;
+        const ip = parseFloat(row[PITCHING_COLUMNS.IP]) || 0;
+        const bf = parseFloat(row[PITCHING_COLUMNS.BF]) || 0;
+        const h = parseFloat(row[PITCHING_COLUMNS.H]) || 0;
+        const r = parseFloat(row[PITCHING_COLUMNS.R]) || 0;
+        const bb = parseFloat(row[PITCHING_COLUMNS.BB]) || 0;
+        const w = parseFloat(row[PITCHING_COLUMNS.W]) || 0;
+        const l = parseFloat(row[PITCHING_COLUMNS.L]) || 0;
+        const sv = parseFloat(row[PITCHING_COLUMNS.SV]) || 0;
+
+        const qualifyingIP = teamGP * MIN_IP_MULTIPLIER;
+
+        let value = 0;
+        let qualified = true;
+
+        switch (stat) {
+          case 'ip':
+            value = ip;
+            qualified = ip > 0;
+            break;
+          case 'wins':
+            value = w;
+            qualified = w > 0;
+            break;
+          case 'losses':
+            value = l;
+            qualified = l > 0;
+            break;
+          case 'saves':
+            value = sv;
+            qualified = sv > 0;
+            break;
+          case 'era':
+            value = ip > 0 ? (r * 9) / ip : 0;
+            qualified = ip >= qualifyingIP;
+            break;
+          case 'whip':
+            value = ip > 0 ? (h + bb) / ip : 0;
+            qualified = ip >= qualifyingIP;
+            break;
+          case 'baa':
+            value = bf > 0 ? h / bf : 0;
+            qualified = ip >= qualifyingIP;
+            break;
+        }
+
+        if (qualified && value > 0) {
+          leaders.push({ name: playerName, team, value });
+        }
+      });
+    } else if (category === 'fielding') {
+      fieldingData.slice(1).forEach(row => {
+        const playerName = row[FIELDING_COLUMNS.PLAYER_NAME];
+        const team = row[FIELDING_COLUMNS.TEAM];
+        if (!playerName || !team) return;
+
+        const np = parseFloat(row[FIELDING_COLUMNS.NP]) || 0;
+        const e = parseFloat(row[FIELDING_COLUMNS.E]) || 0;
+        const sb = parseFloat(row[FIELDING_COLUMNS.SB]) || 0;
+
+        let value = 0;
+
+        switch (stat) {
+          case 'niceplays':
+            value = np;
+            break;
+          case 'errors':
+            value = e;
+            break;
+          case 'stolenbases':
+            value = sb;
+            break;
+        }
+
+        if (value > 0) {
+          leaders.push({ name: playerName, team, value });
+        }
+      });
+    }
+
+    // Sort (ERA, WHIP, BAA are lower is better)
+    const lowerIsBetter = ['era', 'whip', 'baa'].includes(stat);
+    leaders.sort((a, b) => lowerIsBetter ? a.value - b.value : b.value - a.value);
+
+    // Return top 5
+    return leaders.slice(0, 5);
+  }
+
+  async getTeamRoster(teamName) {
+    if (!teamName) {
+      return null;
+    }
+
+    const normalizedName = teamName.trim().toLowerCase();
+    const [playerData, teamData] = await Promise.all([
+      this.getSheetData(SHEET_NAMES.PLAYER_DATA, `A${DATA_START_ROW}:B`),
+      this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:B`)
+    ]);
+
+    // Find the team
+    const teamRow = teamData.find(row => row[0]?.toLowerCase().trim() === normalizedName);
+    if (!teamRow) {
+      return null;
+    }
+
+    // Get players on this team
+    const players = playerData
+      .filter(row => row[1]?.toLowerCase().trim() === normalizedName)
+      .map(row => row[0]?.trim())
+      .filter(name => name);
+
+    return {
+      teamName: teamRow[0].trim(),
+      captain: teamRow[1]?.trim() || 'Unknown',
+      players: players.sort()
+    };
+  }
 }
 
 export default new SheetsService();

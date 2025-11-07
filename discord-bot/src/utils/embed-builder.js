@@ -263,3 +263,62 @@ export function createInfoEmbed(title, message) {
     .setDescription(message)
     .setTimestamp();
 }
+
+export function createRankingsEmbed(statLabel, leaders, format) {
+  const embed = new EmbedBuilder()
+    .setColor(COLORS.PRIMARY)
+    .setTitle(`🏅 League Leaders - ${statLabel}`)
+    .setTimestamp()
+    .setFooter({ text: 'CLB League Hub' });
+
+  if (leaders.length === 0) {
+    embed.setDescription('No qualified players for this stat.');
+    return embed;
+  }
+
+  const formatValue = (value, format) => {
+    if (format === 'int') {
+      return value.toString();
+    } else if (format === '.000') {
+      return value.toFixed(3);
+    } else if (format === '.00') {
+      return value.toFixed(2);
+    } else if (format === 'decimal') {
+      return value.toFixed(1);
+    }
+    return value.toString();
+  };
+
+  const rankEmojis = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+  const leaderText = leaders
+    .map((leader, index) => {
+      const emoji = rankEmojis[index] || `${index + 1}.`;
+      const formattedValue = formatValue(leader.value, format);
+      return `${emoji} **${leader.name}** (${leader.team}) - ${formattedValue}`;
+    })
+    .join('\n');
+
+  embed.setDescription(leaderText);
+
+  return embed;
+}
+
+export function createRosterEmbed(roster) {
+  const embed = new EmbedBuilder()
+    .setColor(COLORS.SUCCESS)
+    .setTitle(`👥 ${roster.teamName} Roster`)
+    .setDescription(`**Captain:** ${roster.captain}`)
+    .setTimestamp()
+    .setFooter({ text: 'CLB League Hub' });
+
+  const playerList = roster.players.map((player, index) => `${index + 1}. ${player}`).join('\n');
+
+  embed.addFields({
+    name: `Players (${roster.players.length})`,
+    value: playerList || 'No players',
+    inline: false
+  });
+
+  return embed;
+}

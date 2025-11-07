@@ -502,7 +502,7 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
     .setTitle(`${player1Data.name} vs ${player2Data.name}`)
-    .setDescription(`${player1Data.name}'s Team: ${player1Data.team}\n${player2Data.name}'s Team: ${player2Data.team}`)
+    .setDescription(`**${player1Data.name}'s Team:** ${player1Data.team}\n**${player2Data.name}'s Team:** ${player2Data.team}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 

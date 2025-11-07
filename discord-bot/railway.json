@@ -4,9 +4,10 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "npm run deploy-commands && npm start",
+    "startCommand": "npm start",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
 }
+
 

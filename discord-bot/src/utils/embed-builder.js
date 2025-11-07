@@ -135,33 +135,33 @@ export function createTeamStatsEmbed(teamData) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
     .setTitle(`${teamData.name}`)
-    .setDescription(`**Captain:** ${teamData.captain}\n**Record:** ${teamData.wins}-${teamData.losses} (${(parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3)})`)
+    .setDescription(`**General Manager:** ${teamData.captain}\n**Record:** ${teamData.wins}-${teamData.losses} (${(parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3)})`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
-  // Team Hitting - 3 columns like player stats
+  // Team Hitting - 3 columns like player stats with full stat labels
   if (teamData.hitting) {
     const countingStats = [
-      `**R:** ${teamData.hitting.runsScored}`,
-      `**R/G:** ${teamData.hitting.runsPerGame}`,
-      `**AB:** ${teamData.hitting.ab}`,
-      `**H:** ${teamData.hitting.h}`,
-      `**HR:** ${teamData.hitting.hr}`,
-      `**RBI:** ${teamData.hitting.rbi}`,
+      `**Runs:** ${teamData.hitting.runsScored}`,
+      `**Runs/Game:** ${teamData.hitting.runsPerGame}`,
+      `**${STAT_LABELS.HITTING.AB}:** ${teamData.hitting.ab}`,
+      `**${STAT_LABELS.HITTING.H}:** ${teamData.hitting.h}`,
+      `**${STAT_LABELS.HITTING.HR}:** ${teamData.hitting.hr}`,
+      `**${STAT_LABELS.HITTING.RBI}:** ${teamData.hitting.rbi}`,
       ''
     ];
 
     const rateStats = [
-      `**AVG:** ${teamData.hitting.avg}`,
-      `**OBP:** ${teamData.hitting.obp}`,
-      `**SLG:** ${teamData.hitting.slg}`,
-      `**OPS:** ${teamData.hitting.ops}`
+      `**${STAT_LABELS.HITTING.AVG}:** ${teamData.hitting.avg}`,
+      `**${STAT_LABELS.HITTING.OBP}:** ${teamData.hitting.obp}`,
+      `**${STAT_LABELS.HITTING.SLG}:** ${teamData.hitting.slg}`,
+      `**${STAT_LABELS.HITTING.OPS}:** ${teamData.hitting.ops}`
     ];
 
     const advancedStats = [
-      `**BB:** ${teamData.hitting.bb}`,
-      `**K:** ${teamData.hitting.k}`,
-      `**TB:** ${teamData.hitting.tb}`
+      `**${STAT_LABELS.HITTING.BB}:** ${teamData.hitting.bb}`,
+      `**${STAT_LABELS.HITTING.K}:** ${teamData.hitting.k}`,
+      `**${STAT_LABELS.HITTING.TB}:** ${teamData.hitting.tb}`
     ];
 
     embed.addFields(
@@ -183,26 +183,26 @@ export function createTeamStatsEmbed(teamData) {
     );
   }
 
-  // Team Pitching - 3 columns like player stats
+  // Team Pitching - 3 columns like player stats with full stat labels
   if (teamData.pitching) {
     const pitchingStats = [
-      `**IP:** ${teamData.pitching.ip}`,
-      `**BF:** ${teamData.pitching.bf}`,
-      `**K:** ${teamData.pitching.k}`,
-      `**BB:** ${teamData.pitching.bb}`,
-      `**H:** ${teamData.pitching.h}`,
+      `**${STAT_LABELS.PITCHING.IP}:** ${teamData.pitching.ip}`,
+      `**${STAT_LABELS.PITCHING.BF}:** ${teamData.pitching.bf}`,
+      `**${STAT_LABELS.PITCHING.K}:** ${teamData.pitching.k}`,
+      `**${STAT_LABELS.PITCHING.BB}:** ${teamData.pitching.bb}`,
+      `**${STAT_LABELS.PITCHING.H}:** ${teamData.pitching.h}`,
       ''
     ];
 
     const rateStats = [
-      `**ERA:** ${teamData.pitching.era}`,
-      `**WHIP:** ${teamData.pitching.whip}`,
-      `**BAA:** ${teamData.pitching.baa}`
+      `**${STAT_LABELS.PITCHING.ERA}:** ${teamData.pitching.era}`,
+      `**${STAT_LABELS.PITCHING.WHIP}:** ${teamData.pitching.whip}`,
+      `**${STAT_LABELS.PITCHING.BAA}:** ${teamData.pitching.baa}`
     ];
 
     const detailStats = [
-      `**HR:** ${teamData.pitching.hr}`,
-      `**R:** ${teamData.pitching.r}`
+      `**${STAT_LABELS.PITCHING.HR}:** ${teamData.pitching.hr}`,
+      `**${STAT_LABELS.PITCHING.R}:** ${teamData.pitching.r}`
     ];
 
     embed.addFields(
@@ -227,10 +227,10 @@ export function createTeamStatsEmbed(teamData) {
   // Team Fielding - match player stats format (one stat per line)
   if (teamData.fielding) {
     const fieldingStats = [
-      `**Nice Plays:** ${teamData.fielding.np}`,
-      `**Nice Plays/G:** ${teamData.fielding.npPerGame}`,
-      `**Errors:** ${teamData.fielding.e}`,
-      `**Stolen Bases:** ${teamData.fielding.sb}`
+      `**${STAT_LABELS.FIELDING.NP}:** ${teamData.fielding.np}`,
+      `**Nice Plays/Game:** ${teamData.fielding.npPerGame}`,
+      `**${STAT_LABELS.FIELDING.E}:** ${teamData.fielding.e}`,
+      `**${STAT_LABELS.FIELDING.SB}:** ${teamData.fielding.sb}`
     ].join('\n');
 
     embed.addFields({
@@ -279,11 +279,11 @@ export function createStandingsEmbed(standings) {
     runDiffs.push(team.runDiff);
   });
 
-  // 3-column layout matching team/player stats
+  // 3-column layout with horizontal separators
   embed.addFields(
-    { name: 'Team', value: teamNames.join('\n\n'), inline: true },
-    { name: 'Games Back', value: gamesBack.join('\n\n'), inline: true },
-    { name: 'Run Differential', value: runDiffs.join('\n\n'), inline: true }
+    { name: 'Team', value: teamNames.join('\n─────────\n'), inline: true },
+    { name: 'Games Back', value: gamesBack.join('\n─────────\n'), inline: true },
+    { name: 'Run Differential', value: runDiffs.join('\n─────────\n'), inline: true }
   );
 
   return embed;
@@ -342,10 +342,10 @@ export function createRankingsEmbed(statLabel, leaders, format) {
     values.push(formatValue(leader.value, format));
   });
 
-  // 2-column layout matching team/player stats
+  // 2-column layout with horizontal separators
   embed.addFields(
-    { name: 'Name', value: names.join('\n\n'), inline: true },
-    { name: statLabel, value: values.join('\n\n'), inline: true }
+    { name: 'Name', value: names.join('\n─────────\n'), inline: true },
+    { name: statLabel, value: values.join('\n─────────\n'), inline: true }
   );
 
   return embed;
@@ -355,7 +355,7 @@ export function createRosterEmbed(roster) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
     .setTitle(`${roster.teamName} Roster`)
-    .setDescription(`Captain: ${roster.captain}  |  ${roster.players.length} Players`)
+    .setDescription(`General Manager: ${roster.captain}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 

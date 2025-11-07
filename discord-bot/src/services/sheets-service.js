@@ -91,6 +91,10 @@ class SheetsService {
 
   async getAllTeamNames() {
     const data = await this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:B`);
+    console.log(`Team Data sheet returned ${data.length} rows`);
+    if (data.length > 0) {
+      console.log('First team row:', data[0]);
+    }
     return data
       .filter(row => row[0] && row[0].trim())
       .map(row => ({

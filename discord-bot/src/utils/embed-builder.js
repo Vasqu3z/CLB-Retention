@@ -12,7 +12,7 @@ const COLORS = {
 export function createPlayerStatsEmbed(playerData) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
-    .setTitle(`📊 ${playerData.name}`)
+    .setTitle(`${playerData.name}`)
     .setDescription(`**Team:** ${playerData.team}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
@@ -45,17 +45,17 @@ export function createPlayerStatsEmbed(playerData) {
 
     embed.addFields(
       {
-        name: '⚾ Hitting Stats',
+        name: 'Hitting Stats',
         value: hittingStats.join('\n'),
         inline: true
       },
       {
-        name: '📈 Rate Stats',
+        name: 'Rate Stats',
         value: calculatedStats.join('\n'),
         inline: true
       },
       {
-        name: '🎯 Advanced',
+        name: 'Advanced',
         value: advancedStats.join('\n'),
         inline: true
       }
@@ -91,17 +91,17 @@ export function createPlayerStatsEmbed(playerData) {
 
     embed.addFields(
       {
-        name: '🥎 Pitching Stats',
+        name: 'Pitching Stats',
         value: pitchingStats.join('\n'),
         inline: true
       },
       {
-        name: '📊 Rate Stats',
+        name: 'Rate Stats',
         value: pitchingAdvanced.join('\n'),
         inline: true
       },
       {
-        name: '🔍 Details',
+        name: 'Details',
         value: pitchingDetails.join('\n'),
         inline: true
       }
@@ -118,7 +118,7 @@ export function createPlayerStatsEmbed(playerData) {
     ].join('\n');
 
     embed.addFields({
-      name: '🧤 Fielding & Baserunning',
+      name: 'Fielding & Baserunning',
       value: fieldingStats,
       inline: false
     });
@@ -250,6 +250,9 @@ export function createStandingsEmbed(standings) {
     return embed;
   }
 
+  // Medal emojis for top 3
+  const rankEmojis = ['🥇', '🥈', '🥉'];
+
   // Calculate games back
   const firstPlaceWins = parseInt(standings[0].wins);
   const firstPlaceLosses = parseInt(standings[0].losses);
@@ -260,10 +263,13 @@ export function createStandingsEmbed(standings) {
       const losses = parseInt(team.losses);
       const gb = team.rank == 1 ? '-' : (((firstPlaceWins - wins) + (losses - firstPlaceLosses)) / 2).toFixed(1);
 
-      // Table-like format with separator
-      return `${team.rank}. **${team.team}**\n   ${team.wins}-${team.losses}  ${team.winPct}  GB: ${gb}  RD: ${team.runDiff}`;
+      // Use medal emoji for top 3, otherwise rank number
+      const rankDisplay = team.rank <= 3 ? rankEmojis[team.rank - 1] : `${team.rank}.`;
+
+      // Wider horizontal format: Rank Team | Record Win% | RS-RA Diff | GB
+      return `${rankDisplay} **${team.team}**\n   ${team.wins}-${team.losses}  ${team.winPct}  |  ${team.runsScored}-${team.runsAllowed}  ${team.runDiff}  |  GB: ${gb}`;
     })
-    .join('\n─────────────────────\n');
+    .join('\n─────────────────────────\n');
 
   embed.setDescription(standingsText);
 
@@ -318,7 +324,8 @@ export function createRankingsEmbed(statLabel, leaders, format) {
     .map((leader, index) => {
       const rank = rankEmojis[index] || `${index + 1}.`;
       const formattedValue = formatValue(leader.value, format);
-      return `${rank} ${leader.name} (${leader.team})\n   ${formattedValue}`;
+      // 2-column horizontal layout: Name (Team) | Stat Value
+      return `${rank} ${leader.name} (${leader.team})  |  **${formattedValue}**`;
     })
     .join('\n─────────────────────\n');
 

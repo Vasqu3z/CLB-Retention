@@ -517,18 +517,18 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
     const num2 = parseFloat(val2) || 0;
 
     if (num1 === num2) {
-      return { p1: val1, p2: val2 };
+      return { p1: `  ${val1}`, p2: `  ${val2}` };
     }
 
     if (higherIsBetter) {
       return {
-        p1: num1 > num2 ? `**${val1}**` : val1,
-        p2: num2 > num1 ? `**${val2}**` : val2
+        p1: num1 > num2 ? `> ${val1}` : `  ${val1}`,
+        p2: num2 > num1 ? `> ${val2}` : `  ${val2}`
       };
     } else {
       return {
-        p1: num1 < num2 ? `**${val1}**` : val1,
-        p2: num2 < num1 ? `**${val2}**` : val2
+        p1: num1 < num2 ? `> ${val1}` : `  ${val1}`,
+        p2: num2 < num1 ? `> ${val2}` : `  ${val2}`
       };
     }
   };

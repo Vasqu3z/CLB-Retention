@@ -66,6 +66,56 @@ class SheetsService {
     }
   }
 
+  async getSheetDataWithHyperlinks(sheetName, range) {
+    await this.initialize();
+
+    const fullRange = `${sheetName}!${range}`;
+    const cacheKey = `${fullRange}_hyperlinks`;
+
+    if (this.isCacheValid() && this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
+    try {
+      // Get the sheet ID for the range
+      const sheetMetadata = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+        fields: 'sheets.properties'
+      });
+
+      const sheet = sheetMetadata.data.sheets.find(s => s.properties.title === sheetName);
+      if (!sheet) {
+        throw new Error(`Sheet ${sheetName} not found`);
+      }
+
+      const sheetId = sheet.properties.sheetId;
+
+      // Get cell data with hyperlinks
+      const response = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+        ranges: [fullRange],
+        fields: 'sheets.data.rowData.values(formattedValue,hyperlink)'
+      });
+
+      const rows = response.data.sheets[0]?.data[0]?.rowData || [];
+
+      // Transform into array format similar to getSheetData
+      const data = rows.map(row => {
+        const cells = row.values || [];
+        return cells.map(cell => ({
+          text: cell.formattedValue || '',
+          hyperlink: cell.hyperlink || null
+        }));
+      });
+
+      this.cache.set(cacheKey, data);
+      return data;
+    } catch (error) {
+      console.error(`Error fetching hyperlinks from ${fullRange}:`, error.message);
+      throw error;
+    }
+  }
+
   isCacheValid() {
     return Date.now() - this.lastCacheUpdate < this.cacheTTL;
   }
@@ -495,22 +545,21 @@ class SheetsService {
   }
 
   async getScheduleData(filter) {
-    // Read Season Schedule sheet and League Schedule sheet
+    // Read Season Schedule sheet and League Schedule sheet with hyperlinks
     const [scheduleData, leagueScheduleData] = await Promise.all([
       this.getSheetData(SHEET_NAMES.SEASON_SCHEDULE, 'A2:C'), // Week, Home Team, Away Team
-      this.getSheetData(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:K') // Completed Games column (J) and Box Score URL column (K)
+      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J') // Completed Games with hyperlinks
     ]);
 
     // Parse completed games from League Schedule to determine which games are played
-    // Store both the game result and box score URL
+    // Store both the game result and box score URL (extracted from hyperlink)
     const completedGamesMap = new Map();
     leagueScheduleData.forEach(row => {
-      const gameResult = row[0];
-      const boxScoreUrl = row[1];
-      if (gameResult && typeof gameResult === 'string' && gameResult.includes('||')) {
+      const cellData = row[0];
+      if (cellData && cellData.text && cellData.text.includes('||')) {
         // Format: "Team1: Score1 || Team2: Score2"
-        // Store both result and URL (if available)
-        completedGamesMap.set(gameResult, boxScoreUrl || null);
+        // Store both result text and hyperlink URL
+        completedGamesMap.set(cellData.text, cellData.hyperlink || null);
       }
     });
 

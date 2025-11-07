@@ -553,16 +553,37 @@ class SheetsService {
       this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J') // ONLY column J (completed games with hyperlinks)
     ]);
 
-    // Filter Discord Schedule to only game result rows (those containing "||")
-    // This removes headers like "Week 1", "Completed Games", and blank rows
-    const completedGames = leagueScheduleRawData
-      .map(row => row[0]) // Get cell data from column J
-      .filter(cellData => cellData && cellData.text && cellData.text.includes('||')); // Only actual game results
+    // Parse Discord Schedule to extract completed games with their week numbers
+    // Track week headers as we go through the data
+    const completedGames = [];
+    let currentWeek = null;
+
+    leagueScheduleRawData.forEach(row => {
+      const cellData = row[0];
+      if (!cellData || !cellData.text) return;
+
+      const text = cellData.text.trim();
+
+      // Check if this is a week header (e.g., "Week 1", "Week 2")
+      const weekMatch = text.match(/^Week\s+(\d+)$/i);
+      if (weekMatch) {
+        currentWeek = parseInt(weekMatch[1]);
+        return;
+      }
+
+      // Check if this is a game result (contains "||")
+      if (text.includes('||')) {
+        completedGames.push({
+          week: currentWeek,
+          result: text,
+          hyperlink: cellData.hyperlink || null
+        });
+      }
+    });
 
     console.log(`📊 Read ${scheduleData.length} games from Season Schedule, found ${completedGames.length} completed games in Discord Schedule`);
 
-    // Build schedule with game status - match games sequentially
-    let completedGameIndex = 0;
+    // Build schedule with game status - match by week + team names
     const games = scheduleData
       .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
       .map((row, index) => {
@@ -574,27 +595,25 @@ class SheetsService {
         let result = null;
         let boxScoreUrl = null;
 
-        // Check if there's a completed game available for this schedule entry
-        if (completedGameIndex < completedGames.length) {
-          const cellData = completedGames[completedGameIndex];
+        // Find a completed game that matches this week AND teams
+        const matchingGame = completedGames.find(game =>
+          game.week === week &&
+          game.result.includes(homeTeam) &&
+          game.result.includes(awayTeam)
+        );
 
-          // Verify this completed game matches the teams in the schedule
-          // Game format: "Team1: Score1 || Team2: Score2"
-          if (cellData.text.includes(homeTeam) && cellData.text.includes(awayTeam)) {
-            played = true;
-            result = cellData.text;
-            boxScoreUrl = cellData.hyperlink || null;
-            completedGameIndex++; // Move to next completed game
+        if (matchingGame) {
+          played = true;
+          result = matchingGame.result;
+          boxScoreUrl = matchingGame.hyperlink;
 
-            // Debug first few matches
-            if (index < 3) {
-              console.log(`✅ Match ${index}: ${homeTeam} vs ${awayTeam} = ${result.substring(0, 40)}`);
-            }
-          } else {
-            // Teams don't match - this schedule game hasn't been played yet
-            if (index < 3) {
-              console.log(`⏸️  No match ${index}: ${homeTeam} vs ${awayTeam} (expected: ${cellData.text.substring(0, 40)})`);
-            }
+          // Debug first few matches
+          if (index < 3) {
+            console.log(`✅ Match ${index}: Week ${week} - ${homeTeam} vs ${awayTeam} = ${result.substring(0, 40)}`);
+          }
+        } else {
+          if (index < 3) {
+            console.log(`⏸️  No match ${index}: Week ${week} - ${homeTeam} vs ${awayTeam}`);
           }
         }
 

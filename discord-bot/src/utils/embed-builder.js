@@ -134,93 +134,47 @@ export function createPlayerStatsEmbed(playerData) {
 export function createTeamStatsEmbed(teamData) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
-    .setTitle(`🏆 ${teamData.name}`)
-    .setDescription(`**Captain:** ${teamData.captain}`)
+    .setTitle(`${teamData.name}`)
+    .setDescription(`Captain: ${teamData.captain}  |  Record: ${teamData.wins}-${teamData.losses} (${(parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3)})`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
-  const record = [
-    `**Games Played:** ${teamData.gp}`,
-    `**Wins:** ${teamData.wins}`,
-    `**Losses:** ${teamData.losses}`,
-    `**Win %:** ${(parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3)}`
-  ].join('\n');
-
-  embed.addFields({
-    name: '📋 Record',
-    value: record,
-    inline: false
-  });
-
-  // Team Hitting with rate stats
+  // Team Hitting
   if (teamData.hitting) {
-    const countingStats = [
-      `**R:** ${teamData.hitting.runsScored} (**R/G:** ${teamData.hitting.runsPerGame})`,
-      `**AB:** ${teamData.hitting.ab}  |  **H:** ${teamData.hitting.h}  |  **HR:** ${teamData.hitting.hr}`,
-      `**RBI:** ${teamData.hitting.rbi}  |  **BB:** ${teamData.hitting.bb}  |  **K:** ${teamData.hitting.k}`,
-      ''
-    ];
-
-    const rateStats = [
-      `**AVG:** ${teamData.hitting.avg}`,
-      `**OBP:** ${teamData.hitting.obp}`,
-      `**SLG:** ${teamData.hitting.slg}`,
-      `**OPS:** ${teamData.hitting.ops}`
-    ];
-
-    embed.addFields(
-      {
-        name: '⚾ Team Hitting',
-        value: countingStats.join('\n'),
-        inline: true
-      },
-      {
-        name: '📊 Rate Stats',
-        value: rateStats.join('\n'),
-        inline: true
-      }
-    );
-  }
-
-  // Team Pitching with rate stats
-  if (teamData.pitching) {
-    const countingStats = [
-      `**IP:** ${teamData.pitching.ip}  |  **BF:** ${teamData.pitching.bf}`,
-      `**H:** ${teamData.pitching.h}  |  **HR:** ${teamData.pitching.hr}`,
-      `**R:** ${teamData.pitching.r}  |  **BB:** ${teamData.pitching.bb}  |  **K:** ${teamData.pitching.k}`,
-      ''
-    ];
-
-    const rateStats = [
-      `**ERA:** ${teamData.pitching.era}`,
-      `**BAA:** ${teamData.pitching.baa}`,
-      `**WHIP:** ${teamData.pitching.whip}`
-    ];
-
-    embed.addFields(
-      {
-        name: '🥎 Team Pitching',
-        value: countingStats.join('\n'),
-        inline: true
-      },
-      {
-        name: '📈 Rate Stats',
-        value: rateStats.join('\n'),
-        inline: true
-      }
-    );
-  }
-
-  // Team Fielding with rate stats
-  if (teamData.fielding) {
-    const fieldingStats = [
-      `**Nice Plays:** ${teamData.fielding.np} (**NP/G:** ${teamData.fielding.npPerGame})`,
-      `**Errors:** ${teamData.fielding.e}`,
-      `**Stolen Bases:** ${teamData.fielding.sb}`
+    const hittingStats = [
+      `R: ${teamData.hitting.runsScored} (${teamData.hitting.runsPerGame}/G)  |  AB: ${teamData.hitting.ab}  |  H: ${teamData.hitting.h}`,
+      `HR: ${teamData.hitting.hr}  |  RBI: ${teamData.hitting.rbi}  |  BB: ${teamData.hitting.bb}  |  K: ${teamData.hitting.k}`,
+      `AVG: ${teamData.hitting.avg}  |  OBP: ${teamData.hitting.obp}  |  SLG: ${teamData.hitting.slg}  |  OPS: ${teamData.hitting.ops}`
     ].join('\n');
 
     embed.addFields({
-      name: '🧤 Team Fielding & Baserunning',
+      name: 'Team Hitting',
+      value: hittingStats,
+      inline: false
+    });
+  }
+
+  // Team Pitching
+  if (teamData.pitching) {
+    const pitchingStats = [
+      `IP: ${teamData.pitching.ip}  |  BF: ${teamData.pitching.bf}  |  H: ${teamData.pitching.h}  |  HR: ${teamData.pitching.hr}`,
+      `R: ${teamData.pitching.r}  |  BB: ${teamData.pitching.bb}  |  K: ${teamData.pitching.k}`,
+      `ERA: ${teamData.pitching.era}  |  WHIP: ${teamData.pitching.whip}  |  BAA: ${teamData.pitching.baa}`
+    ].join('\n');
+
+    embed.addFields({
+      name: 'Team Pitching',
+      value: pitchingStats,
+      inline: false
+    });
+  }
+
+  // Team Fielding
+  if (teamData.fielding) {
+    const fieldingStats = `Nice Plays: ${teamData.fielding.np} (${teamData.fielding.npPerGame}/G)  |  Errors: ${teamData.fielding.e}  |  Stolen Bases: ${teamData.fielding.sb}`;
+
+    embed.addFields({
+      name: 'Team Fielding & Baserunning',
       value: fieldingStats,
       inline: false
     });
@@ -232,18 +186,31 @@ export function createTeamStatsEmbed(teamData) {
 export function createStandingsEmbed(standings) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.INFO)
-    .setTitle('🏆 League Standings')
+    .setTitle('League Standings')
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
+  if (standings.length === 0) {
+    embed.setDescription('No standings available yet.');
+    return embed;
+  }
+
+  // Calculate games back
+  const firstPlaceWins = parseInt(standings[0].wins);
+  const firstPlaceLosses = parseInt(standings[0].losses);
+
   const standingsText = standings
     .map(team => {
-      const rankEmoji = team.rank === 1 ? '🥇' : team.rank === 2 ? '🥈' : team.rank === 3 ? '🥉' : `${team.rank}.`;
-      return `${rankEmoji} **${team.team}** - ${team.wins}-${team.losses} (${team.winPct}) | GB: ${team.gamesBack} | RD: ${team.runDiff}`;
-    })
-    .join('\n');
+      const wins = parseInt(team.wins);
+      const losses = parseInt(team.losses);
+      const gb = team.rank == 1 ? '-' : (((firstPlaceWins - wins) + (losses - firstPlaceLosses)) / 2).toFixed(1);
 
-  embed.setDescription(standingsText || 'No standings available yet.');
+      // Clean format without emojis
+      return `${team.rank}. **${team.team}**\n   ${team.wins}-${team.losses}  ${team.winPct}  GB: ${gb}  RD: ${team.runDiff}`;
+    })
+    .join('\n\n');
+
+  embed.setDescription(standingsText);
 
   return embed;
 }
@@ -267,7 +234,7 @@ export function createInfoEmbed(title, message) {
 export function createRankingsEmbed(statLabel, leaders, format) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
-    .setTitle(`🏅 League Leaders - ${statLabel}`)
+    .setTitle(`League Leaders - ${statLabel}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
@@ -289,13 +256,14 @@ export function createRankingsEmbed(statLabel, leaders, format) {
     return value.toString();
   };
 
-  const rankEmojis = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+  // Keep medal emojis for top 3
+  const rankEmojis = ['🥇', '🥈', '🥉', '4.', '5.'];
 
   const leaderText = leaders
     .map((leader, index) => {
-      const emoji = rankEmojis[index] || `${index + 1}.`;
+      const rank = rankEmojis[index] || `${index + 1}.`;
       const formattedValue = formatValue(leader.value, format);
-      return `${emoji} **${leader.name}** (${leader.team}) - ${formattedValue}`;
+      return `${rank} ${leader.name} (${leader.team}) - ${formattedValue}`;
     })
     .join('\n');
 
@@ -307,15 +275,15 @@ export function createRankingsEmbed(statLabel, leaders, format) {
 export function createRosterEmbed(roster) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
-    .setTitle(`👥 ${roster.teamName} Roster`)
-    .setDescription(`**Captain:** ${roster.captain}`)
+    .setTitle(`${roster.teamName} Roster`)
+    .setDescription(`Captain: ${roster.captain}  |  ${roster.players.length} Players`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
   const playerList = roster.players.map((player, index) => `${index + 1}. ${player}`).join('\n');
 
   embed.addFields({
-    name: `Players (${roster.players.length})`,
+    name: 'Players',
     value: playerList || 'No players',
     inline: false
   });

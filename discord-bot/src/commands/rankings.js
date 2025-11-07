@@ -4,11 +4,11 @@ import { createRankingsEmbed, createErrorEmbed } from '../utils/embed-builder.js
 
 const RANKING_STATS = {
   // Batting
-  'obp': { category: 'batting', label: 'On-Base Percentage (OBP)', format: '.000' },
+  'obp': { category: 'batting', label: 'OBP', format: '.000' },
   'hits': { category: 'batting', label: 'Hits', format: 'int' },
   'hr': { category: 'batting', label: 'Home Runs', format: 'int' },
   'rbi': { category: 'batting', label: 'RBI', format: 'int' },
-  'slg': { category: 'batting', label: 'Slugging Percentage (SLG)', format: '.000' },
+  'slg': { category: 'batting', label: 'SLG', format: '.000' },
   'ops': { category: 'batting', label: 'OPS', format: '.000' },
   // Pitching
   'ip': { category: 'pitching', label: 'Innings Pitched', format: 'decimal' },
@@ -17,7 +17,7 @@ const RANKING_STATS = {
   'saves': { category: 'pitching', label: 'Saves', format: 'int' },
   'era': { category: 'pitching', label: 'ERA', format: '.00' },
   'whip': { category: 'pitching', label: 'WHIP', format: '.00' },
-  'baa': { category: 'pitching', label: 'Batting Average Against (BAA)', format: '.000' },
+  'baa': { category: 'pitching', label: 'BAA', format: '.000' },
   // Fielding
   'niceplays': { category: 'fielding', label: 'Nice Plays', format: 'int' },
   'errors': { category: 'fielding', label: 'Errors', format: 'int' },

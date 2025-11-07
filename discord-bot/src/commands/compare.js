@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import sheetsService from '../services/sheets-service.js';
 import { createPlayerCompareEmbed, createErrorEmbed } from '../utils/embed-builder.js';
+import { DISCORD_LIMITS } from '../config/league-config.js';
 
 export const data = new SlashCommandBuilder()
   .setName('compare')
@@ -28,7 +29,7 @@ export async function autocomplete(interaction) {
 
     const filtered = players
       .filter(player => player.name.toLowerCase().includes(focusedValue) || player.team.toLowerCase().includes(focusedValue))
-      .slice(0, 25)
+      .slice(0, DISCORD_LIMITS.AUTOCOMPLETE_MAX_CHOICES)
       .map(player => ({
         name: `${player.name} - ${player.team}`,
         value: player.name

@@ -1,5 +1,33 @@
+/**
+ * @file embed-builder.js
+ * @description Discord embed creation utilities for CLB League Hub Bot
+ *
+ * Purpose:
+ * - Build formatted Discord embeds for all bot commands
+ * - Apply consistent styling, colors, and formatting across responses
+ * - Handle image attachments (player headshots, team icons, league logo)
+ *
+ * Key Responsibilities:
+ * - Create player stats embeds (hitting, pitching, fielding)
+ * - Create team stats and standings embeds
+ * - Create schedule and scores embeds with hyperlinks
+ * - Create rankings/leaderboard tables
+ * - Create comparison tables for head-to-head stats
+ * - Format tables using monospace blocks with proper alignment
+ *
+ * Data Dependencies:
+ * - league-config.js (formatting constants, stat labels)
+ * - sheets-service.js (image URLs)
+ *
+ * Formatting Standards:
+ * - Uses EMBED_FORMATTING constants for all widths and separators (P2: No Magic Numbers)
+ * - Monospace code blocks for tables with fixed-width columns
+ * - Bold markdown for emphasis on stat values
+ * - Separator lines using configurable character
+ */
+
 import { EmbedBuilder } from 'discord.js';
-import { STAT_LABELS } from '../config/league-config.js';
+import { STAT_LABELS, EMBED_FORMATTING } from '../config/league-config.js';
 import sheetsService from '../services/sheets-service.js';
 
 const COLORS = {
@@ -180,8 +208,8 @@ export async function createStandingsEmbed(standings) {
 
   // Build table with monospace formatting (no emojis for consistent spacing)
   let table = '```\n';
-  table += `${pad('RK', 4)} ${pad('TEAM', 20)} ${pad('W-L', 8)} ${pad('PCT', 5)} ${pad('GB', 6)} ${pad('DIFF', 6)}\n`;
-  table += '─'.repeat(54) + '\n';
+  table += `${pad('RK', EMBED_FORMATTING.STANDINGS_RANK_WIDTH)} ${pad('TEAM', EMBED_FORMATTING.STANDINGS_TEAM_WIDTH)} ${pad('W-L', EMBED_FORMATTING.STANDINGS_RECORD_WIDTH)} ${pad('PCT', EMBED_FORMATTING.STANDINGS_PCT_WIDTH)} ${pad('GB', EMBED_FORMATTING.STANDINGS_GB_WIDTH)} ${pad('DIFF', EMBED_FORMATTING.STANDINGS_DIFF_WIDTH)}\n`;
+  table += EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.STANDINGS_TOTAL_WIDTH) + '\n';
 
   standings.forEach(team => {
     const wins = parseInt(team.wins);
@@ -248,8 +276,8 @@ export async function createRankingsEmbed(statLabel, leaders, format) {
 
   // Build table with monospace formatting (no emojis for consistent spacing)
   let table = '```\n';
-  table += `${pad('RK', 4)} ${pad('PLAYER', 20)} ${pad('TEAM', 18)} ${pad(statLabel.toUpperCase(), 8)}\n`;
-  table += '─'.repeat(54) + '\n';
+  table += `${pad('RK', EMBED_FORMATTING.RANKINGS_RANK_WIDTH)} ${pad('PLAYER', EMBED_FORMATTING.RANKINGS_NAME_WIDTH + 7)} ${pad('TEAM', EMBED_FORMATTING.RANKINGS_TEAM_WIDTH + 5)} ${pad(statLabel.toUpperCase(), EMBED_FORMATTING.RANKINGS_STAT_WIDTH + 2)}\n`;
+  table += EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.RANKINGS_TOTAL_WIDTH + 12) + '\n';
 
   leaders.forEach((leader, index) => {
     const rankDisplay = (index + 1).toString();
@@ -502,7 +530,7 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
     .setTitle(`${player1Data.name} vs ${player2Data.name}`)
-    .setDescription(`${player1Data.name}'s Team: ${player1Data.team}\n${player2Data.name}'s Team: ${player2Data.team}`)
+    .setDescription(`**${player1Data.name}'s Team:** ${player1Data.team}\n**${player2Data.name}'s Team:** ${player2Data.team}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
@@ -522,13 +550,13 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
 
     if (higherIsBetter) {
       return {
-        p1: num1 > num2 ? `${val1}*` : val1,
-        p2: num2 > num1 ? `${val2}*` : val2
+        p1: num1 > num2 ? `${val1}${EMBED_FORMATTING.BETTER_STAT_MARKER}` : val1,
+        p2: num2 > num1 ? `${val2}${EMBED_FORMATTING.BETTER_STAT_MARKER}` : val2
       };
     } else {
       return {
-        p1: num1 < num2 ? `${val1}*` : val1,
-        p2: num2 < num1 ? `${val2}*` : val2
+        p1: num1 < num2 ? `${val1}${EMBED_FORMATTING.BETTER_STAT_MARKER}` : val1,
+        p2: num2 < num1 ? `${val2}${EMBED_FORMATTING.BETTER_STAT_MARKER}` : val2
       };
     }
   };
@@ -563,19 +591,22 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
       player2Data.hitting.ops || '.000'
     );
 
-    // Truncate player names to fit in column headers (max 12 chars each)
-    const p1Name = player1Data.name.length > 12 ? player1Data.name.substring(0, 12) : player1Data.name;
-    const p2Name = player2Data.name.length > 12 ? player2Data.name.substring(0, 12) : player2Data.name;
+    // Truncate player names to fit in column headers
+    const p1Name = player1Data.name.length > EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH ?
+      player1Data.name.substring(0, EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH) : player1Data.name;
+    const p2Name = player2Data.name.length > EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH ?
+      player2Data.name.substring(0, EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH) : player2Data.name;
 
     const hittingText =
       `\`\`\`\n` +
-      `     ${p1Name.padEnd(13)} ${p2Name}\n` +
-      `GP:  ${gp.p1.padEnd(13)} ${gp.p2}\n` +
-      `AB:  ${ab.p1.padEnd(13)} ${ab.p2}\n` +
-      `AVG: ${avg.p1.padEnd(13)} ${avg.p2}\n` +
-      `HR:  ${hr.p1.padEnd(13)} ${hr.p2}\n` +
-      `RBI: ${rbi.p1.padEnd(13)} ${rbi.p2}\n` +
-      `OPS: ${ops.p1.padEnd(13)} ${ops.p2}\n` +
+      `     ${p1Name.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${p2Name}\n` +
+      `${EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.COMPARE_TOTAL_WIDTH)}\n` +
+      `GP:  ${gp.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${gp.p2}\n` +
+      `AB:  ${ab.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${ab.p2}\n` +
+      `AVG: ${avg.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${avg.p2}\n` +
+      `HR:  ${hr.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${hr.p2}\n` +
+      `RBI: ${rbi.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${rbi.p2}\n` +
+      `OPS: ${ops.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${ops.p2}\n` +
       `\`\`\``;
 
     embed.addFields({
@@ -618,19 +649,22 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
       false // lower is better
     );
 
-    // Truncate player names to fit in column headers (max 12 chars each)
-    const p1Name = player1Data.name.length > 12 ? player1Data.name.substring(0, 12) : player1Data.name;
-    const p2Name = player2Data.name.length > 12 ? player2Data.name.substring(0, 12) : player2Data.name;
+    // Truncate player names to fit in column headers
+    const p1Name = player1Data.name.length > EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH ?
+      player1Data.name.substring(0, EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH) : player1Data.name;
+    const p2Name = player2Data.name.length > EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH ?
+      player2Data.name.substring(0, EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH) : player2Data.name;
 
     const pitchingText =
       `\`\`\`\n` +
-      `      ${p1Name.padEnd(13)} ${p2Name}\n` +
-      `GP:   ${gp.p1.padEnd(13)} ${gp.p2}\n` +
-      `IP:   ${ip.p1.padEnd(13)} ${ip.p2}\n` +
-      `W:    ${w.p1.padEnd(13)} ${w.p2}\n` +
-      `L:    ${l.p1.padEnd(13)} ${l.p2}\n` +
-      `ERA:  ${era.p1.padEnd(13)} ${era.p2}\n` +
-      `WHIP: ${whip.p1.padEnd(13)} ${whip.p2}\n` +
+      `      ${p1Name.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${p2Name}\n` +
+      `${EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.COMPARE_TOTAL_WIDTH + 2)}\n` +
+      `GP:   ${gp.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${gp.p2}\n` +
+      `IP:   ${ip.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${ip.p2}\n` +
+      `W:    ${w.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${w.p2}\n` +
+      `L:    ${l.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${l.p2}\n` +
+      `ERA:  ${era.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${era.p2}\n` +
+      `WHIP: ${whip.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${whip.p2}\n` +
       `\`\`\``;
 
     embed.addFields({
@@ -663,17 +697,20 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
       player2Data.fielding.sb || '0'
     );
 
-    // Truncate player names to fit in column headers (max 12 chars each)
-    const p1Name = player1Data.name.length > 12 ? player1Data.name.substring(0, 12) : player1Data.name;
-    const p2Name = player2Data.name.length > 12 ? player2Data.name.substring(0, 12) : player2Data.name;
+    // Truncate player names to fit in column headers
+    const p1Name = player1Data.name.length > EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH ?
+      player1Data.name.substring(0, EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH) : player1Data.name;
+    const p2Name = player2Data.name.length > EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH ?
+      player2Data.name.substring(0, EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH) : player2Data.name;
 
     const fieldingText =
       `\`\`\`\n` +
-      `    ${p1Name.padEnd(13)} ${p2Name}\n` +
-      `GP: ${gp.p1.padEnd(13)} ${gp.p2}\n` +
-      `NP: ${np.p1.padEnd(13)} ${np.p2}\n` +
-      `E:  ${e.p1.padEnd(13)} ${e.p2}\n` +
-      `SB: ${sb.p1.padEnd(13)} ${sb.p2}\n` +
+      `    ${p1Name.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${p2Name}\n` +
+      `${EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.COMPARE_TOTAL_WIDTH - 2)}\n` +
+      `GP: ${gp.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${gp.p2}\n` +
+      `NP: ${np.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${np.p2}\n` +
+      `E:  ${e.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${e.p2}\n` +
+      `SB: ${sb.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${sb.p2}\n` +
       `\`\`\``;
 
     embed.addFields({

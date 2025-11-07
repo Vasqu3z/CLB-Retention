@@ -1,8 +1,34 @@
+/**
+ * @file index.js
+ * @description Main entry point for CLB League Hub Discord Bot
+ *
+ * Purpose:
+ * - Initialize Discord bot client and register slash commands
+ * - Handle command interactions and route to appropriate handlers
+ * - Manage bot lifecycle (login, ready state, graceful shutdown)
+ *
+ * Key Responsibilities:
+ * - Load and register all commands from /commands directory
+ * - Set up event listeners for interactions
+ * - Handle command execution with error catching
+ * - Provide console feedback for bot status
+ *
+ * Data Dependencies:
+ * - Environment variable: DISCORD_TOKEN (bot authentication)
+ * - Command files in /commands directory (auto-loaded)
+ *
+ * Architecture:
+ * - Uses Discord.js v14 with Gateway Intents
+ * - Commands stored in client.commands Collection
+ * - Supports both execute() and autocomplete() handlers
+ */
+
 import { Client, GatewayIntentBits, Collection, Events } from 'discord.js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readdirSync } from 'fs';
+import logger from './utils/logger.js';
 
 dotenv.config();
 
@@ -26,15 +52,15 @@ for (const file of commandFiles) {
 
   if ('data' in command && 'execute' in command) {
     client.commands.set(command.data.name, command);
-    console.log(`✅ Loaded command: ${command.data.name}`);
+    logger.info('CommandLoader', `Loaded command: ${command.data.name}`);
   } else {
-    console.warn(`⚠️  Command at ${filePath} is missing required "data" or "execute" property.`);
+    logger.warn('CommandLoader', `Command at ${filePath} is missing required "data" or "execute" property`);
   }
 }
 
 client.once(Events.ClientReady, readyClient => {
-  console.log(`✅ Logged in as ${readyClient.user.tag}`);
-  console.log(`🤖 Bot is ready and serving ${client.guilds.cache.size} server(s)!`);
+  logger.info('Bot', `Logged in as ${readyClient.user.tag}`);
+  logger.info('Bot', `Ready and serving ${client.guilds.cache.size} server(s)`);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
@@ -42,14 +68,14 @@ client.on(Events.InteractionCreate, async interaction => {
     const command = client.commands.get(interaction.commandName);
 
     if (!command) {
-      console.error(`Command not found: ${interaction.commandName}`);
+      logger.error('CommandHandler', `Command not found: ${interaction.commandName}`);
       return;
     }
 
     try {
       await command.execute(interaction);
     } catch (error) {
-      console.error(`Error executing command ${interaction.commandName}:`, error);
+      logger.error('CommandHandler', `Error executing command ${interaction.commandName}`, error);
 
       const errorMessage = { content: 'There was an error executing this command!', ephemeral: true };
 
@@ -63,24 +89,24 @@ client.on(Events.InteractionCreate, async interaction => {
     const command = client.commands.get(interaction.commandName);
 
     if (!command || !command.autocomplete) {
-      console.error(`Autocomplete handler not found for: ${interaction.commandName}`);
+      logger.error('AutocompleteHandler', `Autocomplete handler not found for: ${interaction.commandName}`);
       return;
     }
 
     try {
       await command.autocomplete(interaction);
     } catch (error) {
-      console.error(`Error in autocomplete for ${interaction.commandName}:`, error);
+      logger.error('AutocompleteHandler', `Error in autocomplete for ${interaction.commandName}`, error);
     }
   }
 });
 
 client.on(Events.Error, error => {
-  console.error('Discord client error:', error);
+  logger.error('DiscordClient', 'Discord client error', error);
 });
 
 process.on('unhandledRejection', error => {
-  console.error('Unhandled promise rejection:', error);
+  logger.error('Process', 'Unhandled promise rejection', error);
 });
 
 client.login(process.env.DISCORD_TOKEN);

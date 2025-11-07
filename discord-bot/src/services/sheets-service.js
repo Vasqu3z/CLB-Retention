@@ -1,3 +1,30 @@
+/**
+ * @file sheets-service.js
+ * @description Google Sheets API service for CLB League Hub Discord Bot
+ *
+ * Purpose:
+ * - Provides centralized access to Google Sheets data via API v4
+ * - Implements caching layer to minimize API calls (P1: Read Once principle)
+ * - Handles authentication and data parsing for all league statistics
+ *
+ * Key Responsibilities:
+ * - Read player stats (hitting, pitching, fielding) and team data
+ * - Parse schedule data with hyperlinks for box scores
+ * - Calculate league leaders with qualification thresholds
+ * - Manage in-memory cache with configurable TTL
+ * - Provide image URL lookups for players, teams, and league logo
+ *
+ * Data Dependencies:
+ * - Google Sheets API (requires service account credentials)
+ * - Environment variables: GOOGLE_SHEETS_SPREADSHEET_ID, GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY
+ * - league-config.js (sheet names, column mappings, thresholds)
+ *
+ * Caching Strategy:
+ * - All reads cached with configurable TTL (default: 5 minutes)
+ * - Cache invalidation via refreshCache() method
+ * - Follows P1: Read Once, Write Once principle
+ */
+
 import { google } from 'googleapis';
 import {
   SHEET_NAMES,
@@ -5,15 +32,18 @@ import {
   PITCHING_COLUMNS,
   FIELDING_COLUMNS,
   TEAM_STATS_COLUMNS,
-  DATA_START_ROW
+  DATA_START_ROW,
+  QUALIFICATION,
+  CACHE_CONFIG
 } from '../config/league-config.js';
+import logger from '../utils/logger.js';
 
 class SheetsService {
   constructor() {
     this.sheets = null;
     this.spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
     this.cache = new Map();
-    this.cacheTTL = parseInt(process.env.CACHE_TTL || '300') * 1000;
+    this.cacheTTL = CACHE_CONFIG.DURATION_MS;
     this.lastCacheUpdate = 0;
   }
 
@@ -61,7 +91,7 @@ class SheetsService {
 
       return data;
     } catch (error) {
-      console.error(`Error fetching data from ${fullRange}:`, error.message);
+      logger.error('SheetsService', `Error fetching data from ${fullRange}`, error);
       throw error;
     }
   }
@@ -111,7 +141,7 @@ class SheetsService {
       this.cache.set(cacheKey, data);
       return data;
     } catch (error) {
-      console.error(`Error fetching hyperlinks from ${fullRange}:`, error.message);
+      logger.error('SheetsService', `Error fetching hyperlinks from ${fullRange}`, error);
       throw error;
     }
   }
@@ -149,6 +179,15 @@ class SheetsService {
       }));
   }
 
+  /**
+   * Fetch comprehensive stats for a specific player across all categories
+   * @param {string} playerName - Player name to search for (case-insensitive)
+   * @returns {Promise<Object|null>} Player stats object with hitting, pitching, and fielding data, or null if not found
+   * @description
+   * - Performs parallel reads from three stat sheets (P1: Performance)
+   * - Returns unified player object with all stats
+   * - Missing stats default to '0'
+   */
   async getPlayerStats(playerName) {
     if (!playerName) {
       return null;
@@ -357,8 +396,6 @@ class SheetsService {
     ]);
 
     const leaders = [];
-    const MIN_AB_MULTIPLIER = 2.1;
-    const MIN_IP_MULTIPLIER = 1.0;
 
     // Create team GP map
     const teamGPMap = {};
@@ -382,7 +419,7 @@ class SheetsService {
         const bb = parseFloat(row[HITTING_COLUMNS.BB]) || 0;
         const tb = parseFloat(row[HITTING_COLUMNS.TB]) || 0;
 
-        const qualifyingAB = teamGP * MIN_AB_MULTIPLIER;
+        const qualifyingAB = teamGP * QUALIFICATION.MIN_AB_MULTIPLIER;
 
         let value = 0;
         let qualified = true;
@@ -436,7 +473,7 @@ class SheetsService {
         const l = parseFloat(row[PITCHING_COLUMNS.L]) || 0;
         const sv = parseFloat(row[PITCHING_COLUMNS.SV]) || 0;
 
-        const qualifyingIP = teamGP * MIN_IP_MULTIPLIER;
+        const qualifyingIP = teamGP * QUALIFICATION.MIN_IP_MULTIPLIER;
 
         let value = 0;
         let qualified = true;
@@ -581,7 +618,7 @@ class SheetsService {
       }
     });
 
-    console.log(`📊 Read ${scheduleData.length} games from Season Schedule, found ${completedGames.length} completed games in Discord Schedule`);
+    logger.debug('SheetsService', `Read ${scheduleData.length} games from Season Schedule, found ${completedGames.length} completed games in Discord Schedule`);
 
     // Build schedule with game status - match by week + team names
     const games = scheduleData
@@ -609,11 +646,11 @@ class SheetsService {
 
           // Debug first few matches
           if (index < 3) {
-            console.log(`✅ Match ${index}: Week ${week} - ${homeTeam} vs ${awayTeam} = ${result.substring(0, 40)}`);
+            logger.debug('SheetsService', `Match ${index}: Week ${week} - ${homeTeam} vs ${awayTeam} = ${result.substring(0, 40)}`);
           }
         } else {
           if (index < 3) {
-            console.log(`⏸️  No match ${index}: Week ${week} - ${homeTeam} vs ${awayTeam}`);
+            logger.debug('SheetsService', `No match ${index}: Week ${week} - ${homeTeam} vs ${awayTeam}`);
           }
         }
 
@@ -766,10 +803,10 @@ class SheetsService {
     // Read Image URLs sheet
     const data = await this.getSheetData('Image URLs', 'A2:C'); // Name, Type, URL
 
-    console.log(`\n🔍 Looking for image: name="${name}", type="${type}"`);
-    console.log(`📊 Total rows in Image URLs: ${data.length}`);
+    logger.debug('SheetsService', `Looking for image: name="${name}", type="${type}"`);
+    logger.debug('SheetsService', `Total rows in Image URLs: ${data.length}`);
     if (data.length > 0) {
-      console.log(`📋 First row sample:`, JSON.stringify(data[0]));
+      logger.debug('SheetsService', 'First row sample:`, JSON.stringify(data[0]));
     }
 
     const normalizedName = name.trim().toLowerCase();
@@ -780,14 +817,14 @@ class SheetsService {
       const rowType = row[1]?.toLowerCase().trim();
       const isMatch = rowName === normalizedName && rowType === type;
       if (isMatch) {
-        console.log(`✅ MATCH FOUND: [${row[0]}] [${row[1]}] [${row[2]}]`);
+        logger.debug('SheetsService', `MATCH FOUND: [${row[0]}] [${row[1]}] [${row[2]}]`);
       }
       return isMatch;
     });
 
     if (match && match[2]) {
       const url = match[2].trim();
-      console.log(`✅ Returning image URL: ${url}\n`);
+      logger.debug('SheetsService', `Returning image URL: ${url}\n`);
       return url;
     }
 
@@ -799,11 +836,11 @@ class SheetsService {
 
     if (defaultMatch && defaultMatch[2]) {
       const url = defaultMatch[2].trim();
-      console.log(`✅ Using default image for ${type}: ${url}\n`);
+      logger.debug('SheetsService', `Using default image for ${type}: ${url}\n`);
       return url;
     }
 
-    console.log(`❌ No image found for ${name} (${type})\n`);
+    logger.debug('SheetsService', `No image found for ${name} (${type})\n`);
     return null;
   }
 }

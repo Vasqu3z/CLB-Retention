@@ -1,6 +1,25 @@
+/**
+ * @file rankings.js
+ * @description /rankings slash command - Display top 5 league leaders for any stat
+ *
+ * Purpose:
+ * - Show league leaders (top 5) for batting, pitching, and fielding stats
+ * - Support autocomplete with searchable stat names
+ * - Apply qualification thresholds for rate stats (e.g., minimum AB for AVG)
+ *
+ * Command Options:
+ * - stat: Select from 16 different stat categories (batting, pitching, fielding)
+ *
+ * Data Flow:
+ * - Fetches league leaders from sheets-service
+ * - Filters by qualification thresholds
+ * - Renders formatted table embed
+ */
+
 import { SlashCommandBuilder } from 'discord.js';
 import sheetsService from '../services/sheets-service.js';
 import { createRankingsEmbed, createErrorEmbed } from '../utils/embed-builder.js';
+import { DISCORD_LIMITS } from '../config/league-config.js';
 
 const RANKING_STATS = {
   // Batting
@@ -45,7 +64,7 @@ export async function autocomplete(interaction) {
         value.label.toLowerCase().includes(focusedValue) ||
         value.fullName.toLowerCase().includes(focusedValue)
       )
-      .slice(0, 25)
+      .slice(0, DISCORD_LIMITS.AUTOCOMPLETE_MAX_CHOICES)
       .map(([key, value]) => ({
         name: `${value.label} - ${value.fullName}`,
         value: key

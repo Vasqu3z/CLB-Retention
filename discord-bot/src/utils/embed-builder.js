@@ -180,8 +180,8 @@ export async function createStandingsEmbed(standings) {
 
   // Build table with monospace formatting (no emojis for consistent spacing)
   let table = '```\n';
-  table += `${pad('RK', 4)} ${pad('TEAM', 20)} ${pad('W-L', 8)} ${pad('PCT', 5)} ${pad('GB', 6)} ${pad('RD', 5)}\n`;
-  table += '─'.repeat(53) + '\n';
+  table += `${pad('RK', 4)} ${pad('TEAM', 20)} ${pad('W-L', 8)} ${pad('PCT', 5)} ${pad('GB', 6)} ${pad('DIFF', 6)}\n`;
+  table += '─'.repeat(54) + '\n';
 
   standings.forEach(team => {
     const wins = parseInt(team.wins);
@@ -190,8 +190,9 @@ export async function createStandingsEmbed(standings) {
 
     const rankDisplay = team.rank.toString();
     const record = `${team.wins}-${team.losses}`;
+    const diffDisplay = parseInt(team.runDiff) >= 0 ? `+${team.runDiff}` : team.runDiff.toString();
 
-    table += `${pad(rankDisplay, 4)} ${pad(team.team, 20)} ${pad(record, 8)} ${pad(team.winPct, 5)} ${pad(gb, 6)} ${pad(team.runDiff, 5)}\n`;
+    table += `${pad(rankDisplay, 4)} ${pad(team.team, 20)} ${pad(record, 8)} ${pad(team.winPct, 5)} ${pad(gb, 6)} ${pad(diffDisplay, 6)}\n`;
   });
 
   table += '```';
@@ -233,9 +234,9 @@ export async function createRankingsEmbed(statLabel, leaders, format) {
     if (format === 'int') {
       return value.toString();
     } else if (format === '.000') {
-      return value.toFixed(3);
+      return formatRateStat(value.toFixed(3));
     } else if (format === '.00') {
-      return value.toFixed(2);
+      return formatRateStat(value.toFixed(2));
     } else if (format === 'decimal') {
       return value.toFixed(1);
     }
@@ -318,6 +319,8 @@ export async function createScheduleEmbed(games, filter, filterValue) {
     title = `Current Week - Week ${games[0]?.week || '?'}`;
   } else if (filter.type === 'upcoming') {
     title = `Upcoming Games - Week ${games[0]?.week || '?'}`;
+  } else if (filter.type === 'week') {
+    title = `Week ${filter.weekNumber} Schedule`;
   } else if (filter.type === 'team') {
     title = `${filterValue} Schedule`;
   }

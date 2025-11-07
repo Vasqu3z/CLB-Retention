@@ -653,6 +653,10 @@ class SheetsService {
           g.awayTeam.toLowerCase().includes(teamName)
         );
 
+      case 'week':
+        // All games for a specific week
+        return games.filter(g => g.week === filter.weekNumber);
+
       default:
         return [];
     }

@@ -24,15 +24,17 @@ export async function autocomplete(interaction) {
       { name: 'Upcoming - Next week\'s schedule', value: 'upcoming' }
     ];
 
-    // Get team names for team-specific schedules
-    const teams = await sheetsService.getAllTeamNames();
-    const teamOptions = teams.map(team => ({
-      name: `${team.name} - Team schedule`,
-      value: team.name
-    }));
+    // Week options (weeks 1-20 to cover most leagues)
+    const weekOptions = [];
+    for (let i = 1; i <= 20; i++) {
+      weekOptions.push({
+        name: `Week ${i}`,
+        value: `week${i}`
+      });
+    }
 
     // Combine and filter
-    const allOptions = [...staticOptions, ...teamOptions];
+    const allOptions = [...staticOptions, ...weekOptions];
     const filtered = allOptions
       .filter(opt => opt.name.toLowerCase().includes(focusedValue))
       .slice(0, 25);
@@ -54,9 +56,15 @@ export async function execute(interaction) {
     let filter;
     if (['recent', 'current', 'upcoming'].includes(filterValue)) {
       filter = { type: filterValue };
+    } else if (filterValue.startsWith('week')) {
+      // Extract week number from value like "week1", "week2", etc.
+      const weekNumber = parseInt(filterValue.replace('week', ''));
+      filter = { type: 'week', weekNumber: weekNumber };
     } else {
-      // It's a team name
-      filter = { type: 'team', teamName: filterValue };
+      // Unknown filter
+      const errorEmbed = createErrorEmbed(`Invalid filter: ${filterValue}`);
+      await interaction.editReply({ embeds: [errorEmbed] });
+      return;
     }
 
     const games = await sheetsService.getScheduleData(filter);

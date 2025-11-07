@@ -20,6 +20,7 @@ export async function autocomplete(interaction) {
     const teams = await sheetsService.getAllTeamNames();
 
     const filtered = teams
+      .filter(team => team.captain && team.captain.trim() !== '') // Filter out teams without captains
       .filter(team => team.name.toLowerCase().includes(focusedValue))
       .slice(0, 25)
       .map(team => ({

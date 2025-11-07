@@ -20,10 +20,19 @@ class SheetsService {
   async initialize() {
     if (this.sheets) return;
 
+    // Handle private key - Railway and other platforms may format it differently
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+    // If the key doesn't have actual newlines, try to add them
+    if (privateKey && !privateKey.includes('\n')) {
+      // Replace literal \n with actual newlines
+      privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+        private_key: privateKey
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
     });

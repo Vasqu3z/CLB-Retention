@@ -806,7 +806,7 @@ class SheetsService {
     logger.debug('SheetsService', `Looking for image: name="${name}", type="${type}"`);
     logger.debug('SheetsService', `Total rows in Image URLs: ${data.length}`);
     if (data.length > 0) {
-      logger.debug('SheetsService', 'First row sample:`, JSON.stringify(data[0]));
+      logger.debug('SheetsService', `First row sample: ${JSON.stringify(data[0])}`);
     }
 
     const normalizedName = name.trim().toLowerCase();

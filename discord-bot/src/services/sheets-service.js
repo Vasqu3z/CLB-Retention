@@ -546,43 +546,34 @@ class SheetsService {
 
   async getScheduleData(filter) {
     // Read Season Schedule sheet and League Schedule sheet with hyperlinks
+    // Both sheets have the same structure and rows align by index
     const [scheduleData, leagueScheduleData] = await Promise.all([
       this.getSheetData(SHEET_NAMES.SEASON_SCHEDULE, 'A2:C'), // Week, Home Team, Away Team
-      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J') // Completed Games with hyperlinks
+      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J2:J') // Completed Games with hyperlinks (starting at row 2 to match)
     ]);
 
-    // Parse completed games from League Schedule to determine which games are played
-    // Store both the game result and box score URL (extracted from hyperlink)
-    const completedGamesMap = new Map();
-    leagueScheduleData.forEach(row => {
-      const cellData = row[0];
-      if (cellData && cellData.text && cellData.text.includes('||')) {
-        // Format: "Team1: Score1 || Team2: Score2"
-        // Store both result text and hyperlink URL
-        completedGamesMap.set(cellData.text, cellData.hyperlink || null);
-      }
-    });
-
-    // Build schedule with game status
+    // Build schedule with game status - match by row index since sheets are aligned
     const games = scheduleData
       .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
-      .map(row => {
+      .map((row, index) => {
         const week = parseInt(row[0]);
         const homeTeam = row[1].trim();
         const awayTeam = row[2].trim();
 
-        // Check if this game is completed
+        // Get corresponding completed game data by index
         let played = false;
         let result = null;
         let boxScoreUrl = null;
 
-        // Find matching completed game
-        for (const [gameResult, url] of completedGamesMap.entries()) {
-          if (gameResult.includes(homeTeam) && gameResult.includes(awayTeam)) {
+        // Check if there's a corresponding entry in leagueScheduleData at the same index
+        const leagueRow = leagueScheduleData[index];
+        if (leagueRow && leagueRow[0]) {
+          const cellData = leagueRow[0];
+          if (cellData.text && cellData.text.includes('||')) {
+            // Format: "Team1: Score1 || Team2: Score2"
             played = true;
-            result = gameResult;
-            boxScoreUrl = url;
-            break;
+            result = cellData.text;
+            boxScoreUrl = cellData.hyperlink || null;
           }
         }
 

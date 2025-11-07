@@ -546,22 +546,26 @@ class SheetsService {
 
   async getScheduleData(filter) {
     // Read Season Schedule sheet (master schedule) and Discord Schedule column J (completed games with hyperlinks)
-    // The sheets mirror each other row-by-row
-    const [scheduleData, leagueScheduleData] = await Promise.all([
+    // NOTE: Column J has headers ("Week 1", "Completed Games") interspersed with game results
+    // We need to filter out headers and only match actual game result rows
+    const [scheduleData, leagueScheduleRawData] = await Promise.all([
       this.getSheetData(SHEET_NAMES.SEASON_SCHEDULE, 'A2:C'), // Week, Home Team, Away Team
-      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J2:J') // ONLY column J (completed games with hyperlinks)
+      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J') // ONLY column J (completed games with hyperlinks)
     ]);
 
-    console.log(`📊 Read ${scheduleData.length} games from Season Schedule, ${leagueScheduleData.length} results from Discord Schedule`);
+    // Filter Discord Schedule to only game result rows (those containing "||")
+    // This removes headers like "Week 1", "Completed Games", and blank rows
+    const completedGames = leagueScheduleRawData
+      .map(row => row[0]) // Get cell data from column J
+      .filter(cellData => cellData && cellData.text && cellData.text.includes('||')); // Only actual game results
 
-    // Build schedule with game status - match by row index since sheets mirror each other
+    console.log(`📊 Read ${scheduleData.length} games from Season Schedule, found ${completedGames.length} completed games in Discord Schedule`);
+
+    // Build schedule with game status - match games sequentially
+    let completedGameIndex = 0;
     const games = scheduleData
+      .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
       .map((row, index) => {
-        // Skip empty rows but preserve index
-        if (!row[0] || !row[1] || !row[2]) {
-          return null;
-        }
-
         const week = parseInt(row[0]);
         const homeTeam = row[1].trim();
         const awayTeam = row[2].trim();
@@ -570,20 +574,27 @@ class SheetsService {
         let result = null;
         let boxScoreUrl = null;
 
-        // Get corresponding completed game data by matching row index
-        const leagueRow = leagueScheduleData[index];
-        if (leagueRow && leagueRow[0]) {
-          const cellData = leagueRow[0]; // This is an object: { text: string, hyperlink: string|null }
+        // Check if there's a completed game available for this schedule entry
+        if (completedGameIndex < completedGames.length) {
+          const cellData = completedGames[completedGameIndex];
 
-          // Debug first few matches
-          if (index < 3) {
-            console.log(`Row ${index}: ${homeTeam} vs ${awayTeam} - Result: ${cellData.text?.substring(0, 40)}, HasLink: ${!!cellData.hyperlink}`);
-          }
-
-          if (cellData.text && cellData.text.includes('||')) {
+          // Verify this completed game matches the teams in the schedule
+          // Game format: "Team1: Score1 || Team2: Score2"
+          if (cellData.text.includes(homeTeam) && cellData.text.includes(awayTeam)) {
             played = true;
             result = cellData.text;
             boxScoreUrl = cellData.hyperlink || null;
+            completedGameIndex++; // Move to next completed game
+
+            // Debug first few matches
+            if (index < 3) {
+              console.log(`✅ Match ${index}: ${homeTeam} vs ${awayTeam} = ${result.substring(0, 40)}`);
+            }
+          } else {
+            // Teams don't match - this schedule game hasn't been played yet
+            if (index < 3) {
+              console.log(`⏸️  No match ${index}: ${homeTeam} vs ${awayTeam} (expected: ${cellData.text.substring(0, 40)})`);
+            }
           }
         }
 
@@ -595,8 +606,7 @@ class SheetsService {
           result,
           boxScoreUrl
         };
-      })
-      .filter(game => game !== null); // Remove null entries from empty rows
+      });
 
     // Determine current week (max completed week + 1)
     const maxCompletedWeek = Math.max(0, ...games.filter(g => g.played).map(g => g.week));

@@ -224,9 +224,14 @@ export function createTeamStatsEmbed(teamData) {
     );
   }
 
-  // Team Fielding - single row
+  // Team Fielding - match player stats format (one stat per line)
   if (teamData.fielding) {
-    const fieldingStats = `**Nice Plays:** ${teamData.fielding.np} (${teamData.fielding.npPerGame}/G)  |  **Errors:** ${teamData.fielding.e}  |  **Stolen Bases:** ${teamData.fielding.sb}`;
+    const fieldingStats = [
+      `**Nice Plays:** ${teamData.fielding.np}`,
+      `**Nice Plays/G:** ${teamData.fielding.npPerGame}`,
+      `**Errors:** ${teamData.fielding.e}`,
+      `**Stolen Bases:** ${teamData.fielding.sb}`
+    ].join('\n');
 
     embed.addFields({
       name: 'Team Fielding & Baserunning',
@@ -257,21 +262,29 @@ export function createStandingsEmbed(standings) {
   const firstPlaceWins = parseInt(standings[0].wins);
   const firstPlaceLosses = parseInt(standings[0].losses);
 
-  const standingsText = standings
-    .map(team => {
-      const wins = parseInt(team.wins);
-      const losses = parseInt(team.losses);
-      const gb = team.rank == 1 ? '-' : (((firstPlaceWins - wins) + (losses - firstPlaceLosses)) / 2).toFixed(1);
+  const teamNames = [];
+  const gamesBack = [];
+  const runDiffs = [];
 
-      // Use medal emoji for top 3, otherwise rank number
-      const rankDisplay = team.rank <= 3 ? rankEmojis[team.rank - 1] : `${team.rank}.`;
+  standings.forEach(team => {
+    const wins = parseInt(team.wins);
+    const losses = parseInt(team.losses);
+    const gb = team.rank == 1 ? '-' : (((firstPlaceWins - wins) + (losses - firstPlaceLosses)) / 2).toFixed(1);
 
-      // Wider horizontal format: Rank Team | Record Win% | RS-RA Diff | GB
-      return `${rankDisplay} **${team.team}**\n   ${team.wins}-${team.losses}  ${team.winPct}  |  ${team.runsScored}-${team.runsAllowed}  ${team.runDiff}  |  GB: ${gb}`;
-    })
-    .join('\n─────────────────────────\n');
+    // Use medal emoji for top 3
+    const rankEmoji = team.rank <= 3 ? rankEmojis[team.rank - 1] + ' ' : '';
 
-  embed.setDescription(standingsText);
+    teamNames.push(`${rankEmoji}**${team.team}**\n${team.wins}-${team.losses} (${team.winPct})`);
+    gamesBack.push(gb);
+    runDiffs.push(team.runDiff);
+  });
+
+  // 3-column layout matching team/player stats
+  embed.addFields(
+    { name: 'Team', value: teamNames.join('\n\n'), inline: true },
+    { name: 'Games Back', value: gamesBack.join('\n\n'), inline: true },
+    { name: 'Run Differential', value: runDiffs.join('\n\n'), inline: true }
+  );
 
   return embed;
 }
@@ -318,18 +331,22 @@ export function createRankingsEmbed(statLabel, leaders, format) {
   };
 
   // Medal emojis for top 3
-  const rankEmojis = ['🥇', '🥈', '🥉', '4.', '5.'];
+  const rankEmojis = ['🥇', '🥈', '🥉'];
 
-  const leaderText = leaders
-    .map((leader, index) => {
-      const rank = rankEmojis[index] || `${index + 1}.`;
-      const formattedValue = formatValue(leader.value, format);
-      // 2-column horizontal layout: Name (Team) | Stat Value
-      return `${rank} ${leader.name} (${leader.team})  |  **${formattedValue}**`;
-    })
-    .join('\n─────────────────────\n');
+  const names = [];
+  const values = [];
 
-  embed.setDescription(leaderText);
+  leaders.forEach((leader, index) => {
+    const rankEmoji = index < 3 ? rankEmojis[index] + ' ' : `${index + 1}. `;
+    names.push(`${rankEmoji}**${leader.name}**\n(${leader.team})`);
+    values.push(formatValue(leader.value, format));
+  });
+
+  // 2-column layout matching team/player stats
+  embed.addFields(
+    { name: 'Name', value: names.join('\n\n'), inline: true },
+    { name: statLabel, value: values.join('\n\n'), inline: true }
+  );
 
   return embed;
 }

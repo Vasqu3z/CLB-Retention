@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import sheetsService from '../services/sheets-service.js';
 import { createTeamStatsEmbed, createErrorEmbed } from '../utils/embed-builder.js';
+import { DISCORD_LIMITS } from '../config/league-config.js';
 
 export const data = new SlashCommandBuilder()
   .setName('teamstats')

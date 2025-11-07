@@ -184,9 +184,14 @@ class SheetsService {
     }
 
     const normalizedName = teamName.trim().toLowerCase();
-    const data = await this.getSheetData(SHEET_NAMES.TEAM_DATA);
 
-    const teamRow = data
+    // Fetch both Team Data and Rankings to get Runs Scored
+    const [teamData, rankingsData] = await Promise.all([
+      this.getSheetData(SHEET_NAMES.TEAM_DATA),
+      this.getSheetData(SHEET_NAMES.RANKINGS, 'A2:H')
+    ]);
+
+    const teamRow = teamData
       .slice(1)
       .find(row => row[TEAM_STATS_COLUMNS.TEAM_NAME]?.toLowerCase() === normalizedName);
 
@@ -195,31 +200,82 @@ class SheetsService {
     }
 
     const getValue = (index) => teamRow[index] || '0';
+    const getNum = (index) => parseFloat(getValue(index)) || 0;
 
-    const hitting = {};
-    for (let i = 0; i < TEAM_STATS_COLUMNS.HITTING_NUM_COLS; i++) {
-      hitting[`stat${i}`] = getValue(TEAM_STATS_COLUMNS.HITTING_START + i);
-    }
+    const gp = getNum(TEAM_STATS_COLUMNS.GP);
 
-    const pitching = {};
-    for (let i = 0; i < TEAM_STATS_COLUMNS.PITCHING_NUM_COLS; i++) {
-      pitching[`stat${i}`] = getValue(TEAM_STATS_COLUMNS.PITCHING_START + i);
-    }
+    // Get Runs Scored from Rankings sheet (column F, index 5)
+    const rankingsRow = rankingsData.find(row => row[1]?.toLowerCase().trim() === normalizedName);
+    const runsScored = rankingsRow ? (parseFloat(rankingsRow[5]) || 0) : 0;
 
-    const fielding = {};
-    for (let i = 0; i < TEAM_STATS_COLUMNS.FIELDING_NUM_COLS; i++) {
-      fielding[`stat${i}`] = getValue(TEAM_STATS_COLUMNS.FIELDING_START + i);
-    }
+    // Parse hitting stats: AB, H, HR, RBI, BB, K, ROB, DP, TB
+    const ab = getNum(TEAM_STATS_COLUMNS.HITTING_START + 0);
+    const h = getNum(TEAM_STATS_COLUMNS.HITTING_START + 1);
+    const hr = getNum(TEAM_STATS_COLUMNS.HITTING_START + 2);
+    const rbi = getNum(TEAM_STATS_COLUMNS.HITTING_START + 3);
+    const bb = getNum(TEAM_STATS_COLUMNS.HITTING_START + 4);
+    const k = getNum(TEAM_STATS_COLUMNS.HITTING_START + 5);
+    const rob = getNum(TEAM_STATS_COLUMNS.HITTING_START + 6);
+    const dp = getNum(TEAM_STATS_COLUMNS.HITTING_START + 7);
+    const tb = getNum(TEAM_STATS_COLUMNS.HITTING_START + 8);
+
+    // Calculate hitting rate stats
+    const avg = ab > 0 ? (h / ab).toFixed(3) : '.000';
+    const obp = (ab + bb) > 0 ? ((h + bb) / (ab + bb)).toFixed(3) : '.000';
+    const slg = ab > 0 ? (tb / ab).toFixed(3) : '.000';
+    const ops = (parseFloat(obp) + parseFloat(slg)).toFixed(3);
+    const runsPerGame = gp > 0 ? (runsScored / gp).toFixed(2) : '0.00';
+
+    // Parse pitching stats: IP, BF, H, HR, R, BB, K
+    const ip = getNum(TEAM_STATS_COLUMNS.PITCHING_START + 0);
+    const bf = getNum(TEAM_STATS_COLUMNS.PITCHING_START + 1);
+    const pH = getNum(TEAM_STATS_COLUMNS.PITCHING_START + 2);
+    const pHR = getNum(TEAM_STATS_COLUMNS.PITCHING_START + 3);
+    const r = getNum(TEAM_STATS_COLUMNS.PITCHING_START + 4);
+    const pBB = getNum(TEAM_STATS_COLUMNS.PITCHING_START + 5);
+    const pK = getNum(TEAM_STATS_COLUMNS.PITCHING_START + 6);
+
+    // Calculate pitching rate stats
+    const era = ip > 0 ? ((r * 9) / ip).toFixed(2) : '0.00';
+    const baa = bf > 0 ? (pH / bf).toFixed(3) : '.000';
+    const whip = ip > 0 ? ((pH + pBB) / ip).toFixed(2) : '0.00';
+
+    // Parse fielding stats: NP, E, SB
+    const np = getNum(TEAM_STATS_COLUMNS.FIELDING_START + 0);
+    const e = getNum(TEAM_STATS_COLUMNS.FIELDING_START + 1);
+    const sb = getNum(TEAM_STATS_COLUMNS.FIELDING_START + 2);
+
+    // Calculate fielding rate stats
+    const npPerGame = gp > 0 ? (np / gp).toFixed(2) : '0.00';
 
     return {
       name: teamRow[TEAM_STATS_COLUMNS.TEAM_NAME],
       captain: getValue(TEAM_STATS_COLUMNS.CAPTAIN),
-      gp: getValue(TEAM_STATS_COLUMNS.GP),
+      gp: gp.toString(),
       wins: getValue(TEAM_STATS_COLUMNS.WINS),
       losses: getValue(TEAM_STATS_COLUMNS.LOSSES),
-      hitting,
-      pitching,
-      fielding
+      hitting: {
+        ab, h, hr, rbi, bb, k, rob, dp, tb,
+        runsScored: runsScored.toString(),
+        // Rate stats
+        runsPerGame,
+        avg,
+        obp,
+        slg,
+        ops
+      },
+      pitching: {
+        ip, bf, h: pH, hr: pHR, r, bb: pBB, k: pK,
+        // Rate stats
+        era,
+        baa,
+        whip
+      },
+      fielding: {
+        np, e, sb,
+        // Rate stats
+        npPerGame
+      }
     };
   }
 

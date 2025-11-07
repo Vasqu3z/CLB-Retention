@@ -546,40 +546,51 @@ class SheetsService {
 
   async getScheduleData(filter) {
     // Read Season Schedule sheet and League Schedule sheet with hyperlinks
-    // Both sheets have the same structure and rows align by index
-    const [scheduleData, leagueScheduleData] = await Promise.all([
+    const [scheduleData, leagueScheduleRawData] = await Promise.all([
       this.getSheetData(SHEET_NAMES.SEASON_SCHEDULE, 'A2:C'), // Week, Home Team, Away Team
-      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J2:J') // Completed Games with hyperlinks (starting at row 2 to match)
+      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'A2:K') // Read full rows including Week, teams, and completed game data
     ]);
 
-    // Build schedule with game status - match by row index since sheets are aligned
-    // Map first to preserve indices, then filter
-    const games = scheduleData
-      .map((row, index) => {
-        // Skip empty rows but preserve index alignment
-        if (!row[0] || !row[1] || !row[2]) {
-          return null;
-        }
+    // Build a map of completed games using Week + Home + Away as the key for robust matching
+    const completedGamesMap = new Map();
+    leagueScheduleRawData.forEach(row => {
+      // Columns: A=Week, B=Home, C=Away, ..., J=Result
+      if (row[0] && row[1] && row[2] && row[9]) { // Has week, home, away, and result in column J (index 9)
+        const week = parseInt(row[0].text || row[0]);
+        const homeTeam = (row[1].text || row[1]).toString().trim().toLowerCase();
+        const awayTeam = (row[2].text || row[2]).toString().trim().toLowerCase();
+        const resultData = row[9]; // Column J
 
+        if (resultData.text && resultData.text.includes('||')) {
+          const key = `${week}|${homeTeam}|${awayTeam}`;
+          completedGamesMap.set(key, {
+            result: resultData.text,
+            boxScoreUrl: resultData.hyperlink || null
+          });
+        }
+      }
+    });
+
+    // Build schedule with game status - match by week + teams
+    const games = scheduleData
+      .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
+      .map(row => {
         const week = parseInt(row[0]);
         const homeTeam = row[1].trim();
         const awayTeam = row[2].trim();
 
-        // Get corresponding completed game data by index
+        // Look up completed game data using week + teams
+        const key = `${week}|${homeTeam.toLowerCase()}|${awayTeam.toLowerCase()}`;
+        const completedData = completedGamesMap.get(key);
+
         let played = false;
         let result = null;
         let boxScoreUrl = null;
 
-        // Check if there's a corresponding entry in leagueScheduleData at the same index
-        const leagueRow = leagueScheduleData[index];
-        if (leagueRow && leagueRow[0]) {
-          const cellData = leagueRow[0];
-          if (cellData.text && cellData.text.includes('||')) {
-            // Format: "Team1: Score1 || Team2: Score2"
-            played = true;
-            result = cellData.text;
-            boxScoreUrl = cellData.hyperlink || null;
-          }
+        if (completedData) {
+          played = true;
+          result = completedData.result;
+          boxScoreUrl = completedData.boxScoreUrl;
         }
 
         return {
@@ -590,8 +601,7 @@ class SheetsService {
           result,
           boxScoreUrl
         };
-      })
-      .filter(game => game !== null); // Remove null entries from empty rows
+      });
 
     // Determine current week (max completed week + 1)
     const maxCompletedWeek = Math.max(0, ...games.filter(g => g.played).map(g => g.week));

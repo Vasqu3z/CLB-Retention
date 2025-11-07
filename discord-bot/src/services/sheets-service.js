@@ -631,17 +631,28 @@ class SheetsService {
     // Read Image URLs sheet
     const data = await this.getSheetData('Image URLs', 'A2:C'); // Name, Type, URL
 
+    console.log(`\n🔍 Looking for image: name="${name}", type="${type}"`);
+    console.log(`📊 Total rows in Image URLs: ${data.length}`);
+    if (data.length > 0) {
+      console.log(`📋 First row sample:`, JSON.stringify(data[0]));
+    }
+
     const normalizedName = name.trim().toLowerCase();
 
     // Find exact match
-    const match = data.find(row =>
-      row[0]?.toLowerCase().trim() === normalizedName &&
-      row[1]?.toLowerCase().trim() === type
-    );
+    const match = data.find(row => {
+      const rowName = row[0]?.toLowerCase().trim();
+      const rowType = row[1]?.toLowerCase().trim();
+      const isMatch = rowName === normalizedName && rowType === type;
+      if (isMatch) {
+        console.log(`✅ MATCH FOUND: [${row[0]}] [${row[1]}] [${row[2]}]`);
+      }
+      return isMatch;
+    });
 
     if (match && match[2]) {
       const url = match[2].trim();
-      console.log(`Found image for ${name} (${type}): ${url}`);
+      console.log(`✅ Returning image URL: ${url}\n`);
       return url;
     }
 
@@ -653,11 +664,11 @@ class SheetsService {
 
     if (defaultMatch && defaultMatch[2]) {
       const url = defaultMatch[2].trim();
-      console.log(`Using default image for ${type}: ${url}`);
+      console.log(`✅ Using default image for ${type}: ${url}\n`);
       return url;
     }
 
-    console.log(`No image found for ${name} (${type})`);
+    console.log(`❌ No image found for ${name} (${type})\n`);
     return null;
   }
 }

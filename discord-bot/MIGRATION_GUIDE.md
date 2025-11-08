@@ -1,4 +1,4 @@
-# Discord Bot Migration Guide
+# Discord Bot Migration Guide (GitHub Desktop)
 
 **Goal:** Move Discord bot from `CLB-League-Hub/discord-bot/` to a new standalone repository `CLB-League-Discord-Bot`
 
@@ -9,8 +9,8 @@
 ## Prerequisites
 
 ✅ GitHub account with repo creation permissions
+✅ **GitHub Desktop** installed ([download here](https://desktop.github.com/))
 ✅ Railway account (already set up)
-✅ Local git configured
 ✅ Bot currently deployed and working on Railway
 
 ---
@@ -24,61 +24,82 @@
    - **Repository name:** `CLB-League-Discord-Bot`
    - **Description:** "Discord bot for CLB League Hub - player stats, standings, schedules, and more"
    - **Visibility:** Private (or Public if you want to share)
-   - **DO NOT** initialize with README/gitignore/license (we'll bring our own)
+   - **✅ CHECK** "Add a README file" (makes cloning easier)
 3. Click **Create repository**
-4. **Copy the repository URL** (e.g., `https://github.com/YourUsername/CLB-League-Discord-Bot.git`)
+4. **Leave this browser tab open** - you'll need it in Step 3
 
 ---
 
-## Part 2: Extract Bot to New Repository
+## Part 2: Extract Bot Files Locally
 
-### Step 2: Create Local Copy of Bot Directory
+### Step 2: Copy Bot Files to New Folder
 
-```bash
-# Navigate to your current project
-cd /home/user/CLB-League-Hub
+**Using File Explorer (Windows) / Finder (Mac):**
 
-# Create a new directory for the extracted bot
-mkdir -p ../CLB-League-Discord-Bot
-cp -r discord-bot/* ../CLB-League-Discord-Bot/
-cd ../CLB-League-Discord-Bot
+1. Navigate to your current project folder:
+   - **Windows:** `C:\Users\YourName\CLB-League-Hub\discord-bot\`
+   - **Mac:** `/Users/YourName/CLB-League-Hub/discord-bot/`
+
+2. Create a new folder for the bot:
+   - Go up one level to the parent directory
+   - Create new folder: `CLB-League-Discord-Bot-Temp`
+
+3. Copy all files from `discord-bot/` to `CLB-League-Discord-Bot-Temp/`:
+   - Select all files and folders inside `discord-bot/`
+   - Copy (`Ctrl+C` / `Cmd+C`)
+   - Paste into `CLB-League-Discord-Bot-Temp/`
+
+4. **Clean up the copied files:**
+   - Delete `node_modules/` folder (if present)
+   - Delete `.env` file (if present) - we'll use Railway's environment variables
+
+---
+
+## Part 3: Set Up with GitHub Desktop
+
+### Step 3: Clone Your New Repository
+
+1. Open **GitHub Desktop**
+2. Click **File** → **Clone Repository**
+3. Go to **GitHub.com** tab
+4. Find and select **CLB-League-Discord-Bot** from the list
+5. Choose where to save it locally (pick a memorable location)
+6. Click **Clone**
+
+### Step 4: Replace README with Bot Files
+
+After cloning, you'll have a folder with just a README.md:
+
+1. Open the cloned repository folder in File Explorer/Finder
+   - In GitHub Desktop: **Repository** → **Show in Explorer/Finder**
+2. **Delete the README.md** that GitHub created
+3. Open your `CLB-League-Discord-Bot-Temp` folder from Step 2
+4. **Select all files** and copy them
+5. **Paste into** the cloned repository folder
+
+Your folder should now contain:
 ```
-
-### Step 3: Clean Up Unnecessary Files
-
-```bash
-# Remove node_modules if present (we'll reinstall)
-rm -rf node_modules
-
-# Remove any local .env file (will use Railway secrets)
-rm -f .env
-```
-
-### Step 4: Update package.json
-
-Make sure your `package.json` has the correct name:
-
-```json
-{
-  "name": "clb-league-discord-bot",
-  "version": "1.0.0",
-  "description": "Discord bot for CLB League Hub statistics and schedules",
-  "type": "module",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "node src/index.js",
-    "deploy": "node src/deploy-commands.js"
-  },
-  "keywords": ["discord", "bot", "baseball", "statistics"],
-  "author": "CLB League Hub Team",
-  "license": "MIT"
-}
+CLB-League-Discord-Bot/
+├── src/
+│   ├── commands/
+│   ├── config/
+│   ├── services/
+│   ├── utils/
+│   ├── deploy-commands.js
+│   └── index.js
+├── MIGRATION_GUIDE.md
+├── SHEET_SCHEMA.md
+├── package.json
+└── package-lock.json
 ```
 
 ### Step 5: Create .gitignore
 
-```bash
-cat > .gitignore << 'EOF'
+1. In the cloned folder, create a new file called `.gitignore` (note the dot at the start)
+2. Open it with Notepad (Windows) or TextEdit (Mac)
+3. Paste this content:
+
+```
 # Dependencies
 node_modules/
 
@@ -101,13 +122,17 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
-EOF
 ```
 
-### Step 6: Create .env.example (for documentation)
+4. Save and close
 
-```bash
-cat > .env.example << 'EOF'
+### Step 6: Create .env.example
+
+1. Create a new file called `.env.example`
+2. Open with Notepad/TextEdit
+3. Paste this content:
+
+```
 # Discord Bot Configuration
 DISCORD_TOKEN=your_discord_bot_token_here
 DISCORD_CLIENT_ID=your_discord_client_id_here
@@ -120,126 +145,133 @@ GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END
 
 # Optional: Logging
 LOG_LEVEL=INFO
-EOF
 ```
 
-### Step 7: Initialize Git and Push
+4. Save and close
 
-```bash
-# Initialize new git repository
-git init
+### Step 7: Commit and Push Using GitHub Desktop
 
-# Add all files
-git add .
+1. Go back to **GitHub Desktop**
+2. You should see all your new files in the **Changes** tab (left side)
+3. In the bottom left, add a commit message:
+   - **Summary:** `Initial commit: CLB League Discord Bot v1.0`
+   - **Description:** (optional)
+   ```
+   Features:
+   - 11 slash commands (stats, standings, rankings, schedules)
+   - Google Sheets integration with 5-minute caching
+   - Player/team image support
+   - Head-to-head matchup tracking
+   - Gold Standard compliant (9.2/10)
+   ```
 
-# Create initial commit
-git commit -m "Initial commit: CLB League Discord Bot v1.0
+4. Click **Commit to main**
+5. Click **Push origin** (blue button at top)
 
-Features:
-- 11 slash commands (stats, standings, rankings, schedules)
-- Google Sheets integration with 5-minute caching
-- Player/team image support
-- Head-to-head matchup tracking
-- Gold Standard compliant (9.2/10)
+**✅ Done!** Your code is now on GitHub.
 
-Architecture:
-- Discord.js v14 with slash commands
-- Google Sheets API v4
-- Standardized logging
-- Railway deployment ready
-"
-
-# Add remote origin (use the URL from Step 1)
-git remote add origin https://github.com/YourUsername/CLB-League-Discord-Bot.git
-
-# Push to GitHub
-git push -u origin main
-```
-
-**Note:** If you get an error about `main` vs `master`, use:
-```bash
-git branch -M main  # Rename to main if needed
-git push -u origin main
-```
+Verify by visiting: `https://github.com/YourUsername/CLB-League-Discord-Bot`
 
 ---
 
-## Part 3: Deploy to Railway
+## Part 4: Deploy to Railway
 
 ### Step 8: Disconnect Old Deployment (Optional)
 
-If you want to completely remove the old deployment:
+If you want to remove the old deployment:
 
 1. Go to Railway dashboard: https://railway.app/dashboard
 2. Find your current bot deployment
-3. Click on it → Settings → Danger Zone → Delete Service
+3. Click on it → **Settings** → **Danger Zone** → **Delete Service**
 
-**OR** just leave it and create a new one (Railway allows multiple services).
+**OR** just leave it (Railway allows multiple services).
 
 ### Step 9: Create New Railway Service
 
-1. Go to Railway dashboard
+1. Go to Railway dashboard: https://railway.app/dashboard
 2. Click **New Project**
 3. Select **Deploy from GitHub repo**
-4. Authorize Railway to access your GitHub (if not already)
-5. Select **CLB-League-Discord-Bot** repository
-6. Railway will auto-detect it's a Node.js project
+4. Click **Configure GitHub App** (if first time):
+   - Select which repositories Railway can access
+   - Choose **Only select repositories**
+   - Select **CLB-League-Discord-Bot**
+   - Click **Save**
+5. Back in Railway, select **CLB-League-Discord-Bot**
+6. Railway will auto-detect Node.js and start deploying
 
 ### Step 10: Configure Environment Variables
 
-In Railway project settings:
+**Get variables from old deployment:**
 
-1. Click **Variables** tab
-2. Add each environment variable (copy from your current Railway deployment or .env):
+1. In Railway, go to your **OLD** bot deployment
+2. Click **Variables** tab
+3. Copy each variable value (you'll paste into new deployment)
+
+**Add to new deployment:**
+
+1. Go to your **NEW** deployment in Railway
+2. Click **Variables** tab
+3. Click **+ New Variable** for each:
 
 ```
-DISCORD_TOKEN=<your_token>
-DISCORD_CLIENT_ID=<your_client_id>
-DISCORD_GUILD_ID=<your_guild_id>
-GOOGLE_SHEETS_SPREADSHEET_ID=<your_spreadsheet_id>
-GOOGLE_SERVICE_ACCOUNT_EMAIL=<your_service_account_email>
-GOOGLE_PRIVATE_KEY=<your_private_key_with_newlines>
+DISCORD_TOKEN=<paste from old>
+DISCORD_CLIENT_ID=<paste from old>
+DISCORD_GUILD_ID=<paste from old>
+GOOGLE_SHEETS_SPREADSHEET_ID=<paste from old>
+GOOGLE_SERVICE_ACCOUNT_EMAIL=<paste from old>
+GOOGLE_PRIVATE_KEY=<paste from old - keep \n characters>
 LOG_LEVEL=INFO
 ```
 
-**Important:** For `GOOGLE_PRIVATE_KEY`, make sure to preserve the `\n` characters:
-```
------BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg...\n-----END PRIVATE KEY-----\n
-```
+**⚠️ Important for GOOGLE_PRIVATE_KEY:**
+- Should look like: `-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n`
+- Keep the `\n` characters (they represent newlines)
 
-### Step 11: Deploy
+4. Railway will automatically redeploy after adding variables
 
-1. Railway will automatically deploy on push
-2. Click **Deployments** to watch the build
-3. Check logs for successful startup:
+### Step 11: Monitor Deployment
+
+1. Click **Deployments** tab
+2. Click latest deployment
+3. Click **View Logs**
+4. Wait for success messages:
    ```
-   [2025-01-08 ...] [INFO] [CommandLoader] Loaded command: playerstats
-   [2025-01-08 ...] [INFO] [CommandLoader] Loaded command: teamstats
+   [INFO] [CommandLoader] Loaded command: playerstats
+   [INFO] [CommandLoader] Loaded command: teamstats
    ...
-   [2025-01-08 ...] [INFO] [Bot] Logged in as BotName#1234
-   [2025-01-08 ...] [INFO] [Bot] Ready and serving 1 server(s)
+   [INFO] [Bot] Logged in as YourBotName#1234
+   [INFO] [Bot] Ready and serving 1 server(s)
    ```
 
 ### Step 12: Test the Bot
 
-In Discord:
-1. Try `/playerstats` - should autocomplete with player names
-2. Try `/standings` - should show current standings
-3. Try `/schedule current` - should show current week games
+In Discord, test these commands:
+
+- ✅ `/playerstats` - should autocomplete with player names
+- ✅ `/standings` - should show current standings
+- ✅ `/schedule current` - should show current week games
+- ✅ `/teamstats` - should autocomplete with team names
+- ✅ `/rankings` - should show stat options
+
+**If everything works, you're done! 🎉**
 
 ---
 
-## Part 4: Update Original Repo
+## Part 5: Update Original Repository (Optional)
 
-### Step 13: Clean Up CLB-League-Hub Repo
+### Step 13: Add Note to Old Repo
 
-Back in the original repo:
+1. Open **GitHub Desktop**
+2. Switch to **CLB-League-Hub** repository:
+   - Click **Current Repository** dropdown (top left)
+   - Select **CLB-League-Hub**
+   - If not listed: **Add** → **Add Existing Repository** → browse to folder
 
-```bash
-cd /home/user/CLB-League-Hub
+3. Navigate to `CLB-League-Hub/discord-bot/` in File Explorer/Finder
 
-# Create a README in discord-bot/ pointing to new repo
-cat > discord-bot/README.md << 'EOF'
+4. Create `README.md` with this content:
+
+```markdown
 # Discord Bot (Moved)
 
 The Discord bot has been moved to its own repository:
@@ -249,129 +281,94 @@ The Discord bot has been moved to its own repository:
 This directory is kept for reference but is no longer actively developed.
 
 For the latest version, please visit the new repository.
-EOF
-
-# Optionally remove the bot code (keep README)
-# git rm -r discord-bot/src discord-bot/package.json discord-bot/package-lock.json
-# OR just leave it as-is for historical reference
-
-# Commit the update
-git add discord-bot/README.md
-git commit -m "docs: Discord bot moved to separate repository
-
-Bot is now maintained at:
-https://github.com/YourUsername/CLB-League-Discord-Bot"
-
-git push
 ```
+
+5. Back in **GitHub Desktop**:
+   - Should see README.md in Changes
+   - **Summary:** `docs: Discord bot moved to separate repository`
+   - Click **Commit to main** (or your current branch)
+   - Click **Push origin**
+
+6. **Clean up temp folder:**
+   - Delete `CLB-League-Discord-Bot-Temp` folder you created in Step 2
 
 ---
 
-## Part 5: Final Checklist
+## Final Checklist
 
 ### Verify Everything Works
 
-- [ ] New repo is public/private as intended
+- [ ] New repo exists on GitHub
 - [ ] Railway deployment is running (green status)
 - [ ] Bot responds to `/playerstats` in Discord
 - [ ] Bot responds to `/standings` in Discord
 - [ ] Bot responds to `/schedule` in Discord
 - [ ] Autocomplete works (try typing a player name)
-- [ ] Images load (player headshots, team icons)
+- [ ] Images load correctly (player headshots, team icons)
 - [ ] All 11 commands work as expected
 
-### Document the Change
+### Files to Keep Synchronized
 
-- [ ] Update CLB-League-Hub README to mention new bot repo
-- [ ] Share new repo URL with team members
-- [ ] Copy `SHEET_SCHEMA.md` to CLB-League-Hub repo root
-- [ ] Add sync reminders to both repos' config files
+**MUST match exactly between repos:**
+- ✅ Sheet names (including emojis like `🧮 Hitting`)
+- ✅ Column order/indices in all sheets
+- ✅ `DATA_START_ROW = 2`
+- ✅ Qualification thresholds (2.1 for batting, 1.0 for pitching)
 
----
-
-## Rollback Plan (If Something Goes Wrong)
-
-If the new deployment fails:
-
-1. **Redeploy old version:**
-   - Railway keeps old deployments
-   - Click on previous deployment → Redeploy
-
-2. **Or revert Railway to old repo:**
-   - Go to Service Settings
-   - Change GitHub repo back to `CLB-League-Hub`
-   - Set root directory to `/discord-bot`
-
-3. **Emergency contact:**
-   - Check Railway logs for errors
-   - Check Discord bot logs
-   - Verify environment variables are set correctly
+See `SHEET_SCHEMA.md` for details.
 
 ---
 
-## Post-Migration
+## Troubleshooting
 
-### Update Documentation
+### Bot not showing in Discord
+- Check Railway logs for errors
+- Verify all environment variables set correctly
+- Ensure `DISCORD_TOKEN` is correct
 
-Create a README.md in the new repo:
+### Autocomplete not working
+- Check `GOOGLE_SHEETS_SPREADSHEET_ID` is correct
+- Verify Service Account has spreadsheet access
+- Check Railway logs for Google API errors
 
-```markdown
-# CLB League Discord Bot
+### Changes not showing in GitHub Desktop
+- Make sure you're in correct repository (check top left)
+- Try **Repository** → **Refresh**
 
-Discord bot for CLB League Hub - providing real-time player statistics, team standings, schedules, and more.
+### Railway deployment failed
+- Click failed deployment → **View Logs**
+- Common issues:
+  - Missing environment variables
+  - Syntax errors
+  - Wrong `package.json` config
 
-## Features
-
-- 📊 **Player Stats** - Comprehensive hitting, pitching, and fielding statistics
-- 🏆 **League Leaders** - Top 5 rankings for all stat categories
-- 📅 **Schedules** - View upcoming games, past scores, and team schedules
-- ⚔️ **Head-to-Head** - Historical matchup data between teams
-- 🔄 **Live Data** - Syncs with Google Sheets every 5 minutes
-
-## Commands
-
-- `/playerstats` - View stats for any player
-- `/teamstats` - View stats for any team
-- `/standings` - View league standings
-- `/rankings` - View top 5 for any stat
-- `/roster` - View team rosters
-- `/schedule` - View upcoming games
-- `/scores` - View past game results
-- `/teamschedule` - View full team schedule
-- `/headtohead` - Compare two teams
-- `/compare` - Compare two players
-
-## Deployment
-
-Deployed on Railway. Automatic deployment on push to `main` branch.
-
-## Architecture
-
-- **Discord.js v14** - Slash commands with autocomplete
-- **Google Sheets API v4** - Real-time data sync
-- **In-memory caching** - 5-minute cache for performance
-- **Gold Standard compliant** - Professional code structure (9.2/10)
-
-## Schema Sync
-
-This bot shares Google Sheets structure with [CLB-League-Hub](https://github.com/YourUsername/CLB-League-Hub).
-
-See `SHEET_SCHEMA.md` for coordination protocol.
-
-## License
-
-MIT
-```
+### Need to rollback?
+1. Railway → Your service
+2. **Deployments** tab
+3. Find previous successful deployment
+4. Three dots → **Redeploy**
 
 ---
 
 ## Success! 🎉
 
-Your Discord bot is now in its own repository with independent deployment!
+Your Discord bot is now:
+- ✅ In its own repository
+- ✅ Independently deployed on Railway
+- ✅ Ready for future updates
+- ✅ Easier to maintain and share
 
-**Benefits:**
-- ✅ Cleaner separation of concerns
-- ✅ Independent versioning and releases
-- ✅ Easier collaboration
-- ✅ Better CI/CD isolation
-- ✅ Simpler Railway integration
+**Next Steps:**
+- Star your new repo ⭐
+- Share URL with team members
+- Keep `SHEET_SCHEMA.md` updated when making changes
+
+---
+
+## Need Help?
+
+- **GitHub Desktop:** https://docs.github.com/en/desktop
+- **Railway:** https://docs.railway.app/
+- **Discord.js:** https://discord.js.org/
+
+For bot issues, check logs in Railway: **Deployments** → **View Logs**

@@ -2,6 +2,17 @@
  * @file league-config.js
  * @description League configuration and constants for CLB League Hub Discord Bot
  *
+ * ⚠️  CRITICAL: Sheet structure is shared with CLB-League-Hub repository
+ *
+ * Before modifying sheet names or column mappings:
+ * 1. Review SHEET_SCHEMA.md for coordination protocol
+ * 2. Update SHEET_SCHEMA.md version number
+ * 3. Coordinate changes with Apps Script repository
+ * 4. Test against updated sheets before deploying
+ *
+ * Last Schema Sync: 2025-01-08
+ * Schema Version: 1.0.0
+ *
  * Purpose:
  * - Centralized configuration for sheet names, column mappings, and formatting constants
  * - Provides type-safe access to Google Sheets structure

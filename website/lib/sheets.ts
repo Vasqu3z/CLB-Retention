@@ -416,3 +416,80 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
 
   return Array.from(playersMap.values());
 }
+
+// ===== SCHEDULE =====
+export interface ScheduleGame {
+  week: number;
+  homeTeam: string;
+  awayTeam: string;
+  played: boolean;
+  homeScore?: number;
+  awayScore?: number;
+  winner?: string;
+}
+
+export async function getSchedule(): Promise<ScheduleGame[]> {
+  // Read from "Season Schedule" sheet (Week, Home Team, Away Team)
+  const scheduleData = await getSheetData("'Season Schedule'!A2:C100");
+
+  // Read from "Box Scores" sheet to check which games have been played
+  const boxScoresData = await getSheetData("'📦 Box Scores'!A2:D100");
+
+  // Create map of completed games: "HomeTeam_vs_AwayTeam" -> { homeScore, awayScore, winner }
+  const completedGamesMap = new Map<string, { homeScore: number; awayScore: number; winner: string }>();
+
+  for (const row of boxScoresData) {
+    const homeTeam = String(row[1] || '').trim();
+    const awayTeam = String(row[2] || '').trim();
+    const score = String(row[3] || '').trim(); // Format: "5-3"
+
+    if (!homeTeam || !awayTeam || !score || !score.includes('-')) continue;
+
+    const scores = score.split('-').map(s => parseInt(s.trim()));
+    if (scores.length !== 2 || isNaN(scores[0]) || isNaN(scores[1])) continue;
+
+    const homeScore = scores[0];
+    const awayScore = scores[1];
+    const winner = homeScore > awayScore ? homeTeam : awayTeam;
+
+    const gameKey = `${homeTeam}_vs_${awayTeam}`;
+    completedGamesMap.set(gameKey, { homeScore, awayScore, winner });
+  }
+
+  // Build schedule with results
+  const schedule: ScheduleGame[] = [];
+
+  for (const row of scheduleData) {
+    const week = Number(row[0]) || 0;
+    const homeTeam = String(row[1] || '').trim();
+    const awayTeam = String(row[2] || '').trim();
+
+    if (week === 0 || !homeTeam || !awayTeam) continue;
+
+    const gameKey = `${homeTeam}_vs_${awayTeam}`;
+    const gameResult = completedGamesMap.get(gameKey);
+
+    if (gameResult) {
+      // Game has been played
+      schedule.push({
+        week,
+        homeTeam,
+        awayTeam,
+        played: true,
+        homeScore: gameResult.homeScore,
+        awayScore: gameResult.awayScore,
+        winner: gameResult.winner,
+      });
+    } else {
+      // Game is upcoming
+      schedule.push({
+        week,
+        homeTeam,
+        awayTeam,
+        played: false,
+      });
+    }
+  }
+
+  return schedule;
+}

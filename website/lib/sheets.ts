@@ -70,34 +70,71 @@ export async function getStandings(): Promise<StandingsRow[]> {
 
 // ===== LEAGUE LEADERS =====
 export interface LeaderRow {
-  rank: number;
-  text: string; // Full text like "1. Player Name (Team): .350"
+  rank: string;
   player: string;
   team: string;
   value: string;
+  isTieSummary?: boolean;
 }
 
-function parseLeaderText(text: string, index: number): LeaderRow {
-  // Format: "1. Player Name (Team): .350"
-  const match = text.match(/^(\d+|T-\d+)\.\s+(.+?)\s+\((.+?)\):\s+(.+)$/);
+function parseLeaderText(text: string): LeaderRow | null {
+  // Format: "1. Player Name (Team): .350" or "T-1. Player Name (Team): .350"
+  // Or tie summary: "T-1. 3 Players Tied w/ .350"
 
-  if (match) {
+  // Check for tie summary format
+  const tieSummaryMatch = text.match(/^(T-\d+)\.\s+(\d+)\s+Players?\s+Tied\s+w\/\s+(.+)$/);
+  if (tieSummaryMatch) {
     return {
-      rank: index + 1,
-      text,
-      player: match[2].trim(),
-      team: match[3].trim(),
-      value: match[4].trim(),
+      rank: tieSummaryMatch[1],
+      player: `${tieSummaryMatch[2]} Players Tied`,
+      team: '',
+      value: tieSummaryMatch[3].trim(),
+      isTieSummary: true,
     };
   }
 
-  return {
-    rank: index + 1,
-    text,
-    player: '',
-    team: '',
-    value: '',
-  };
+  // Regular player format
+  const match = text.match(/^(T-)?(\d+)\.\s+(.+?)\s+\((.+?)\):\s+(.+)$/);
+  if (match) {
+    const rankPrefix = match[1] || '';
+    const rankNum = match[2];
+    return {
+      rank: rankPrefix + rankNum,
+      player: match[3].trim(),
+      team: match[4].trim(),
+      value: match[5].trim(),
+      isTieSummary: false,
+    };
+  }
+
+  return null;
+}
+
+function parseLeaderCategory(data: any[][], startIndex: number): { leaders: LeaderRow[], nextIndex: number } {
+  const leaders: LeaderRow[] = [];
+  let i = startIndex;
+
+  // Skip header row (category name)
+  i++;
+
+  // Parse leader rows until we hit a blank row or end of data
+  while (i < data.length) {
+    const text = String(data[i][0] || '').trim();
+
+    if (!text) {
+      // Blank row - end of this category
+      i++;
+      break;
+    }
+
+    const leader = parseLeaderText(text);
+    if (leader) {
+      leaders.push(leader);
+    }
+    i++;
+  }
+
+  return { leaders, nextIndex: i };
 }
 
 export async function getBattingLeaders(): Promise<{
@@ -108,11 +145,10 @@ export async function getBattingLeaders(): Promise<{
   slg: LeaderRow[];
   ops: LeaderRow[];
 }> {
-  // Batting leaders are in column J (OBP, Hits, HR, RBI, SLG, OPS)
-  // Each category has a header row and then 5 data rows, separated by 1 blank row
-  const data = await getSheetData("'🏆 Rankings'!J4:J50");
+  // Batting leaders are in column J, starting at row 4
+  // Format: Header, Leaders (1-5), Blank, Header, Leaders, Blank, etc.
+  const data = await getSheetData("'🏆 Rankings'!J4:J60");
 
-  // Parse the data - need to identify where each category starts
   const leaders = {
     obp: [] as LeaderRow[],
     hits: [] as LeaderRow[],
@@ -122,15 +158,27 @@ export async function getBattingLeaders(): Promise<{
     ops: [] as LeaderRow[],
   };
 
-  // This is a simplified parser - we'll read the first 5 non-empty rows for OBP
-  // In production, you'd want to find the header row for each category
-  let currentIndex = 0;
-  for (let i = 0; i < data.length && currentIndex < 5; i++) {
-    const text = String(data[i][0] || '').trim();
-    if (text && !text.includes('Percentage') && !text.includes('On-Base')) {
-      leaders.obp.push(parseLeaderText(text, currentIndex));
-      currentIndex++;
+  let i = 0;
+  const categories = ['obp', 'hits', 'hr', 'rbi', 'slg', 'ops'] as const;
+
+  for (const category of categories) {
+    if (i >= data.length) break;
+
+    // Find next header row (non-empty row that contains category indicator)
+    while (i < data.length) {
+      const text = String(data[i][0] || '').trim();
+      if (text && text.includes('(')) {
+        // Found a header row
+        break;
+      }
+      i++;
     }
+
+    if (i >= data.length) break;
+
+    const result = parseLeaderCategory(data, i);
+    leaders[category] = result.leaders;
+    i = result.nextIndex;
   }
 
   return leaders;
@@ -146,7 +194,7 @@ export async function getPitchingLeaders(): Promise<{
   baa: LeaderRow[];
 }> {
   // Pitching leaders are in column L
-  const data = await getSheetData("'🏆 Rankings'!L4:L50");
+  const data = await getSheetData("'🏆 Rankings'!L4:L70");
 
   const leaders = {
     ip: [] as LeaderRow[],
@@ -158,14 +206,26 @@ export async function getPitchingLeaders(): Promise<{
     baa: [] as LeaderRow[],
   };
 
-  // Simplified parser - read first 5 for IP
-  let currentIndex = 0;
-  for (let i = 0; i < data.length && currentIndex < 5; i++) {
-    const text = String(data[i][0] || '').trim();
-    if (text && !text.includes('Innings') && !text.includes('Pitched')) {
-      leaders.ip.push(parseLeaderText(text, currentIndex));
-      currentIndex++;
+  let i = 0;
+  const categories = ['ip', 'wins', 'losses', 'saves', 'era', 'whip', 'baa'] as const;
+
+  for (const category of categories) {
+    if (i >= data.length) break;
+
+    // Find next header row
+    while (i < data.length) {
+      const text = String(data[i][0] || '').trim();
+      if (text && text.includes('(')) {
+        break;
+      }
+      i++;
     }
+
+    if (i >= data.length) break;
+
+    const result = parseLeaderCategory(data, i);
+    leaders[category] = result.leaders;
+    i = result.nextIndex;
   }
 
   return leaders;
@@ -177,7 +237,7 @@ export async function getFieldingLeaders(): Promise<{
   stolenBases: LeaderRow[];
 }> {
   // Fielding leaders are in column N
-  const data = await getSheetData("'🏆 Rankings'!N4:N50");
+  const data = await getSheetData("'🏆 Rankings'!N4:N40");
 
   const leaders = {
     nicePlays: [] as LeaderRow[],
@@ -185,14 +245,26 @@ export async function getFieldingLeaders(): Promise<{
     stolenBases: [] as LeaderRow[],
   };
 
-  // Simplified parser - read first 5 for Nice Plays
-  let currentIndex = 0;
-  for (let i = 0; i < data.length && currentIndex < 5; i++) {
-    const text = String(data[i][0] || '').trim();
-    if (text && !text.includes('Nice') && !text.includes('Plays')) {
-      leaders.nicePlays.push(parseLeaderText(text, currentIndex));
-      currentIndex++;
+  let i = 0;
+  const categories = ['nicePlays', 'errors', 'stolenBases'] as const;
+
+  for (const category of categories) {
+    if (i >= data.length) break;
+
+    // Find next header row
+    while (i < data.length) {
+      const text = String(data[i][0] || '').trim();
+      if (text && text.includes('(')) {
+        break;
+      }
+      i++;
     }
+
+    if (i >= data.length) break;
+
+    const result = parseLeaderCategory(data, i);
+    leaders[category] = result.leaders;
+    i = result.nextIndex;
   }
 
   return leaders;

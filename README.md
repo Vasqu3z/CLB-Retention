@@ -1,10 +1,53 @@
 # CLB League Hub - Baseball Stats Management System
 
-A comprehensive Google Sheets-based statistics management and player retention probability system for CLB, a Super Mario Sluggers AI vs. AI league.
+A comprehensive statistics management and player retention probability system for CLB (Comets League Baseball), a Super Mario Sluggers AI vs. AI league.
+
+## 🏗️ System Architecture
+
+This repository contains **two complementary systems**:
+
+1. **Google Apps Script Backend** (`apps-script/`) - Processes game data, calculates stats
+2. **Next.js Website** (`website/`) - Modern web interface for viewing stats
+
+### Hybrid Approach
+
+- **Commissioners** use Google Sheets + Apps Script for data entry and management
+- **Players/Fans** use the website for viewing stats, standings, and browsing history
+- Data flows: Box Scores → Apps Script → Stat Sheets → Website (via Sheets API)
+
+## 📁 Repository Structure
+
+```
+CLB-League-Hub/
+├── apps-script/              # Google Apps Script backend (~8,000 lines)
+├── website/                  # Next.js public website
+├── docs/                     # Documentation & migration plans
+├── vercel.json               # Vercel deployment config
+└── README.md                 # This file
+```
+
+## 🚀 Quick Start
+
+### For Commissioners (Apps Script)
+1. Open your Google Sheets spreadsheet
+2. Extensions → Apps Script
+3. Copy contents of `apps-script/*.js` into your project
+4. Run **Player Stats → Update All**
+
+### For Developers (Website)
+```bash
+cd website
+npm install
+cp .env.example .env.local
+# Add your Google Sheets API credentials
+npm run dev
+```
+
+Visit http://localhost:3000
+
+---
 
 ## Overview
-
-The CLB Hub automates the collection, calculation, and presentation of player and team statistics from game sheets. It provides dynamic standings, schedules, league leaders, team sheets, and an advanced player retention probability calculator.
 
 ---
 
@@ -122,9 +165,45 @@ For questions, bug reports, or feature requests, contact Vasquez or file an issu
 
 ---
 
+## 🌐 Website Features
+
+The Next.js website provides a modern, mobile-friendly interface:
+
+- **🏆 Standings** - League standings with team records
+- **📊 League Leaders** - Top performers (Phase 1 - in progress)
+- **📅 Schedule** - Game schedule and results (Phase 1 - planned)
+- **🧢 Team Pages** - Rosters and stats (Phase 1 - planned)
+- **🗂️ Historical Archives** - Browse past seasons (Phase 1 - planned)
+- **💰 Transactions** - Transaction timeline (Phase 1 - planned)
+
+### Website Deployment
+
+1. Push this repo to GitHub
+2. Go to [vercel.com](https://vercel.com) and import your repo
+3. Vercel auto-detects `website/` directory (via `vercel.json`)
+4. Add environment variables: `SHEETS_SPREADSHEET_ID`, `GOOGLE_CREDENTIALS`
+5. Deploy!
+
+**Live at:** `https://your-project.vercel.app`
+
+---
+
+## 📚 Documentation
+
+- **[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)** - 16-week migration roadmap
+- **[module-migration-analysis.md](module-migration-analysis.md)** - Module analysis
+- **[sheets-vs-website-assessment.md](sheets-vs-website-assessment.md)** - Pros/cons
+- **[website/README.md](website/README.md)** - Website technical docs
+- **[website/SETUP_GUIDE.md](website/SETUP_GUIDE.md)** - Deployment guide
+
+---
+
 ## Credits
 
 **System Design & Development**: Vasquez w/ assistance from Claude AI
-**Version**: 3.0
-**Last Updated**: November 2, 2025
+**Version**: 3.0 (Apps Script) + 1.0 (Website)
+**Last Updated**: November 9, 2025
+
+**Built with ❤️ for CLB**
+⚾ Super Mario Sluggers AI League 🎮
 

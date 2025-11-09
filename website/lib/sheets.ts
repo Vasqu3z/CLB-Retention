@@ -50,13 +50,40 @@ export interface StandingsRow {
   runsScored: number;
   runsAllowed: number;
   runDiff: number;
+  h2hNote?: string; // Head-to-head record tooltip
 }
 
 export async function getStandings(): Promise<StandingsRow[]> {
   // Read from "🏆 Rankings" sheet, rows 4-11 (8 teams), columns A-H
   const data = await getSheetData("'🏆 Rankings'!A4:H11");
 
-  return data.map((row) => ({
+  // Also fetch cell notes for H2H records (column B = team names)
+  const auth = await getAuthClient();
+  const sheetId = process.env.SHEETS_SPREADSHEET_ID;
+
+  let notes: string[] = [];
+  try {
+    const response = await sheets.spreadsheets.get({
+      auth: auth as any,
+      spreadsheetId: sheetId,
+      ranges: ["'🏆 Rankings'!B4:B11"],
+      includeGridData: true,
+    });
+
+    // Extract notes from the response
+    if (response.data.sheets && response.data.sheets[0].data) {
+      const rowData = response.data.sheets[0].data[0].rowData || [];
+      notes = rowData.map((row) => {
+        const cell = row.values?.[0];
+        return cell?.note || '';
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching cell notes:', error);
+    // Continue without notes if there's an error
+  }
+
+  return data.map((row, idx) => ({
     rank: String(row[0] || ''),
     team: String(row[1] || ''),
     wins: Number(row[2]) || 0,
@@ -65,6 +92,7 @@ export async function getStandings(): Promise<StandingsRow[]> {
     runsScored: Number(row[5]) || 0,
     runsAllowed: Number(row[6]) || 0,
     runDiff: Number(row[7]) || 0,
+    h2hNote: notes[idx] || undefined,
   }));
 }
 
@@ -108,6 +136,14 @@ function parseLeaderText(text: string): LeaderRow | null {
   }
 
   return null;
+}
+
+function isHeaderRow(text: string): boolean {
+  // Header rows contain '(' but NOT ': ' (which player rows have)
+  // Examples:
+  //   Header: "On-Base Percentage (OBP)"
+  //   Player: "1. Player Name (Team): .350"
+  return text.includes('(') && !text.includes(': ');
 }
 
 function parseLeaderCategory(data: any[][], startIndex: number): { leaders: LeaderRow[], nextIndex: number } {
@@ -164,10 +200,10 @@ export async function getBattingLeaders(): Promise<{
   for (const category of categories) {
     if (i >= data.length) break;
 
-    // Find next header row (non-empty row that contains category indicator)
+    // Find next header row (contains '(' but not ': ')
     while (i < data.length) {
       const text = String(data[i][0] || '').trim();
-      if (text && text.includes('(')) {
+      if (text && isHeaderRow(text)) {
         // Found a header row
         break;
       }
@@ -212,10 +248,10 @@ export async function getPitchingLeaders(): Promise<{
   for (const category of categories) {
     if (i >= data.length) break;
 
-    // Find next header row
+    // Find next header row (contains '(' but not ': ')
     while (i < data.length) {
       const text = String(data[i][0] || '').trim();
-      if (text && text.includes('(')) {
+      if (text && isHeaderRow(text)) {
         break;
       }
       i++;
@@ -251,10 +287,10 @@ export async function getFieldingLeaders(): Promise<{
   for (const category of categories) {
     if (i >= data.length) break;
 
-    // Find next header row
+    // Find next header row (contains '(' but not ': ')
     while (i < data.length) {
       const text = String(data[i][0] || '').trim();
-      if (text && text.includes('(')) {
+      if (text && isHeaderRow(text)) {
         break;
       }
       i++;

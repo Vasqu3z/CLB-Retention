@@ -59,11 +59,17 @@ export default async function StandingsPage() {
                           href={`/teams/${teamConfig.slug}`}
                           className="text-primary hover:underline font-semibold"
                           style={{ color: teamConfig.primaryColor }}
+                          title={team.h2hNote || undefined}
                         >
                           {team.team}
                         </Link>
                       ) : (
-                        <span className="font-semibold">{team.team}</span>
+                        <span
+                          className="font-semibold"
+                          title={team.h2hNote || undefined}
+                        >
+                          {team.team}
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center text-gray-900">

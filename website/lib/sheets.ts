@@ -432,28 +432,43 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
   // Read from "Season Schedule" sheet (Week, Home Team, Away Team)
   const scheduleData = await getSheetData("'Season Schedule'!A2:C100");
 
-  // Read from "Box Scores" sheet to check which games have been played
-  const boxScoresData = await getSheetData("'📦 Box Scores'!A2:D100");
+  // Read completed games from "📅 Schedule" sheet column J
+  // Format: "Team1: 5 || Team2: 3" with week headers mixed in
+  const completedGamesData = await getSheetData("'📅 Schedule'!J3:J500");
 
-  // Create map of completed games: "HomeTeam_vs_AwayTeam" -> { homeScore, awayScore, winner }
+  // Parse completed games into a map: "HomeTeam_vs_AwayTeam" -> { homeScore, awayScore, winner }
   const completedGamesMap = new Map<string, { homeScore: number; awayScore: number; winner: string }>();
 
-  for (const row of boxScoresData) {
-    const homeTeam = String(row[1] || '').trim();
-    const awayTeam = String(row[2] || '').trim();
-    const score = String(row[3] || '').trim(); // Format: "5-3"
+  for (const row of completedGamesData) {
+    const text = String(row[0] || '').trim();
 
-    if (!homeTeam || !awayTeam || !score || !score.includes('-')) continue;
+    // Skip week headers and empty rows
+    if (!text || text.startsWith('Week ') || !text.includes(' || ')) continue;
 
-    const scores = score.split('-').map(s => parseInt(s.trim()));
-    if (scores.length !== 2 || isNaN(scores[0]) || isNaN(scores[1])) continue;
+    // Parse format: "Team1: 5 || Team2: 3"
+    const parts = text.split(' || ');
+    if (parts.length !== 2) continue;
 
-    const homeScore = scores[0];
-    const awayScore = scores[1];
-    const winner = homeScore > awayScore ? homeTeam : awayTeam;
+    const team1Match = parts[0].match(/^(.+):\s+(\d+)$/);
+    const team2Match = parts[1].match(/^(.+):\s+(\d+)$/);
 
-    const gameKey = `${homeTeam}_vs_${awayTeam}`;
-    completedGamesMap.set(gameKey, { homeScore, awayScore, winner });
+    if (!team1Match || !team2Match) continue;
+
+    const team1 = team1Match[1].trim();
+    const score1 = parseInt(team1Match[2]);
+    const team2 = team2Match[1].trim();
+    const score2 = parseInt(team2Match[2]);
+
+    if (isNaN(score1) || isNaN(score2)) continue;
+
+    const winner = score1 > score2 ? team1 : team2;
+
+    // Try both possible matchup keys (home/away can be either team)
+    const gameKey1 = `${team1}_vs_${team2}`;
+    const gameKey2 = `${team2}_vs_${team1}`;
+
+    completedGamesMap.set(gameKey1, { homeScore: score1, awayScore: score2, winner });
+    completedGamesMap.set(gameKey2, { homeScore: score2, awayScore: score1, winner });
   }
 
   // Build schedule with results

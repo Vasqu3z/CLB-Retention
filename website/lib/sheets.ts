@@ -97,6 +97,11 @@ export async function getStandings(): Promise<StandingsRow[]> {
 }
 
 // ===== LEAGUE LEADERS =====
+// Note: The Rankings sheet already contains filtered/qualified leaders from Apps Script.
+// Qualification thresholds (from LeagueConfig.js):
+//   - Batting rate stats (OBP, SLG, OPS): AB >= teamGP * 2.7
+//   - Pitching rate stats (ERA, WHIP, BAA): IP >= teamGP * 0.8
+//   - Counting stats (Hits, HR, RBI, Wins, etc.): no minimum
 export interface LeaderRow {
   rank: string;
   player: string;
@@ -108,6 +113,7 @@ export interface LeaderRow {
 function parseLeaderText(text: string): LeaderRow | null {
   // Format: "1. Player Name (Team): .350" or "T-1. Player Name (Team): .350"
   // Or tie summary: "T-1. 3 Players Tied w/ .350"
+  // Player names may contain parentheses: "1. Yoshi (Red) (Yoshi Eggs): .350"
 
   // Check for tie summary format
   const tieSummaryMatch = text.match(/^(T-\d+)\.\s+(\d+)\s+Players?\s+Tied\s+w\/\s+(.+)$/);
@@ -121,8 +127,9 @@ function parseLeaderText(text: string): LeaderRow | null {
     };
   }
 
-  // Regular player format
-  const match = text.match(/^(T-)?(\d+)\.\s+(.+?)\s+\((.+?)\):\s+(.+)$/);
+  // Regular player format - use greedy matching to handle parentheses in player names
+  // The last (...) before : is the team name
+  const match = text.match(/^(T-)?(\d+)\.\s+(.+)\s+\(([^)]+)\):\s+(.+)$/);
   if (match) {
     const rankPrefix = match[1] || '';
     const rankNum = match[2];
@@ -181,9 +188,9 @@ export async function getBattingLeaders(): Promise<{
   slg: LeaderRow[];
   ops: LeaderRow[];
 }> {
-  // Batting leaders are in column J, starting at row 4
+  // Batting leaders are in column J, starting at row 3
   // Format: Header, Leaders (1-5), Blank, Header, Leaders, Blank, etc.
-  const data = await getSheetData("'🏆 Rankings'!J4:J60");
+  const data = await getSheetData("'🏆 Rankings'!J3:J60");
 
   const leaders = {
     obp: [] as LeaderRow[],
@@ -229,8 +236,8 @@ export async function getPitchingLeaders(): Promise<{
   whip: LeaderRow[];
   baa: LeaderRow[];
 }> {
-  // Pitching leaders are in column L
-  const data = await getSheetData("'🏆 Rankings'!L4:L70");
+  // Pitching leaders are in column L, starting at row 3
+  const data = await getSheetData("'🏆 Rankings'!L3:L70");
 
   const leaders = {
     ip: [] as LeaderRow[],
@@ -272,8 +279,8 @@ export async function getFieldingLeaders(): Promise<{
   errors: LeaderRow[];
   stolenBases: LeaderRow[];
 }> {
-  // Fielding leaders are in column N
-  const data = await getSheetData("'🏆 Rankings'!N4:N40");
+  // Fielding leaders are in column N, starting at row 3
+  const data = await getSheetData("'🏆 Rankings'!N3:N40");
 
   const leaders = {
     nicePlays: [] as LeaderRow[],

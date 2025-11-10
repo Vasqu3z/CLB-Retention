@@ -429,19 +429,19 @@ function initializeSeasonSchedule() {
   
   if (!scheduleSheet) {
     scheduleSheet = ss.insertSheet(CONFIG.SEASON_SCHEDULE_SHEET);
-    scheduleSheet.getRange(1, 1, 1, 3).setValues([["Week", "Home Team", "Away Team"]]);
+    scheduleSheet.getRange(1, 1, 1, 3).setValues([["Week", "Away Team", "Home Team"]]);
     scheduleSheet.getRange(1, 1, 1, 3).setFontWeight("bold").setBackground("#e8e8e8");
     scheduleSheet.setFrozenRows(1);
     scheduleSheet.setColumnWidth(1, 60);
     scheduleSheet.setColumnWidth(2, 175);
     scheduleSheet.setColumnWidth(3, 175);
-    
+
     SpreadsheetApp.getUi().alert(
       "Season Schedule sheet created!\n\n" +
       "Please fill it in with your schedule:\n" +
       "• Week: Week number (1, 2, 3, etc.)\n" +
-      "• Home Team: Team playing at home\n" +
-      "• Away Team: Visiting team\n\n" +
+      "• Away Team: Visiting team\n" +
+      "• Home Team: Team playing at home\n\n" +
       "Once filled, run 'Update League Schedule' to generate the full schedule."
     );
   }

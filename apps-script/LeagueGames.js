@@ -249,14 +249,15 @@ function initializeScheduleData(ss, boxScoreSS) {
   if (!scheduleSheet || scheduleSheet.getLastRow() < 2) {
     return [];
   }
-  
+
   var scheduleData = scheduleSheet.getRange(2, 1, scheduleSheet.getLastRow() - 1, 3).getValues();
   var schedule = [];
-  
+
   for (var i = 0; i < scheduleData.length; i++) {
     var week = scheduleData[i][0];
-    var homeTeam = String(scheduleData[i][1]).trim();
-    var awayTeam = String(scheduleData[i][2]).trim();
+    // Column order: A=Week, B=Away Team, C=Home Team
+    var awayTeam = String(scheduleData[i][1]).trim();
+    var homeTeam = String(scheduleData[i][2]).trim();
     
     if (week && homeTeam && awayTeam) {
       schedule.push({

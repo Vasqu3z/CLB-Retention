@@ -455,109 +455,40 @@ export interface ScheduleGame {
 }
 
 export async function getSchedule(): Promise<ScheduleGame[]> {
-  // Read from "Season Schedule" sheet (Week, Home Team, Away Team)
-  const scheduleData = await getSheetData("'Season Schedule'!A2:C100");
+  // Read from "Season Schedule" sheet - now includes game results in columns D-L
+  // Columns: A=Week, B=Away Team, C=Home Team, D=Away Score, E=Home Score,
+  // F=Winning Team, G=Losing Team, H=MVP, I=WP, J=LP, K=SV, L=Box Score Link
+  const scheduleData = await getSheetData("'Season Schedule'!A2:L100");
 
-  // Read completed games from "📅 Schedule" sheet column J with hyperlinks
-  const auth = await getAuthClient();
-  const sheetId = process.env.SHEETS_SPREADSHEET_ID;
-
-  // Get rich text with hyperlinks
-  let completedGamesWithLinks: Array<{ text: string; url?: string }> = [];
-
-  try {
-    const response = await sheets.spreadsheets.get({
-      auth: auth as any,
-      spreadsheetId: sheetId,
-      ranges: ["'📅 Schedule'!J3:J500"],
-      includeGridData: true,
-    });
-
-    if (response.data.sheets && response.data.sheets[0].data) {
-      const rowData = response.data.sheets[0].data[0].rowData || [];
-      completedGamesWithLinks = rowData.map((row) => {
-        const cell = row.values?.[0];
-        const text = cell?.formattedValue || '';
-        const url = cell?.hyperlink || undefined;
-        return { text, url };
-      });
-    }
-  } catch (error) {
-    console.error('Error fetching schedule links:', error);
-  }
-
-  // Parse completed games into a map: "week_HomeTeam_vs_AwayTeam" -> { homeScore, awayScore, winner, url }
-  const completedGamesMap = new Map<string, { homeScore: number; awayScore: number; winner: string; url?: string }>();
-
-  let currentWeek = 0;
-
-  for (const gameData of completedGamesWithLinks) {
-    const text = gameData.text.trim();
-
-    // Check for week headers to track which week we're in
-    if (text.startsWith('Week ')) {
-      const weekMatch = text.match(/^Week\s+(\d+)/);
-      if (weekMatch) {
-        currentWeek = parseInt(weekMatch[1]);
-      }
-      continue;
-    }
-
-    // Skip empty rows and non-game rows
-    if (!text || !text.includes(' || ')) continue;
-
-    // Parse format: "Team1: 5 || Team2: 3"
-    const parts = text.split(' || ');
-    if (parts.length !== 2) continue;
-
-    const team1Match = parts[0].match(/^(.+):\s+(\d+)$/);
-    const team2Match = parts[1].match(/^(.+):\s+(\d+)$/);
-
-    if (!team1Match || !team2Match) continue;
-
-    const team1 = team1Match[1].trim();
-    const score1 = parseInt(team1Match[2]);
-    const team2 = team2Match[1].trim();
-    const score2 = parseInt(team2Match[2]);
-
-    if (isNaN(score1) || isNaN(score2)) continue;
-
-    const winner = score1 > score2 ? team1 : team2;
-
-    // Create game keys with week number for precise matching
-    // Try both possible matchup keys (home/away can be either team)
-    const gameKey1 = `${currentWeek}_${team1}_vs_${team2}`;
-    const gameKey2 = `${currentWeek}_${team2}_vs_${team1}`;
-
-    completedGamesMap.set(gameKey1, { homeScore: score1, awayScore: score2, winner, url: gameData.url });
-    completedGamesMap.set(gameKey2, { homeScore: score2, awayScore: score1, winner, url: gameData.url });
-  }
-
-  // Build schedule with results
   const schedule: ScheduleGame[] = [];
 
   for (const row of scheduleData) {
     const week = Number(row[0]) || 0;
-    const homeTeam = String(row[1] || '').trim();
-    const awayTeam = String(row[2] || '').trim();
+    const awayTeam = String(row[1] || '').trim();
+    const homeTeam = String(row[2] || '').trim();
 
     if (week === 0 || !homeTeam || !awayTeam) continue;
 
-    // Look up game with week number for precise matching
-    const gameKey = `${week}_${homeTeam}_vs_${awayTeam}`;
-    const gameResult = completedGamesMap.get(gameKey);
+    // Check if game has been played (column D will have away score if played)
+    const awayScore = row[3];
+    const homeScore = row[4];
+    const hasScores = awayScore !== undefined && awayScore !== null && awayScore !== '' &&
+                      homeScore !== undefined && homeScore !== null && homeScore !== '';
 
-    if (gameResult) {
-      // Game has been played
+    if (hasScores) {
+      // Game has been played - read results from columns D-L
+      const winner = String(row[5] || '').trim();
+      const boxScoreUrl = String(row[11] || '').trim();
+
       schedule.push({
         week,
         homeTeam,
         awayTeam,
         played: true,
-        homeScore: gameResult.homeScore,
-        awayScore: gameResult.awayScore,
-        winner: gameResult.winner,
-        boxScoreUrl: gameResult.url,
+        homeScore: Number(homeScore),
+        awayScore: Number(awayScore),
+        winner,
+        boxScoreUrl,
       });
     } else {
       // Game is upcoming

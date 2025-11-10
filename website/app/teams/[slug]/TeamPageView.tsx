@@ -23,7 +23,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
   // Separate players by role
   const hitters = roster.filter((p) => p.ab && p.ab > 0);
   const pitchers = roster.filter((p) => p.ip && p.ip > 0);
-  const fielders = roster.filter((p) => p.np !== undefined || p.e !== undefined || p.sb !== undefined);
+  const fielders = roster.filter((p) => (p.np && p.np > 0) || (p.e && p.e > 0) || (p.sb && p.sb > 0));
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {

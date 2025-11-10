@@ -749,7 +749,8 @@ function formatLeaders(
   let previousValue: number | null = null;
   let tiedPlayers: typeof sorted = [];
 
-  for (let i = 0; i < Math.min(sorted.length, 5); i++) {
+  // Iterate through all players, but stop when we have 5 distinct ranks
+  for (let i = 0; i < sorted.length; i++) {
     const player = sorted[i];
 
     if (previousValue !== null && player.value !== previousValue) {
@@ -772,6 +773,12 @@ function formatLeaders(
           rawValue: tiedPlayers[0].value,
         });
       }
+
+      // If we've added 5 leader entries (distinct ranks), stop
+      if (leaders.length >= 5) {
+        break;
+      }
+
       currentRank += tiedPlayers.length;
       tiedPlayers = [];
     }
@@ -780,27 +787,29 @@ function formatLeaders(
     previousValue = player.value;
   }
 
-  // Add remaining tied players
-  if (tiedPlayers.length > 1) {
-    leaders.push({
-      rank: `T-${currentRank}`,
-      player: `${tiedPlayers.length} Players Tied`,
-      team: '',
-      value: tiedPlayers[0].formatted,
-      rawValue: tiedPlayers[0].value,
-      isTieSummary: true,
-    });
-  } else if (tiedPlayers.length === 1) {
-    leaders.push({
-      rank: String(currentRank),
-      player: tiedPlayers[0].player,
-      team: tiedPlayers[0].team,
-      value: tiedPlayers[0].formatted,
-      rawValue: tiedPlayers[0].value,
-    });
+  // Add remaining tied players (if we haven't reached 5 entries yet)
+  if (leaders.length < 5 && tiedPlayers.length > 0) {
+    if (tiedPlayers.length > 1) {
+      leaders.push({
+        rank: `T-${currentRank}`,
+        player: `${tiedPlayers.length} Players Tied`,
+        team: '',
+        value: tiedPlayers[0].formatted,
+        rawValue: tiedPlayers[0].value,
+        isTieSummary: true,
+      });
+    } else if (tiedPlayers.length === 1) {
+      leaders.push({
+        rank: String(currentRank),
+        player: tiedPlayers[0].player,
+        team: tiedPlayers[0].team,
+        value: tiedPlayers[0].formatted,
+        rawValue: tiedPlayers[0].value,
+      });
+    }
   }
 
-  return leaders.slice(0, 5);
+  return leaders;
 }
 
 export async function getCalculatedBattingLeaders() {

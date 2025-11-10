@@ -1,209 +1,256 @@
-# CLB League Hub - Baseball Stats Management System
+# CLB League Discord Bot ⚾
 
-A comprehensive statistics management and player retention probability system for CLB (Comets League Baseball), a Super Mario Sluggers AI vs. AI league.
-
-## 🏗️ System Architecture
-
-This repository contains **two complementary systems**:
-
-1. **Google Apps Script Backend** (`apps-script/`) - Processes game data, calculates stats
-2. **Next.js Website** (`website/`) - Modern web interface for viewing stats
-
-### Hybrid Approach
-
-- **Commissioners** use Google Sheets + Apps Script for data entry and management
-- **Players/Fans** use the website for viewing stats, standings, and browsing history
-- Data flows: Box Scores → Apps Script → Stat Sheets → Website (via Sheets API)
-
-## 📁 Repository Structure
-
-```
-CLB-League-Hub/
-├── apps-script/              # Google Apps Script backend (~8,000 lines)
-├── website/                  # Next.js public website
-├── docs/                     # Documentation & migration plans
-├── vercel.json               # Vercel deployment config
-└── README.md                 # This file
-```
-
-## 🚀 Quick Start
-
-### For Commissioners (Apps Script)
-1. Open your Google Sheets spreadsheet
-2. Extensions → Apps Script
-3. Copy contents of `apps-script/*.js` into your project
-4. Run **Player Stats → Update All**
-
-### For Developers (Website)
-```bash
-cd website
-npm install
-cp .env.example .env.local
-# Add your Google Sheets API credentials
-npm run dev
-```
-
-Visit http://localhost:3000
+Your all-in-one Discord bot for CLB statistics, standings, schedules, and player information.
 
 ---
 
-## Overview
+## 🎯 Features
+
+- **📊 Player Statistics** - Comprehensive hitting, pitching, and fielding stats for every player
+- **🏆 League Leaders** - Top 5 rankings for any stat category
+- **📈 Team Stats** - Complete team performance metrics and records
+- **🏅 Standings** - Live league standings with win percentage and games back
+- **📅 Schedules** - View upcoming games, past scores, and team schedules
+- **⚔️ Head-to-Head** - Historical matchup records between teams
+- **🔍 Player Comparison** - Side-by-side stat comparisons
+- **👥 Team Rosters** - View complete team rosters with GMs
 
 ---
 
-## Sheet Descriptions
+## 💬 Commands
 
-### Core Stat Sheets
+### Player Information
 
-#### **🧮 Team**
-Aggregated team statistics across all categories:
-- Win-loss records
-- Team hitting totals and averages
-- Team pitching totals and averages
-- Team fielding statistics
+#### `/playerstats`
+View comprehensive stats for any player.
 
-#### **🧮 Hitting**
-Complete offensive statistics for all players:
-- **Counting Stats**: Games Played, At-Bats, Hits, Home Runs, RBIs, Walks, Strikeouts, Double Plays, Total Bases
-- **Calculated Metrics**: Batting Average (AVG), On-Base Percentage (OBP), Slugging Percentage (SLG), On-Base Plus Slugging (OPS)
-- **Sluggers-Specific Stat**: ROB (Hits Robbed) - tracks how often defensive "Nice Plays" were made against the batter
+**Usage:** `/playerstats name: PlayerName`
 
-#### **🧮 Pitching**
-Complete pitching statistics for all players:
-- **Counting Stats**: Games Played, Wins, Losses, Saves, Innings Pitched, Batters Faced, Hits Allowed, Home Runs Allowed, Runs Allowed, Walks Allowed, Strikeouts
-- **Calculated Metrics**: Earned Run Average (ERA), Batting Average Against (BAA), Walks + Hits per Inning Pitched (WHIP)
-
-#### **🧮 Fielding & Running**
-Defensive and baserunning statistics:
-- **Fielding**: Games Played, Nice Plays (exceptional defensive plays), Errors
-- **Baserunning**: Stolen Bases
+**Shows:**
+- Hitting stats (AVG, HR, RBI, OPS, etc.)
+- Pitching stats (ERA, W-L, IP, WHIP, etc.)
+- Fielding stats (Nice Plays, Errors, SB)
+- Player headshot (if available)
 
 ---
 
-### Dynamic Display Sheets
+#### `/compare`
+Compare two players side-by-side.
 
-#### **🏆 Rankings**
-The league homepage featuring:
-- **Full Standings**: Ranked by win percentage, with tiebreakers for head-to-head record and run differential
-- **League Leaders**: Top performers in key statistical categories (batting, pitching, fielding)
-- **Recent Results**: Game scores from recent weeks with color-coded winners/losers
-- **This Week's Games**: Upcoming matchups for the current week
+**Usage:** `/compare player1: Player1 player2: Player2`
 
-#### **📅 Schedule**
-Comprehensive schedule view:
-- **Standings**: Current league standings (same as Rankings sheet)
-- **Completed Games**: All finished games organized by week with clickable links to game sheets
-- **Scheduled Games**: All upcoming games organized by week
-
-#### **🧢 Team Sheets** (One per Team)
-Individual team pages showing:
-- **Player Statistics**: Full hitting, pitching, and fielding stats for all team members
-- **League Standings**: Current standings with the team's row highlighted
-- **Team Schedule**: All games (completed and upcoming) with color-coded win/loss results
+**Shows:**
+- Side-by-side stat comparison
+- Better stats marked with `*`
+- All relevant stat categories for both players
 
 ---
 
-### Retention System
+### Team Information
 
-#### **Retention Grades**
-An advanced analytical sheet that calculates each player's probability of returning to their current team next season. The system uses a weighted formula incorporating multiple factors to generate a final retention grade on a 5-95 scale.
+#### `/teamstats`
+View detailed team statistics.
 
-**The Five Retention Factors:**
+**Usage:** `/teamstats teamname: TeamName`
 
-1. **Team Success**
-   - **What it measures**: How well the team performed during the season
-   - **Components**:
-     - Regular season standing (1st place through 8th place)
-     - Postseason performance (Champion, Runner-up, Semifinal, Quarterfinal, or Missed Playoffs)
-   - **Why it matters**: Players on successful teams are more likely to return. Last place finishes significantly hurt retention.
-
-2. **Play Time**
-   - **What it measures**: How much the player actually played and how they were used
-   - **Components**:
-     - Games played percentage (how many team games the player appeared in)
-     - Usage quality (average lineup position for hitters, innings per game for pitchers)
-   - **Why it matters**: Players who play regularly and are used properly (e.g., star hitters in the top 3 of the lineup) are more likely to stay. Benchwarmers and misused stars are flight risks.
-
-3. **Performance**
-   - **What it measures**: Statistical performance relative to other players in the league
-   - **Components**:
-     - Offensive contribution (percentile ranking in AVG, OBP, SLG, OPS, HR, RBI)
-     - Defensive contribution (percentile ranking in Nice Plays minus Errors per game)
-     - Pitching contribution (percentile ranking in ERA, WHIP, BAA)
-   - **Advanced Features**:
-     - **Auto-flagging**: Elite players on struggling teams receive a retention penalty (flight risk)
-     - **Draft expectations**: Performance is evaluated against draft position (high picks underperforming get penalized, late picks overperforming may feel undervalued)
-   - **Why it matters**: Players who excel statistically are valuable assets, but mismatches between ability and situation create retention risk.
-
-4. **Chemistry**
-   - **What it measures**: Player-team fit and locker room dynamics
-   - **How it works**: Commissioners enter scores from 0-20 based on team evaluation
-   - **Why it matters**: Good chemistry keeps players with their teams even when other factors suggest they might leave.
-
-5. **Team Direction**
-   - **What it measures**: The team's perceived competitive outlook for the next season
-   - **How it works**: One score per team (0-20), inherited by all players on that team
-   - **Why it matters**: Players want to be on teams with a bright future. Rebuilding teams lose players, contenders retain them.
-
-**Manual Adjustments:**
-- **Draft/Trade Value**: Records the round in which each player was drafted (1-8), used for draft expectations calculations
-- **Modifiers**: Commissioner can apply adjustments to Team Success, Play Time, and Performance factors to account for context (trades, star point use, etc.)
-
-**Output:**
-- **Final Grade**: A number from 5 to 95 representing retention probability
-  - 70-95: Excellent retention probability (green)
-  - 55-69: Good retention probability (light blue)
-  - 40-54: Uncertain retention (yellow)
-  - 5-39: Poor retention probability (red)
-- **Details Column**: Shows the breakdown of each factor's contribution
+**Shows:**
+- Team record and winning percentage
+- Team hitting stats (AVG, HR, RBI, etc.)
+- Team pitching stats (ERA, WHIP, etc.)
+- Team fielding stats
+- Team icon (if available)
 
 ---
 
-## Support & Feedback
+#### `/roster`
+View a team's complete roster.
 
-For questions, bug reports, or feature requests, contact Vasquez or file an issue at the [CLB League Hub GitHub repository](https://github.com/Vasqu3z/CLB-League-Hub).
+**Usage:** `/roster teamname: TeamName`
 
----
-
-## 🌐 Website Features
-
-The Next.js website provides a modern, mobile-friendly interface:
-
-- **🏆 Standings** - League standings with team records
-- **📊 League Leaders** - Top performers (Phase 1 - in progress)
-- **📅 Schedule** - Game schedule and results (Phase 1 - planned)
-- **🧢 Team Pages** - Rosters and stats (Phase 1 - planned)
-- **🗂️ Historical Archives** - Browse past seasons (Phase 1 - planned)
-- **💰 Transactions** - Transaction timeline (Phase 1 - planned)
-
-### Website Deployment
-
-1. Push this repo to GitHub
-2. Go to [vercel.com](https://vercel.com) and import your repo
-3. Vercel auto-detects `website/` directory (via `vercel.json`)
-4. Add environment variables: `SHEETS_SPREADSHEET_ID`, `GOOGLE_CREDENTIALS`
-5. Deploy!
-
-**Live at:** `https://your-project.vercel.app`
+**Shows:**
+- General Manager name
+- Complete player list
+- Team icon (if available)
 
 ---
 
-## 📚 Documentation
+### League Information
 
-- **[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)** - 16-week migration roadmap
-- **[module-migration-analysis.md](module-migration-analysis.md)** - Module analysis
-- **[sheets-vs-website-assessment.md](sheets-vs-website-assessment.md)** - Pros/cons
-- **[website/README.md](website/README.md)** - Website technical docs
-- **[website/SETUP_GUIDE.md](website/SETUP_GUIDE.md)** - Deployment guide
+#### `/standings`
+View current league standings.
+
+**Usage:** `/standings`
+
+**Shows:**
+- Team rankings
+- Win-Loss records
+- Winning percentage
+- Games behind leader
+- Run differential (+/-)
 
 ---
 
-## Credits
+#### `/rankings`
+View top 5 league leaders for any stat.
 
-**System Design & Development**: Vasquez w/ assistance from Claude AI
-**Version**: 3.0 (Apps Script) + 1.0 (Website)
-**Last Updated**: November 9, 2025
+**Usage:** `/rankings stat: StatName`
 
-**Built with ❤️ for CLB**
-⚾ Super Mario Sluggers AI League 🎮
+**Available Stats:**
+- **Batting:** OBP, Hits, Home Runs, RBI, Slugging, OPS
+- **Pitching:** Innings Pitched, Wins, Losses, Saves, ERA, WHIP, BAA
+- **Fielding:** Nice Plays, Errors, Stolen Bases
 
+**Shows:**
+- Top 5 players for selected stat
+- Player rankings with team affiliation
+- Qualification requirements applied for rate stats
+
+---
+
+### Schedule Information
+
+#### `/schedule`
+View league schedule for upcoming weeks.
+
+**Usage:**
+- `/schedule filter: recent` - Last week's games
+- `/schedule filter: current` - Current week's games
+- `/schedule filter: upcoming` - Next week's games
+- `/schedule filter: week` → Select specific week
+
+**Shows:**
+- Game matchups with @ notation (Away @ Home)
+- Completed games show final scores with winners bolded
+- Links to box scores for completed games
+- Game numbering (Game 1, Game 2, etc.)
+
+---
+
+#### `/scores`
+View past game results for completed weeks.
+
+**Usage:** `/scores week: WeekNumber`
+
+**Shows:**
+- All completed games for selected week
+- Final scores with winners bolded
+- Links to box scores
+- Game numbering (Game 1, Game 2, etc.)
+
+---
+
+#### `/teamschedule`
+View a team's full season schedule.
+
+**Usage:** `/teamschedule teamname: TeamName`
+
+**Shows:**
+- All games organized by week
+- Completed games with scores
+- Upcoming games
+- Team icon (if available)
+
+---
+
+#### `/headtohead`
+View matchup history between two teams.
+
+**Usage:** `/headtohead team1: Team1 team2: Team2`
+
+**Shows:**
+- Overall head-to-head record
+- Average runs per game for each team
+- Complete game-by-game results
+- Links to box scores
+
+---
+
+## 🔍 Autocomplete Features
+
+All commands include **autocomplete** to make finding players and teams easy:
+
+- **Player names** - Start typing and matching players appear
+- **Team names** - Shows team name and GM
+- **Stats** - Shows abbreviation and full name (e.g., "HR - Home Runs")
+- **Weeks** - Only shows relevant weeks (completed for scores, upcoming for schedule)
+
+---
+
+## 🖼️ Visual Features
+
+The bot displays images when available:
+- **Player headshots** on player stat cards
+- **Team icons** on team stats and rosters
+- **League logo** on league-wide commands (comparisons, schedules)
+
+---
+
+## 📊 Data Updates
+
+- Stats refresh every **5 minutes** from the Google Sheets database
+- Instant access to recently updated stats
+- No manual refresh needed!
+
+---
+
+## ❓ Tips & Tricks
+
+### Finding Players
+You can search by **first name, last name, or team**:
+- Type "Toad" to find all Toads
+- Type "Monsters" to find all Monsters players
+
+### Team Searches
+Teams show up as **"Team Name - GM Name"** in autocomplete:
+- Search by team name
+- Search by GM name
+- Filter automatically excludes teams without GMs
+
+### Stat Abbreviations
+Not sure what a stat means? The autocomplete shows both:
+- **Short version:** HR
+- **Full name:** Home Runs
+
+---
+
+## 📝 Notes
+
+### Qualification Standards
+For rate stats (AVG, ERA, OBP, etc.), players must meet minimum playing time:
+- **Batting stats:** 2.1 × team games played in AB
+- **Pitching stats:** 1.0 × team games played in IP
+
+### Schedule Format
+- **@** indicates location (Away @ Home)
+- **Bold** indicates winner
+- **Week #:** precedes each game
+- **Game #:** shows game number in multi-game weeks
+
+---
+
+## 🆘 Support
+
+Having issues with the bot? Here's how to troubleshoot:
+
+1. **Bot not responding?**
+   - Check if the bot is online (green status)
+   - Try again in a few seconds (might be updating)
+
+2. **Autocomplete not working?**
+   - Start typing slower
+   - Try partial names instead of full names
+
+3. **Player/Team not found?**
+   - Check spelling
+   - Try searching by team instead
+   - Player may not have stats yet this season
+
+4. **Stats seem outdated?**
+   - Stats update every 5 minutes
+   - Recent games may take a few minutes to appear
+
+---
+
+## 🎉 Enjoy!
+
+- The Best Pitcher in CLB

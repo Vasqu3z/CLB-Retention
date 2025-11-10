@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Team } from '@/config/league';
-import { PlayerStats, ScheduleGame, StandingsRow } from '@/lib/sheets';
+import { PlayerStats, ScheduleGame, StandingsRow, TeamData } from '@/lib/sheets';
 import Link from 'next/link';
 
 interface TeamPageViewProps {
@@ -10,12 +10,13 @@ interface TeamPageViewProps {
   roster: PlayerStats[];
   schedule: ScheduleGame[];
   standing?: StandingsRow;
+  teamData?: TeamData;
 }
 
 type SortField = keyof PlayerStats | 'none';
 type SortDirection = 'asc' | 'desc';
 
-export default function TeamPageView({ team, roster, schedule, standing }: TeamPageViewProps) {
+export default function TeamPageView({ team, roster, schedule, standing, teamData }: TeamPageViewProps) {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
@@ -55,36 +56,11 @@ export default function TeamPageView({ team, roster, schedule, standing }: TeamP
   const sortedPitchers = sortPlayers(pitchers);
   const sortedFielders = sortPlayers(fielders);
 
-  // Calculate team totals
-  const hittingTotals = hitters.reduce(
-    (acc, p) => ({
-      ab: acc.ab + (p.ab || 0),
-      h: acc.h + (p.h || 0),
-      hr: acc.hr + (p.hr || 0),
-      rbi: acc.rbi + (p.rbi || 0),
-    }),
-    { ab: 0, h: 0, hr: 0, rbi: 0 }
-  );
-  const teamAvg = hittingTotals.ab > 0 ? (hittingTotals.h / hittingTotals.ab).toFixed(3).substring(1) : '.000';
-
-  const pitchingTotals = pitchers.reduce(
-    (acc, p) => ({
-      ip: acc.ip + (p.ip || 0),
-      w: acc.w + (p.w || 0),
-      l: acc.l + (p.l || 0),
-      sv: acc.sv + (p.sv || 0),
-    }),
-    { ip: 0, w: 0, l: 0, sv: 0 }
-  );
-
-  const fieldingTotals = fielders.reduce(
-    (acc, p) => ({
-      np: acc.np + (p.np || 0),
-      e: acc.e + (p.e || 0),
-      sb: acc.sb + (p.sb || 0),
-    }),
-    { np: 0, e: 0, sb: 0 }
-  );
+  // Use Team Data totals (only counts stats from games this team played)
+  // Calculate team avg from raw stats
+  const teamAvg = teamData && teamData.hitting.ab > 0
+    ? (teamData.hitting.h / teamData.hitting.ab).toFixed(3).substring(1)
+    : '.000';
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -218,18 +194,20 @@ export default function TeamPageView({ team, roster, schedule, standing }: TeamP
                 </tr>
               ))}
               {/* Team Totals Row */}
-              <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
-                <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                <td className="px-4 py-3 text-center">—</td>
-                <td className="px-4 py-3 text-center">{hittingTotals.ab}</td>
-                <td className="px-4 py-3 text-center">{hittingTotals.h}</td>
-                <td className="px-4 py-3 text-center">{hittingTotals.hr}</td>
-                <td className="px-4 py-3 text-center">{hittingTotals.rbi}</td>
-                <td className="px-4 py-3 text-center">{teamAvg}</td>
-                <td className="px-4 py-3 text-center">—</td>
-                <td className="px-4 py-3 text-center">—</td>
-                <td className="px-4 py-3 text-center">—</td>
-              </tr>
+              {teamData && (
+                <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
+                  <td className="px-4 py-3 text-gray-900">Team Totals</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">{teamData.hitting.ab}</td>
+                  <td className="px-4 py-3 text-center">{teamData.hitting.h}</td>
+                  <td className="px-4 py-3 text-center">{teamData.hitting.hr}</td>
+                  <td className="px-4 py-3 text-center">{teamData.hitting.rbi}</td>
+                  <td className="px-4 py-3 text-center">{teamAvg}</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -282,16 +260,18 @@ export default function TeamPageView({ team, roster, schedule, standing }: TeamP
                 </tr>
               ))}
               {/* Team Totals Row */}
-              <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
-                <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                <td className="px-4 py-3 text-center">—</td>
-                <td className="px-4 py-3 text-center">{pitchingTotals.ip.toFixed(2)}</td>
-                <td className="px-4 py-3 text-center">{pitchingTotals.w}</td>
-                <td className="px-4 py-3 text-center">{pitchingTotals.l}</td>
-                <td className="px-4 py-3 text-center">{pitchingTotals.sv}</td>
-                <td className="px-4 py-3 text-center">—</td>
-                <td className="px-4 py-3 text-center">—</td>
-              </tr>
+              {teamData && (
+                <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
+                  <td className="px-4 py-3 text-gray-900">Team Totals</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">{teamData.pitching.ip.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-center">{teamData.wins}</td>
+                  <td className="px-4 py-3 text-center">{teamData.losses}</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -332,13 +312,15 @@ export default function TeamPageView({ team, roster, schedule, standing }: TeamP
                 </tr>
               ))}
               {/* Team Totals Row */}
-              <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
-                <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                <td className="px-4 py-3 text-center">—</td>
-                <td className="px-4 py-3 text-center">{fieldingTotals.np}</td>
-                <td className="px-4 py-3 text-center">{fieldingTotals.e}</td>
-                <td className="px-4 py-3 text-center">{fieldingTotals.sb}</td>
-              </tr>
+              {teamData && (
+                <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
+                  <td className="px-4 py-3 text-gray-900">Team Totals</td>
+                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">{teamData.fielding.np}</td>
+                  <td className="px-4 py-3 text-center">{teamData.fielding.e}</td>
+                  <td className="px-4 py-3 text-center">{teamData.fielding.sb}</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

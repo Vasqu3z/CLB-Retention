@@ -547,3 +547,93 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
 
   return schedule;
 }
+
+// ===== TEAM DATA =====
+export interface TeamData {
+  teamName: string;
+  captain: string;
+  gp: number;
+  wins: number;
+  losses: number;
+  // Hitting totals (raw counting stats)
+  hitting: {
+    ab: number;
+    h: number;
+    hr: number;
+    rbi: number;
+    bb: number;
+    k: number;
+    rob: number;
+    dp: number;
+    tb: number;
+  };
+  // Pitching totals (raw counting stats)
+  pitching: {
+    ip: number;
+    bf: number;
+    h: number;
+    hr: number;
+    r: number;
+    bb: number;
+    k: number;
+  };
+  // Fielding totals (raw counting stats)
+  fielding: {
+    np: number;
+    e: number;
+    sb: number;
+  };
+}
+
+export async function getTeamData(teamName?: string): Promise<TeamData[]> {
+  // Read from "Team Data" sheet
+  // Row 2 onwards: Team Name, Captain, GP, W, L, Hitting(9), Pitching(7), Fielding(3)
+  // Columns A-B: Team, Captain
+  // Columns C-E: GP, W, L
+  // Columns F-N: AB, H, HR, RBI, BB, K, ROB, DP, TB (9 hitting stats)
+  // Columns O-U: IP, BF, H, HR, R, BB, K (7 pitching stats)
+  // Columns V-X: NP, E, SB (3 fielding stats)
+  const data = await getSheetData("'Team Data'!A2:X20");
+
+  const teamDataList = data
+    .filter((row) => row[0] && String(row[0]).trim() !== '')
+    .map((row) => ({
+      teamName: String(row[0] || '').trim(),
+      captain: String(row[1] || '').trim(),
+      gp: Number(row[2]) || 0,
+      wins: Number(row[3]) || 0,
+      losses: Number(row[4]) || 0,
+      hitting: {
+        ab: Number(row[5]) || 0,
+        h: Number(row[6]) || 0,
+        hr: Number(row[7]) || 0,
+        rbi: Number(row[8]) || 0,
+        bb: Number(row[9]) || 0,
+        k: Number(row[10]) || 0,
+        rob: Number(row[11]) || 0,
+        dp: Number(row[12]) || 0,
+        tb: Number(row[13]) || 0,
+      },
+      pitching: {
+        ip: Number(row[14]) || 0,
+        bf: Number(row[15]) || 0,
+        h: Number(row[16]) || 0,
+        hr: Number(row[17]) || 0,
+        r: Number(row[18]) || 0,
+        bb: Number(row[19]) || 0,
+        k: Number(row[20]) || 0,
+      },
+      fielding: {
+        np: Number(row[21]) || 0,
+        e: Number(row[22]) || 0,
+        sb: Number(row[23]) || 0,
+      },
+    }));
+
+  // If teamName is provided, filter to just that team
+  if (teamName) {
+    return teamDataList.filter((td) => td.teamName === teamName);
+  }
+
+  return teamDataList;
+}

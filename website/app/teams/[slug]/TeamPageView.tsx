@@ -57,10 +57,37 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
   const sortedFielders = sortPlayers(fielders);
 
   // Use Team Data totals (only counts stats from games this team played)
-  // Calculate team avg from raw stats
+  // Calculate rate stats from raw Team Data stats
   const teamAvg = teamData && teamData.hitting.ab > 0
     ? (teamData.hitting.h / teamData.hitting.ab).toFixed(3).substring(1)
     : '.000';
+
+  const teamOBP = teamData && (teamData.hitting.ab + teamData.hitting.bb) > 0
+    ? ((teamData.hitting.h + teamData.hitting.bb) / (teamData.hitting.ab + teamData.hitting.bb)).toFixed(3).substring(1)
+    : '.000';
+
+  const teamSLG = teamData && teamData.hitting.ab > 0
+    ? (teamData.hitting.tb / teamData.hitting.ab).toFixed(3).substring(1)
+    : '.000';
+
+  const teamOPS = teamData && (teamData.hitting.ab + teamData.hitting.bb) > 0
+    ? (parseFloat(teamOBP) + parseFloat(teamSLG)).toFixed(3).substring(1)
+    : '.000';
+
+  const teamERA = teamData && teamData.pitching.ip > 0
+    ? ((teamData.pitching.r * 9) / teamData.pitching.ip).toFixed(2)
+    : '0.00';
+
+  const teamWHIP = teamData && teamData.pitching.ip > 0
+    ? ((teamData.pitching.h + teamData.pitching.bb) / teamData.pitching.ip).toFixed(2)
+    : '0.00';
+
+  const teamBAA = teamData && teamData.pitching.bf > 0
+    ? (teamData.pitching.h / teamData.pitching.bf).toFixed(3).substring(1)
+    : '.000';
+
+  // SV is not in Team Data, so sum from players
+  const teamSV = pitchers.reduce((acc, p) => acc + (p.sv || 0), 0);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -197,15 +224,15 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
               {teamData && (
                 <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
                   <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">{teamData.gp}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.ab}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.h}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.hr}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.rbi}</td>
                   <td className="px-4 py-3 text-center">{teamAvg}</td>
-                  <td className="px-4 py-3 text-center">—</td>
-                  <td className="px-4 py-3 text-center">—</td>
-                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">{teamOBP}</td>
+                  <td className="px-4 py-3 text-center">{teamSLG}</td>
+                  <td className="px-4 py-3 text-center">{teamOPS}</td>
                 </tr>
               )}
             </tbody>
@@ -244,6 +271,9 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                 <SortableHeader field="whip" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   WHIP
                 </SortableHeader>
+                <SortableHeader field="baa" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  BAA
+                </SortableHeader>
               </tr>
             </thead>
             <tbody>
@@ -257,19 +287,21 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{player.sv}</td>
                   <td className="px-4 py-3 text-center">{player.era}</td>
                   <td className="px-4 py-3 text-center">{player.whip}</td>
+                  <td className="px-4 py-3 text-center">{player.baa || '—'}</td>
                 </tr>
               ))}
               {/* Team Totals Row */}
               {teamData && (
                 <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
                   <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">{teamData.gp}</td>
                   <td className="px-4 py-3 text-center">{teamData.pitching.ip.toFixed(2)}</td>
                   <td className="px-4 py-3 text-center">{teamData.wins}</td>
                   <td className="px-4 py-3 text-center">{teamData.losses}</td>
-                  <td className="px-4 py-3 text-center">—</td>
-                  <td className="px-4 py-3 text-center">—</td>
-                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">{teamSV}</td>
+                  <td className="px-4 py-3 text-center">{teamERA}</td>
+                  <td className="px-4 py-3 text-center">{teamWHIP}</td>
+                  <td className="px-4 py-3 text-center">{teamBAA}</td>
                 </tr>
               )}
             </tbody>

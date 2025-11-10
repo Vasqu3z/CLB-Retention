@@ -334,6 +334,7 @@ export interface PlayerStats {
   sv?: number;
   era?: string;
   whip?: string;
+  baa?: string;
   // Fielding
   np?: number;
   e?: number;
@@ -389,6 +390,7 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
     player.l = Number(row[4]) || 0;
     player.sv = Number(row[5]) || 0;
     player.era = String(row[6] || '0.00');
+    player.baa = String(row[14] || '0.000');
     player.whip = String(row[15] || '0.00');
 
     playersMap.set(playerName, player);

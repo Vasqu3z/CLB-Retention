@@ -1,4 +1,4 @@
-# CLB League Hub - Baseball Stats Management System
+# CLB Hub - Baseball Stats Management System
 
 A comprehensive statistics management and player retention probability system for CLB (Comets League Baseball), a Super Mario Sluggers AI vs. AI league.
 
@@ -206,4 +206,5 @@ The Next.js website provides a modern, mobile-friendly interface:
 
 **Built with ❤️ for CLB**
 ⚾ Super Mario Sluggers AI League 🎮
+
 

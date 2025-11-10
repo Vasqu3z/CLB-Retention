@@ -108,66 +108,90 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
 
 function GameRow({ game }: { game: ScheduleGame }) {
   if (!game.played) {
-    // Upcoming game
+    // Upcoming game - format: "Away @ Home"
     return (
       <div className="px-6 py-4 hover:bg-gray-50 transition">
         <div className="text-gray-500 italic text-center">
-          <span className="font-medium">{game.homeTeam}</span>
-          {' vs '}
           <span className="font-medium">{game.awayTeam}</span>
+          {' @ '}
+          <span className="font-medium">{game.homeTeam}</span>
         </div>
       </div>
     );
   }
 
-  // Completed game
+  // Completed game - format: "Away Score @ Score Home"
   const homeWon = game.winner === game.homeTeam;
   const awayWon = game.winner === game.awayTeam;
 
+  const content = (
+    <div className="flex items-center justify-center gap-3 text-lg">
+      {/* Away Team */}
+      <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+        <span
+          className="font-semibold truncate"
+          style={{
+            color: awayWon ? '#059669' : '#DC2626',
+            fontWeight: awayWon ? 'bold' : 'normal'
+          }}
+        >
+          {game.awayTeam}
+        </span>
+        <span
+          className="text-xl font-bold tabular-nums"
+          style={{ color: awayWon ? '#059669' : '#DC2626' }}
+        >
+          {game.awayScore}
+        </span>
+      </div>
+
+      {/* @ Symbol */}
+      <span className="text-gray-400 font-medium text-sm">@</span>
+
+      {/* Home Team */}
+      <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
+        <span
+          className="text-xl font-bold tabular-nums"
+          style={{ color: homeWon ? '#059669' : '#DC2626' }}
+        >
+          {game.homeScore}
+        </span>
+        <span
+          className="font-semibold truncate"
+          style={{
+            color: homeWon ? '#059669' : '#DC2626',
+            fontWeight: homeWon ? 'bold' : 'normal'
+          }}
+        >
+          {game.homeTeam}
+        </span>
+      </div>
+    </div>
+  );
+
+  // If box score URL exists, make entire row clickable
+  if (game.boxScoreUrl) {
+    return (
+      <a
+        href={game.boxScoreUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block px-6 py-4 hover:bg-gray-50 transition cursor-pointer"
+      >
+        {content}
+        <div className="text-center mt-1">
+          <span className="text-xs text-blue-600 hover:underline">
+            View Box Score →
+          </span>
+        </div>
+      </a>
+    );
+  }
+
+  // No link available
   return (
     <div className="px-6 py-4 hover:bg-gray-50 transition">
-      <div className="flex items-center justify-center gap-4 text-lg">
-        {/* Home Team */}
-        <div className="flex items-center gap-3 min-w-0 flex-1 justify-end">
-          <span
-            className="font-semibold truncate"
-            style={{
-              color: homeWon ? '#059669' : '#DC2626',
-              fontWeight: homeWon ? 'bold' : 'normal'
-            }}
-          >
-            {game.homeTeam}
-          </span>
-          <span
-            className="text-2xl font-bold tabular-nums"
-            style={{ color: homeWon ? '#059669' : '#DC2626' }}
-          >
-            {game.homeScore}
-          </span>
-        </div>
-
-        {/* Divider */}
-        <span className="text-gray-400 font-bold">-</span>
-
-        {/* Away Team */}
-        <div className="flex items-center gap-3 min-w-0 flex-1 justify-start">
-          <span
-            className="text-2xl font-bold tabular-nums"
-            style={{ color: awayWon ? '#059669' : '#DC2626' }}
-          >
-            {game.awayScore}
-          </span>
-          <span
-            className="font-semibold truncate"
-            style={{
-              color: awayWon ? '#059669' : '#DC2626',
-              fontWeight: awayWon ? 'bold' : 'normal'
-            }}
-          >
-            {game.awayTeam}
-          </span>
-        </div>
-      </div>
+      {content}
     </div>
   );
 }

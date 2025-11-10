@@ -426,21 +426,46 @@ export interface ScheduleGame {
   homeScore?: number;
   awayScore?: number;
   winner?: string;
+  boxScoreUrl?: string;
 }
 
 export async function getSchedule(): Promise<ScheduleGame[]> {
   // Read from "Season Schedule" sheet (Week, Home Team, Away Team)
   const scheduleData = await getSheetData("'Season Schedule'!A2:C100");
 
-  // Read completed games from "📅 Schedule" sheet column J
-  // Format: "Team1: 5 || Team2: 3" with week headers mixed in
-  const completedGamesData = await getSheetData("'📅 Schedule'!J3:J500");
+  // Read completed games from "📅 Schedule" sheet column J with hyperlinks
+  const auth = await getAuthClient();
+  const sheetId = process.env.SHEETS_SPREADSHEET_ID;
 
-  // Parse completed games into a map: "HomeTeam_vs_AwayTeam" -> { homeScore, awayScore, winner }
-  const completedGamesMap = new Map<string, { homeScore: number; awayScore: number; winner: string }>();
+  // Get rich text with hyperlinks
+  let completedGamesWithLinks: Array<{ text: string; url?: string }> = [];
 
-  for (const row of completedGamesData) {
-    const text = String(row[0] || '').trim();
+  try {
+    const response = await sheets.spreadsheets.get({
+      auth: auth as any,
+      spreadsheetId: sheetId,
+      ranges: ["'📅 Schedule'!J3:J500"],
+      includeGridData: true,
+    });
+
+    if (response.data.sheets && response.data.sheets[0].data) {
+      const rowData = response.data.sheets[0].data[0].rowData || [];
+      completedGamesWithLinks = rowData.map((row) => {
+        const cell = row.values?.[0];
+        const text = cell?.formattedValue || '';
+        const url = cell?.hyperlink || undefined;
+        return { text, url };
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching schedule links:', error);
+  }
+
+  // Parse completed games into a map: "HomeTeam_vs_AwayTeam" -> { homeScore, awayScore, winner, url }
+  const completedGamesMap = new Map<string, { homeScore: number; awayScore: number; winner: string; url?: string }>();
+
+  for (const gameData of completedGamesWithLinks) {
+    const text = gameData.text.trim();
 
     // Skip week headers and empty rows
     if (!text || text.startsWith('Week ') || !text.includes(' || ')) continue;
@@ -467,8 +492,8 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
     const gameKey1 = `${team1}_vs_${team2}`;
     const gameKey2 = `${team2}_vs_${team1}`;
 
-    completedGamesMap.set(gameKey1, { homeScore: score1, awayScore: score2, winner });
-    completedGamesMap.set(gameKey2, { homeScore: score2, awayScore: score1, winner });
+    completedGamesMap.set(gameKey1, { homeScore: score1, awayScore: score2, winner, url: gameData.url });
+    completedGamesMap.set(gameKey2, { homeScore: score2, awayScore: score1, winner, url: gameData.url });
   }
 
   // Build schedule with results
@@ -494,6 +519,7 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
         homeScore: gameResult.homeScore,
         awayScore: gameResult.awayScore,
         winner: gameResult.winner,
+        boxScoreUrl: gameResult.url,
       });
     } else {
       // Game is upcoming

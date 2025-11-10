@@ -74,7 +74,11 @@ function updateAll() {
     updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);
     var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
-    
+
+    // Write game results to Season Schedule
+    logInfo("UpdateAll", "Writing game results to Season Schedule");
+    writeGameResultsToSeasonSchedule(gameData.scheduleData);
+
     // ===== STEP 4: Update league hub (using cached data) =====
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Update All", -1);
     var step4Start = new Date();
@@ -184,7 +188,11 @@ function quickUpdate() {
     updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);
     var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
-    
+
+    // Write game results to Season Schedule
+    logInfo("QuickUpdate", "Writing game results to Season Schedule");
+    writeGameResultsToSeasonSchedule(gameData.scheduleData);
+
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Quick Update", -1);
     var step4Start = new Date();
     // Pass full gameData object for in-memory performance

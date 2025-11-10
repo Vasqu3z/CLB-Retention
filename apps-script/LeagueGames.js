@@ -78,6 +78,11 @@ function processAllGameSheetsOnce() {
       var losingPitcher = String(batchData[47][15]).trim();   // R50 (index 47, col 15)
       var savePitcher = String(batchData[46][15]).trim();     // R49 (index 46, col 15)
 
+      // ===== Extract MVP from cell Q48 =====
+      // Q48 is row 48, column Q (column 17, index 16 in batch)
+      // Row 48 in sheet = index 45 in batch (48 - 3)
+      var gameMVP = String(batchData[45][16]).trim();  // Q48 (index 45, col 16)
+
       // Create gameData object
       var gameData = {
         awayTeam: awayTeam,
@@ -92,7 +97,8 @@ function processAllGameSheetsOnce() {
         homeTeamPitchField: team2PitchField, // team2 = Home (row 27)
         winningPitcher: winningPitcher,
         losingPitcher: losingPitcher,
-        savePitcher: savePitcher
+        savePitcher: savePitcher,
+        gameMVP: gameMVP                     // NEW: Game MVP from Q48
       };
 
       // Extract week number
@@ -131,7 +137,7 @@ function processAllGameSheetsOnce() {
         weekNum: weekNum
       });
       
-      updateScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner);
+      updateScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData);
       
       // Progress update
       if ((g + 1) % CONFIG.PROGRESS_UPDATE_FREQUENCY === 0) {
@@ -430,15 +436,89 @@ function processTeamStatsWithH2HFromGame(teamStats, team1, team2, winner, loser,
   }
 }
 
-function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner) {
+function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData) {
   for (var s = 0; s < scheduleData.length; s++) {
     if (scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2) {
       scheduleData[s].played = true;
       scheduleData[s].homeScore = runs1;
       scheduleData[s].awayScore = runs2;
       scheduleData[s].winner = winner;
+      scheduleData[s].loser = loser;
       scheduleData[s].sheetId = sheet.getSheetId();
+
+      // NEW: Add MVP and pitcher data
+      scheduleData[s].mvp = gameData.gameMVP || "";
+      scheduleData[s].winningPitcher = gameData.winningPitcher || "";
+      scheduleData[s].losingPitcher = gameData.losingPitcher || "";
+      scheduleData[s].savePitcher = gameData.savePitcher || "";
+
       break;
     }
   }
+}
+
+// ===== WRITE GAME RESULTS BACK TO SEASON SCHEDULE =====
+function writeGameResultsToSeasonSchedule(scheduleData) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var scheduleSheet = ss.getSheetByName(CONFIG.SEASON_SCHEDULE_SHEET);
+
+  if (!scheduleSheet) {
+    logError("Write Game Results", "Season Schedule sheet not found", "");
+    return;
+  }
+
+  // Add headers if they don't exist yet (columns D-K)
+  var headers = scheduleSheet.getRange(1, 1, 1, 11).getValues()[0];
+
+  if (!headers[3] || headers[3] === "") {
+    // Write new column headers
+    scheduleSheet.getRange(1, 4, 1, 8).setValues([[
+      "Winning Team", "Losing Team", "Game MVP", "Winning Pitcher",
+      "Losing Pitcher", "Saving Pitcher", "Box Score Link"
+    ]]);
+    scheduleSheet.getRange(1, 4, 1, 8).setFontWeight("bold").setBackground("#e8e8e8");
+  }
+
+  // Write game results for each completed game
+  for (var i = 0; i < scheduleData.length; i++) {
+    var game = scheduleData[i];
+
+    if (game.played && game.sheetId) {
+      var rowNum = i + 2; // +2 because data starts at row 2 (row 1 is headers)
+
+      // Build box score URL
+      var boxScoreUrl = "";
+      if (game.sheetId) {
+        try {
+          var boxScoreSS = getBoxScoreSpreadsheet();
+          if (boxScoreSS) {
+            boxScoreUrl = boxScoreSS.getUrl() + "#gid=" + game.sheetId;
+          }
+        } catch (e) {
+          logWarning("Write Game Results", "Could not build box score URL", e.toString());
+        }
+      }
+
+      // Write game results to columns D-K
+      var gameResults = [
+        game.winner || "",
+        game.loser || "",
+        game.mvp || "",
+        game.winningPitcher || "",
+        game.losingPitcher || "",
+        game.savePitcher || "",
+        boxScoreUrl
+      ];
+
+      scheduleSheet.getRange(rowNum, 4, 1, 7).setValues([gameResults]);
+
+      // Add hyperlink to Box Score Link cell if URL exists
+      if (boxScoreUrl) {
+        var linkFormula = '=HYPERLINK("' + boxScoreUrl + '", "View Box Score")';
+        scheduleSheet.getRange(rowNum, 10).setFormula(linkFormula);
+      }
+    }
+  }
+
+  logInfo("Write Game Results", "Wrote " + scheduleData.filter(function(g) { return g.played; }).length + " completed games to Season Schedule");
 }

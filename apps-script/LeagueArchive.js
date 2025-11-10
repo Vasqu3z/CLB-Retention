@@ -206,13 +206,9 @@ function clearLeagueHub() {
   if (leagueHub) {
     leagueHub.clear();
     leagueHub.getRange(1, 1).setValue("Run 'Update All' to populate standings and scores");
-    logInfo("Archive Season", "Cleared League Hub");
+    logInfo("Archive Season", "Cleared Standings");
   }
-  
-  // Clear League Schedule if it exists
-  var leagueSchedule = ss.getSheetByName(CONFIG.LEAGUE_SCHEDULE_SHEET);
-  if (leagueSchedule) {
-    leagueSchedule.clear();
-    logInfo("Archive Season", "Cleared League Schedule");
-  }
+
+  // NOTE: League Schedule display sheet (📅 Schedule) removed in v2.0
+  // Only the "Schedule" data sheet exists now
 }

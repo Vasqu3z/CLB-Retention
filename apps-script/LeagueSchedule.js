@@ -12,13 +12,14 @@ function updateLeagueScheduleFromCache(scheduleData, teamStatsWithH2H, gamesByWe
     return;
   }
   
-  logInfo("Step 5", "Creating league schedule from cached data");
-  
-  // Create/update the schedule sheet using cached data
-  createLeagueScheduleSheetFromCache(scheduleData, teamStatsWithH2H, gamesByWeek, boxScoreUrl);
-  
-  logInfo("Step 5", "League schedule updated");
-  SpreadsheetApp.getActiveSpreadsheet().toast("League Schedule updated!", "Step 5 Complete", 3);
+  logInfo("Step 5", "Schedule data validated");
+
+  // NOTE: League Schedule display sheet (📅 Schedule) removed in v2.0
+  // The website and Discord bot now read directly from the "Schedule" sheet
+  // createLeagueScheduleSheetFromCache(scheduleData, teamStatsWithH2H, gamesByWeek, boxScoreUrl);
+
+  logInfo("Step 5", "Schedule processing complete");
+  SpreadsheetApp.getActiveSpreadsheet().toast("Schedule validated!", "Step 5 Complete", 3);
 }
 
 /**
@@ -477,7 +478,8 @@ function generateLeagueSchedulePage() {
 
 /**
  * Legacy function name for backwards compatibility
+ * DEPRECATED in v2.0 - League Schedule display sheet removed
  */
-function createLeagueScheduleSheet(scheduleData, teamStats, gamesByWeek, boxScoreSpreadsheetUrl) {
-  createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek, boxScoreSpreadsheetUrl);
-}
+// function createLeagueScheduleSheet(scheduleData, teamStats, gamesByWeek, boxScoreSpreadsheetUrl) {
+//   createLeagueScheduleSheetFromCache(scheduleData, teamStats, gamesByWeek, boxScoreSpreadsheetUrl);
+// }

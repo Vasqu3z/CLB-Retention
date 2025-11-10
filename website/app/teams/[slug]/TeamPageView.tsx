@@ -196,6 +196,9 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                 <SortableHeader field="rbi" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   RBI
                 </SortableHeader>
+                <SortableHeader field="rob" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  ROB
+                </SortableHeader>
                 <SortableHeader field="dp" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   DP
                 </SortableHeader>
@@ -222,6 +225,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{player.h}</td>
                   <td className="px-4 py-3 text-center">{player.hr}</td>
                   <td className="px-4 py-3 text-center">{player.rbi}</td>
+                  <td className="px-4 py-3 text-center">{player.rob || 0}</td>
                   <td className="px-4 py-3 text-center">{player.dp || 0}</td>
                   <td className="px-4 py-3 text-center">{player.avg}</td>
                   <td className="px-4 py-3 text-center">{player.obp}</td>
@@ -238,6 +242,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{teamData.hitting.h}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.hr}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.rbi}</td>
+                  <td className="px-4 py-3 text-center">{teamData.hitting.rob}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.dp}</td>
                   <td className="px-4 py-3 text-center">{teamAvg}</td>
                   <td className="px-4 py-3 text-center">{teamOBP}</td>

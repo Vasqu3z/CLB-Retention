@@ -323,6 +323,7 @@ export interface PlayerStats {
   h?: number;
   hr?: number;
   rbi?: number;
+  rob?: number; // Runners on Base (performance vs expected)
   dp?: number; // Double Plays Hit Into
   avg?: string;
   obp?: string;
@@ -414,6 +415,7 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
       h,
       hr,
       rbi,
+      rob,
       dp,
       avg,
       obp,
@@ -735,7 +737,7 @@ async function getAllPlayers(): Promise<PlayerStats[]> {
       name: playerName,
       team,
       gp,
-      ab, h, hr, rbi, dp, avg, obp, slg, ops,
+      ab, h, hr, rbi, rob, dp, avg, obp, slg, ops,
       ip, w, l, sv, hrAllowed: pitchingHR, era, whip, baa,
       np, e, sb, cs, oaa,
     });

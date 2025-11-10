@@ -91,6 +91,9 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
   // SV is not in Team Data, so sum from players
   const teamSV = pitchers.reduce((acc, p) => acc + (p.sv || 0), 0);
 
+  // Calculate team OAA (Outs Above Average)
+  const teamOAA = teamData ? teamData.fielding.np - teamData.fielding.e : 0;
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Team Header */}
@@ -193,6 +196,9 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                 <SortableHeader field="rbi" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   RBI
                 </SortableHeader>
+                <SortableHeader field="dp" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  DP
+                </SortableHeader>
                 <SortableHeader field="avg" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   AVG
                 </SortableHeader>
@@ -216,6 +222,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{player.h}</td>
                   <td className="px-4 py-3 text-center">{player.hr}</td>
                   <td className="px-4 py-3 text-center">{player.rbi}</td>
+                  <td className="px-4 py-3 text-center">{player.dp || 0}</td>
                   <td className="px-4 py-3 text-center">{player.avg}</td>
                   <td className="px-4 py-3 text-center">{player.obp}</td>
                   <td className="px-4 py-3 text-center">{player.slg}</td>
@@ -231,6 +238,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{teamData.hitting.h}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.hr}</td>
                   <td className="px-4 py-3 text-center">{teamData.hitting.rbi}</td>
+                  <td className="px-4 py-3 text-center">{teamData.hitting.dp}</td>
                   <td className="px-4 py-3 text-center">{teamAvg}</td>
                   <td className="px-4 py-3 text-center">{teamOBP}</td>
                   <td className="px-4 py-3 text-center">{teamSLG}</td>
@@ -267,6 +275,9 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                 <SortableHeader field="sv" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   SV
                 </SortableHeader>
+                <SortableHeader field="hrAllowed" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  HR
+                </SortableHeader>
                 <SortableHeader field="era" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   ERA
                 </SortableHeader>
@@ -287,6 +298,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{player.w}</td>
                   <td className="px-4 py-3 text-center">{player.l}</td>
                   <td className="px-4 py-3 text-center">{player.sv}</td>
+                  <td className="px-4 py-3 text-center">{player.hrAllowed || 0}</td>
                   <td className="px-4 py-3 text-center">{player.era}</td>
                   <td className="px-4 py-3 text-center">{player.whip}</td>
                   <td className="px-4 py-3 text-center">{player.baa || '—'}</td>
@@ -301,6 +313,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{teamData.wins}</td>
                   <td className="px-4 py-3 text-center">{teamData.losses}</td>
                   <td className="px-4 py-3 text-center">{teamSV}</td>
+                  <td className="px-4 py-3 text-center">{teamData.pitching.hr}</td>
                   <td className="px-4 py-3 text-center">{teamERA}</td>
                   <td className="px-4 py-3 text-center">{teamWHIP}</td>
                   <td className="px-4 py-3 text-center">{teamBAA}</td>
@@ -333,6 +346,12 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                 <SortableHeader field="sb" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   SB
                 </SortableHeader>
+                <SortableHeader field="cs" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  CS
+                </SortableHeader>
+                <SortableHeader field="oaa" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  OAA
+                </SortableHeader>
               </tr>
             </thead>
             <tbody>
@@ -343,6 +362,10 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{player.np || 0}</td>
                   <td className="px-4 py-3 text-center">{player.e || 0}</td>
                   <td className="px-4 py-3 text-center">{player.sb || 0}</td>
+                  <td className="px-4 py-3 text-center">{player.cs || 0}</td>
+                  <td className="px-4 py-3 text-center">
+                    {player.oaa !== undefined && player.oaa > 0 ? '+' : ''}{player.oaa || 0}
+                  </td>
                 </tr>
               ))}
               {/* Team Totals Row */}
@@ -353,6 +376,8 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                   <td className="px-4 py-3 text-center">{teamData.fielding.np}</td>
                   <td className="px-4 py-3 text-center">{teamData.fielding.e}</td>
                   <td className="px-4 py-3 text-center">{teamData.fielding.sb}</td>
+                  <td className="px-4 py-3 text-center">{teamData.fielding.cs}</td>
+                  <td className="px-4 py-3 text-center">{teamOAA > 0 ? '+' : ''}{teamOAA}</td>
                 </tr>
               )}
             </tbody>

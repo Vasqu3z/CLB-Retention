@@ -323,6 +323,7 @@ export interface PlayerStats {
   h?: number;
   hr?: number;
   rbi?: number;
+  dp?: number; // Double Plays Hit Into
   avg?: string;
   obp?: string;
   slg?: string;
@@ -332,6 +333,7 @@ export interface PlayerStats {
   w?: number;
   l?: number;
   sv?: number;
+  hrAllowed?: number; // Home Runs Allowed
   era?: string;
   whip?: string;
   baa?: string;
@@ -339,12 +341,14 @@ export interface PlayerStats {
   np?: number;
   e?: number;
   sb?: number;
+  cs?: number; // Caught Stealing
+  oaa?: number; // Outs Above Average (NP - E)
 }
 
 export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
   // Read from Player Data sheet (raw stats only)
-  // Columns: A=Name, B=Team, C=GP, D-L=Hitting(9), M-O=W/L/SV, P-V=Pitching(7), W-Y=Fielding(3)
-  const playerData = await getSheetData("'Player Data'!A2:Y100");
+  // Columns: A=Name, B=Team, C=GP, D-L=Hitting(9), M-O=W/L/SV, P-V=Pitching(7), W-Z=Fielding(4)
+  const playerData = await getSheetData("'Player Data'!A2:Z100");
 
   const players: PlayerStats[] = [];
 
@@ -392,10 +396,14 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
     const whip = ip > 0 ? ((pitchingH + pitchingBB) / ip).toFixed(2) : '0.00';
     const baa = bf > 0 ? (pitchingH / bf).toFixed(3).substring(1) : '.000';
 
-    // Fielding stats (columns W-Y, indices 22-24)
+    // Fielding stats (columns W-Z, indices 22-25)
     const np = Number(row[22]) || 0;
     const e = Number(row[23]) || 0;
     const sb = Number(row[24]) || 0;
+    const cs = Number(row[25]) || 0;
+
+    // Calculate OAA (Outs Above Average)
+    const oaa = np - e;
 
     players.push({
       name: playerName,
@@ -406,6 +414,7 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
       h,
       hr,
       rbi,
+      dp,
       avg,
       obp,
       slg,
@@ -415,6 +424,7 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
       w,
       l,
       sv,
+      hrAllowed: pitchingHR,
       era,
       whip,
       baa,
@@ -422,6 +432,8 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
       np,
       e,
       sb,
+      cs,
+      oaa,
     });
   }
 
@@ -593,18 +605,19 @@ export interface TeamData {
     np: number;
     e: number;
     sb: number;
+    cs: number;
   };
 }
 
 export async function getTeamData(teamName?: string): Promise<TeamData[]> {
   // Read from "Team Data" sheet
-  // Row 2 onwards: Team Name, Captain, GP, W, L, Hitting(9), Pitching(7), Fielding(3)
+  // Row 2 onwards: Team Name, Captain, GP, W, L, Hitting(9), Pitching(7), Fielding(4)
   // Columns A-B: Team, Captain
   // Columns C-E: GP, W, L
   // Columns F-N: AB, H, HR, RBI, BB, K, ROB, DP, TB (9 hitting stats)
   // Columns O-U: IP, BF, H, HR, R, BB, K (7 pitching stats)
-  // Columns V-X: NP, E, SB (3 fielding stats)
-  const data = await getSheetData("'Team Data'!A2:X20");
+  // Columns V-Y: NP, E, SB, CS (4 fielding stats)
+  const data = await getSheetData("'Team Data'!A2:Y20");
 
   const teamDataList = data
     .filter((row) => row[0] && String(row[0]).trim() !== '')
@@ -638,6 +651,7 @@ export async function getTeamData(teamName?: string): Promise<TeamData[]> {
         np: Number(row[21]) || 0,
         e: Number(row[22]) || 0,
         sb: Number(row[23]) || 0,
+        cs: Number(row[24]) || 0,
       },
     }));
 
@@ -661,7 +675,7 @@ export interface LeaderEntry {
 
 async function getAllPlayers(): Promise<PlayerStats[]> {
   // Read all players from Player Data sheet (not filtered by team)
-  const playerData = await getSheetData("'Player Data'!A2:Y100");
+  const playerData = await getSheetData("'Player Data'!A2:Z100");
   const players: PlayerStats[] = [];
 
   for (const row of playerData) {
@@ -712,14 +726,18 @@ async function getAllPlayers(): Promise<PlayerStats[]> {
     const np = Number(row[22]) || 0;
     const e = Number(row[23]) || 0;
     const sb = Number(row[24]) || 0;
+    const cs = Number(row[25]) || 0;
+
+    // Calculate OAA
+    const oaa = np - e;
 
     players.push({
       name: playerName,
       team,
       gp,
-      ab, h, hr, rbi, avg, obp, slg, ops,
-      ip, w, l, sv, era, whip, baa,
-      np, e, sb,
+      ab, h, hr, rbi, dp, avg, obp, slg, ops,
+      ip, w, l, sv, hrAllowed: pitchingHR, era, whip, baa,
+      np, e, sb, cs, oaa,
     });
   }
 

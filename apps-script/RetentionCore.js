@@ -997,32 +997,32 @@ function updateRetentionData(sheet, retentionGrades) {
 
   var numRows = lastDataRow - dataStartRow + 1;
 
-  // Clear player name and team
-  sheet.getRange(dataStartRow, cols.COL_PLAYER, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_TEAM, numRows, 1).clearContent();
+  // Clear player name and team (COL_ values are 0-based, getRange uses 1-based)
+  sheet.getRange(dataStartRow, cols.COL_PLAYER + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_TEAM + 1, numRows, 1).clearContent();
 
   // PRESERVE Draft Value (Col C) - do not clear
 
   // Clear TS components and total (preserve modifier at Col F)
-  sheet.getRange(dataStartRow, cols.COL_REG_SEASON, numRows, 1).clearContent();  // D - Regular Season
-  sheet.getRange(dataStartRow, cols.COL_POSTSEASON, numRows, 1).clearContent();  // E - Postseason (VLOOKUP)
-  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).clearContent();    // G - TS Total
+  sheet.getRange(dataStartRow, cols.COL_REG_SEASON + 1, numRows, 1).clearContent();  // D - Regular Season
+  sheet.getRange(dataStartRow, cols.COL_POSTSEASON + 1, numRows, 1).clearContent();  // E - Postseason (VLOOKUP)
+  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL + 1, numRows, 1).clearContent();    // G - TS Total
 
   // Clear PT base and total (preserve modifier at Col I)
-  sheet.getRange(dataStartRow, cols.COL_PT_BASE, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_PT_TOTAL, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_PT_BASE + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_PT_TOTAL + 1, numRows, 1).clearContent();
 
   // Clear Performance base and total (preserve modifier at Col L)
-  sheet.getRange(dataStartRow, cols.COL_PERF_BASE, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_PERF_BASE + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL + 1, numRows, 1).clearContent();
 
   // Clear totals (preserve chemistry at O and direction at P)
-  sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL + 1, numRows, 1).clearContent();
 
   // Clear final grade and details
-  sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_DETAILS, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_DETAILS + 1, numRows, 1).clearContent();
 
   // Write new data (will preserve existing manual values)
   writePlayerData(sheet, retentionGrades);
@@ -1086,14 +1086,15 @@ function writePlayerData(sheet, retentionGrades) {
 
   // Write auto-calculated columns only (batch operations)
   // Write Regular Season, Postseason will be VLOOKUP formula
-  sheet.getRange(dataStartRow, cols.COL_PLAYER, numRows, 1).setValues(playerNames);
-  sheet.getRange(dataStartRow, cols.COL_TEAM, numRows, 1).setValues(teams);
-  sheet.getRange(dataStartRow, cols.COL_REG_SEASON, numRows, 1).setValues(regSeasonValues);  // D
+  // COL_ values are 0-based, getRange uses 1-based
+  sheet.getRange(dataStartRow, cols.COL_PLAYER + 1, numRows, 1).setValues(playerNames);
+  sheet.getRange(dataStartRow, cols.COL_TEAM + 1, numRows, 1).setValues(teams);
+  sheet.getRange(dataStartRow, cols.COL_REG_SEASON + 1, numRows, 1).setValues(regSeasonValues);  // D
   // Col E (Postseason) will be set with VLOOKUP formula below
-  sheet.getRange(dataStartRow, cols.COL_PT_BASE, numRows, 1).setValues(ptBaseValues);
-  sheet.getRange(dataStartRow, cols.COL_PERF_BASE, numRows, 1).setValues(perfBaseValues);
-  sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).setValues(autoTotalValues);
-  sheet.getRange(dataStartRow, cols.COL_DETAILS, numRows, 1).setValues(detailsValues);
+  sheet.getRange(dataStartRow, cols.COL_PT_BASE + 1, numRows, 1).setValues(ptBaseValues);
+  sheet.getRange(dataStartRow, cols.COL_PERF_BASE + 1, numRows, 1).setValues(perfBaseValues);
+  sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL + 1, numRows, 1).setValues(autoTotalValues);
+  sheet.getRange(dataStartRow, cols.COL_DETAILS + 1, numRows, 1).setValues(detailsValues);
 
   var postseasonFormulas = [];
   var tsTotalFormulas = [];
@@ -1138,12 +1139,12 @@ function writePlayerData(sheet, retentionGrades) {
   }
 
   // Apply all formulas in batched operations
-  sheet.getRange(dataStartRow, cols.COL_POSTSEASON, numRows, 1).setFormulas(postseasonFormulas);
-  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).setFormulas(tsTotalFormulas);
-  sheet.getRange(dataStartRow, cols.COL_PT_TOTAL, numRows, 1).setFormulas(ptTotalFormulas);
-  sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL, numRows, 1).setFormulas(perfTotalFormulas);
-  sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL, numRows, 1).setFormulas(manualTotalFormulas);
-  sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE, numRows, 1).setFormulas(finalGradeFormulas);
+  sheet.getRange(dataStartRow, cols.COL_POSTSEASON + 1, numRows, 1).setFormulas(postseasonFormulas);
+  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL + 1, numRows, 1).setFormulas(tsTotalFormulas);
+  sheet.getRange(dataStartRow, cols.COL_PT_TOTAL + 1, numRows, 1).setFormulas(ptTotalFormulas);
+  sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL + 1, numRows, 1).setFormulas(perfTotalFormulas);
+  sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL + 1, numRows, 1).setFormulas(manualTotalFormulas);
+  sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE + 1, numRows, 1).setFormulas(finalGradeFormulas);
 
   // Apply formatting (only to auto-calculated columns and new rows)
   applyDataFormatting(sheet, dataStartRow, numRows);

@@ -514,13 +514,9 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
         boxScoreUrl
       ];
 
+      // Write game results (columns D-L)
+      // Column L already contains the plain URL, which the website will render as a clickable link
       scheduleSheet.getRange(rowNum, 4, 1, 9).setValues([gameResults]);
-
-      // Add hyperlink to Box Score Link cell if URL exists
-      if (boxScoreUrl) {
-        var linkFormula = '=HYPERLINK("' + boxScoreUrl + '", "View Box Score")';
-        scheduleSheet.getRange(rowNum, 12).setFormula(linkFormula);
-      }
     }
   }
 

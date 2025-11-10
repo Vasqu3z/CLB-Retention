@@ -79,9 +79,10 @@ function processAllGameSheetsOnce() {
       var savePitcher = String(batchData[46][15]).trim();     // R49 (index 46, col 15)
 
       // ===== Extract MVP from cell Q48 =====
-      // Q48 is row 48, column Q (column 17, index 16 in batch)
+      // Q48 is row 48, column Q (column 17 in sheet, index 15 in batch since batch starts at B)
       // Row 48 in sheet = index 45 in batch (48 - 3)
-      var gameMVP = String(batchData[45][16]).trim();  // Q48 (index 45, col 16)
+      // Batch is B3:R50, so Q (col 17) = batch index 15 (17 - 2)
+      var gameMVP = String(batchData[45][15]).trim();  // Q48 (index 45, col 15)
 
       // Create gameData object
       var gameData = {
@@ -467,16 +468,16 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
     return;
   }
 
-  // Add headers if they don't exist yet (columns D-J)
-  var headers = scheduleSheet.getRange(1, 1, 1, 11).getValues()[0];
+  // Add headers if they don't exist yet (columns D-L)
+  var headers = scheduleSheet.getRange(1, 1, 1, 13).getValues()[0];
 
   if (!headers[3] || headers[3] === "") {
     // Write new column headers
-    scheduleSheet.getRange(1, 4, 1, 7).setValues([[
-      "Winning Team", "Losing Team", "Game MVP", "Winning Pitcher",
-      "Losing Pitcher", "Saving Pitcher", "Box Score Link"
+    scheduleSheet.getRange(1, 4, 1, 9).setValues([[
+      "Away Score", "Home Score", "Winning Team", "Losing Team", "Game MVP",
+      "Winning Pitcher", "Losing Pitcher", "Saving Pitcher", "Box Score Link"
     ]]);
-    scheduleSheet.getRange(1, 4, 1, 7).setFontWeight("bold").setBackground("#e8e8e8");
+    scheduleSheet.getRange(1, 4, 1, 9).setFontWeight("bold").setBackground("#e8e8e8");
   }
 
   // Write game results for each completed game
@@ -499,8 +500,10 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
         }
       }
 
-      // Write game results to columns D-K
+      // Write game results to columns D-L
       var gameResults = [
+        game.awayScore !== undefined && game.awayScore !== null ? game.awayScore : "",
+        game.homeScore !== undefined && game.homeScore !== null ? game.homeScore : "",
         game.winner || "",
         game.loser || "",
         game.mvp || "",
@@ -510,12 +513,12 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
         boxScoreUrl
       ];
 
-      scheduleSheet.getRange(rowNum, 4, 1, 7).setValues([gameResults]);
+      scheduleSheet.getRange(rowNum, 4, 1, 9).setValues([gameResults]);
 
       // Add hyperlink to Box Score Link cell if URL exists
       if (boxScoreUrl) {
         var linkFormula = '=HYPERLINK("' + boxScoreUrl + '", "View Box Score")';
-        scheduleSheet.getRange(rowNum, 10).setFormula(linkFormula);
+        scheduleSheet.getRange(rowNum, 12).setFormula(linkFormula);
       }
     }
   }

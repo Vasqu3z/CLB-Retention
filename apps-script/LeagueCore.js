@@ -68,12 +68,10 @@ function updateAll() {
     var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
     
-    // ===== STEP 3: Update team sheets (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 5: Updating team sheets...", "Update All", -1);
-    var step3Start = new Date();
-    updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);
-    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
-    SpreadsheetApp.flush();
+    // ===== STEP 3: Team Sheets (REMOVED) =====
+    // Individual team sheets are no longer generated - website reads from Player Data
+    // This significantly reduces UpdateAll execution time
+    var step3Time = 0;
 
     // Write game results to Season Schedule
     logInfo("UpdateAll", "Writing game results to Season Schedule");
@@ -183,11 +181,9 @@ function quickUpdate() {
     var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
     
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 5: Updating team sheets...", "Quick Update", -1);
-    var step3Start = new Date();
-    updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);
-    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
-    SpreadsheetApp.flush();
+    // ===== STEP 3: Team Sheets (REMOVED) =====
+    // Individual team sheets are no longer generated - website reads from Player Data
+    var step3Time = 0;
 
     // Write game results to Season Schedule
     logInfo("QuickUpdate", "Writing game results to Season Schedule");
@@ -306,14 +302,6 @@ function updateAllTeamStats() {
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
     updateAllTeamStatsFromCache(gameData.teamStats);
-  }
-}
-
-function updateTeamSheets() {
-  // Manual execution - process games fresh
-  var gameData = processAllGameSheetsOnce();
-  if (gameData) {
-    updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);
   }
 }
 

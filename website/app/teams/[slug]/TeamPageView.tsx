@@ -70,9 +70,11 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
     ? (teamData.hitting.tb / teamData.hitting.ab).toFixed(3).substring(1)
     : '.000';
 
-  const teamOPS = teamData && (teamData.hitting.ab + teamData.hitting.bb) > 0
-    ? (parseFloat(teamOBP) + parseFloat(teamSLG)).toFixed(3).substring(1)
-    : '.000';
+  // Calculate OPS from raw stats (not from formatted OBP/SLG strings) since OPS can be > 1.000
+  const teamOPS = teamData && teamData.hitting.ab > 0 && (teamData.hitting.ab + teamData.hitting.bb) > 0
+    ? ((teamData.hitting.h + teamData.hitting.bb) / (teamData.hitting.ab + teamData.hitting.bb) +
+       teamData.hitting.tb / teamData.hitting.ab).toFixed(3)
+    : '0.000';
 
   const teamERA = teamData && teamData.pitching.ip > 0
     ? ((teamData.pitching.r * 9) / teamData.pitching.ip).toFixed(2)
@@ -281,7 +283,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
                 <tr key={player.name} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
                   <td className="px-4 py-3 font-medium text-gray-900">{player.name}</td>
                   <td className="px-4 py-3 text-center">{player.gp}</td>
-                  <td className="px-4 py-3 text-center">{player.ip}</td>
+                  <td className="px-4 py-3 text-center">{player.ip?.toFixed(2) || '0.00'}</td>
                   <td className="px-4 py-3 text-center">{player.w}</td>
                   <td className="px-4 py-3 text-center">{player.l}</td>
                   <td className="px-4 py-3 text-center">{player.sv}</td>
@@ -347,7 +349,7 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
               {teamData && (
                 <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
                   <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                  <td className="px-4 py-3 text-center">—</td>
+                  <td className="px-4 py-3 text-center">{teamData.gp}</td>
                   <td className="px-4 py-3 text-center">{teamData.fielding.np}</td>
                   <td className="px-4 py-3 text-center">{teamData.fielding.e}</td>
                   <td className="px-4 py-3 text-center">{teamData.fielding.sb}</td>

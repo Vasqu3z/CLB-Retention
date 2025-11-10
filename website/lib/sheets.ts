@@ -461,14 +461,25 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
     console.error('Error fetching schedule links:', error);
   }
 
-  // Parse completed games into a map: "HomeTeam_vs_AwayTeam" -> { homeScore, awayScore, winner, url }
+  // Parse completed games into a map: "week_HomeTeam_vs_AwayTeam" -> { homeScore, awayScore, winner, url }
   const completedGamesMap = new Map<string, { homeScore: number; awayScore: number; winner: string; url?: string }>();
+
+  let currentWeek = 0;
 
   for (const gameData of completedGamesWithLinks) {
     const text = gameData.text.trim();
 
-    // Skip week headers and empty rows
-    if (!text || text.startsWith('Week ') || !text.includes(' || ')) continue;
+    // Check for week headers to track which week we're in
+    if (text.startsWith('Week ')) {
+      const weekMatch = text.match(/^Week\s+(\d+)/);
+      if (weekMatch) {
+        currentWeek = parseInt(weekMatch[1]);
+      }
+      continue;
+    }
+
+    // Skip empty rows and non-game rows
+    if (!text || !text.includes(' || ')) continue;
 
     // Parse format: "Team1: 5 || Team2: 3"
     const parts = text.split(' || ');
@@ -488,9 +499,10 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
 
     const winner = score1 > score2 ? team1 : team2;
 
+    // Create game keys with week number for precise matching
     // Try both possible matchup keys (home/away can be either team)
-    const gameKey1 = `${team1}_vs_${team2}`;
-    const gameKey2 = `${team2}_vs_${team1}`;
+    const gameKey1 = `${currentWeek}_${team1}_vs_${team2}`;
+    const gameKey2 = `${currentWeek}_${team2}_vs_${team1}`;
 
     completedGamesMap.set(gameKey1, { homeScore: score1, awayScore: score2, winner, url: gameData.url });
     completedGamesMap.set(gameKey2, { homeScore: score2, awayScore: score1, winner, url: gameData.url });
@@ -506,7 +518,8 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
 
     if (week === 0 || !homeTeam || !awayTeam) continue;
 
-    const gameKey = `${homeTeam}_vs_${awayTeam}`;
+    // Look up game with week number for precise matching
+    const gameKey = `${week}_${homeTeam}_vs_${awayTeam}`;
     const gameResult = completedGamesMap.get(gameKey);
 
     if (gameResult) {

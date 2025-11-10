@@ -13,12 +13,10 @@ function updateTeamSheetsFromCache(teamStatsWithH2H, scheduleData, boxScoreUrl) 
     }
     // =============================================================
     var teamStatsSheet = ss.getSheetByName(CONFIG.TEAM_STATS_SHEET);
-    var hittingStatsSheet = ss.getSheetByName(CONFIG.HITTING_STATS_SHEET);
-    var pitchingStatsSheet = ss.getSheetByName(CONFIG.PITCHING_STATS_SHEET);
-    var fieldingStatsSheet = ss.getSheetByName(CONFIG.FIELDING_STATS_SHEET);
-    
-    if (!teamStatsSheet || !hittingStatsSheet || !pitchingStatsSheet || !fieldingStatsSheet) {
-      logError("Step 3", "Cannot find required stats sheets", "Missing one or more sheets");
+    var playerDataSheet = ss.getSheetByName(CONFIG.PLAYER_STATS_SHEET);
+
+    if (!teamStatsSheet || !playerDataSheet) {
+      logError("Step 3", "Cannot find required stats sheets", "Missing Team Data or Player Data");
       SpreadsheetApp.getUi().alert("Cannot find required stats sheets!");
       return;
     }
@@ -48,15 +46,23 @@ function updateTeamSheetsFromCache(teamStatsWithH2H, scheduleData, boxScoreUrl) 
     }
     
     logInfo("Step 3", "Processing " + teamNames.length + " teams");
-    
-    // ===== Get all stat data ONCE =====
-    var hittingData = getSheetDataWithHeaders(hittingStatsSheet);
-    var pitchingData = getSheetDataWithHeaders(pitchingStatsSheet);
-    var fieldingData = getSheetDataWithHeaders(fieldingStatsSheet);
-    
-    var hittingHeadersFiltered = removeColumnFromArray(hittingData.headers, 1);
-    var pitchingHeadersFiltered = removeColumnFromArray(pitchingData.headers, 1);
-    var fieldingHeadersFiltered = removeColumnFromArray(fieldingData.headers, 1);
+
+    // ===== Get all player data ONCE from Player Data sheet =====
+    var playerDataLastRow = playerDataSheet.getLastRow();
+    if (playerDataLastRow < 2) {
+      logError("Step 3", "No player data found", CONFIG.PLAYER_STATS_SHEET);
+      SpreadsheetApp.getUi().alert("No player data found!");
+      return;
+    }
+
+    // Read all player data (columns A-Y)
+    // A: Player, B: Team, C: GP, D-L: Hitting (9), M-O: WLS (3), P-V: Pitching (7), W-Y: Fielding (3)
+    var allPlayerData = playerDataSheet.getRange(2, 1, playerDataLastRow - 1, 25).getValues();
+
+    // Build headers (these will have Team column removed)
+    var hittingHeadersFiltered = ["Player", "GP", "AB", "H", "HR", "RBI", "BB", "K", "ROB", "DP", "TB", "AVG", "OBP", "SLG", "OPS"];
+    var pitchingHeadersFiltered = ["Player", "GP", "W", "L", "SV", "ERA", "IP", "BF", "H", "HR", "R", "BB", "K", "BAA", "WHIP"];
+    var fieldingHeadersFiltered = ["Player", "GP", "NP", "E", "SB"];
     
     // Check if template sheet exists
     var templateSheet = ss.getSheetByName(CONFIG.TEAM_SHEET_TEMPLATE);
@@ -96,9 +102,65 @@ function updateTeamSheetsFromCache(teamStatsWithH2H, scheduleData, boxScoreUrl) 
         }
       } catch (e) {}
       
-      var teamHittingData = filterAndSortTeamData(hittingData.rows, teamName, CONFIG.STATS_COLUMN_MAPS.HITTING_COLUMNS.TEAM, true);
-      var teamPitchingData = filterAndSortTeamData(pitchingData.rows, teamName, CONFIG.STATS_COLUMN_MAPS.PITCHING_COLUMNS.TEAM, true);
-      var teamFieldingData = filterAndSortTeamData(fieldingData.rows, teamName, CONFIG.STATS_COLUMN_MAPS.FIELDING_COLUMNS.TEAM, true);
+      // Filter and build team-specific data from Player Data sheet
+      var teamHittingData = [];
+      var teamPitchingData = [];
+      var teamFieldingData = [];
+
+      for (var p = 0; p < allPlayerData.length; p++) {
+        var playerName = String(allPlayerData[p][0]).trim();
+        var playerTeam = String(allPlayerData[p][1]).trim();
+
+        if (playerTeam !== teamName || !playerName) continue;
+
+        // Extract stats from Player Data
+        var gp = allPlayerData[p][2] || 0;
+        var ab = allPlayerData[p][3] || 0;
+        var h = allPlayerData[p][4] || 0;
+        var hr = allPlayerData[p][5] || 0;
+        var rbi = allPlayerData[p][6] || 0;
+        var bb = allPlayerData[p][7] || 0;
+        var k = allPlayerData[p][8] || 0;
+        var rob = allPlayerData[p][9] || 0;
+        var dp = allPlayerData[p][10] || 0;
+        var tb = allPlayerData[p][11] || 0;
+        var w = allPlayerData[p][12] || 0;
+        var l = allPlayerData[p][13] || 0;
+        var sv = allPlayerData[p][14] || 0;
+        var ip = allPlayerData[p][15] || 0;
+        var bf = allPlayerData[p][16] || 0;
+        var pHits = allPlayerData[p][17] || 0;
+        var pHR = allPlayerData[p][18] || 0;
+        var r = allPlayerData[p][19] || 0;
+        var pBB = allPlayerData[p][20] || 0;
+        var pK = allPlayerData[p][21] || 0;
+        var np = allPlayerData[p][22] || 0;
+        var e = allPlayerData[p][23] || 0;
+        var sb = allPlayerData[p][24] || 0;
+
+        // Calculate derived stats
+        var avg = ab > 0 ? h / ab : 0;
+        var obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
+        var slg = ab > 0 ? tb / ab : 0;
+        var ops = obp + slg;
+        var era = ip > 0 ? (r * 7) / ip : 0;
+        var whip = ip > 0 ? (pHits + pBB) / ip : 0;
+        var baa = bf > 0 ? pHits / bf : 0;
+
+        // Build hitting row (Player, GP, AB, H, HR, RBI, BB, K, ROB, DP, TB, AVG, OBP, SLG, OPS)
+        teamHittingData.push([playerName, gp, ab, h, hr, rbi, bb, k, rob, dp, tb, avg, obp, slg, ops]);
+
+        // Build pitching row (Player, GP, W, L, SV, ERA, IP, BF, H, HR, R, BB, K, BAA, WHIP)
+        teamPitchingData.push([playerName, gp, w, l, sv, era, ip, bf, pHits, pHR, r, pBB, pK, baa, whip]);
+
+        // Build fielding row (Player, GP, NP, E, SB)
+        teamFieldingData.push([playerName, gp, np, e, sb]);
+      }
+
+      // Sort all arrays by player name
+      teamHittingData.sort(function(a, b) { return String(a[0]).localeCompare(String(b[0])); });
+      teamPitchingData.sort(function(a, b) { return String(a[0]).localeCompare(String(b[0])); });
+      teamFieldingData.sort(function(a, b) { return String(a[0]).localeCompare(String(b[0])); });
       
       // ===== ROSTER SIZE VALIDATION =====
       if (CONFIG.WARN_ON_ROSTER_OVERFLOW && teamHittingData.length > CONFIG.MAX_PLAYERS_PER_ROSTER) {

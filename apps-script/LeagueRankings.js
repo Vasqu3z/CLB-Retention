@@ -25,20 +25,9 @@ function updateLeagueHubFromCache(gameData) {
   var maxRows = standingsSheet.getMaxRows();
 
   // Clear Standings zone (Columns A-H from row 1 to end)
+  // Note: League leaders are now handled by the website reading directly from Player Data
   if (maxRows > 0) {
     standingsSheet.getRange(1, layout.STANDINGS.START_COL + 1, maxRows, layout.STANDINGS.NUM_COLS)
-      .clearContent().clearFormat().clearNote();
-
-    // Clear Batting Leaders zone (Column J from row 1 to end)
-    standingsSheet.getRange(1, layout.LEADERS_BATTING.START_COL + 1, maxRows, 1)
-      .clearContent().clearFormat().clearNote();
-
-    // Clear Pitching Leaders zone (Column L from row 1 to end)
-    standingsSheet.getRange(1, layout.LEADERS_PITCHING.START_COL + 1, maxRows, 1)
-      .clearContent().clearFormat().clearNote();
-
-    // Clear Fielding Leaders zone (Column N from row 1 to end)
-    standingsSheet.getRange(1, layout.LEADERS_FIELDING.START_COL + 1, maxRows, 1)
       .clearContent().clearFormat().clearNote();
   }
 
@@ -56,27 +45,9 @@ function updateLeagueHubFromCache(gameData) {
     return compareTeamsByStandings(teamA, teamB, teamStatsWithH2H);
   });
 
-  // Pass in-memory playerStats instead of sheet references
-  var leagueLeaders = getLeagueLeaders(gameData.playerStats, teamStatsWithH2H);
-  
   // ===== HEADERS =====
   standingsSheet.getRange(currentRow, layout.STANDINGS.START_COL + 1, 1, 8).merge()
     .setValue("Standings")
-    .setFontWeight("bold")
-    .setFontSize(12)
-    .setVerticalAlignment("middle");
-  standingsSheet.getRange(currentRow, layout.LEADERS_BATTING.START_COL + 1)
-    .setValue("League Leaders (Batting)")
-    .setFontWeight("bold")
-    .setFontSize(12)
-    .setVerticalAlignment("middle");
-  standingsSheet.getRange(currentRow, layout.LEADERS_PITCHING.START_COL + 1)
-    .setValue("League Leaders (Pitching)")
-    .setFontWeight("bold")
-    .setFontSize(12)
-    .setVerticalAlignment("middle");
-  standingsSheet.getRange(currentRow, layout.LEADERS_FIELDING.START_COL + 1)
-    .setValue("League Leaders (Fielding/Baserunning)")
     .setFontWeight("bold")
     .setFontSize(12)
     .setVerticalAlignment("middle");
@@ -91,10 +62,9 @@ function updateLeagueHubFromCache(gameData) {
     .setVerticalAlignment("middle");
   standingsSheet.getRange(currentRow, layout.STANDINGS.START_COL + 1, 1, layout.STANDINGS.NUM_COLS)
     .setBorder(false, false, true, false, false, false, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  
-  var leadersStartRow = currentRow;
+
   currentRow++;
-  
+
   var standingsStartRow = currentRow;
   
   // ===== BATCH ALL STANDINGS DATA =====
@@ -206,10 +176,7 @@ function updateLeagueHubFromCache(gameData) {
       standingsSheet.getRange(standingsStartRow + i, layout.STANDINGS.START_COL + 2).setNote(standingsTooltips[i]);
     }
   }
-  
-  // ===== LEAGUE LEADERS =====
-  writeLeagueLeaders(standingsSheet, leagueLeaders, leadersStartRow);
-  
+
   currentRow = standingsStartRow + standingsValues.length + 2;
   
   // ===== THIS WEEK'S GAMES =====
@@ -309,9 +276,6 @@ function updateLeagueHubFromCache(gameData) {
   standingsSheet.setColumnWidth(layout.STANDINGS.START_COL + 6, 50);
   standingsSheet.setColumnWidth(layout.STANDINGS.START_COL + 7, 50);
   standingsSheet.setColumnWidth(layout.STANDINGS.START_COL + 8, 50);
-  standingsSheet.setColumnWidth(layout.LEADERS_BATTING.START_COL + 1, layout.LEADERS_BATTING.WIDTH);
-  standingsSheet.setColumnWidth(layout.LEADERS_PITCHING.START_COL + 1, layout.LEADERS_PITCHING.WIDTH);
-  standingsSheet.setColumnWidth(layout.LEADERS_FIELDING.START_COL + 1, layout.LEADERS_FIELDING.WIDTH);
   
   logInfo("Step 4", "Updated " + CONFIG.LEAGUE_HUB_SHEET);
   SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.LEAGUE_HUB_SHEET + " updated!", "Step 4 Complete", 3);

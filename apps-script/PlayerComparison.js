@@ -63,109 +63,123 @@ function getPlayerList() {
  */
 function getPlayerStats(playerNames) {
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var hittingSheet = activeSpreadsheet.getSheetByName(CONFIG.HITTING_STATS_SHEET);
-  var pitchingSheet = activeSpreadsheet.getSheetByName(CONFIG.PITCHING_STATS_SHEET);
-  var fieldingSheet = activeSpreadsheet.getSheetByName(CONFIG.FIELDING_STATS_SHEET);
+  var playerDataSheet = activeSpreadsheet.getSheetByName(CONFIG.PLAYER_STATS_SHEET);
 
   var playerStatsMap = {};
 
-  var hMap = CONFIG.SHEET_STRUCTURE.PLAYER_COMPARISON.HITTING_MAP;
-  var pMap = CONFIG.SHEET_STRUCTURE.PLAYER_COMPARISON.PITCHING_MAP;
-  var fMap = CONFIG.SHEET_STRUCTURE.PLAYER_COMPARISON.FIELDING_MAP;
-
-  if (hittingSheet && hittingSheet.getLastRow() > 1) {
-    var hittingLastRow = hittingSheet.getLastRow();
-    var hittingData = hittingSheet.getRange(2, 1, hittingLastRow - 1, 16).getValues();
-
-    for (var i = 0; i < hittingData.length; i++) {
-      var playerName = String(hittingData[i][0]).trim();
-      if (!playerName) continue;
-
-      playerStatsMap[playerName] = {
-        name: playerName,
-        hitting: {
-          team: String(hittingData[i][hMap.team]),
-          gp: hittingData[i][hMap.gp],
-          ab: hittingData[i][hMap.ab],
-          h: hittingData[i][hMap.h],
-          hr: hittingData[i][hMap.hr],
-          rbi: hittingData[i][hMap.rbi],
-          bb: hittingData[i][hMap.bb],
-          k: hittingData[i][hMap.k],
-          rob: hittingData[i][hMap.rob],
-          dp: hittingData[i][hMap.dp],
-          tb: hittingData[i][hMap.tb],
-          avg: hittingData[i][hMap.avg],
-          obp: hittingData[i][hMap.obp],
-          slg: hittingData[i][hMap.slg],
-          ops: hittingData[i][hMap.ops]
-        },
+  if (!playerDataSheet) {
+    Logger.log("WARNING: Player Data sheet not found");
+    var results = [];
+    for (var i = 0; i < playerNames.length; i++) {
+      results.push({
+        name: playerNames[i],
+        hitting: {},
         pitching: {},
         fielding: {}
-      };
+      });
     }
+    return results;
   }
 
-  if (pitchingSheet && pitchingSheet.getLastRow() > 1) {
-    var pitchingLastRow = pitchingSheet.getLastRow();
-    var pitchingData = pitchingSheet.getRange(2, 1, pitchingLastRow - 1, 16).getValues();
-
-    for (var i = 0; i < pitchingData.length; i++) {
-      var playerName = String(pitchingData[i][0]).trim();
-      if (!playerName) continue;
-
-      if (!playerStatsMap[playerName]) {
-        playerStatsMap[playerName] = {
-          name: playerName,
-          hitting: {},
-          pitching: {},
-          fielding: {}
-        };
-      }
-
-      playerStatsMap[playerName].pitching = {
-        gp: pitchingData[i][pMap.gp],
-        w: pitchingData[i][pMap.w],
-        l: pitchingData[i][pMap.l],
-        sv: pitchingData[i][pMap.sv],
-        era: pitchingData[i][pMap.era],
-        ip: pitchingData[i][pMap.ip],
-        bf: pitchingData[i][pMap.bf],
-        h: pitchingData[i][pMap.h],
-        hr: pitchingData[i][pMap.hr],
-        r: pitchingData[i][pMap.r],
-        bb: pitchingData[i][pMap.bb],
-        k: pitchingData[i][pMap.k],
-        baa: pitchingData[i][pMap.baa],
-        whip: pitchingData[i][pMap.whip]
-      };
+  var lastRow = playerDataSheet.getLastRow();
+  if (lastRow < 2) {
+    Logger.log("WARNING: No player data found");
+    var results = [];
+    for (var i = 0; i < playerNames.length; i++) {
+      results.push({
+        name: playerNames[i],
+        hitting: {},
+        pitching: {},
+        fielding: {}
+      });
     }
+    return results;
   }
 
-  if (fieldingSheet && fieldingSheet.getLastRow() > 1) {
-    var fieldingLastRow = fieldingSheet.getLastRow();
-    var fieldingData = fieldingSheet.getRange(2, 1, fieldingLastRow - 1, 6).getValues();
+  // Read all player data (columns A-Y)
+  // A: Player, B: Team, C: GP, D-L: Hitting (9), M-O: WLS (3), P-V: Pitching (7), W-Y: Fielding (3)
+  var data = playerDataSheet.getRange(2, 1, lastRow - 1, 25).getValues();
 
-    for (var i = 0; i < fieldingData.length; i++) {
-      var playerName = String(fieldingData[i][0]).trim();
-      if (!playerName) continue;
+  for (var i = 0; i < data.length; i++) {
+    var playerName = String(data[i][0]).trim();
+    if (!playerName) continue;
 
-      if (!playerStatsMap[playerName]) {
-        playerStatsMap[playerName] = {
-          name: playerName,
-          hitting: {},
-          pitching: {},
-          fielding: {}
-        };
+    var team = String(data[i][1]).trim();
+    var gp = data[i][2] || 0;
+    var ab = data[i][3] || 0;
+    var h = data[i][4] || 0;
+    var hr = data[i][5] || 0;
+    var rbi = data[i][6] || 0;
+    var bb = data[i][7] || 0;
+    var k = data[i][8] || 0;
+    var rob = data[i][9] || 0;
+    var dp = data[i][10] || 0;
+    var tb = data[i][11] || 0;
+    var w = data[i][12] || 0;
+    var l = data[i][13] || 0;
+    var sv = data[i][14] || 0;
+    var ip = data[i][15] || 0;
+    var bf = data[i][16] || 0;
+    var pHits = data[i][17] || 0;
+    var pHR = data[i][18] || 0;
+    var r = data[i][19] || 0;
+    var pBB = data[i][20] || 0;
+    var pK = data[i][21] || 0;
+    var np = data[i][22] || 0;
+    var e = data[i][23] || 0;
+    var sb = data[i][24] || 0;
+
+    // Calculate derived stats
+    var avg = ab > 0 ? h / ab : 0;
+    var obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
+    var slg = ab > 0 ? tb / ab : 0;
+    var ops = obp + slg;
+    var era = ip > 0 ? (r * 7) / ip : 0;
+    var whip = ip > 0 ? (pHits + pBB) / ip : 0;
+    var baa = bf > 0 ? pHits / bf : 0;
+
+    playerStatsMap[playerName] = {
+      name: playerName,
+      hitting: {
+        team: team,
+        gp: gp,
+        ab: ab,
+        h: h,
+        hr: hr,
+        rbi: rbi,
+        bb: bb,
+        k: k,
+        rob: rob,
+        dp: dp,
+        tb: tb,
+        avg: avg,
+        obp: obp,
+        slg: slg,
+        ops: ops
+      },
+      pitching: {
+        gp: gp,
+        w: w,
+        l: l,
+        sv: sv,
+        era: era,
+        ip: ip,
+        bf: bf,
+        h: pHits,
+        hr: pHR,
+        r: r,
+        bb: pBB,
+        k: pK,
+        baa: baa,
+        whip: whip
+      },
+      fielding: {
+        gp: gp,
+        np: np,
+        e: e,
+        sb: sb
       }
-
-      playerStatsMap[playerName].fielding = {
-        gp: fieldingData[i][fMap.gp],
-        np: fieldingData[i][fMap.np],
-        e: fieldingData[i][fMap.e],
-        sb: fieldingData[i][fMap.sb]
-      };
-    }
+    };
   }
 
   var results = [];

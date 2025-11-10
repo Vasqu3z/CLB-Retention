@@ -54,8 +54,9 @@ export interface StandingsRow {
 }
 
 export async function getStandings(): Promise<StandingsRow[]> {
-  // Read from "Standings" sheet, rows 2-9 (8 teams), columns A-H
-  const data = await getSheetData("'Standings'!A2:H9");
+  // Read from "Standings" sheet, rows 4-11 (8 teams), columns A-H
+  // Skip rows 1-3: row 1 = title, row 2 = blank, row 3 = headers
+  const data = await getSheetData("'Standings'!A4:H11");
 
   // Also fetch cell notes for H2H records (column B = team names)
   const auth = await getAuthClient();
@@ -66,7 +67,7 @@ export async function getStandings(): Promise<StandingsRow[]> {
     const response = await sheets.spreadsheets.get({
       auth: auth as any,
       spreadsheetId: sheetId,
-      ranges: ["'Standings'!B2:B9"],
+      ranges: ["'Standings'!B4:B11"],
       includeGridData: true,
     });
 

@@ -237,6 +237,9 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
                 <SortableHeader field="gp" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   GP
                 </SortableHeader>
+                <SortableHeader field="rGame" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
+                  R/G
+                </SortableHeader>
                 <SortableHeader field="avg" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   AVG
                 </SortableHeader>
@@ -248,9 +251,6 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
                 </SortableHeader>
                 <SortableHeader field="ops" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   OPS
-                </SortableHeader>
-                <SortableHeader field="rGame" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
-                  R/G
                 </SortableHeader>
                 <SortableHeader field="ab" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   AB
@@ -281,11 +281,11 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-center">{team.gp}</td>
+                  <td className="px-4 py-3 text-center font-semibold">{team.rGame}</td>
                   <td className="px-4 py-3 text-center">{team.avg}</td>
                   <td className="px-4 py-3 text-center">{team.obp}</td>
                   <td className="px-4 py-3 text-center">{team.slg}</td>
                   <td className="px-4 py-3 text-center">{team.ops}</td>
-                  <td className="px-4 py-3 text-center font-semibold">{team.rGame}</td>
                   <td className="px-4 py-3 text-center">{team.hitting.ab}</td>
                   <td className="px-4 py-3 text-center">{team.hitting.h}</td>
                   <td className="px-4 py-3 text-center">{team.hitting.hr}</td>

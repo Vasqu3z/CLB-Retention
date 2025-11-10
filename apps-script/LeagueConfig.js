@@ -6,17 +6,21 @@
 var CONFIG = {
   // ===== SHEET NAMES =====
   ERROR_LOG_SHEET: "Error Log",
+  IMAGE_URLS_SHEET: "Image URLs",
   PLAYER_STATS_SHEET: "Player Data",
   TEAM_STATS_SHEET: "Team Data",
-  TEAM_SHEET_TEMPLATE: "Team Sheet",
-  SEASON_SCHEDULE_SHEET: "Season Schedule",
-  HITTING_STATS_SHEET: "🧮 Hitting",
-  PITCHING_STATS_SHEET: "🧮 Pitching",
-  FIELDING_STATS_SHEET: "🧮 Fielding & Running",
-  LEAGUE_HUB_SHEET: "🏆 Rankings",
-  LEAGUE_SCHEDULE_SHEET: "📅 Schedule",
-  RETENTION_GRADES_SHEET: "🎲 Retention",
-  TRANSACTION_LOG_SHEET: "🔀 Transactions",
+  SCHEDULE_SHEET: "Schedule",
+  STANDINGS_SHEET: "Standings",
+  ROSTERS_SHEET: "Rosters",
+  TRANSACTIONS_SHEET: "Transactions",
+  STAR_POINTS_SHEET: "Star Points",
+  RETENTION_SHEET: "Retention",
+
+  // Deprecated/Removed sheet references (kept for backward compatibility)
+  SEASON_SCHEDULE_SHEET: "Schedule",  // Renamed from "Season Schedule"
+  LEAGUE_HUB_SHEET: "Standings",      // Renamed from "🏆 Rankings"
+  RETENTION_GRADES_SHEET: "Retention", // Renamed from "🎲 Retention"
+  TRANSACTION_LOG_SHEET: "Transactions", // Renamed from "🔀 Transactions"
 
   // External spreadsheet containing box scores (game sheets)
   BOX_SCORE_SPREADSHEET_ID: "17x5VoZxGV88RYAiHEcq0M-rxSyZ0fp66OktmJk2AaEU",
@@ -97,12 +101,11 @@ var CONFIG = {
   // Season archiving settings
   ARCHIVE_SHEETS: [
     "Player Data",
-    "Team Data", 
-    "Hitting Stats",
-    "Pitching Stats",
-    "Fielding & Baserunning Stats",
-    "League Hub",
-    "League Schedule"
+    "Team Data",
+    "Schedule",
+    "Standings",
+    "Rosters",
+    "Transactions"
   ],
 
   // Transaction tracking

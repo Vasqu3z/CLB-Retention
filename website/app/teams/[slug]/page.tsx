@@ -1,5 +1,5 @@
 import { getTeamBySlug } from '@/config/league';
-import { getTeamRoster, getSchedule } from '@/lib/sheets';
+import { getTeamRoster, getSchedule, getStandings } from '@/lib/sheets';
 import { notFound } from 'next/navigation';
 import TeamPageView from './TeamPageView';
 
@@ -14,10 +14,11 @@ export default async function TeamPage({ params }: { params: Promise<{ slug: str
     notFound();
   }
 
-  // Fetch team roster and schedule
-  const [roster, fullSchedule] = await Promise.all([
+  // Fetch team roster, schedule, and standings
+  const [roster, fullSchedule, standings] = await Promise.all([
     getTeamRoster(team.name),
     getSchedule(),
+    getStandings(),
   ]);
 
   // Filter schedule for this team
@@ -25,11 +26,15 @@ export default async function TeamPage({ params }: { params: Promise<{ slug: str
     (game) => game.homeTeam === team.name || game.awayTeam === team.name
   );
 
+  // Find team's standings record
+  const teamStanding = standings.find((s) => s.team === team.name);
+
   return (
     <TeamPageView
       team={team}
       roster={roster}
       schedule={teamSchedule}
+      standing={teamStanding}
     />
   );
 }

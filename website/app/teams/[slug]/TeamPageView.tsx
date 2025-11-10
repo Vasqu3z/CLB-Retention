@@ -2,25 +2,27 @@
 
 import { useState } from 'react';
 import { Team } from '@/config/league';
-import { PlayerStats, ScheduleGame } from '@/lib/sheets';
+import { PlayerStats, ScheduleGame, StandingsRow } from '@/lib/sheets';
 import Link from 'next/link';
 
 interface TeamPageViewProps {
   team: Team;
   roster: PlayerStats[];
   schedule: ScheduleGame[];
+  standing?: StandingsRow;
 }
 
 type SortField = keyof PlayerStats | 'none';
 type SortDirection = 'asc' | 'desc';
 
-export default function TeamPageView({ team, roster, schedule }: TeamPageViewProps) {
+export default function TeamPageView({ team, roster, schedule, standing }: TeamPageViewProps) {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Separate players by role
   const hitters = roster.filter((p) => p.ab && p.ab > 0);
   const pitchers = roster.filter((p) => p.ip && p.ip > 0);
+  const fielders = roster.filter((p) => p.np !== undefined || p.e !== undefined || p.sb !== undefined);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -51,6 +53,38 @@ export default function TeamPageView({ team, roster, schedule }: TeamPageViewPro
 
   const sortedHitters = sortPlayers(hitters);
   const sortedPitchers = sortPlayers(pitchers);
+  const sortedFielders = sortPlayers(fielders);
+
+  // Calculate team totals
+  const hittingTotals = hitters.reduce(
+    (acc, p) => ({
+      ab: acc.ab + (p.ab || 0),
+      h: acc.h + (p.h || 0),
+      hr: acc.hr + (p.hr || 0),
+      rbi: acc.rbi + (p.rbi || 0),
+    }),
+    { ab: 0, h: 0, hr: 0, rbi: 0 }
+  );
+  const teamAvg = hittingTotals.ab > 0 ? (hittingTotals.h / hittingTotals.ab).toFixed(3).substring(1) : '.000';
+
+  const pitchingTotals = pitchers.reduce(
+    (acc, p) => ({
+      ip: acc.ip + (p.ip || 0),
+      w: acc.w + (p.w || 0),
+      l: acc.l + (p.l || 0),
+      sv: acc.sv + (p.sv || 0),
+    }),
+    { ip: 0, w: 0, l: 0, sv: 0 }
+  );
+
+  const fieldingTotals = fielders.reduce(
+    (acc, p) => ({
+      np: acc.np + (p.np || 0),
+      e: acc.e + (p.e || 0),
+      sb: acc.sb + (p.sb || 0),
+    }),
+    { np: 0, e: 0, sb: 0 }
+  );
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -59,10 +93,54 @@ export default function TeamPageView({ team, roster, schedule }: TeamPageViewPro
         className="mb-8 p-6 rounded-lg"
         style={{ backgroundColor: `${team.primaryColor}20`, borderLeft: `4px solid ${team.primaryColor}` }}
       >
-        <h1 className="text-4xl font-bold mb-2" style={{ color: team.primaryColor }}>
+        <h1 className="text-4xl font-bold mb-4" style={{ color: team.primaryColor }}>
           {team.name}
         </h1>
-        <p className="text-gray-600 text-lg">
+
+        {/* Team Stats Summary */}
+        {standing && (
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
+            <div>
+              <div className="text-sm text-gray-600">Record</div>
+              <div className="text-xl font-bold text-gray-900">
+                {standing.wins}-{standing.losses}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-600">Win %</div>
+              <div className="text-xl font-bold text-gray-900">{standing.winPct}</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-600">Runs Scored</div>
+              <div className="text-xl font-bold text-gray-900">{standing.runsScored}</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-600">Runs Allowed</div>
+              <div className="text-xl font-bold text-gray-900">{standing.runsAllowed}</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-600">Run Diff</div>
+              <div
+                className={`text-xl font-bold ${
+                  standing.runDiff > 0
+                    ? 'text-green-600'
+                    : standing.runDiff < 0
+                    ? 'text-red-600'
+                    : 'text-gray-900'
+                }`}
+              >
+                {standing.runDiff > 0 ? '+' : ''}
+                {standing.runDiff}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-600">Rank</div>
+              <div className="text-xl font-bold text-gray-900">{standing.rank}</div>
+            </div>
+          </div>
+        )}
+
+        <p className="text-gray-600 text-sm">
           {team.mascot} • {roster.length} Players
         </p>
       </div>
@@ -75,6 +153,9 @@ export default function TeamPageView({ team, roster, schedule }: TeamPageViewPro
           </a>
           <a href="#pitching" className="border-transparent py-4 px-1 hover:border-gray-300 hover:text-gray-700">
             Pitching
+          </a>
+          <a href="#fielding" className="border-transparent py-4 px-1 hover:border-gray-300 hover:text-gray-700">
+            Fielding
           </a>
           <a href="#schedule" className="border-transparent py-4 px-1 hover:border-gray-300 hover:text-gray-700">
             Schedule
@@ -136,6 +217,19 @@ export default function TeamPageView({ team, roster, schedule }: TeamPageViewPro
                   <td className="px-4 py-3 text-center">{player.ops}</td>
                 </tr>
               ))}
+              {/* Team Totals Row */}
+              <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
+                <td className="px-4 py-3 text-gray-900">Team Totals</td>
+                <td className="px-4 py-3 text-center">—</td>
+                <td className="px-4 py-3 text-center">{hittingTotals.ab}</td>
+                <td className="px-4 py-3 text-center">{hittingTotals.h}</td>
+                <td className="px-4 py-3 text-center">{hittingTotals.hr}</td>
+                <td className="px-4 py-3 text-center">{hittingTotals.rbi}</td>
+                <td className="px-4 py-3 text-center">{teamAvg}</td>
+                <td className="px-4 py-3 text-center">—</td>
+                <td className="px-4 py-3 text-center">—</td>
+                <td className="px-4 py-3 text-center">—</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -187,6 +281,64 @@ export default function TeamPageView({ team, roster, schedule }: TeamPageViewPro
                   <td className="px-4 py-3 text-center">{player.whip}</td>
                 </tr>
               ))}
+              {/* Team Totals Row */}
+              <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
+                <td className="px-4 py-3 text-gray-900">Team Totals</td>
+                <td className="px-4 py-3 text-center">—</td>
+                <td className="px-4 py-3 text-center">{pitchingTotals.ip.toFixed(2)}</td>
+                <td className="px-4 py-3 text-center">{pitchingTotals.w}</td>
+                <td className="px-4 py-3 text-center">{pitchingTotals.l}</td>
+                <td className="px-4 py-3 text-center">{pitchingTotals.sv}</td>
+                <td className="px-4 py-3 text-center">—</td>
+                <td className="px-4 py-3 text-center">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Fielding Stats */}
+      <section id="fielding" className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Fielding & Baserunning Statistics</h2>
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-100">
+              <tr>
+                <SortableHeader field="name" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  Player
+                </SortableHeader>
+                <SortableHeader field="gp" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  GP
+                </SortableHeader>
+                <SortableHeader field="np" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  NP
+                </SortableHeader>
+                <SortableHeader field="e" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  E
+                </SortableHeader>
+                <SortableHeader field="sb" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
+                  SB
+                </SortableHeader>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedFielders.map((player, idx) => (
+                <tr key={player.name} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
+                  <td className="px-4 py-3 font-medium text-gray-900">{player.name}</td>
+                  <td className="px-4 py-3 text-center">{player.gp}</td>
+                  <td className="px-4 py-3 text-center">{player.np || 0}</td>
+                  <td className="px-4 py-3 text-center">{player.e || 0}</td>
+                  <td className="px-4 py-3 text-center">{player.sb || 0}</td>
+                </tr>
+              ))}
+              {/* Team Totals Row */}
+              <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
+                <td className="px-4 py-3 text-gray-900">Team Totals</td>
+                <td className="px-4 py-3 text-center">—</td>
+                <td className="px-4 py-3 text-center">{fieldingTotals.np}</td>
+                <td className="px-4 py-3 text-center">{fieldingTotals.e}</td>
+                <td className="px-4 py-3 text-center">{fieldingTotals.sb}</td>
+              </tr>
             </tbody>
           </table>
         </div>

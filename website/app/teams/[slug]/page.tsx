@@ -13,8 +13,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function TeamPage({ params }: { params: { slug: string } }) {
-  const team = getTeamBySlug(params.slug);
+export default async function TeamPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const team = getTeamBySlug(slug);
 
   if (!team) {
     notFound();

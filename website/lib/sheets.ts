@@ -342,81 +342,90 @@ export interface PlayerStats {
 }
 
 export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
-  // Read from all stat sheets and filter by team
-  const hittingData = await getSheetData("'🧮 Hitting'!A2:P100");
-  const pitchingData = await getSheetData("'🧮 Pitching'!A2:P100");
-  const fieldingData = await getSheetData("'🧮 Fielding & Running'!A2:F100");
+  // Read from Player Data sheet (raw stats only)
+  // Columns: A=Name, B=Team, C=GP, D-L=Hitting(9), M-O=W/L/SV, P-V=Pitching(7), W-Y=Fielding(3)
+  const playerData = await getSheetData("'Player Data'!A2:Y100");
 
-  // Create a map of players by name
-  const playersMap = new Map<string, PlayerStats>();
+  const players: PlayerStats[] = [];
 
-  // Process hitting stats
-  for (const row of hittingData) {
+  for (const row of playerData) {
     const playerName = String(row[0] || '').trim();
     const team = String(row[1] || '').trim();
 
     if (!playerName || team !== teamName) continue;
 
-    playersMap.set(playerName, {
+    const gp = Number(row[2]) || 0;
+
+    // Hitting stats (columns D-L, indices 3-11)
+    const ab = Number(row[3]) || 0;
+    const h = Number(row[4]) || 0;
+    const hr = Number(row[5]) || 0;
+    const rbi = Number(row[6]) || 0;
+    const bb = Number(row[7]) || 0;
+    const k = Number(row[8]) || 0;
+    const rob = Number(row[9]) || 0;
+    const dp = Number(row[10]) || 0;
+    const tb = Number(row[11]) || 0;
+
+    // Calculate hitting rate stats
+    const avg = ab > 0 ? (h / ab).toFixed(3).substring(1) : '.000';
+    const obp = (ab + bb) > 0 ? ((h + bb) / (ab + bb)).toFixed(3).substring(1) : '.000';
+    const slg = ab > 0 ? (tb / ab).toFixed(3).substring(1) : '.000';
+    const ops = ab > 0 && (ab + bb) > 0
+      ? ((h + bb) / (ab + bb) + tb / ab).toFixed(3)
+      : '0.000';
+
+    // Pitching stats (columns M-O for W/L/SV, then P-V for pitching, indices 12-21)
+    const w = Number(row[12]) || 0;
+    const l = Number(row[13]) || 0;
+    const sv = Number(row[14]) || 0;
+    const ip = Number(row[15]) || 0;
+    const bf = Number(row[16]) || 0;
+    const pitchingH = Number(row[17]) || 0;
+    const pitchingHR = Number(row[18]) || 0;
+    const r = Number(row[19]) || 0;
+    const pitchingBB = Number(row[20]) || 0;
+    const pitchingK = Number(row[21]) || 0;
+
+    // Calculate pitching rate stats
+    const era = ip > 0 ? ((r * 9) / ip).toFixed(2) : '0.00';
+    const whip = ip > 0 ? ((pitchingH + pitchingBB) / ip).toFixed(2) : '0.00';
+    const baa = bf > 0 ? (pitchingH / bf).toFixed(3).substring(1) : '.000';
+
+    // Fielding stats (columns W-Y, indices 22-24)
+    const np = Number(row[22]) || 0;
+    const e = Number(row[23]) || 0;
+    const sb = Number(row[24]) || 0;
+
+    players.push({
       name: playerName,
       team,
-      gp: Number(row[2]) || 0,
-      ab: Number(row[3]) || 0,
-      h: Number(row[4]) || 0,
-      hr: Number(row[5]) || 0,
-      rbi: Number(row[6]) || 0,
-      avg: String(row[12] || '0.000'),
-      obp: String(row[13] || '0.000'),
-      slg: String(row[14] || '0.000'),
-      ops: String(row[15] || '0.000'),
+      gp,
+      // Hitting
+      ab,
+      h,
+      hr,
+      rbi,
+      avg,
+      obp,
+      slg,
+      ops,
+      // Pitching
+      ip,
+      w,
+      l,
+      sv,
+      era,
+      whip,
+      baa,
+      // Fielding
+      np,
+      e,
+      sb,
     });
   }
 
-  // Process pitching stats
-  for (const row of pitchingData) {
-    const playerName = String(row[0] || '').trim();
-    const team = String(row[1] || '').trim();
-
-    if (!playerName || team !== teamName) continue;
-
-    const player = playersMap.get(playerName) || {
-      name: playerName,
-      team,
-      gp: Number(row[2]) || 0,
-    };
-
-    player.ip = Number(row[7]) || 0;
-    player.w = Number(row[3]) || 0;
-    player.l = Number(row[4]) || 0;
-    player.sv = Number(row[5]) || 0;
-    player.era = String(row[6] || '0.00');
-    player.baa = String(row[14] || '0.000');
-    player.whip = String(row[15] || '0.00');
-
-    playersMap.set(playerName, player);
-  }
-
-  // Process fielding stats
-  for (const row of fieldingData) {
-    const playerName = String(row[0] || '').trim();
-    const team = String(row[1] || '').trim();
-
-    if (!playerName || team !== teamName) continue;
-
-    const player = playersMap.get(playerName) || {
-      name: playerName,
-      team,
-      gp: Number(row[2]) || 0,
-    };
-
-    player.np = Number(row[3]) || 0;
-    player.e = Number(row[4]) || 0;
-    player.sb = Number(row[5]) || 0;
-
-    playersMap.set(playerName, player);
-  }
-
-  return Array.from(playersMap.values());
+  return players;
 }
 
 // ===== SCHEDULE =====

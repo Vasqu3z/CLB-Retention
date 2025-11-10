@@ -1,4 +1,4 @@
-import { getBattingLeaders, getPitchingLeaders, getFieldingLeaders, LeaderRow } from "@/lib/sheets";
+import { getCalculatedBattingLeaders, getCalculatedPitchingLeaders, getCalculatedFieldingLeaders, LeaderEntry } from "@/lib/sheets";
 import { getTeamByName } from "@/config/league";
 import Link from "next/link";
 
@@ -8,9 +8,9 @@ type TabType = 'batting' | 'pitching' | 'fielding';
 
 export default async function LeadersPage() {
   const [battingLeaders, pitchingLeaders, fieldingLeaders] = await Promise.all([
-    getBattingLeaders(),
-    getPitchingLeaders(),
-    getFieldingLeaders(),
+    getCalculatedBattingLeaders(),
+    getCalculatedPitchingLeaders(),
+    getCalculatedFieldingLeaders(),
   ]);
 
   return (
@@ -72,7 +72,7 @@ export default async function LeadersPage() {
   );
 }
 
-function LeaderCard({ title, leaders }: { title: string; leaders: LeaderRow[] }) {
+function LeaderCard({ title, leaders }: { title: string; leaders: LeaderEntry[] }) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
       <h3 className="text-lg font-semibold mb-4 pb-2 border-b border-gray-200">

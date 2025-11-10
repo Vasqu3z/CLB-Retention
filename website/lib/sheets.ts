@@ -648,3 +648,364 @@ export async function getTeamData(teamName?: string): Promise<TeamData[]> {
 
   return teamDataList;
 }
+
+// ===== LEAGUE LEADERS (calculated from Player Data) =====
+export interface LeaderEntry {
+  rank: string;
+  player: string;
+  team: string;
+  value: string;
+  rawValue: number; // For sorting
+  isTieSummary?: boolean;
+}
+
+async function getAllPlayers(): Promise<PlayerStats[]> {
+  // Read all players from Player Data sheet (not filtered by team)
+  const playerData = await getSheetData("'Player Data'!A2:Y100");
+  const players: PlayerStats[] = [];
+
+  for (const row of playerData) {
+    const playerName = String(row[0] || '').trim();
+    const team = String(row[1] || '').trim();
+
+    if (!playerName) continue;
+
+    const gp = Number(row[2]) || 0;
+
+    // Hitting stats
+    const ab = Number(row[3]) || 0;
+    const h = Number(row[4]) || 0;
+    const hr = Number(row[5]) || 0;
+    const rbi = Number(row[6]) || 0;
+    const bb = Number(row[7]) || 0;
+    const k = Number(row[8]) || 0;
+    const rob = Number(row[9]) || 0;
+    const dp = Number(row[10]) || 0;
+    const tb = Number(row[11]) || 0;
+
+    // Calculate hitting rate stats
+    const avg = ab > 0 ? (h / ab).toFixed(3).substring(1) : '.000';
+    const obp = (ab + bb) > 0 ? ((h + bb) / (ab + bb)).toFixed(3).substring(1) : '.000';
+    const slg = ab > 0 ? (tb / ab).toFixed(3).substring(1) : '.000';
+    const ops = ab > 0 && (ab + bb) > 0
+      ? ((h + bb) / (ab + bb) + tb / ab).toFixed(3)
+      : '0.000';
+
+    // Pitching stats
+    const w = Number(row[12]) || 0;
+    const l = Number(row[13]) || 0;
+    const sv = Number(row[14]) || 0;
+    const ip = Number(row[15]) || 0;
+    const bf = Number(row[16]) || 0;
+    const pitchingH = Number(row[17]) || 0;
+    const pitchingHR = Number(row[18]) || 0;
+    const r = Number(row[19]) || 0;
+    const pitchingBB = Number(row[20]) || 0;
+    const pitchingK = Number(row[21]) || 0;
+
+    // Calculate pitching rate stats
+    const era = ip > 0 ? ((r * 9) / ip).toFixed(2) : '0.00';
+    const whip = ip > 0 ? ((pitchingH + pitchingBB) / ip).toFixed(2) : '0.00';
+    const baa = bf > 0 ? (pitchingH / bf).toFixed(3).substring(1) : '.000';
+
+    // Fielding stats
+    const np = Number(row[22]) || 0;
+    const e = Number(row[23]) || 0;
+    const sb = Number(row[24]) || 0;
+
+    players.push({
+      name: playerName,
+      team,
+      gp,
+      ab, h, hr, rbi, avg, obp, slg, ops,
+      ip, w, l, sv, era, whip, baa,
+      np, e, sb,
+    });
+  }
+
+  return players;
+}
+
+async function getAverageTeamGP(): Promise<number> {
+  const teamData = await getTeamData();
+  if (teamData.length === 0) return 0;
+  const totalGP = teamData.reduce((sum, team) => sum + team.gp, 0);
+  return totalGP / teamData.length;
+}
+
+function formatLeaders(
+  players: { player: string; team: string; value: number; formatted: string }[],
+  isAscending: boolean = false
+): LeaderEntry[] {
+  if (players.length === 0) return [];
+
+  // Sort by value
+  const sorted = [...players].sort((a, b) =>
+    isAscending ? a.value - b.value : b.value - a.value
+  );
+
+  const leaders: LeaderEntry[] = [];
+  let currentRank = 1;
+  let previousValue: number | null = null;
+  let tiedPlayers: typeof sorted = [];
+
+  for (let i = 0; i < Math.min(sorted.length, 5); i++) {
+    const player = sorted[i];
+
+    if (previousValue !== null && player.value !== previousValue) {
+      // Different value - add any tied players first
+      if (tiedPlayers.length > 1) {
+        leaders.push({
+          rank: `T-${currentRank}`,
+          player: `${tiedPlayers.length} Players Tied`,
+          team: '',
+          value: tiedPlayers[0].formatted,
+          rawValue: tiedPlayers[0].value,
+          isTieSummary: true,
+        });
+      } else if (tiedPlayers.length === 1) {
+        leaders.push({
+          rank: String(currentRank),
+          player: tiedPlayers[0].player,
+          team: tiedPlayers[0].team,
+          value: tiedPlayers[0].formatted,
+          rawValue: tiedPlayers[0].value,
+        });
+      }
+      currentRank += tiedPlayers.length;
+      tiedPlayers = [];
+    }
+
+    tiedPlayers.push(player);
+    previousValue = player.value;
+  }
+
+  // Add remaining tied players
+  if (tiedPlayers.length > 1) {
+    leaders.push({
+      rank: `T-${currentRank}`,
+      player: `${tiedPlayers.length} Players Tied`,
+      team: '',
+      value: tiedPlayers[0].formatted,
+      rawValue: tiedPlayers[0].value,
+      isTieSummary: true,
+    });
+  } else if (tiedPlayers.length === 1) {
+    leaders.push({
+      rank: String(currentRank),
+      player: tiedPlayers[0].player,
+      team: tiedPlayers[0].team,
+      value: tiedPlayers[0].formatted,
+      rawValue: tiedPlayers[0].value,
+    });
+  }
+
+  return leaders.slice(0, 5);
+}
+
+export async function getCalculatedBattingLeaders() {
+  const [players, avgTeamGP] = await Promise.all([getAllPlayers(), getAverageTeamGP()]);
+  const qualifyingAB = avgTeamGP * 2.1;
+
+  // Rate stats require qualification
+  const qualifiedHitters = players.filter(p => p.ab && p.ab >= qualifyingAB);
+
+  const obp = formatLeaders(
+    qualifiedHitters
+      .filter(p => p.obp)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: parseFloat('0' + p.obp!),
+        formatted: p.obp!,
+      }))
+  );
+
+  const slg = formatLeaders(
+    qualifiedHitters
+      .filter(p => p.slg)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: parseFloat('0' + p.slg!),
+        formatted: p.slg!,
+      }))
+  );
+
+  const ops = formatLeaders(
+    qualifiedHitters
+      .filter(p => p.ops)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: parseFloat(p.ops!),
+        formatted: p.ops!,
+      }))
+  );
+
+  // Counting stats don't require qualification
+  const hits = formatLeaders(
+    players
+      .filter(p => p.h && p.h > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.h!,
+        formatted: String(p.h),
+      }))
+  );
+
+  const hr = formatLeaders(
+    players
+      .filter(p => p.hr && p.hr > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.hr!,
+        formatted: String(p.hr),
+      }))
+  );
+
+  const rbi = formatLeaders(
+    players
+      .filter(p => p.rbi && p.rbi > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.rbi!,
+        formatted: String(p.rbi),
+      }))
+  );
+
+  return { obp, hits, hr, rbi, slg, ops };
+}
+
+export async function getCalculatedPitchingLeaders() {
+  const [players, avgTeamGP] = await Promise.all([getAllPlayers(), getAverageTeamGP()]);
+  const qualifyingIP = avgTeamGP * 1.0;
+
+  // Rate stats require qualification
+  const qualifiedPitchers = players.filter(p => p.ip && p.ip >= qualifyingIP);
+
+  const era = formatLeaders(
+    qualifiedPitchers
+      .filter(p => p.era)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: parseFloat(p.era!),
+        formatted: p.era!,
+      })),
+    true // Ascending (lower is better)
+  );
+
+  const whip = formatLeaders(
+    qualifiedPitchers
+      .filter(p => p.whip)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: parseFloat(p.whip!),
+        formatted: p.whip!,
+      })),
+    true // Ascending (lower is better)
+  );
+
+  const baa = formatLeaders(
+    qualifiedPitchers
+      .filter(p => p.baa)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: parseFloat('0' + p.baa!),
+        formatted: p.baa!,
+      })),
+    true // Ascending (lower is better)
+  );
+
+  // Counting stats don't require qualification
+  const ip = formatLeaders(
+    players
+      .filter(p => p.ip && p.ip > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.ip!,
+        formatted: p.ip!.toFixed(2),
+      }))
+  );
+
+  const wins = formatLeaders(
+    players
+      .filter(p => p.w && p.w > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.w!,
+        formatted: String(p.w),
+      }))
+  );
+
+  const losses = formatLeaders(
+    players
+      .filter(p => p.l && p.l > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.l!,
+        formatted: String(p.l),
+      }))
+  );
+
+  const saves = formatLeaders(
+    players
+      .filter(p => p.sv && p.sv > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.sv!,
+        formatted: String(p.sv),
+      }))
+  );
+
+  return { ip, wins, losses, saves, era, whip, baa };
+}
+
+export async function getCalculatedFieldingLeaders() {
+  const players = await getAllPlayers();
+
+  const nicePlays = formatLeaders(
+    players
+      .filter(p => p.np && p.np > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.np!,
+        formatted: String(p.np),
+      }))
+  );
+
+  const errors = formatLeaders(
+    players
+      .filter(p => p.e && p.e > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.e!,
+        formatted: String(p.e),
+      }))
+  );
+
+  const stolenBases = formatLeaders(
+    players
+      .filter(p => p.sb && p.sb > 0)
+      .map(p => ({
+        player: p.name,
+        team: p.team,
+        value: p.sb!,
+        formatted: String(p.sb),
+      }))
+  );
+
+  return { nicePlays, errors, stolenBases };
+}

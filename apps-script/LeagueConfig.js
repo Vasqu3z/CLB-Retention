@@ -16,12 +16,6 @@ var CONFIG = {
   STAR_POINTS_SHEET: "Star Points",
   RETENTION_SHEET: "Retention",
 
-  // Deprecated/Removed sheet references (kept for backward compatibility)
-  SEASON_SCHEDULE_SHEET: "Schedule",  // Renamed from "Season Schedule"
-  LEAGUE_HUB_SHEET: "Standings",      // Renamed from "🏆 Rankings"
-  RETENTION_GRADES_SHEET: "Retention", // Renamed from "🎲 Retention"
-  TRANSACTION_LOG_SHEET: "Transactions", // Renamed from "🔀 Transactions"
-
   // External spreadsheet containing box scores (game sheets)
   BOX_SCORE_SPREADSHEET_ID: "17x5VoZxGV88RYAiHEcq0M-rxSyZ0fp66OktmJk2AaEU",
 

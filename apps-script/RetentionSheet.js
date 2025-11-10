@@ -9,7 +9,7 @@
  */
 function buildRetentionSheetFromScratch(retentionGrades) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+  var sheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
 
   // PRESERVE POSTSEASON DATA before clearing
   var existingPostseasonData = [];
@@ -52,7 +52,7 @@ function buildRetentionSheetFromScratch(retentionGrades) {
   }
 
   if (!sheet) {
-    sheet = ss.insertSheet(CONFIG.RETENTION_GRADES_SHEET);
+    sheet = ss.insertSheet(CONFIG.RETENTION_SHEET);
   } else {
     sheet.clear();
   }
@@ -475,7 +475,7 @@ function rebuildRetentionSheet() {
   }
 
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+  var sheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
 
   if (sheet) {
     sheet.getRange(RETENTION_CONFIG.OUTPUT.HEADER_ROW, 1).clearContent();
@@ -492,7 +492,7 @@ function rebuildRetentionSheet() {
  */
 function refreshRetentionFormulas() {
   var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = activeSpreadsheet.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+  var sheet = activeSpreadsheet.getSheetByName(CONFIG.RETENTION_SHEET);
 
   if (!sheet) {
     SpreadsheetApp.getUi().alert("Retention Grades sheet not found. Please run 'Calculate Retention Grades' first.");

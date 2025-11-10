@@ -81,7 +81,7 @@ function calculateRetentionGrades(loadedGameData) {
     // Read existing draft values from sheet if it exists (for draft expectations)
     Logger.log("Step 6.5/7: Reading existing draft values from sheet...");
     var existingDraftValues = {};
-    var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+    var sheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
     if (sheet && isRetentionSheetFormatted(sheet)) {
       try {
         var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
@@ -205,7 +205,7 @@ function calculateRetentionGrades(loadedGameData) {
     Logger.log("Calculation complete. Writing to sheet...");
 
     // SMART UPDATE: Check if sheet needs full rebuild or just data update
-    var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+    var sheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
 
     if (!sheet || !isRetentionSheetFormatted(sheet)) {
       Logger.log("Sheet not formatted - building from scratch");
@@ -404,7 +404,7 @@ function getTeamData() {
  */
 function getStandingsData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var hubSheet = ss.getSheetByName(CONFIG.LEAGUE_HUB_SHEET);
+  var hubSheet = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
 
   var standings = {};
 
@@ -449,7 +449,7 @@ function getStandingsData() {
  */
 function getPostseasonData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var retentionSheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+  var retentionSheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
 
   var postseason = {};
 

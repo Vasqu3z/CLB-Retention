@@ -11,9 +11,9 @@ function updateLeagueHubFromCache(gameData) {
 
   logInfo("Step 4", "Building simplified Rankings (standings only)");
   
-  var standingsSheet = ss.getSheetByName(CONFIG.LEAGUE_HUB_SHEET);
+  var standingsSheet = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
   if (!standingsSheet) {
-    standingsSheet = ss.insertSheet(CONFIG.LEAGUE_HUB_SHEET);
+    standingsSheet = ss.insertSheet(CONFIG.STANDINGS_SHEET);
   }
 
   // Targeted Clear - preserve user formatting outside managed columns
@@ -186,8 +186,8 @@ function updateLeagueHubFromCache(gameData) {
   standingsSheet.setColumnWidth(layout.STANDINGS.START_COL + 7, 50);
   standingsSheet.setColumnWidth(layout.STANDINGS.START_COL + 8, 50);
   
-  logInfo("Step 4", "Updated " + CONFIG.LEAGUE_HUB_SHEET);
-  SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.LEAGUE_HUB_SHEET + " updated!", "Step 4 Complete", 3);
+  logInfo("Step 4", "Updated " + CONFIG.STANDINGS_SHEET);
+  SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.STANDINGS_SHEET + " updated!", "Step 4 Complete", 3);
 }
 
 /**

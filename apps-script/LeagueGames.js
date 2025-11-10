@@ -245,7 +245,7 @@ function initializeTeamStatsWithH2H(ss) {
 }
 
 function initializeScheduleData(ss, boxScoreSS) {
-  var scheduleSheet = ss.getSheetByName(CONFIG.SEASON_SCHEDULE_SHEET);
+  var scheduleSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET);
   if (!scheduleSheet || scheduleSheet.getLastRow() < 2) {
     return [];
   }
@@ -462,7 +462,7 @@ function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, ru
 // ===== WRITE GAME RESULTS BACK TO SEASON SCHEDULE =====
 function writeGameResultsToSeasonSchedule(scheduleData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var scheduleSheet = ss.getSheetByName(CONFIG.SEASON_SCHEDULE_SHEET);
+  var scheduleSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET);
 
   if (!scheduleSheet) {
     logError("Write Game Results", "Season Schedule sheet not found", "");

@@ -123,7 +123,7 @@ function archiveCurrentSeason() {
     clearLeagueHub();
     
     // Clear transaction log
-    var transactionSheet = ss.getSheetByName(CONFIG.TRANSACTION_LOG_SHEET);
+    var transactionSheet = ss.getSheetByName(CONFIG.TRANSACTIONS_SHEET);
     if (transactionSheet) {
       var lastRow = transactionSheet.getLastRow();
       if (lastRow > 1) {
@@ -201,7 +201,7 @@ function clearTeamStats() {
 
 function clearLeagueHub() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var leagueHub = ss.getSheetByName(CONFIG.LEAGUE_HUB_SHEET);
+  var leagueHub = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
   
   if (leagueHub) {
     leagueHub.clear();

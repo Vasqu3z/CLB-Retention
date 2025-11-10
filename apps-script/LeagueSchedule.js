@@ -4,7 +4,7 @@
 // ===== Update from cached data (called by updateAll) =====
 function updateLeagueScheduleFromCache(scheduleData, teamStatsWithH2H, gamesByWeek, boxScoreUrl) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var scheduleSheet = ss.getSheetByName(CONFIG.SEASON_SCHEDULE_SHEET);
+  var scheduleSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET);
   
   if (!scheduleSheet || scheduleSheet.getLastRow() < 2) {
     logWarning("Step 5", "Season Schedule sheet is empty or missing", "N/A");
@@ -425,10 +425,10 @@ function writeScheduleToSheet(scheduleSheet, scheduleData, gamesByWeek, boxScore
 // ===== INITIALIZE SEASON SCHEDULE SHEET =====
 function initializeSeasonSchedule() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var scheduleSheet = ss.getSheetByName(CONFIG.SEASON_SCHEDULE_SHEET);
+  var scheduleSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET);
   
   if (!scheduleSheet) {
-    scheduleSheet = ss.insertSheet(CONFIG.SEASON_SCHEDULE_SHEET);
+    scheduleSheet = ss.insertSheet(CONFIG.SCHEDULE_SHEET);
     scheduleSheet.getRange(1, 1, 1, 3).setValues([["Week", "Away Team", "Home Team"]]);
     scheduleSheet.getRange(1, 1, 1, 3).setFontWeight("bold").setBackground("#e8e8e8");
     scheduleSheet.setFrozenRows(1);

@@ -467,16 +467,16 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
     return;
   }
 
-  // Add headers if they don't exist yet (columns D-K)
+  // Add headers if they don't exist yet (columns D-J)
   var headers = scheduleSheet.getRange(1, 1, 1, 11).getValues()[0];
 
   if (!headers[3] || headers[3] === "") {
     // Write new column headers
-    scheduleSheet.getRange(1, 4, 1, 8).setValues([[
+    scheduleSheet.getRange(1, 4, 1, 7).setValues([[
       "Winning Team", "Losing Team", "Game MVP", "Winning Pitcher",
       "Losing Pitcher", "Saving Pitcher", "Box Score Link"
     ]]);
-    scheduleSheet.getRange(1, 4, 1, 8).setFontWeight("bold").setBackground("#e8e8e8");
+    scheduleSheet.getRange(1, 4, 1, 7).setFontWeight("bold").setBackground("#e8e8e8");
   }
 
   // Write game results for each completed game

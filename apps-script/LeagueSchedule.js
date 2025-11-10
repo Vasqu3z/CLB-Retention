@@ -13,11 +13,6 @@ function updateLeagueScheduleFromCache(scheduleData, teamStatsWithH2H, gamesByWe
   }
   
   logInfo("Step 5", "Schedule data validated");
-
-  // NOTE: League Schedule display sheet (📅 Schedule) removed in v2.0
-  // The website and Discord bot now read directly from the "Schedule" sheet
-  // createLeagueScheduleSheetFromCache(scheduleData, teamStatsWithH2H, gamesByWeek, boxScoreUrl);
-
   logInfo("Step 5", "Schedule processing complete");
   SpreadsheetApp.getActiveSpreadsheet().toast("Schedule validated!", "Step 5 Complete", 3);
 }

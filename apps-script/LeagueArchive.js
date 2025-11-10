@@ -208,7 +208,4 @@ function clearLeagueHub() {
     leagueHub.getRange(1, 1).setValue("Run 'Update All' to populate standings and scores");
     logInfo("Archive Season", "Cleared Standings");
   }
-
-  // NOTE: League Schedule display sheet (📅 Schedule) removed in v2.0
-  // Only the "Schedule" data sheet exists now
 }

@@ -9,7 +9,7 @@
  * Regular season standing (10pts) + postseason finish (10pts)
  * USES STANDINGS FROM LEAGUE HUB (not win%)
  */
-function calculateTeamSuccess(player, teamData, standingsData, postseasonData) {
+function calculateTeamSuccessInternal(player, teamData, standingsData, postseasonData) {
   var config = RETENTION_CONFIG.TEAM_SUCCESS;
   var team = teamData[player.team];
 
@@ -86,7 +86,7 @@ function calculateTeamSuccess(player, teamData, standingsData, postseasonData) {
  * Games played (10pts) + usage quality (10pts)
  * CRITICAL: Only counts games with CURRENT team (uses lineup data)
  */
-function calculatePlayTime(player, teamData, lineupData) {
+function calculatePlayTimeInternal(player, teamData, lineupData) {
   var config = RETENTION_CONFIG.PLAY_TIME;
   var team = teamData[player.team];
 
@@ -226,7 +226,7 @@ function calculatePlayTime(player, teamData, lineupData) {
  * Offensive (0-14) + Defensive (0-3) + Pitching (0-3)
  * CRITICAL: Uses stats from ALL teams (performance-based)
  */
-function calculatePerformance(player, leagueStats, standingsData, draftValue) {
+function calculatePerformanceInternal(player, leagueStats, standingsData, draftValue) {
   var config = RETENTION_CONFIG.PERFORMANCE;
 
   var breakdown = {
@@ -682,8 +682,8 @@ function calculateTeamSuccess(player, teamStats) {
   // Read postseason data (still from sheet - not cached)
   var postseasonData = getPostseasonData();
 
-  // Call original function
-  return calculateTeamSuccess(player, teamData, standingsData, postseasonData);
+  // Call internal function
+  return calculateTeamSuccessInternal(player, teamData, standingsData, postseasonData);
 }
 
 /**
@@ -693,8 +693,8 @@ function calculatePlayTime(player, teamStats, lineupData) {
   // Convert teamStats to teamData format
   var teamData = convertTeamStatsToTeamData(teamStats);
 
-  // Call original function
-  return calculatePlayTime(player, teamData, lineupData);
+  // Call internal function
+  return calculatePlayTimeInternal(player, teamData, lineupData);
 }
 
 /**
@@ -704,6 +704,6 @@ function calculatePerformance(player, leagueStats, teamStats, draftValue) {
   // Build standings data from teamStats
   var standingsData = getStandingsFromTeamStats(teamStats);
 
-  // Call original function
-  return calculatePerformance(player, leagueStats, standingsData, draftValue);
+  // Call internal function
+  return calculatePerformanceInternal(player, leagueStats, standingsData, draftValue);
 }

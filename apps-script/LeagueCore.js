@@ -5,10 +5,8 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Player Stats')
-      // Simplified menu - removed step-by-step updates
       .addItem('🚀 Update All', 'updateAll')
       .addItem('📊 Compare Players', 'showPlayerComparison')
-      .addItem('🔧 Recalculate All Formulas', 'recalculateFormulas')
       .addSeparator()
       // Transactions (collapsed)
       .addSubMenu(ui.createMenu('💰 Transactions')
@@ -73,12 +71,12 @@ function updateAll() {
     // This significantly reduces UpdateAll execution time
     var step3Time = 0;
 
-    // Write game results to Season Schedule
-    logInfo("UpdateAll", "Writing game results to Season Schedule");
+    // Write game results to Schedule
+    logInfo("UpdateAll", "Writing game results to Schedule");
     writeGameResultsToSeasonSchedule(gameData.scheduleData);
 
-    // ===== STEP 4: Update league hub (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Update All", -1);
+    // ===== STEP 4: Update standings (using cached data) =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating standings...", "Update All", -1);
     var step4Start = new Date();
     // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
@@ -185,11 +183,11 @@ function quickUpdate() {
     // Individual team sheets are no longer generated - website reads from Player Data
     var step3Time = 0;
 
-    // Write game results to Season Schedule
-    logInfo("QuickUpdate", "Writing game results to Season Schedule");
+    // Write game results to Schedule
+    logInfo("QuickUpdate", "Writing game results to Schedule");
     writeGameResultsToSeasonSchedule(gameData.scheduleData);
 
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Quick Update", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating standings...", "Quick Update", -1);
     var step4Start = new Date();
     // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);

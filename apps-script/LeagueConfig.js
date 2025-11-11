@@ -177,7 +177,7 @@ var CONFIG = {
       FIELDING_NUM_COLS: 3
     },
 
-    // League Hub (Rankings) sheet layout
+    // Standings sheet layout
     LEAGUE_HUB: {
       HEADER_ROW: 1,
       STANDINGS_HEADER_ROW: 3,
@@ -198,25 +198,6 @@ var CONFIG = {
       },
       LEADERS_FIELDING: {
         START_COL: 13,            // Column N (14)
-        WIDTH: 300
-      }
-    },
-
-    // League Schedule sheet layout
-    LEAGUE_SCHEDULE: {
-      HEADER_ROW: 1,
-      STANDINGS_HEADER_ROW: 3,
-      STANDINGS_START_ROW: 4,
-      STANDINGS: {
-        START_COL: 0,             // Column A (1)
-        NUM_COLS: 8               // Rank, Team, W, L, Win%, RS, RA, Diff
-      },
-      COMPLETED_GAMES: {
-        START_COL: 9,             // Column J (10)
-        WIDTH: 300
-      },
-      SCHEDULED_GAMES: {
-        START_COL: 11,            // Column L (12)
         WIDTH: 300
       }
     },

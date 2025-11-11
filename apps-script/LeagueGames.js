@@ -459,13 +459,13 @@ function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, ru
   }
 }
 
-// ===== WRITE GAME RESULTS BACK TO SEASON SCHEDULE =====
+// ===== WRITE GAME RESULTS BACK TO SCHEDULE =====
 function writeGameResultsToSeasonSchedule(scheduleData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var scheduleSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET);
 
   if (!scheduleSheet) {
-    logError("Write Game Results", "Season Schedule sheet not found", "");
+    logError("Write Game Results", "Schedule sheet not found", "");
     return;
   }
 
@@ -520,5 +520,5 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
     }
   }
 
-  logInfo("Write Game Results", "Wrote " + scheduleData.filter(function(g) { return g.played; }).length + " completed games to Season Schedule");
+  logInfo("Write Game Results", "Wrote " + scheduleData.filter(function(g) { return g.played; }).length + " completed games to Schedule");
 }

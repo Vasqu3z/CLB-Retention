@@ -63,10 +63,7 @@ function updateTeamSheetsFromCache(teamStatsWithH2H, scheduleData, boxScoreUrl) 
     var hittingHeadersFiltered = ["Player", "GP", "AB", "H", "HR", "RBI", "BB", "K", "ROB", "DP", "TB", "AVG", "OBP", "SLG", "OPS"];
     var pitchingHeadersFiltered = ["Player", "GP", "W", "L", "SV", "ERA", "IP", "BF", "H", "HR", "R", "BB", "K", "BAA", "WHIP"];
     var fieldingHeadersFiltered = ["Player", "GP", "NP", "E", "SB"];
-    
-    // Check if template sheet exists
-    var templateSheet = ss.getSheetByName(CONFIG.TEAM_SHEET_TEMPLATE);
-    
+
     // Convert scheduleData array to object format if needed
     var scheduleDataObject = null;
     if (scheduleData && Array.isArray(scheduleData)) {
@@ -81,16 +78,10 @@ function updateTeamSheetsFromCache(teamStatsWithH2H, scheduleData, boxScoreUrl) 
       var teamName = teamNames[t];
       var teamSheet = sheetMap[teamName];
       
-      // If sheet doesn't exist, create from template or create new
+      // If sheet doesn't exist, create new
       if (!teamSheet) {
-        if (templateSheet) {
-          teamSheet = templateSheet.copyTo(ss);
-          teamSheet.setName(teamName);
-          logInfo("Step 3", "Created team sheet from template: " + teamName);
-        } else {
-          teamSheet = ss.insertSheet(teamName);
-          logInfo("Step 3", "Created new team sheet: " + teamName);
-        }
+        teamSheet = ss.insertSheet(teamName);
+        logInfo("Step 3", "Created new team sheet: " + teamName);
       }
       
       var existingFormat = {};

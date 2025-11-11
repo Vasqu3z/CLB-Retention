@@ -20,12 +20,13 @@ var CONFIG = {
   PLAYOFF_PLAYER_STATS_SHEET: "🏆 Players",
   PLAYOFF_TEAM_STATS_SHEET: "🏆 Teams",
   PLAYOFF_SCHEDULE_SHEET: "🏆 Schedule",
+  PLAYOFF_BRACKET_SHEET: "🏆 Bracket",
 
   // External spreadsheet containing box scores (game sheets)
   BOX_SCORE_SPREADSHEET_ID: "17x5VoZxGV88RYAiHEcq0M-rxSyZ0fp66OktmJk2AaEU",
 
   // Prefix for game sheets in the box score spreadsheet
-  GAME_SHEET_PREFIX: "#",
+  GAME_SHEET_PREFIX: "#W",
 
   // Prefix for playoff game sheets
   PLAYOFF_GAME_PREFIX: "#P",

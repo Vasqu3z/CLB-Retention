@@ -206,3 +206,306 @@ function updateLeagueHub() {
 function updateStandingsAndScoreboard() {
   updateLeagueHub();
 }
+
+// ===== PLAYOFF BRACKET =====
+
+/**
+ * Update playoff bracket with seeding and series results
+ * Called from updateAllPlayoffs() in LeagueCore.js
+ * @param {object} playoffGameData - The full playoff game data object with scheduleData
+ */
+function updatePlayoffBracketFromCache(playoffGameData) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var bracketSheet = ss.getSheetByName(CONFIG.PLAYOFF_BRACKET_SHEET);
+
+  if (!bracketSheet) {
+    bracketSheet = ss.insertSheet(CONFIG.PLAYOFF_BRACKET_SHEET);
+  }
+
+  logInfo("Playoff Bracket", "Updating playoff bracket");
+
+  // Check if playoffs have started
+  var playoffsStarted = checkIfPlayoffsStarted(playoffGameData);
+
+  // Read current standings to get playoff seeding
+  var standingsSheet = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
+  if (!standingsSheet) {
+    logError("Playoff Bracket", "Standings sheet not found", "Cannot determine playoff seeding");
+    return;
+  }
+
+  // Get top 8 teams from standings
+  var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
+  var standingsData = standingsSheet.getRange(layout.STANDINGS_START_ROW, layout.STANDINGS.START_COL + 1, 8, layout.STANDINGS.NUM_COLS).getValues();
+
+  // Build seeding data
+  var seedingData = [];
+  for (var i = 0; i < standingsData.length && i < 8; i++) {
+    var rank = standingsData[i][0];
+    var team = standingsData[i][1];
+    var wins = standingsData[i][2];
+    var losses = standingsData[i][3];
+    var winPct = standingsData[i][4];
+
+    if (!team || team === "") break;
+
+    var status = playoffsStarted ? "Locked" : "Projected";
+    var record = wins + "-" + losses + " (" + winPct + ")";
+
+    seedingData.push([i + 1, team, status, record]);
+  }
+
+  // Clear the sheet
+  bracketSheet.clear();
+
+  var currentRow = 1;
+
+  // ===== SECTION 1: PLAYOFF SEEDING =====
+  bracketSheet.getRange(currentRow, 1, 1, 4).merge()
+    .setValue("Playoff Seeding")
+    .setFontWeight("bold")
+    .setFontSize(14)
+    .setBackground("#4a86e8")
+    .setFontColor("#ffffff")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
+  currentRow += 2;
+
+  // Seeding header
+  bracketSheet.getRange(currentRow, 1, 1, 4)
+    .setValues([["Seed", "Team", "Status", "Record"]])
+    .setFontWeight("bold")
+    .setBackground("#e8e8e8")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
+  currentRow++;
+
+  var seedingStartRow = currentRow;
+
+  // Write seeding data
+  if (seedingData.length > 0) {
+    bracketSheet.getRange(seedingStartRow, 1, seedingData.length, 4).setValues(seedingData);
+
+    // Format seeding rows
+    for (var i = 0; i < seedingData.length; i++) {
+      var rowRange = bracketSheet.getRange(seedingStartRow + i, 1, 1, 4);
+      rowRange.setBackground(i % 2 === 1 ? "#f3f3f3" : "#ffffff");
+      rowRange.setHorizontalAlignment("center");
+      rowRange.setVerticalAlignment("middle");
+    }
+
+    currentRow += seedingData.length;
+  }
+
+  currentRow += 2;
+
+  // ===== SECTION 2: BRACKET MATCHUPS =====
+  bracketSheet.getRange(currentRow, 1, 1, 9).merge()
+    .setValue("Bracket Matchups")
+    .setFontWeight("bold")
+    .setFontSize(14)
+    .setBackground("#4a86e8")
+    .setFontColor("#ffffff")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
+  currentRow += 2;
+
+  // Bracket header
+  bracketSheet.getRange(currentRow, 1, 1, 9)
+    .setValues([["Round", "Series", "High Seed", "Low Seed", "Team A", "Team B", "Wins A", "Wins B", "Winner"]])
+    .setFontWeight("bold")
+    .setBackground("#e8e8e8")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
+  currentRow++;
+
+  var matchupsStartRow = currentRow;
+
+  // Define bracket structure (8-team bracket)
+  var bracketStructure = [
+    // Quarterfinals
+    { round: "Quarterfinals", series: "QF1", highSeed: 1, lowSeed: 8 },
+    { round: "Quarterfinals", series: "QF2", highSeed: 4, lowSeed: 5 },
+    { round: "Quarterfinals", series: "QF3", highSeed: 2, lowSeed: 7 },
+    { round: "Quarterfinals", series: "QF4", highSeed: 3, lowSeed: 6 },
+    // Semifinals
+    { round: "Semifinals", series: "SF1", highSeed: "QF1", lowSeed: "QF2" },
+    { round: "Semifinals", series: "SF2", highSeed: "QF3", lowSeed: "QF4" },
+    // Finals
+    { round: "Finals", series: "F1", highSeed: "SF1", lowSeed: "SF2" }
+  ];
+
+  var matchupsData = [];
+  var seriesResults = {};
+
+  // If playoffs started, calculate series records from schedule
+  if (playoffsStarted && playoffGameData.scheduleData) {
+    seriesResults = calculateSeriesRecords(playoffGameData.scheduleData);
+  }
+
+  for (var i = 0; i < bracketStructure.length; i++) {
+    var matchup = bracketStructure[i];
+    var teamA = "";
+    var teamB = "";
+    var winsA = 0;
+    var winsB = 0;
+    var winner = "";
+
+    // Resolve team names based on seeds or previous series winners
+    if (typeof matchup.highSeed === "number" && seedingData[matchup.highSeed - 1]) {
+      teamA = seedingData[matchup.highSeed - 1][1];
+    } else if (typeof matchup.highSeed === "string" && seriesResults[matchup.highSeed]) {
+      teamA = seriesResults[matchup.highSeed].winner || "TBD";
+    }
+
+    if (typeof matchup.lowSeed === "number" && seedingData[matchup.lowSeed - 1]) {
+      teamB = seedingData[matchup.lowSeed - 1][1];
+    } else if (typeof matchup.lowSeed === "string" && seriesResults[matchup.lowSeed]) {
+      teamB = seriesResults[matchup.lowSeed].winner || "TBD";
+    }
+
+    // Get series results if available
+    if (teamA && teamB && seriesResults[matchup.series]) {
+      var result = seriesResults[matchup.series];
+      winsA = result.teamAWins || 0;
+      winsB = result.teamBWins || 0;
+      winner = result.winner || "";
+    }
+
+    matchupsData.push([
+      matchup.round,
+      matchup.series,
+      matchup.highSeed,
+      matchup.lowSeed,
+      teamA || "TBD",
+      teamB || "TBD",
+      winsA,
+      winsB,
+      winner
+    ]);
+  }
+
+  // Write matchups data
+  if (matchupsData.length > 0) {
+    bracketSheet.getRange(matchupsStartRow, 1, matchupsData.length, 9).setValues(matchupsData);
+
+    // Format matchups rows
+    for (var i = 0; i < matchupsData.length; i++) {
+      var rowRange = bracketSheet.getRange(matchupsStartRow + i, 1, 1, 9);
+      rowRange.setBackground(i % 2 === 1 ? "#f3f3f3" : "#ffffff");
+      rowRange.setHorizontalAlignment("center");
+      rowRange.setVerticalAlignment("middle");
+    }
+  }
+
+  // Set column widths
+  bracketSheet.setColumnWidth(1, 120);  // Round
+  bracketSheet.setColumnWidth(2, 80);   // Series
+  bracketSheet.setColumnWidth(3, 90);   // High Seed
+  bracketSheet.setColumnWidth(4, 90);   // Low Seed
+  bracketSheet.setColumnWidth(5, 150);  // Team A
+  bracketSheet.setColumnWidth(6, 150);  // Team B
+  bracketSheet.setColumnWidth(7, 70);   // Wins A
+  bracketSheet.setColumnWidth(8, 70);   // Wins B
+  bracketSheet.setColumnWidth(9, 150);  // Winner
+
+  logInfo("Playoff Bracket", "Bracket updated successfully (Status: " + (playoffsStarted ? "Playoffs Started" : "Regular Season") + ")");
+}
+
+/**
+ * Check if playoffs have started
+ * Returns true if MAX_GAMES_PER_SEASON reached OR first playoff game detected
+ */
+function checkIfPlayoffsStarted(playoffGameData) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Method 1: Check if any playoff games have been played
+  if (playoffGameData && playoffGameData.scheduleData) {
+    for (var i = 0; i < playoffGameData.scheduleData.length; i++) {
+      if (playoffGameData.scheduleData[i].played) {
+        return true;
+      }
+    }
+  }
+
+  // Method 2: Check if all teams have reached MAX_GAMES_PER_SEASON
+  var standingsSheet = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
+  if (standingsSheet) {
+    var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
+    var standingsData = standingsSheet.getRange(layout.STANDINGS_START_ROW, layout.STANDINGS.START_COL + 1, 8, layout.STANDINGS.NUM_COLS).getValues();
+
+    var allTeamsComplete = true;
+    for (var i = 0; i < standingsData.length; i++) {
+      var team = standingsData[i][1];
+      if (!team || team === "") break;
+
+      var wins = standingsData[i][2];
+      var losses = standingsData[i][3];
+      var gamesPlayed = wins + losses;
+
+      if (gamesPlayed < CONFIG.MAX_GAMES_PER_SEASON) {
+        allTeamsComplete = false;
+        break;
+      }
+    }
+
+    if (allTeamsComplete) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Calculate series records from playoff schedule data
+ * Returns an object mapping series IDs to results
+ */
+function calculateSeriesRecords(scheduleData) {
+  var seriesMap = {};
+
+  for (var i = 0; i < scheduleData.length; i++) {
+    var game = scheduleData[i];
+    if (!game.played) continue;
+
+    var seriesId = game.series || "";
+    if (!seriesId) continue;
+
+    if (!seriesMap[seriesId]) {
+      seriesMap[seriesId] = {
+        teamA: game.homeTeam,
+        teamB: game.awayTeam,
+        teamAWins: 0,
+        teamBWins: 0,
+        winner: ""
+      };
+    }
+
+    // Count wins
+    if (game.winner === seriesMap[seriesId].teamA) {
+      seriesMap[seriesId].teamAWins++;
+    } else if (game.winner === seriesMap[seriesId].teamB) {
+      seriesMap[seriesId].teamBWins++;
+    }
+  }
+
+  // Determine series winners (best of 3: 2 wins, best of 5: 3 wins, best of 7: 4 wins)
+  for (var seriesId in seriesMap) {
+    var series = seriesMap[seriesId];
+    if (series.teamAWins >= 4 || series.teamAWins >= 3 || series.teamAWins >= 2) {
+      // Check if they've clinched based on common formats
+      if (series.teamAWins > series.teamBWins &&
+          (series.teamAWins >= 4 || series.teamAWins >= 3 || series.teamAWins >= 2)) {
+        series.winner = series.teamA;
+      }
+    }
+    if (series.teamBWins >= 4 || series.teamBWins >= 3 || series.teamBWins >= 2) {
+      if (series.teamBWins > series.teamAWins &&
+          (series.teamBWins >= 4 || series.teamBWins >= 3 || series.teamBWins >= 2)) {
+        series.winner = series.teamB;
+      }
+    }
+  }
+
+  return seriesMap;
+}

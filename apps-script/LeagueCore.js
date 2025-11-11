@@ -425,16 +425,3 @@ function calculateFinalRetentionGrades() {
 
 }
 
-// ===== PLAYOFF BRACKET UPDATE =====
-/**
- * Update playoff bracket with series results
- * @param {object} playoffGameData - The full playoff game data object
- */
-function updatePlayoffBracketFromCache(playoffGameData) {
-  // TODO: Implement bracket update logic
-  // This will read from 🏆 Schedule and calculate series records
-  // Then write to a bracket structure sheet (to be determined)
-
-  logInfo("Playoff Bracket", "Bracket update placeholder - not yet implemented");
-}
-

@@ -31,69 +31,69 @@ function onOpen() {
 function updateAll() {
   var startTime = new Date();
   logInfo("Update All", "Starting full update process");
-  
+
   try {
     // Check for missing transactions before starting
     detectMissingTransactions();
-    
+
     // ===== Process all game sheets ONCE =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Processing all game sheets...", "Update All", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Processing regular season game sheets...", "Update Regular Season", -1);
     var processingStart = new Date();
-    
+
     var gameData = processAllGameSheetsOnce();
     if (!gameData) {
       SpreadsheetApp.getUi().alert("Failed to process game sheets. Check Error Log for details.");
       return;
     }
-    
+
     // Cache the processed data
     _spreadsheetCache.gameData = gameData;
-    
+
     var processingTime = ((new Date() - processingStart) / 1000).toFixed(1);
     logInfo("Update All", "Game processing completed in " + processingTime + "s");
     SpreadsheetApp.flush();
-    
+
     // ===== STEP 1: Update player stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 3: Updating player stats...", "Update All", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 4: Updating players' season stats...", "Update Regular Season", -1);
     var step1Start = new Date();
     updateAllPlayerStatsFromCache(gameData.playerStats);
     var step1Time = ((new Date() - step1Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
     // ===== STEP 2: Update team stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 3: Updating team stats...", "Update All", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 4: Updating teams' season stats...", "Update Regular Season", -1);
     var step2Start = new Date();
     updateAllTeamStatsFromCache(gameData.teamStats);
     var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
-    // Write game results to Schedule
-    logInfo("UpdateAll", "Writing game results to Schedule");
-    writeGameResultsToSeasonSchedule(gameData.scheduleData);
-
-    // ===== STEP 3: Update standings (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating standings...", "Update All", -1);
+    // ===== STEP 3: Update schedule =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 4: Updating season schedule...", "Update Regular Season", -1);
     var step3Start = new Date();
+    writeGameResultsToSeasonSchedule(gameData.scheduleData);
+    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
+    SpreadsheetApp.flush();
+
+    // ===== STEP 4: Update standings (using cached data) =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 4: Updating season standings...", "Update Regular Season", -1);
+    var step4Start = new Date();
     // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
-    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
+    var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
     var totalTime = ((new Date() - startTime) / 1000).toFixed(1);
 
     // Concise message that fits in toast
     var stepsTime = (parseFloat(step1Time) + parseFloat(step2Time) +
-                     parseFloat(step3Time)).toFixed(1);
+                     parseFloat(step3Time) + parseFloat(step4Time)).toFixed(1);
 
     var message = "✅ Update Complete!\n\n" +
                   "Game Processing: " + processingTime + "s\n" +
-                  "Steps 1-3: " + stepsTime + "s\n" +
+                  "Steps 1-4: " + stepsTime + "s\n" +
                   "─────────────\n" +
                   "Total: " + totalTime + "s";
-    
-    SpreadsheetApp.getActiveSpreadsheet().toast(message, "Update Complete", 10);
-    logInfo("Update All", "Completed successfully in " + totalTime + "s");
-    
+
     SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
     logInfo("Update All", "Completed successfully in " + totalTime + "s");
 
@@ -116,7 +116,7 @@ function updateAllPlayoffs() {
 
   try {
     // ===== Process all playoff game sheets ONCE =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Processing all playoff game sheets...", "Update Playoffs", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Processing postseason game sheets...", "Update Postseason", -1);
     var processingStart = new Date();
 
     var playoffGameData = processAllPlayoffGameSheetsOnce();
@@ -133,42 +133,46 @@ function updateAllPlayoffs() {
     SpreadsheetApp.flush();
 
     // ===== STEP 1: Update playoff player stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 3: Updating playoff player stats...", "Update Playoffs", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 4: Updating players' postseason stats...", "Update Postseason", -1);
     var step1Start = new Date();
     updateAllPlayoffPlayerStatsFromCache(playoffGameData.playerStats);
     var step1Time = ((new Date() - step1Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
     // ===== STEP 2: Update playoff team stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 3: Updating playoff team stats...", "Update Playoffs", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 4: Updating teams' postseason stats...", "Update Postseason", -1);
     var step2Start = new Date();
     updateAllPlayoffTeamStatsFromCache(playoffGameData.teamStats);
     var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
-    // Write game results to Playoff Schedule
-    logInfo("UpdatePlayoffs", "Writing game results to Playoff Schedule");
-    writeGameResultsToPlayoffSchedule(playoffGameData.scheduleData);
-
-    // ===== STEP 3: Update playoff schedule display =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Finalizing playoff schedule...", "Update Playoffs", -1);
+    // ===== STEP 3: Update playoff schedule =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 4: Updating postseason schedule...", "Update Postseason", -1);
     var step3Start = new Date();
+    writeGameResultsToPlayoffSchedule(playoffGameData.scheduleData);
     var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
+    SpreadsheetApp.flush();
+
+    // ===== STEP 4: Update playoff bracket =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 4: Updating postseason bracket...", "Update Postseason", -1);
+    var step4Start = new Date();
+    updatePlayoffBracketFromCache(playoffGameData);
+    var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
     var totalTime = ((new Date() - startTime) / 1000).toFixed(1);
 
     // Concise message that fits in toast
     var stepsTime = (parseFloat(step1Time) + parseFloat(step2Time) +
-                     parseFloat(step3Time)).toFixed(1);
+                     parseFloat(step3Time) + parseFloat(step4Time)).toFixed(1);
 
-    var message = "✅ Playoff Update Complete!\n\n" +
+    var message = "✅ Update Complete!\n\n" +
                   "Game Processing: " + processingTime + "s\n" +
-                  "Steps 1-3: " + stepsTime + "s\n" +
+                  "Steps 1-4: " + stepsTime + "s\n" +
                   "─────────────\n" +
                   "Total: " + totalTime + "s";
 
-    SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Playoff Update Complete", 10);
+    SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
     logInfo("Update Playoffs", "Completed successfully in " + totalTime + "s");
 
   } catch (e) {
@@ -419,5 +423,18 @@ function calculateFinalRetentionGrades() {
     );
   }
 
+}
+
+// ===== PLAYOFF BRACKET UPDATE =====
+/**
+ * Update playoff bracket with series results
+ * @param {object} playoffGameData - The full playoff game data object
+ */
+function updatePlayoffBracketFromCache(playoffGameData) {
+  // TODO: Implement bracket update logic
+  // This will read from 🏆 Schedule and calculate series records
+  // Then write to a bracket structure sheet (to be determined)
+
+  logInfo("Playoff Bracket", "Bracket update placeholder - not yet implemented");
 }
 

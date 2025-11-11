@@ -228,6 +228,20 @@ For rate stats (AVG, ERA, OBP, etc.), players must meet minimum playing time:
 
 ---
 
+## 🚀 Deployment
+
+This bot is designed to be deployed on Railway.
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+**Quick Start:**
+1. Fork/clone this repository
+2. Connect to Railway
+3. Set environment variables
+4. Deploy!
+
+---
+
 ## 🆘 Support
 
 Having issues with the bot? Here's how to troubleshoot:

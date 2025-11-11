@@ -459,10 +459,10 @@ function initializePlayoffScheduleData(ss, boxScoreSS) {
 
   for (var i = 0; i < scheduleData.length; i++) {
     var week = scheduleData[i][0];
-    // Column order: A=Week, B=Away Team, C=Home Team, D=Series
-    var awayTeam = String(scheduleData[i][1]).trim();
-    var homeTeam = String(scheduleData[i][2]).trim();
-    var series = String(scheduleData[i][3]).trim();
+    // Column order: A=Week, B=Series, C=Away Team, D=Home Team
+    var series = String(scheduleData[i][1]).trim();
+    var awayTeam = String(scheduleData[i][2]).trim();
+    var homeTeam = String(scheduleData[i][3]).trim();
 
     if (week && homeTeam && awayTeam) {
       schedule.push({

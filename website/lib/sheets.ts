@@ -513,7 +513,19 @@ function formatLeaders(
       }
 
       if (leaders.length + tiedPlayers.length > 5) {
-        // Adding this group would push us over 5, so stop without adding it
+        // Adding this group would push us over 5
+        // If we have exactly 4 entries, add a tie summary for the 5th spot
+        if (leaders.length === 4) {
+          const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
+          leaders.push({
+            rank: rankLabel,
+            player: `${tiedPlayers.length} players tied`,
+            team: '',
+            value: tiedPlayers[0].formatted,
+            rawValue: tiedPlayers[0].value,
+            isTieSummary: true,
+          });
+        }
         break;
       }
 
@@ -538,15 +550,30 @@ function formatLeaders(
   }
 
   // Add remaining tied players if they fit
-  if (tiedPlayers.length > 0 && leaders.length < 5 && leaders.length + tiedPlayers.length <= 5) {
-    for (const tiedPlayer of tiedPlayers) {
+  if (tiedPlayers.length > 0 && leaders.length < 5) {
+    if (leaders.length + tiedPlayers.length <= 5) {
+      // All tied players fit within 5 entries
+      for (const tiedPlayer of tiedPlayers) {
+        const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
+        leaders.push({
+          rank: rankLabel,
+          player: tiedPlayer.player,
+          team: tiedPlayer.team,
+          value: tiedPlayer.formatted,
+          rawValue: tiedPlayer.value,
+        });
+      }
+    } else if (leaders.length === 4) {
+      // We have exactly 4 entries and this group would push us over 5
+      // Add a tie summary for the 5th spot
       const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
       leaders.push({
         rank: rankLabel,
-        player: tiedPlayer.player,
-        team: tiedPlayer.team,
-        value: tiedPlayer.formatted,
-        rawValue: tiedPlayer.value,
+        player: `${tiedPlayers.length} players tied`,
+        team: '',
+        value: tiedPlayers[0].formatted,
+        rawValue: tiedPlayers[0].value,
+        isTieSummary: true,
       });
     }
   }

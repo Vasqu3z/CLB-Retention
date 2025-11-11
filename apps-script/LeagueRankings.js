@@ -1,5 +1,5 @@
 // ===== LEAGUE HUB MODULE =====
-// Step 4: Update standings, league leaders, and recent results
+// Step 3: Update standings
 
 // ===== Update from cached data (called by updateAll) =====
 // Now accepts full gameData object for in-memory performance
@@ -9,7 +9,7 @@ function updateLeagueHubFromCache(gameData) {
   // Extract variables from gameData object
   var teamStatsWithH2H = gameData.teamStatsWithH2H;
 
-  logInfo("Step 4", "Building simplified Rankings (standings only)");
+  logInfo("Step 3", "Building simplified Rankings (standings only)");
   
   var standingsSheet = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
   if (!standingsSheet) {
@@ -186,8 +186,8 @@ function updateLeagueHubFromCache(gameData) {
   standingsSheet.setColumnWidth(layout.STANDINGS.START_COL + 7, 50);
   standingsSheet.setColumnWidth(layout.STANDINGS.START_COL + 8, 50);
   
-  logInfo("Step 4", "Updated " + CONFIG.STANDINGS_SHEET);
-  SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.STANDINGS_SHEET + " updated!", "Step 4 Complete", 3);
+  logInfo("Step 3", "Updated " + CONFIG.STANDINGS_SHEET);
+  SpreadsheetApp.getActiveSpreadsheet().toast(CONFIG.STANDINGS_SHEET + " updated!", "Step 3 Complete", 3);
 }
 
 /**

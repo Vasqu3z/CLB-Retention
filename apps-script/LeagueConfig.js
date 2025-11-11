@@ -29,7 +29,7 @@ var CONFIG = {
   GAME_SHEET_PREFIX: "#W",
 
   // Prefix for playoff game sheets
-  PLAYOFF_GAME_PREFIX: "#P",
+  PLAYOFF_GAME_PREFIX: "*",
 
   // ===== DEBUG SETTINGS =====
   DEBUG: {
@@ -59,6 +59,11 @@ var CONFIG = {
   QUARTERFINALS_WINS_REQUIRED: 2,  // Best of 3
   SEMIFINALS_WINS_REQUIRED: 3,     // Best of 5
   FINALS_WINS_REQUIRED: 4,         // Best of 7
+
+  // Playoff round prefixes (used in game sheet names and schedule)
+  WILDCARD_ROUND_PREFIX: "Q",      // Quarterfinals/Wildcard (*Q1, *Q2)
+  SEMIFINAL_ROUND_PREFIX: "S",     // Semifinals (*S1-A, *S2-B)
+  FINALS_ROUND_PREFIX: "F",        // Finals (*F1, *F2)
 
   // Title qualification multipliers
   MIN_AB_MULTIPLIER: 2.1,

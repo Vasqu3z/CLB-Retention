@@ -138,7 +138,7 @@ function processAllGameSheetsOnce() {
         weekNum: weekNum
       });
       
-      updateScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData);
+      updateScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, weekNum);
       
       // Progress update
       if ((g + 1) % CONFIG.PROGRESS_UPDATE_FREQUENCY === 0) {
@@ -224,6 +224,11 @@ function processAllPlayoffGameSheetsOnce() {
       // ===== Extract MVP from cell Q48 =====
       var gameMVP = String(batchData[45][15]).trim();  // Q48
 
+      // Extract playoff code from sheet name (everything after *)
+      // Examples: *Q1 → "Q1", *S1-A → "S1-A", *F2 → "F2"
+      var playoffCodeMatch = sheetName.match(/\*(.+)/);
+      var playoffCode = playoffCodeMatch ? playoffCodeMatch[1].trim() : "";
+
       // Create gameData object
       var gameData = {
         awayTeam: awayTeam,
@@ -258,7 +263,7 @@ function processAllPlayoffGameSheetsOnce() {
       processPlayerStatsFromData(gameData, result.playerStats);
       processTeamStatsFromData(gameData, result.teamStats, team1, team2, winner, loser);
 
-      updatePlayoffScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData);
+      updatePlayoffScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, playoffCode);
 
       // Progress update
       if ((g + 1) % CONFIG.PROGRESS_UPDATE_FREQUENCY === 0) {
@@ -454,22 +459,20 @@ function initializePlayoffScheduleData(ss, boxScoreSS) {
     return [];
   }
 
-  var scheduleData = scheduleSheet.getRange(2, 1, scheduleSheet.getLastRow() - 1, 4).getValues();
+  var scheduleData = scheduleSheet.getRange(2, 1, scheduleSheet.getLastRow() - 1, 3).getValues();
   var schedule = [];
 
   for (var i = 0; i < scheduleData.length; i++) {
     var week = scheduleData[i][0];
-    // Column order: A=Week, B=Series, C=Away Team, D=Home Team
-    var series = String(scheduleData[i][1]).trim();
-    var awayTeam = String(scheduleData[i][2]).trim();
-    var homeTeam = String(scheduleData[i][3]).trim();
+    // Column order: A=Week (code like Q1, S1-A, F1), B=Away Team, C=Home Team
+    var awayTeam = String(scheduleData[i][1]).trim();
+    var homeTeam = String(scheduleData[i][2]).trim();
 
     if (week && homeTeam && awayTeam) {
       schedule.push({
         week: week,
         homeTeam: homeTeam,
         awayTeam: awayTeam,
-        series: series || "",  // Empty string if no series specified
         played: false,
         homeScore: null,
         awayScore: null,
@@ -656,10 +659,10 @@ function processTeamStatsWithH2HFromGame(teamStats, team1, team2, winner, loser,
   }
 }
 
-function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData) {
+function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, weekNum) {
   for (var s = 0; s < scheduleData.length; s++) {
-    // Match first UNPLAYED game with this home/away combination (handles multiple games in a series)
-    if (scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2 && !scheduleData[s].played) {
+    // Match by week number to ensure correct game assignment (prevents swapping when teams play multiple times)
+    if (scheduleData[s].week == weekNum && scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2) {
       scheduleData[s].played = true;
       scheduleData[s].homeScore = runs1;
       scheduleData[s].awayScore = runs2;
@@ -744,10 +747,11 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
 
 // ===== PLAYOFF SCHEDULE FUNCTIONS =====
 
-function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData) {
+function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, playoffCode) {
   for (var s = 0; s < scheduleData.length; s++) {
-    // Match first UNPLAYED game with this home/away combination (handles multiple games in a series)
-    if (scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2 && !scheduleData[s].played) {
+    // Match by playoff code (week column) to ensure correct game assignment
+    // Examples: Q1, S1-A, F2
+    if (scheduleData[s].week == playoffCode && scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2) {
       scheduleData[s].played = true;
       scheduleData[s].homeScore = runs1;
       scheduleData[s].awayScore = runs2;

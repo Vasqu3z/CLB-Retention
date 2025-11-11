@@ -316,6 +316,7 @@ export interface TeamData {
     r: number;
     bb: number;
     k: number;
+    sv: number;
   };
   // Fielding totals (raw counting stats)
   fielding: {
@@ -328,13 +329,13 @@ export interface TeamData {
 
 export async function getTeamData(teamName?: string): Promise<TeamData[]> {
   // Read from "Team Data" sheet
-  // Row 2 onwards: Team Name, Captain, GP, W, L, Hitting(9), Pitching(7), Fielding(4)
+  // Row 2 onwards: Team Name, Captain, GP, W, L, Hitting(9), Pitching(8), Fielding(4)
   // Columns A-B: Team, Captain
   // Columns C-E: GP, W, L
   // Columns F-N: AB, H, HR, RBI, BB, K, ROB, DP, TB (9 hitting stats)
-  // Columns O-U: IP, BF, H, HR, R, BB, K (7 pitching stats)
-  // Columns V-Y: NP, E, SB, CS (4 fielding stats)
-  const data = await getSheetData("'Team Data'!A2:Y20");
+  // Columns O-V: IP, BF, H, HR, R, BB, K, SV (8 pitching stats)
+  // Columns W-Z: NP, E, SB, CS (4 fielding stats)
+  const data = await getSheetData("'Team Data'!A2:Z20");
 
   const teamDataList = data
     .filter((row) => row[0] && String(row[0]).trim() !== '')
@@ -363,12 +364,13 @@ export async function getTeamData(teamName?: string): Promise<TeamData[]> {
         r: Number(row[18]) || 0,
         bb: Number(row[19]) || 0,
         k: Number(row[20]) || 0,
+        sv: Number(row[21]) || 0,
       },
       fielding: {
-        np: Number(row[21]) || 0,
-        e: Number(row[22]) || 0,
-        sb: Number(row[23]) || 0,
-        cs: Number(row[24]) || 0,
+        np: Number(row[22]) || 0,
+        e: Number(row[23]) || 0,
+        sb: Number(row[24]) || 0,
+        cs: Number(row[25]) || 0,
       },
     }));
 

@@ -152,8 +152,8 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
       setPitchingSortDirection(pitchingSortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setPitchingSortField(field);
-      // Lower is better for ERA, WHIP, BAA; higher is better for W, SV, etc.
-      const lowerIsBetter = ['era', 'whip', 'baa'].includes(field);
+      // Lower is better for ERA, WHIP, BAA, H, HR; higher is better for W, SV, etc.
+      const lowerIsBetter = ['era', 'whip', 'baa', 'h', 'hr'].includes(field);
       setPitchingSortDirection(lowerIsBetter ? 'asc' : 'desc');
     }
   };
@@ -170,7 +170,8 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
       case 'ip': aVal = a.pitching.ip; bVal = b.pitching.ip; break;
       case 'w': aVal = a.wins; bVal = b.wins; break;
       case 'l': aVal = a.losses; bVal = b.losses; break;
-      case 'sv': aVal = a.pitching.k; bVal = b.pitching.k; break; // Assuming SV is tracked elsewhere
+      case 'sv': aVal = a.pitching.sv; bVal = b.pitching.sv; break;
+      case 'h': aVal = a.pitching.h; bVal = b.pitching.h; break;
       case 'hr': aVal = a.pitching.hr; bVal = b.pitching.hr; break;
       case 'era': aVal = parseFloat(a.era); bVal = parseFloat(b.era); break;
       case 'whip': aVal = parseFloat(a.whip); bVal = parseFloat(b.whip); break;
@@ -315,23 +316,26 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
                 <SortableHeader field="era" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   ERA
                 </SortableHeader>
-                <SortableHeader field="whip" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
-                  WHIP
-                </SortableHeader>
-                <SortableHeader field="baa" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
-                  BAA
-                </SortableHeader>
-                <SortableHeader field="ip" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
-                  IP
-                </SortableHeader>
                 <SortableHeader field="w" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   W
                 </SortableHeader>
                 <SortableHeader field="l" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   L
                 </SortableHeader>
+                <SortableHeader field="sv" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                  SV
+                </SortableHeader>
+                <SortableHeader field="h" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                  H
+                </SortableHeader>
                 <SortableHeader field="hr" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   HR
+                </SortableHeader>
+                <SortableHeader field="whip" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                  WHIP
+                </SortableHeader>
+                <SortableHeader field="baa" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                  BAA
                 </SortableHeader>
               </tr>
             </thead>
@@ -345,12 +349,13 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
                   </td>
                   <td className="px-4 py-3 text-center">{team.gp}</td>
                   <td className="px-4 py-3 text-center font-semibold">{team.era}</td>
-                  <td className="px-4 py-3 text-center">{team.whip}</td>
-                  <td className="px-4 py-3 text-center">{team.baa}</td>
-                  <td className="px-4 py-3 text-center">{team.pitching.ip.toFixed(2)}</td>
                   <td className="px-4 py-3 text-center">{team.wins}</td>
                   <td className="px-4 py-3 text-center">{team.losses}</td>
+                  <td className="px-4 py-3 text-center">{team.pitching.sv}</td>
+                  <td className="px-4 py-3 text-center">{team.pitching.h}</td>
                   <td className="px-4 py-3 text-center">{team.pitching.hr}</td>
+                  <td className="px-4 py-3 text-center">{team.whip}</td>
+                  <td className="px-4 py-3 text-center">{team.baa}</td>
                 </tr>
               ))}
             </tbody>
@@ -374,14 +379,14 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
                 <SortableHeader field="der" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   DER
                 </SortableHeader>
-                <SortableHeader field="oaa" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
-                  OAA
-                </SortableHeader>
                 <SortableHeader field="np" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   NP
                 </SortableHeader>
                 <SortableHeader field="e" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   E
+                </SortableHeader>
+                <SortableHeader field="oaa" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
+                  OAA
                 </SortableHeader>
                 <SortableHeader field="sb" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   SB
@@ -401,9 +406,9 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
                   </td>
                   <td className="px-4 py-3 text-center">{team.gp}</td>
                   <td className="px-4 py-3 text-center font-semibold">{parseFloat(team.der) > 0 ? '+' : ''}{team.der}</td>
-                  <td className="px-4 py-3 text-center">{team.oaa > 0 ? '+' : ''}{team.oaa}</td>
                   <td className="px-4 py-3 text-center">{team.fielding.np}</td>
                   <td className="px-4 py-3 text-center">{team.fielding.e}</td>
+                  <td className="px-4 py-3 text-center">{team.oaa > 0 ? '+' : ''}{team.oaa}</td>
                   <td className="px-4 py-3 text-center">{team.fielding.sb}</td>
                   <td className="px-4 py-3 text-center">{team.fielding.cs}</td>
                 </tr>

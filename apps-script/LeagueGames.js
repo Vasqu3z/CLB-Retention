@@ -201,7 +201,7 @@ function initializeTeamStats(ss) {
       teamStats[teamName] = {
         gamesPlayed: 0, wins: 0, losses: 0,
         hitting: [0,0,0,0,0,0,0,0,0], // AB, H, HR, RBI, BB, K, ROB, DP, TB
-        pitching: [0,0,0,0,0,0,0], // IP, BF, H, HR, R, BB, K
+        pitching: [0,0,0,0,0,0,0,0], // IP, BF, H, HR, R, BB, K, SV
         fielding: [0,0,0] // Nice Plays, Errors, SB
       };
     }
@@ -342,9 +342,15 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
   // Process home team (team1)
   if (team1 && teamStats[team1]) {
     teamStats[team1].gamesPlayed++;
-    if (team1 === winner) teamStats[team1].wins++;
+    if (team1 === winner) {
+      teamStats[team1].wins++;
+      // Track team save if this team won and there was a save pitcher
+      if (gameData.savePitcher) {
+        teamStats[team1].pitching[7]++; // SV is index 7
+      }
+    }
     if (team1 === loser) teamStats[team1].losses++;
-    
+
     // Hitting stats
     for (var s = 0; s < 9; s++) {
       var val = gameData.homeTeamTotals[s];
@@ -352,7 +358,7 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
         teamStats[team1].hitting[s] += val;
       }
     }
-    
+
     // Pitching stats (indices 0-6)
     for (var s = 0; s < 7; s++) {
       var val = gameData.homeTeamPitchField[s];
@@ -360,7 +366,7 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
         teamStats[team1].pitching[s] += val;
       }
     }
-    
+
     // Fielding stats (indices 7-9)
     for (var s = 0; s < 3; s++) {
       var val = gameData.homeTeamPitchField[s + 7];
@@ -373,9 +379,15 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
   // Process away team (team2)
   if (team2 && teamStats[team2]) {
     teamStats[team2].gamesPlayed++;
-    if (team2 === winner) teamStats[team2].wins++;
+    if (team2 === winner) {
+      teamStats[team2].wins++;
+      // Track team save if this team won and there was a save pitcher
+      if (gameData.savePitcher) {
+        teamStats[team2].pitching[7]++; // SV is index 7
+      }
+    }
     if (team2 === loser) teamStats[team2].losses++;
-    
+
     // Hitting stats
     for (var s = 0; s < 9; s++) {
       var val = gameData.awayTeamTotals[s];
@@ -383,7 +395,7 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
         teamStats[team2].hitting[s] += val;
       }
     }
-    
+
     // Pitching stats (indices 0-6)
     for (var s = 0; s < 7; s++) {
       var val = gameData.awayTeamPitchField[s];

@@ -172,8 +172,8 @@ var CONFIG = {
       HITTING_START_COL: 5,       // Column F (6) - Hitting stats
       HITTING_NUM_COLS: 9,
       PITCHING_START_COL: 14,     // Column O (15) - Pitching stats
-      PITCHING_NUM_COLS: 7,
-      FIELDING_START_COL: 21,     // Column V (22) - Fielding stats
+      PITCHING_NUM_COLS: 8,       // IP, BF, H, HR, R, BB, K, SV
+      FIELDING_START_COL: 22,     // Column W (23) - Fielding stats
       FIELDING_NUM_COLS: 3
     },
 

@@ -64,14 +64,15 @@ function getGameSheets(boxScoreSS) {
   if (_spreadsheetCache.gameSheets) {
     return _spreadsheetCache.gameSheets;
   }
-  
+
   var sheets = boxScoreSS.getSheets();
   var gameSheets = [];
   var skippedSheets = [];
-  
+
   for (var i = 0; i < sheets.length; i++) {
     var sheetName = sheets[i].getName();
-    if (sheetName.startsWith(CONFIG.GAME_SHEET_PREFIX)) {
+    // Include sheets starting with # but exclude playoff games (#P)
+    if (sheetName.startsWith(CONFIG.GAME_SHEET_PREFIX) && !sheetName.startsWith(CONFIG.PLAYOFF_GAME_PREFIX)) {
       if (validateGameSheet(sheets[i])) {
         gameSheets.push(sheets[i]);
       } else {
@@ -80,19 +81,51 @@ function getGameSheets(boxScoreSS) {
       }
     }
   }
-  
+
   if (skippedSheets.length > 0) {
     logWarning("Game Sheets", "Skipped " + skippedSheets.length + " invalid sheet(s)", skippedSheets.join(", "));
   }
-  
+
   _spreadsheetCache.gameSheets = gameSheets;
   logInfo("Cache", "Loaded " + gameSheets.length + " valid game sheets into cache");
   return gameSheets;
 }
 
+function getPlayoffGameSheets(boxScoreSS) {
+  if (_spreadsheetCache.playoffGameSheets) {
+    return _spreadsheetCache.playoffGameSheets;
+  }
+
+  var sheets = boxScoreSS.getSheets();
+  var playoffGameSheets = [];
+  var skippedSheets = [];
+
+  for (var i = 0; i < sheets.length; i++) {
+    var sheetName = sheets[i].getName();
+    // Include only playoff game sheets (starting with #P)
+    if (sheetName.startsWith(CONFIG.PLAYOFF_GAME_PREFIX)) {
+      if (validateGameSheet(sheets[i])) {
+        playoffGameSheets.push(sheets[i]);
+      } else {
+        skippedSheets.push(sheetName);
+        logWarning("Playoff Game Sheets", "Skipped invalid sheet", sheetName);
+      }
+    }
+  }
+
+  if (skippedSheets.length > 0) {
+    logWarning("Playoff Game Sheets", "Skipped " + skippedSheets.length + " invalid sheet(s)", skippedSheets.join(", "));
+  }
+
+  _spreadsheetCache.playoffGameSheets = playoffGameSheets;
+  logInfo("Cache", "Loaded " + playoffGameSheets.length + " valid playoff game sheets into cache");
+  return playoffGameSheets;
+}
+
 function clearCache() {
   _spreadsheetCache.boxScoreSpreadsheet = null;
   _spreadsheetCache.gameSheets = null;
+  _spreadsheetCache.playoffGameSheets = null;
   logInfo("Cache", "Cleared spreadsheet cache");
 }
 

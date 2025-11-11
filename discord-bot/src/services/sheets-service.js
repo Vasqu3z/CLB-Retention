@@ -74,7 +74,8 @@ class SheetsService {
   async getSheetData(sheetName, range = null) {
     await this.initialize();
 
-    const fullRange = range ? `${sheetName}!${range}` : sheetName;
+    // Wrap sheet name in single quotes to handle special characters (emojis, spaces)
+    const fullRange = range ? `'${sheetName}'!${range}` : sheetName;
     const cacheKey = fullRange;
 
     if (this.isCacheValid() && this.cache.has(cacheKey)) {
@@ -100,7 +101,8 @@ class SheetsService {
   async getSheetDataWithHyperlinks(sheetName, range) {
     await this.initialize();
 
-    const fullRange = `${sheetName}!${range}`;
+    // Wrap sheet name in single quotes to handle special characters (emojis, spaces)
+    const fullRange = `'${sheetName}'!${range}`;
     const cacheKey = `${fullRange}_hyperlinks`;
 
     if (this.isCacheValid() && this.cache.has(cacheKey)) {

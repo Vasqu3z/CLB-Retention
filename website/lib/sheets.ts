@@ -54,9 +54,9 @@ export interface StandingsRow {
 }
 
 export async function getStandings(): Promise<StandingsRow[]> {
-  // Read from "Standings" sheet, rows 4-11 (8 teams), columns A-H
+  // Read from "🥇 Standings" sheet, rows 4-11 (8 teams), columns A-H
   // Skip rows 1-3: row 1 = title, row 2 = blank, row 3 = headers
-  const data = await getSheetData("'Standings'!A4:H11");
+  const data = await getSheetData("'🥇 Standings'!A4:H11");
 
   // Also fetch cell notes for H2H records (column B = team names)
   const auth = await getAuthClient();
@@ -67,7 +67,7 @@ export async function getStandings(): Promise<StandingsRow[]> {
     const response = await sheets.spreadsheets.get({
       auth: auth as any,
       spreadsheetId: sheetId,
-      ranges: ["'Standings'!B4:B11"],
+      ranges: ["'🥇 Standings'!B4:B11"],
       includeGridData: true,
     });
 
@@ -132,9 +132,9 @@ export interface PlayerStats {
 }
 
 export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
-  // Read from Player Data sheet (raw stats only)
+  // Read from 🧮 Players sheet (raw stats only)
   // Columns: A=Name, B=Team, C=GP, D-L=Hitting(9), M-O=W/L/SV, P-V=Pitching(7), W-Z=Fielding(4)
-  const playerData = await getSheetData("'Player Data'!A2:Z100");
+  const playerData = await getSheetData("'🧮 Players'!A2:Z100");
 
   const players: PlayerStats[] = [];
 
@@ -238,13 +238,17 @@ export interface ScheduleGame {
   awayScore?: number;
   winner?: string;
   boxScoreUrl?: string;
+  mvp?: string;
+  winningPitcher?: string;
+  losingPitcher?: string;
+  savePitcher?: string;
 }
 
 export async function getSchedule(): Promise<ScheduleGame[]> {
-  // Read from "Schedule" sheet - includes game results in columns D-L
+  // Read from "📅 Schedule" sheet - includes game results in columns D-L
   // Columns: A=Week, B=Away Team, C=Home Team, D=Away Score, E=Home Score,
   // F=Winning Team, G=Losing Team, H=MVP, I=WP, J=LP, K=SV, L=Box Score Link
-  const scheduleData = await getSheetData("'Schedule'!A2:L100");
+  const scheduleData = await getSheetData("'📅 Schedule'!A2:L100");
 
   const schedule: ScheduleGame[] = [];
 
@@ -264,6 +268,11 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
     if (hasScores) {
       // Game has been played - read results from columns D-L
       const winner = String(row[5] || '').trim();
+      const loser = String(row[6] || '').trim();
+      const mvp = String(row[7] || '').trim();
+      const winningPitcher = String(row[8] || '').trim();
+      const losingPitcher = String(row[9] || '').trim();
+      const savePitcher = String(row[10] || '').trim();
       const boxScoreUrl = String(row[11] || '').trim();
 
       schedule.push({
@@ -275,6 +284,10 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
         awayScore: Number(awayScore),
         winner,
         boxScoreUrl,
+        mvp,
+        winningPitcher,
+        losingPitcher,
+        savePitcher,
       });
     } else {
       // Game is upcoming
@@ -337,7 +350,7 @@ export async function getTeamData(teamName?: string): Promise<TeamData[]> {
   // Columns F-N: AB, H, HR, RBI, BB, K, ROB, DP, TB (9 hitting stats)
   // Columns O-V: IP, BF, H, HR, R, BB, K, SV (8 pitching stats)
   // Columns W-Z: NP, E, SB, CS (4 fielding stats)
-  const data = await getSheetData("'Team Data'!A2:Z20");
+  const data = await getSheetData("'🧮 Teams'!A2:Z20");
 
   const teamDataList = data
     .filter((row) => row[0] && String(row[0]).trim() !== '')
@@ -395,8 +408,8 @@ export interface LeaderEntry {
 }
 
 async function getAllPlayers(): Promise<PlayerStats[]> {
-  // Read all players from Player Data sheet (not filtered by team)
-  const playerData = await getSheetData("'Player Data'!A2:Z100");
+  // Read all players from 🧮 Players sheet (not filtered by team)
+  const playerData = await getSheetData("'🧮 Players'!A2:Z100");
   const players: PlayerStats[] = [];
 
   for (const row of playerData) {
@@ -488,34 +501,32 @@ function formatLeaders(
   let previousValue: number | null = null;
   let tiedPlayers: typeof sorted = [];
 
-  // Iterate through all players, but stop when we have 5 distinct ranks
+  // Iterate through all players
   for (let i = 0; i < sorted.length; i++) {
     const player = sorted[i];
 
     if (previousValue !== null && player.value !== previousValue) {
-      // Different value - add any tied players first
-      if (tiedPlayers.length > 1) {
-        leaders.push({
-          rank: `T-${currentRank}`,
-          player: `${tiedPlayers.length} Players Tied`,
-          team: '',
-          value: tiedPlayers[0].formatted,
-          rawValue: tiedPlayers[0].value,
-          isTieSummary: true,
-        });
-      } else if (tiedPlayers.length === 1) {
-        leaders.push({
-          rank: String(currentRank),
-          player: tiedPlayers[0].player,
-          team: tiedPlayers[0].team,
-          value: tiedPlayers[0].formatted,
-          rawValue: tiedPlayers[0].value,
-        });
+      // Different value - check if adding this tied group would exceed 5
+      if (leaders.length >= 5) {
+        // Already have 5+ entries, stop
+        break;
       }
 
-      // If we've added 5 leader entries (distinct ranks), stop
-      if (leaders.length >= 5) {
+      if (leaders.length + tiedPlayers.length > 5) {
+        // Adding this group would push us over 5, so stop without adding it
         break;
+      }
+
+      // Add all tied players individually
+      for (const tiedPlayer of tiedPlayers) {
+        const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
+        leaders.push({
+          rank: rankLabel,
+          player: tiedPlayer.player,
+          team: tiedPlayer.team,
+          value: tiedPlayer.formatted,
+          rawValue: tiedPlayer.value,
+        });
       }
 
       currentRank += tiedPlayers.length;
@@ -526,24 +537,16 @@ function formatLeaders(
     previousValue = player.value;
   }
 
-  // Add remaining tied players (if we haven't reached 5 entries yet)
-  if (leaders.length < 5 && tiedPlayers.length > 0) {
-    if (tiedPlayers.length > 1) {
+  // Add remaining tied players if they fit
+  if (tiedPlayers.length > 0 && leaders.length < 5 && leaders.length + tiedPlayers.length <= 5) {
+    for (const tiedPlayer of tiedPlayers) {
+      const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
       leaders.push({
-        rank: `T-${currentRank}`,
-        player: `${tiedPlayers.length} Players Tied`,
-        team: '',
-        value: tiedPlayers[0].formatted,
-        rawValue: tiedPlayers[0].value,
-        isTieSummary: true,
-      });
-    } else if (tiedPlayers.length === 1) {
-      leaders.push({
-        rank: String(currentRank),
-        player: tiedPlayers[0].player,
-        team: tiedPlayers[0].team,
-        value: tiedPlayers[0].formatted,
-        rawValue: tiedPlayers[0].value,
+        rank: rankLabel,
+        player: tiedPlayer.player,
+        team: tiedPlayer.team,
+        value: tiedPlayer.formatted,
+        rawValue: tiedPlayer.value,
       });
     }
   }
@@ -572,12 +575,16 @@ export async function getCalculatedBattingLeaders() {
   const slg = formatLeaders(
     qualifiedHitters
       .filter(p => p.slg)
-      .map(p => ({
-        player: p.name,
-        team: p.team,
-        value: parseFloat('0' + p.slg!),
-        formatted: p.slg!,
-      }))
+      .map(p => {
+        // Handle SLG >= 1.000 (doesn't have leading zero removed)
+        const slgValue = p.slg!.startsWith('.') ? parseFloat('0' + p.slg!) : parseFloat(p.slg!);
+        return {
+          player: p.name,
+          team: p.team,
+          value: slgValue,
+          formatted: p.slg!,
+        };
+      })
   );
 
   const ops = formatLeaders(

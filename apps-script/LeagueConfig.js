@@ -7,20 +7,28 @@ var CONFIG = {
   // ===== SHEET NAMES =====
   ERROR_LOG_SHEET: "Error Log",
   IMAGE_URLS_SHEET: "Image URLs",
-  PLAYER_STATS_SHEET: "Player Data",
-  TEAM_STATS_SHEET: "Team Data",
-  SCHEDULE_SHEET: "Schedule",
-  STANDINGS_SHEET: "Standings",
+  PLAYER_STATS_SHEET: "🧮 Players",
+  TEAM_STATS_SHEET: "🧮 Teams",
+  SCHEDULE_SHEET: "📅 Schedule",
+  STANDINGS_SHEET: "🥇 Standings",
   ROSTERS_SHEET: "Rosters",
   TRANSACTIONS_SHEET: "Transactions",
   STAR_POINTS_SHEET: "Star Points",
-  RETENTION_SHEET: "Retention",
+  RETENTION_SHEET: "🎲 Retention",
+
+  // Playoff sheet names
+  PLAYOFF_PLAYER_STATS_SHEET: "🏆 Players",
+  PLAYOFF_TEAM_STATS_SHEET: "🏆 Teams",
+  PLAYOFF_SCHEDULE_SHEET: "🏆 Schedule",
 
   // External spreadsheet containing box scores (game sheets)
   BOX_SCORE_SPREADSHEET_ID: "17x5VoZxGV88RYAiHEcq0M-rxSyZ0fp66OktmJk2AaEU",
 
   // Prefix for game sheets in the box score spreadsheet
   GAME_SHEET_PREFIX: "#",
+
+  // Prefix for playoff game sheets
+  PLAYOFF_GAME_PREFIX: "#P",
 
   // ===== DEBUG SETTINGS =====
   DEBUG: {
@@ -248,5 +256,6 @@ var CONFIG = {
 var _spreadsheetCache = {
   boxScoreSpreadsheet: null,
   gameSheets: null,
+  playoffGameSheets: null,
   gameData: null
 };

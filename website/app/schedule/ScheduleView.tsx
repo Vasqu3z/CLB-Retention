@@ -125,47 +125,68 @@ function GameRow({ game }: { game: ScheduleGame }) {
   const awayWon = game.winner === game.awayTeam;
 
   const content = (
-    <div className="flex items-center justify-center gap-3 text-lg">
-      {/* Away Team */}
-      <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-        <span
-          className="font-semibold truncate"
-          style={{
-            color: awayWon ? '#059669' : '#DC2626',
-            fontWeight: awayWon ? 'bold' : 'normal'
-          }}
-        >
-          {game.awayTeam}
-        </span>
-        <span
-          className="text-xl font-bold tabular-nums"
-          style={{ color: awayWon ? '#059669' : '#DC2626' }}
-        >
-          {game.awayScore}
-        </span>
-      </div>
+    <div>
+      <div className="flex items-center justify-center gap-3 text-lg">
+        {/* Away Team */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+          <span
+            className="font-semibold truncate"
+            style={{
+              color: awayWon ? '#059669' : '#DC2626',
+              fontWeight: awayWon ? 'bold' : 'normal'
+            }}
+          >
+            {game.awayTeam}
+          </span>
+          <span
+            className="text-xl font-bold tabular-nums"
+            style={{ color: awayWon ? '#059669' : '#DC2626' }}
+          >
+            {game.awayScore}
+          </span>
+        </div>
 
-      {/* @ Symbol */}
-      <span className="text-gray-400 font-medium text-sm">@</span>
+        {/* @ Symbol */}
+        <span className="text-gray-400 font-medium text-sm">@</span>
 
-      {/* Home Team */}
-      <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
-        <span
-          className="text-xl font-bold tabular-nums"
-          style={{ color: homeWon ? '#059669' : '#DC2626' }}
-        >
-          {game.homeScore}
-        </span>
-        <span
-          className="font-semibold truncate"
-          style={{
-            color: homeWon ? '#059669' : '#DC2626',
-            fontWeight: homeWon ? 'bold' : 'normal'
-          }}
-        >
-          {game.homeTeam}
-        </span>
+        {/* Home Team */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
+          <span
+            className="text-xl font-bold tabular-nums"
+            style={{ color: homeWon ? '#059669' : '#DC2626' }}
+          >
+            {game.homeScore}
+          </span>
+          <span
+            className="font-semibold truncate"
+            style={{
+              color: homeWon ? '#059669' : '#DC2626',
+              fontWeight: homeWon ? 'bold' : 'normal'
+            }}
+          >
+            {game.homeTeam}
+          </span>
+        </div>
       </div>
+      {/* Game Details: MVP and Pitchers */}
+      {(game.mvp || game.winningPitcher || game.losingPitcher || game.savePitcher) && (
+        <div className="mt-2 text-xs text-gray-600 text-center space-y-1">
+          {game.mvp && (
+            <div><span className="font-semibold">MVP:</span> {game.mvp}</div>
+          )}
+          <div className="flex gap-4 justify-center flex-wrap">
+            {game.winningPitcher && (
+              <span><span className="font-semibold">W:</span> {game.winningPitcher}</span>
+            )}
+            {game.losingPitcher && (
+              <span><span className="font-semibold">L:</span> {game.losingPitcher}</span>
+            )}
+            {game.savePitcher && (
+              <span><span className="font-semibold">SV:</span> {game.savePitcher}</span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 

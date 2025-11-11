@@ -33,10 +33,10 @@
 
 export const SHEET_NAMES = {
   // v2.0 - Consolidated structure
-  PLAYER_DATA: 'Player Data',      // Single source of truth for all player stats
-  TEAM_DATA: 'Team Data',           // Team standings and captain info
-  SCHEDULE: 'Schedule',             // Season schedule with game results (formerly Season Schedule)
-  STANDINGS: 'Standings',           // League standings table (formerly 🏆 Rankings)
+  PLAYER_DATA: '🧮 Players',        // Single source of truth for all player stats
+  TEAM_DATA: '🧮 Teams',            // Team standings and captain info
+  SCHEDULE: '📅 Schedule',          // Season schedule with game results (formerly Season Schedule)
+  STANDINGS: '🥇 Standings',        // League standings table (formerly 🏆 Rankings)
   IMAGE_URLS: 'Image URLs',         // Player/team/league image URLs
 
   // Deprecated (v2.0) - kept for backwards compatibility during migration

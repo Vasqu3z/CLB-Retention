@@ -656,7 +656,8 @@ function processTeamStatsWithH2HFromGame(teamStats, team1, team2, winner, loser,
 
 function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData) {
   for (var s = 0; s < scheduleData.length; s++) {
-    if (scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2) {
+    // Match first UNPLAYED game with this home/away combination (handles multiple games in a series)
+    if (scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2 && !scheduleData[s].played) {
       scheduleData[s].played = true;
       scheduleData[s].homeScore = runs1;
       scheduleData[s].awayScore = runs2;
@@ -743,7 +744,8 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
 
 function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData) {
   for (var s = 0; s < scheduleData.length; s++) {
-    if (scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2) {
+    // Match first UNPLAYED game with this home/away combination (handles multiple games in a series)
+    if (scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2 && !scheduleData[s].played) {
       scheduleData[s].played = true;
       scheduleData[s].homeScore = runs1;
       scheduleData[s].awayScore = runs2;

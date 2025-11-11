@@ -160,7 +160,9 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
     // Calculate hitting rate stats
     const avg = ab > 0 ? (h / ab).toFixed(3).substring(1) : '.000';
     const obp = (ab + bb) > 0 ? ((h + bb) / (ab + bb)).toFixed(3).substring(1) : '.000';
-    const slg = ab > 0 ? (tb / ab).toFixed(3).substring(1) : '.000';
+    // SLG can be >= 1.000, so only remove leading zero if < 1
+    const slgValue = ab > 0 ? tb / ab : 0;
+    const slg = slgValue >= 1 ? slgValue.toFixed(3) : (slgValue > 0 ? slgValue.toFixed(3).substring(1) : '.000');
     const ops = ab > 0 && (ab + bb) > 0
       ? ((h + bb) / (ab + bb) + tb / ab).toFixed(3)
       : '0.000';
@@ -434,7 +436,9 @@ async function getAllPlayers(): Promise<PlayerStats[]> {
     // Calculate hitting rate stats
     const avg = ab > 0 ? (h / ab).toFixed(3).substring(1) : '.000';
     const obp = (ab + bb) > 0 ? ((h + bb) / (ab + bb)).toFixed(3).substring(1) : '.000';
-    const slg = ab > 0 ? (tb / ab).toFixed(3).substring(1) : '.000';
+    // SLG can be >= 1.000, so only remove leading zero if < 1
+    const slgValue = ab > 0 ? tb / ab : 0;
+    const slg = slgValue >= 1 ? slgValue.toFixed(3) : (slgValue > 0 ? slgValue.toFixed(3).substring(1) : '.000');
     const ops = ab > 0 && (ab + bb) > 0
       ? ((h + bb) / (ab + bb) + tb / ab).toFixed(3)
       : '0.000';

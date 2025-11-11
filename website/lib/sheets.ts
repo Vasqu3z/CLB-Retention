@@ -54,9 +54,9 @@ export interface StandingsRow {
 }
 
 export async function getStandings(): Promise<StandingsRow[]> {
-  // Read from "Standings" sheet, rows 4-11 (8 teams), columns A-H
+  // Read from "🥇 Standings" sheet, rows 4-11 (8 teams), columns A-H
   // Skip rows 1-3: row 1 = title, row 2 = blank, row 3 = headers
-  const data = await getSheetData("'Standings'!A4:H11");
+  const data = await getSheetData("'🥇 Standings'!A4:H11");
 
   // Also fetch cell notes for H2H records (column B = team names)
   const auth = await getAuthClient();
@@ -67,7 +67,7 @@ export async function getStandings(): Promise<StandingsRow[]> {
     const response = await sheets.spreadsheets.get({
       auth: auth as any,
       spreadsheetId: sheetId,
-      ranges: ["'Standings'!B4:B11"],
+      ranges: ["'🥇 Standings'!B4:B11"],
       includeGridData: true,
     });
 
@@ -132,9 +132,9 @@ export interface PlayerStats {
 }
 
 export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
-  // Read from Player Data sheet (raw stats only)
+  // Read from 🧮 Players sheet (raw stats only)
   // Columns: A=Name, B=Team, C=GP, D-L=Hitting(9), M-O=W/L/SV, P-V=Pitching(7), W-Z=Fielding(4)
-  const playerData = await getSheetData("'Player Data'!A2:Z100");
+  const playerData = await getSheetData("'🧮 Players'!A2:Z100");
 
   const players: PlayerStats[] = [];
 
@@ -245,10 +245,10 @@ export interface ScheduleGame {
 }
 
 export async function getSchedule(): Promise<ScheduleGame[]> {
-  // Read from "Schedule" sheet - includes game results in columns D-L
+  // Read from "📅 Schedule" sheet - includes game results in columns D-L
   // Columns: A=Week, B=Away Team, C=Home Team, D=Away Score, E=Home Score,
   // F=Winning Team, G=Losing Team, H=MVP, I=WP, J=LP, K=SV, L=Box Score Link
-  const scheduleData = await getSheetData("'Schedule'!A2:L100");
+  const scheduleData = await getSheetData("'📅 Schedule'!A2:L100");
 
   const schedule: ScheduleGame[] = [];
 
@@ -350,7 +350,7 @@ export async function getTeamData(teamName?: string): Promise<TeamData[]> {
   // Columns F-N: AB, H, HR, RBI, BB, K, ROB, DP, TB (9 hitting stats)
   // Columns O-V: IP, BF, H, HR, R, BB, K, SV (8 pitching stats)
   // Columns W-Z: NP, E, SB, CS (4 fielding stats)
-  const data = await getSheetData("'Team Data'!A2:Z20");
+  const data = await getSheetData("'🧮 Teams'!A2:Z20");
 
   const teamDataList = data
     .filter((row) => row[0] && String(row[0]).trim() !== '')
@@ -408,8 +408,8 @@ export interface LeaderEntry {
 }
 
 async function getAllPlayers(): Promise<PlayerStats[]> {
-  // Read all players from Player Data sheet (not filtered by team)
-  const playerData = await getSheetData("'Player Data'!A2:Z100");
+  // Read all players from 🧮 Players sheet (not filtered by team)
+  const playerData = await getSheetData("'🧮 Players'!A2:Z100");
   const players: PlayerStats[] = [];
 
   for (const row of playerData) {

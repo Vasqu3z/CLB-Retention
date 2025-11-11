@@ -377,10 +377,10 @@ class SheetsService {
   }
 
   async getStandings() {
-    // v2.0: Standings sheet structure (simplified from former Rankings)
-    // Row 1 = Headers, Row 2+ = Data
+    // v2.0: Standings sheet structure
+    // Row 1 = "Standings" title, Row 2 = Blank, Row 3 = Headers, Row 4+ = Data
     // Columns: Rank, Team, W, L, Win%, RS, RA, Diff
-    const data = await this.getSheetData(SHEET_NAMES.STANDINGS, 'A2:H');
+    const data = await this.getSheetData(SHEET_NAMES.STANDINGS, 'A4:H');
     return data
       .filter(row => row[0] && row[1] && row[1].trim()) // Filter valid rows with team names
       .map(row => ({

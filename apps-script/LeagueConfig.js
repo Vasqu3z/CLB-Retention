@@ -61,9 +61,9 @@ var CONFIG = {
   FINALS_WINS_REQUIRED: 4,         // Best of 7
 
   // Playoff round prefixes (used in game sheet names and schedule)
-  WILDCARD_ROUND_PREFIX: "Q",      // Quarterfinals/Wildcard (*Q1, *Q2)
-  SEMIFINAL_ROUND_PREFIX: "S",     // Semifinals (*S1-A, *S2-B)
-  FINALS_ROUND_PREFIX: "F",        // Finals (*F1, *F2)
+  WILDCARD_ROUND_PREFIX: "WC",      // Quarterfinals/Wildcard (*Q1, *Q2)
+  SEMIFINAL_ROUND_PREFIX: "CS",     // Semifinals (*S1-A, *S2-B)
+  FINALS_ROUND_PREFIX: "KC",        // Finals (*F1, *F2)
 
   // Title qualification multipliers
   MIN_AB_MULTIPLIER: 2.1,
@@ -271,3 +271,4 @@ var _spreadsheetCache = {
   playoffGameSheets: null,
   gameData: null
 };
+

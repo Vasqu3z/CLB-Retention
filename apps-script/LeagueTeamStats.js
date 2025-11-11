@@ -64,7 +64,7 @@ function updateAllTeamStatsFromCache(teamStats) {
     if (!stats) {
       allGPWL.push([0, 0, 0]);
       allHitting.push([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-      allPitching.push([0, 0, 0, 0, 0, 0, 0]);
+      allPitching.push([0, 0, 0, 0, 0, 0, 0, 0]); // IP, BF, H, HR, R, BB, K, SV
       allFielding.push([0, 0, 0]);
       continue;
     }

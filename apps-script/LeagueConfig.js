@@ -6,17 +6,15 @@
 var CONFIG = {
   // ===== SHEET NAMES =====
   ERROR_LOG_SHEET: "Error Log",
+  IMAGE_URLS_SHEET: "Image URLs",
   PLAYER_STATS_SHEET: "Player Data",
   TEAM_STATS_SHEET: "Team Data",
-  TEAM_SHEET_TEMPLATE: "Team Sheet",
-  SEASON_SCHEDULE_SHEET: "Season Schedule",
-  HITTING_STATS_SHEET: "🧮 Hitting",
-  PITCHING_STATS_SHEET: "🧮 Pitching",
-  FIELDING_STATS_SHEET: "🧮 Fielding & Running",
-  LEAGUE_HUB_SHEET: "🏆 Rankings",
-  LEAGUE_SCHEDULE_SHEET: "📅 Schedule",
-  RETENTION_GRADES_SHEET: "🎲 Retention",
-  TRANSACTION_LOG_SHEET: "🔀 Transactions",
+  SCHEDULE_SHEET: "Schedule",
+  STANDINGS_SHEET: "Standings",
+  ROSTERS_SHEET: "Rosters",
+  TRANSACTIONS_SHEET: "Transactions",
+  STAR_POINTS_SHEET: "Star Points",
+  RETENTION_SHEET: "Retention",
 
   // External spreadsheet containing box scores (game sheets)
   BOX_SCORE_SPREADSHEET_ID: "17x5VoZxGV88RYAiHEcq0M-rxSyZ0fp66OktmJk2AaEU",
@@ -59,6 +57,7 @@ var CONFIG = {
   BOX_SCORE_MASTER_RANGE: "B3:R50",
   BOX_SCORE_TEAM_INFO: "B3:F4",
   BOX_SCORE_WLS_DATA: "M48:R50",
+  BOX_SCORE_MVP_CELL: "Q48",
   BOX_SCORE_WINNER_DATA: "N48:N50",
   BOX_SCORE_HITTING_START_ROW: 29,
   BOX_SCORE_HITTING_START_COL: 2,
@@ -96,12 +95,11 @@ var CONFIG = {
   // Season archiving settings
   ARCHIVE_SHEETS: [
     "Player Data",
-    "Team Data", 
-    "Hitting Stats",
-    "Pitching Stats",
-    "Fielding & Baserunning Stats",
-    "League Hub",
-    "League Schedule"
+    "Team Data",
+    "Schedule",
+    "Standings",
+    "Rosters",
+    "Transactions"
   ],
 
   // Transaction tracking
@@ -174,12 +172,12 @@ var CONFIG = {
       HITTING_START_COL: 5,       // Column F (6) - Hitting stats
       HITTING_NUM_COLS: 9,
       PITCHING_START_COL: 14,     // Column O (15) - Pitching stats
-      PITCHING_NUM_COLS: 7,
-      FIELDING_START_COL: 21,     // Column V (22) - Fielding stats
+      PITCHING_NUM_COLS: 8,       // IP, BF, H, HR, R, BB, K, SV
+      FIELDING_START_COL: 22,     // Column W (23) - Fielding stats
       FIELDING_NUM_COLS: 3
     },
 
-    // League Hub (Rankings) sheet layout
+    // Standings sheet layout
     LEAGUE_HUB: {
       HEADER_ROW: 1,
       STANDINGS_HEADER_ROW: 3,
@@ -200,25 +198,6 @@ var CONFIG = {
       },
       LEADERS_FIELDING: {
         START_COL: 13,            // Column N (14)
-        WIDTH: 300
-      }
-    },
-
-    // League Schedule sheet layout
-    LEAGUE_SCHEDULE: {
-      HEADER_ROW: 1,
-      STANDINGS_HEADER_ROW: 3,
-      STANDINGS_START_ROW: 4,
-      STANDINGS: {
-        START_COL: 0,             // Column A (1)
-        NUM_COLS: 8               // Rank, Team, W, L, Win%, RS, RA, Diff
-      },
-      COMPLETED_GAMES: {
-        START_COL: 9,             // Column J (10)
-        WIDTH: 300
-      },
-      SCHEDULED_GAMES: {
-        START_COL: 11,            // Column L (12)
         WIDTH: 300
       }
     },

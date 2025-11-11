@@ -81,7 +81,7 @@ function calculateRetentionGrades(loadedGameData) {
     // Read existing draft values from sheet if it exists (for draft expectations)
     Logger.log("Step 6.5/7: Reading existing draft values from sheet...");
     var existingDraftValues = {};
-    var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+    var sheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
     if (sheet && isRetentionSheetFormatted(sheet)) {
       try {
         var dataStartRow = RETENTION_CONFIG.OUTPUT.DATA_START_ROW;
@@ -205,7 +205,7 @@ function calculateRetentionGrades(loadedGameData) {
     Logger.log("Calculation complete. Writing to sheet...");
 
     // SMART UPDATE: Check if sheet needs full rebuild or just data update
-    var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+    var sheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
 
     if (!sheet || !isRetentionSheetFormatted(sheet)) {
       Logger.log("Sheet not formatted - building from scratch");
@@ -248,116 +248,109 @@ function calculateRetentionGrades(loadedGameData) {
  */
 function getPlayerData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var hittingSheet = ss.getSheetByName(CONFIG.HITTING_STATS_SHEET);
-  var pitchingSheet = ss.getSheetByName(CONFIG.PITCHING_STATS_SHEET);
-  var fieldingSheet = ss.getSheetByName(CONFIG.FIELDING_STATS_SHEET);
+  var playerDataSheet = ss.getSheetByName(CONFIG.PLAYER_STATS_SHEET);
 
   var players = [];
 
-  // Get hitting data (primary source - everyone hits)
-  if (hittingSheet) {
-    var hittingLastRow = hittingSheet.getLastRow();
-    if (hittingLastRow > 1) {
-      var cols = RETENTION_CONFIG.HITTING_COLUMNS;
-      var numCols = Math.max.apply(null, Object.keys(cols).map(function(k) { return cols[k]; }));
-      var hittingData = hittingSheet.getRange(2, 1, hittingLastRow - 1, numCols).getValues();
-
-      for (var i = 0; i < hittingData.length; i++) {
-        var playerName = String(hittingData[i][cols.PLAYER_NAME - 1]).trim();
-        var team = String(hittingData[i][cols.TEAM - 1]).trim();
-
-        if (!playerName || !team) continue;
-
-        players.push({
-          name: playerName,
-          team: team,
-          hitting: {
-            gp: hittingData[i][cols.GP - 1],
-            ab: hittingData[i][cols.AB - 1],
-            h: hittingData[i][cols.H - 1],
-            hr: hittingData[i][cols.HR - 1],
-            rbi: hittingData[i][cols.RBI - 1],
-            bb: hittingData[i][cols.BB - 1],
-            k: hittingData[i][cols.K - 1],
-            rob: hittingData[i][cols.ROB - 1],
-            dp: hittingData[i][cols.DP - 1],
-            tb: hittingData[i][cols.TB - 1],
-            avg: hittingData[i][cols.AVG - 1],
-            obp: hittingData[i][cols.OBP - 1],
-            slg: hittingData[i][cols.SLG - 1],
-            ops: hittingData[i][cols.OPS - 1]
-          },
-          pitching: {},
-          fielding: {}
-        });
-      }
-    }
+  if (!playerDataSheet) {
+    Logger.log("WARNING: Player Data sheet not found");
+    return players;
   }
 
-  // Enhance with pitching data
-  if (pitchingSheet) {
-    var pitchingLastRow = pitchingSheet.getLastRow();
-    if (pitchingLastRow > 1) {
-      var cols = RETENTION_CONFIG.PITCHING_COLUMNS;
-      var numCols = Math.max.apply(null, Object.keys(cols).map(function(k) { return cols[k]; }));
-      var pitchingData = pitchingSheet.getRange(2, 1, pitchingLastRow - 1, numCols).getValues();
-
-      for (var i = 0; i < pitchingData.length; i++) {
-        var playerName = String(pitchingData[i][cols.PLAYER_NAME - 1]).trim();
-        var team = String(pitchingData[i][cols.TEAM - 1]).trim();
-
-        if (!playerName || !team) continue;
-
-        var playerIndex = findPlayerIndex(players, playerName, team);
-
-        if (playerIndex >= 0) {
-          players[playerIndex].pitching = {
-            gp: pitchingData[i][cols.GP - 1],
-            ip: pitchingData[i][cols.IP - 1],
-            bf: pitchingData[i][cols.BF - 1],
-            h: pitchingData[i][cols.H - 1],
-            hr: pitchingData[i][cols.HR - 1],
-            r: pitchingData[i][cols.R - 1],
-            bb: pitchingData[i][cols.BB - 1],
-            k: pitchingData[i][cols.K - 1],
-            w: pitchingData[i][cols.W - 1],
-            l: pitchingData[i][cols.L - 1],
-            sv: pitchingData[i][cols.SV - 1],
-            era: pitchingData[i][cols.ERA - 1],
-            whip: pitchingData[i][cols.WHIP - 1],
-            baa: pitchingData[i][cols.BAA - 1]
-          };
-        }
-      }
-    }
+  var lastRow = playerDataSheet.getLastRow();
+  if (lastRow < 2) {
+    Logger.log("WARNING: No player data found");
+    return players;
   }
 
-  // Enhance with fielding data
-  if (fieldingSheet) {
-    var fieldingLastRow = fieldingSheet.getLastRow();
-    if (fieldingLastRow > 1) {
-      var cols = RETENTION_CONFIG.FIELDING_COLUMNS;
-      var numCols = Math.max.apply(null, Object.keys(cols).map(function(k) { return cols[k]; }));
-      var fieldingData = fieldingSheet.getRange(2, 1, fieldingLastRow - 1, numCols).getValues();
+  // Read all player data at once (columns A-Y)
+  // A: Player, B: Team, C: GP, D-L: Hitting (9), M-O: WLS (3), P-V: Pitching (7), W-Y: Fielding (3)
+  var data = playerDataSheet.getRange(2, 1, lastRow - 1, 25).getValues();
 
-      for (var i = 0; i < fieldingData.length; i++) {
-        var playerName = String(fieldingData[i][cols.PLAYER_NAME - 1]).trim();
-        var team = String(fieldingData[i][cols.TEAM - 1]).trim();
+  for (var i = 0; i < data.length; i++) {
+    var playerName = String(data[i][0]).trim();
+    var team = String(data[i][1]).trim();
 
-        if (!playerName || !team) continue;
+    if (!playerName || !team) continue;
 
-        var playerIndex = findPlayerIndex(players, playerName, team);
+    // Extract raw stats from Player Data sheet
+    var gp = data[i][2] || 0;
+    var ab = data[i][3] || 0;
+    var h = data[i][4] || 0;
+    var hr = data[i][5] || 0;
+    var rbi = data[i][6] || 0;
+    var bb = data[i][7] || 0;
+    var k = data[i][8] || 0;
+    var rob = data[i][9] || 0;
+    var dp = data[i][10] || 0;
+    var tb = data[i][11] || 0;
+    var w = data[i][12] || 0;
+    var l = data[i][13] || 0;
+    var sv = data[i][14] || 0;
+    var ip = data[i][15] || 0;
+    var bf = data[i][16] || 0;
+    var pHits = data[i][17] || 0;
+    var pHR = data[i][18] || 0;
+    var r = data[i][19] || 0;
+    var pBB = data[i][20] || 0;
+    var pK = data[i][21] || 0;
+    var np = data[i][22] || 0;
+    var e = data[i][23] || 0;
+    var sb = data[i][24] || 0;
 
-        if (playerIndex >= 0) {
-          players[playerIndex].fielding = {
-            gp: fieldingData[i][cols.GP - 1],
-            np: fieldingData[i][cols.NP - 1],
-            e: fieldingData[i][cols.E - 1],
-            sb: fieldingData[i][cols.SB - 1]
-          };
-        }
+    // Calculate derived hitting stats
+    var avg = ab > 0 ? h / ab : 0;
+    var obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
+    var slg = ab > 0 ? tb / ab : 0;
+    var ops = obp + slg;
+
+    // Calculate derived pitching stats
+    var era = ip > 0 ? (r * 7) / ip : 0;
+    var whip = ip > 0 ? (pHits + pBB) / ip : 0;
+    var baa = bf > 0 ? pHits / bf : 0;
+
+    players.push({
+      name: playerName,
+      team: team,
+      hitting: {
+        gp: gp,
+        ab: ab,
+        h: h,
+        hr: hr,
+        rbi: rbi,
+        bb: bb,
+        k: k,
+        rob: rob,
+        dp: dp,
+        tb: tb,
+        avg: avg,
+        obp: obp,
+        slg: slg,
+        ops: ops
+      },
+      pitching: {
+        gp: gp,
+        ip: ip,
+        bf: bf,
+        h: pHits,
+        hr: pHR,
+        r: r,
+        bb: pBB,
+        k: pK,
+        w: w,
+        l: l,
+        sv: sv,
+        era: era,
+        whip: whip,
+        baa: baa
+      },
+      fielding: {
+        gp: gp,
+        np: np,
+        e: e,
+        sb: sb
       }
-    }
+    });
   }
 
   return players;
@@ -411,7 +404,7 @@ function getTeamData() {
  */
 function getStandingsData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var hubSheet = ss.getSheetByName(CONFIG.LEAGUE_HUB_SHEET);
+  var hubSheet = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
 
   var standings = {};
 
@@ -456,7 +449,7 @@ function getStandingsData() {
  */
 function getPostseasonData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var retentionSheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+  var retentionSheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
 
   var postseason = {};
 
@@ -688,15 +681,18 @@ function getLineupPositionData() {
  */
 function calculateLeaguePercentiles() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var hittingSheet = ss.getSheetByName(CONFIG.HITTING_STATS_SHEET);
-  var pitchingSheet = ss.getSheetByName(CONFIG.PITCHING_STATS_SHEET);
-  var fieldingSheet = ss.getSheetByName(CONFIG.FIELDING_STATS_SHEET);
+  var playerDataSheet = ss.getSheetByName(CONFIG.PLAYER_STATS_SHEET);
 
   var leagueStats = {
     hitting: {},
     pitching: {},
     fielding: {}
   };
+
+  if (!playerDataSheet) {
+    Logger.log("WARNING: Player Data sheet not found");
+    return leagueStats;
+  }
 
   var teamData = getTeamData();
   var avgTeamGames = RETENTION_CONFIG.LEAGUE.GAMES_PER_SEASON;
@@ -720,95 +716,88 @@ function calculateLeaguePercentiles() {
 
   Logger.log("Qualification thresholds: AB=" + minAB + ", IP=" + minIP + ", GP=" + minGP);
 
-  // Collect hitting stats for qualified players
-  if (hittingSheet) {
-    var cols = RETENTION_CONFIG.HITTING_COLUMNS;
-    var hittingLastRow = hittingSheet.getLastRow();
+  var lastRow = playerDataSheet.getLastRow();
+  if (lastRow < 2) {
+    Logger.log("WARNING: No player data found");
+    return leagueStats;
+  }
 
-    if (hittingLastRow > 1) {
-      var numCols = Math.max.apply(null, Object.keys(cols).map(function(k) { return cols[k]; }));
-      var data = hittingSheet.getRange(2, 1, hittingLastRow - 1, numCols).getValues();
+  // Read all player data at once (columns A-Y)
+  var data = playerDataSheet.getRange(2, 1, lastRow - 1, 25).getValues();
 
-      var avgList = [];
-      var obpList = [];
-      var slgList = [];
-      var opsList = [];
-      var hrList = [];
-      var rbiList = [];
+  var avgList = [];
+  var obpList = [];
+  var slgList = [];
+  var opsList = [];
+  var hrList = [];
+  var rbiList = [];
+  var eraList = [];
+  var whipList = [];
+  var baaList = [];
 
-      for (var i = 0; i < data.length; i++) {
-        var ab = data[i][cols.AB - 1];
-        if (ab >= minAB) {
-          avgList.push(data[i][cols.AVG - 1]);
-          obpList.push(data[i][cols.OBP - 1]);
-          slgList.push(data[i][cols.SLG - 1]);
-          opsList.push(data[i][cols.OPS - 1]);
-          hrList.push(data[i][cols.HR - 1]);
-          rbiList.push(data[i][cols.RBI - 1]);
-        }
-      }
+  for (var i = 0; i < data.length; i++) {
+    // Extract stats from Player Data sheet
+    var ab = data[i][3] || 0;
+    var h = data[i][4] || 0;
+    var hr = data[i][5] || 0;
+    var rbi = data[i][6] || 0;
+    var bb = data[i][7] || 0;
+    var tb = data[i][11] || 0;
+    var ip = data[i][15] || 0;
+    var bf = data[i][16] || 0;
+    var pHits = data[i][17] || 0;
+    var r = data[i][19] || 0;
+    var pBB = data[i][20] || 0;
 
-      leagueStats.hitting.avg = avgList.sort(function(a, b) { return a - b; });
-      leagueStats.hitting.obp = obpList.sort(function(a, b) { return a - b; });
-      leagueStats.hitting.slg = slgList.sort(function(a, b) { return a - b; });
-      leagueStats.hitting.ops = opsList.sort(function(a, b) { return a - b; });
-      leagueStats.hitting.hr = hrList.sort(function(a, b) { return a - b; });
-      leagueStats.hitting.rbi = rbiList.sort(function(a, b) { return a - b; });
+    // Calculate derived stats for qualified hitters
+    if (ab >= minAB) {
+      var avg = ab > 0 ? h / ab : 0;
+      var obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
+      var slg = ab > 0 ? tb / ab : 0;
+      var ops = obp + slg;
+
+      avgList.push(avg);
+      obpList.push(obp);
+      slgList.push(slg);
+      opsList.push(ops);
+      hrList.push(hr);
+      rbiList.push(rbi);
+    }
+
+    // Calculate derived stats for qualified pitchers
+    if (ip >= minIP) {
+      var era = ip > 0 ? (r * 7) / ip : 0;
+      var whip = ip > 0 ? (pHits + pBB) / ip : 0;
+      var baa = bf > 0 ? pHits / bf : 0;
+
+      eraList.push(era);
+      whipList.push(whip);
+      baaList.push(baa);
     }
   }
 
-  // Collect pitching stats for qualified players
-  if (pitchingSheet) {
-    var cols = RETENTION_CONFIG.PITCHING_COLUMNS;
-    var pitchingLastRow = pitchingSheet.getLastRow();
-
-    if (pitchingLastRow > 1) {
-      var numCols = Math.max.apply(null, Object.keys(cols).map(function(k) { return cols[k]; }));
-      var data = pitchingSheet.getRange(2, 1, pitchingLastRow - 1, numCols).getValues();
-
-      var eraList = [];
-      var whipList = [];
-      var baaList = [];
-
-      for (var i = 0; i < data.length; i++) {
-        var ip = data[i][cols.IP - 1];
-        if (ip >= minIP) {
-          eraList.push(data[i][cols.ERA - 1]);
-          whipList.push(data[i][cols.WHIP - 1]);
-          baaList.push(data[i][cols.BAA - 1]);
-        }
-      }
-
-      leagueStats.pitching.era = eraList.sort(function(a, b) { return a - b; });
-      leagueStats.pitching.whip = whipList.sort(function(a, b) { return a - b; });
-      leagueStats.pitching.baa = baaList.sort(function(a, b) { return a - b; });
-    }
-  }
+  leagueStats.hitting.avg = avgList.sort(function(a, b) { return a - b; });
+  leagueStats.hitting.obp = obpList.sort(function(a, b) { return a - b; });
+  leagueStats.hitting.slg = slgList.sort(function(a, b) { return a - b; });
+  leagueStats.hitting.ops = opsList.sort(function(a, b) { return a - b; });
+  leagueStats.hitting.hr = hrList.sort(function(a, b) { return a - b; });
+  leagueStats.hitting.rbi = rbiList.sort(function(a, b) { return a - b; });
+  leagueStats.pitching.era = eraList.sort(function(a, b) { return a - b; });
+  leagueStats.pitching.whip = whipList.sort(function(a, b) { return a - b; });
+  leagueStats.pitching.baa = baaList.sort(function(a, b) { return a - b; });
 
   // Collect fielding stats for qualified players
-  if (fieldingSheet) {
-    var cols = RETENTION_CONFIG.FIELDING_COLUMNS;
-    var fieldingLastRow = fieldingSheet.getLastRow();
-
-    if (fieldingLastRow > 1) {
-      var numCols = Math.max.apply(null, Object.keys(cols).map(function(k) { return cols[k]; }));
-      var data = fieldingSheet.getRange(2, 1, fieldingLastRow - 1, numCols).getValues();
-
-      var netDefenseList = [];
-
-      for (var i = 0; i < data.length; i++) {
-        var gp = data[i][cols.GP - 1];
-        if (gp >= minGP) {
-          var np = data[i][cols.NP - 1] || 0;
-          var e = data[i][cols.E - 1] || 0;
-          var netDefense = (np - e) / gp;
-          netDefenseList.push(netDefense);
-        }
-      }
-
-      leagueStats.fielding.netDefense = netDefenseList.sort(function(a, b) { return a - b; });
+  var netDefenseList = [];
+  for (var i = 0; i < data.length; i++) {
+    var gp = data[i][2] || 0;
+    if (gp >= minGP) {
+      var np = data[i][22] || 0;
+      var e = data[i][23] || 0;
+      var netDefense = gp > 0 ? (np - e) / gp : 0;
+      netDefenseList.push(netDefense);
     }
   }
+  leagueStats.fielding.netDefense = netDefenseList.sort(function(a, b) { return a - b; });
 
   return leagueStats;
 }
@@ -1008,32 +997,32 @@ function updateRetentionData(sheet, retentionGrades) {
 
   var numRows = lastDataRow - dataStartRow + 1;
 
-  // Clear player name and team
-  sheet.getRange(dataStartRow, cols.COL_PLAYER, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_TEAM, numRows, 1).clearContent();
+  // Clear player name and team (COL_ values are 0-based, getRange uses 1-based)
+  sheet.getRange(dataStartRow, cols.COL_PLAYER + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_TEAM + 1, numRows, 1).clearContent();
 
   // PRESERVE Draft Value (Col C) - do not clear
 
   // Clear TS components and total (preserve modifier at Col F)
-  sheet.getRange(dataStartRow, cols.COL_REG_SEASON, numRows, 1).clearContent();  // D - Regular Season
-  sheet.getRange(dataStartRow, cols.COL_POSTSEASON, numRows, 1).clearContent();  // E - Postseason (VLOOKUP)
-  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).clearContent();    // G - TS Total
+  sheet.getRange(dataStartRow, cols.COL_REG_SEASON + 1, numRows, 1).clearContent();  // D - Regular Season
+  sheet.getRange(dataStartRow, cols.COL_POSTSEASON + 1, numRows, 1).clearContent();  // E - Postseason (VLOOKUP)
+  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL + 1, numRows, 1).clearContent();    // G - TS Total
 
   // Clear PT base and total (preserve modifier at Col I)
-  sheet.getRange(dataStartRow, cols.COL_PT_BASE, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_PT_TOTAL, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_PT_BASE + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_PT_TOTAL + 1, numRows, 1).clearContent();
 
   // Clear Performance base and total (preserve modifier at Col L)
-  sheet.getRange(dataStartRow, cols.COL_PERF_BASE, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_PERF_BASE + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL + 1, numRows, 1).clearContent();
 
   // Clear totals (preserve chemistry at O and direction at P)
-  sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL + 1, numRows, 1).clearContent();
 
   // Clear final grade and details
-  sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE, numRows, 1).clearContent();
-  sheet.getRange(dataStartRow, cols.COL_DETAILS, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE + 1, numRows, 1).clearContent();
+  sheet.getRange(dataStartRow, cols.COL_DETAILS + 1, numRows, 1).clearContent();
 
   // Write new data (will preserve existing manual values)
   writePlayerData(sheet, retentionGrades);
@@ -1097,14 +1086,15 @@ function writePlayerData(sheet, retentionGrades) {
 
   // Write auto-calculated columns only (batch operations)
   // Write Regular Season, Postseason will be VLOOKUP formula
-  sheet.getRange(dataStartRow, cols.COL_PLAYER, numRows, 1).setValues(playerNames);
-  sheet.getRange(dataStartRow, cols.COL_TEAM, numRows, 1).setValues(teams);
-  sheet.getRange(dataStartRow, cols.COL_REG_SEASON, numRows, 1).setValues(regSeasonValues);  // D
+  // COL_ values are 0-based, getRange uses 1-based
+  sheet.getRange(dataStartRow, cols.COL_PLAYER + 1, numRows, 1).setValues(playerNames);
+  sheet.getRange(dataStartRow, cols.COL_TEAM + 1, numRows, 1).setValues(teams);
+  sheet.getRange(dataStartRow, cols.COL_REG_SEASON + 1, numRows, 1).setValues(regSeasonValues);  // D
   // Col E (Postseason) will be set with VLOOKUP formula below
-  sheet.getRange(dataStartRow, cols.COL_PT_BASE, numRows, 1).setValues(ptBaseValues);
-  sheet.getRange(dataStartRow, cols.COL_PERF_BASE, numRows, 1).setValues(perfBaseValues);
-  sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL, numRows, 1).setValues(autoTotalValues);
-  sheet.getRange(dataStartRow, cols.COL_DETAILS, numRows, 1).setValues(detailsValues);
+  sheet.getRange(dataStartRow, cols.COL_PT_BASE + 1, numRows, 1).setValues(ptBaseValues);
+  sheet.getRange(dataStartRow, cols.COL_PERF_BASE + 1, numRows, 1).setValues(perfBaseValues);
+  sheet.getRange(dataStartRow, cols.COL_AUTO_TOTAL + 1, numRows, 1).setValues(autoTotalValues);
+  sheet.getRange(dataStartRow, cols.COL_DETAILS + 1, numRows, 1).setValues(detailsValues);
 
   var postseasonFormulas = [];
   var tsTotalFormulas = [];
@@ -1149,12 +1139,12 @@ function writePlayerData(sheet, retentionGrades) {
   }
 
   // Apply all formulas in batched operations
-  sheet.getRange(dataStartRow, cols.COL_POSTSEASON, numRows, 1).setFormulas(postseasonFormulas);
-  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL, numRows, 1).setFormulas(tsTotalFormulas);
-  sheet.getRange(dataStartRow, cols.COL_PT_TOTAL, numRows, 1).setFormulas(ptTotalFormulas);
-  sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL, numRows, 1).setFormulas(perfTotalFormulas);
-  sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL, numRows, 1).setFormulas(manualTotalFormulas);
-  sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE, numRows, 1).setFormulas(finalGradeFormulas);
+  sheet.getRange(dataStartRow, cols.COL_POSTSEASON + 1, numRows, 1).setFormulas(postseasonFormulas);
+  sheet.getRange(dataStartRow, cols.COL_TS_TOTAL + 1, numRows, 1).setFormulas(tsTotalFormulas);
+  sheet.getRange(dataStartRow, cols.COL_PT_TOTAL + 1, numRows, 1).setFormulas(ptTotalFormulas);
+  sheet.getRange(dataStartRow, cols.COL_PERF_TOTAL + 1, numRows, 1).setFormulas(perfTotalFormulas);
+  sheet.getRange(dataStartRow, cols.COL_MANUAL_TOTAL + 1, numRows, 1).setFormulas(manualTotalFormulas);
+  sheet.getRange(dataStartRow, cols.COL_FINAL_GRADE + 1, numRows, 1).setFormulas(finalGradeFormulas);
 
   // Apply formatting (only to auto-calculated columns and new rows)
   applyDataFormatting(sheet, dataStartRow, numRows);

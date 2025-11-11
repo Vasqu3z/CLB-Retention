@@ -1,27 +1,40 @@
-# CLB Hub - Baseball Stats Management System
+# CLB League Hub - Baseball Stats Management System
 
 A comprehensive statistics management and player retention probability system for CLB (Comets League Baseball), a Super Mario Sluggers AI vs. AI league.
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture (v2.0)
 
-This repository contains **two complementary systems**:
+This repository contains **three complementary systems**:
 
 1. **Google Apps Script Backend** (`apps-script/`) - Processes game data, calculates stats
 2. **Next.js Website** (`website/`) - Modern web interface for viewing stats
+3. **Discord Bot** (`discord-bot/`) - Real-time stats access via Discord commands
 
 ### Hybrid Approach
 
 - **Commissioners** use Google Sheets + Apps Script for data entry and management
-- **Players/Fans** use the website for viewing stats, standings, and browsing history
-- Data flows: Box Scores → Apps Script → Stat Sheets → Website (via Sheets API)
+- **Players/Fans** use the website or Discord bot for viewing stats, standings, and schedules
+- Data flows: Box Scores → Apps Script → Consolidated Sheets → Website/Discord Bot (via Sheets API)
 
 ## 📁 Repository Structure
 
 ```
 CLB-League-Hub/
-├── apps-script/              # Google Apps Script backend (~8,000 lines)
+├── apps-script/              # Google Apps Script backend (~6,000 lines, v2.0)
+│   ├── LeagueCore.js         # UpdateAll orchestrator & menu
+│   ├── LeagueGames.js        # Game processing engine
+│   ├── LeaguePlayerStats.js  # Player Data sheet updates
+│   ├── LeagueTeamStats.js    # Team Data sheet updates
+│   ├── LeagueRankings.js     # Standings sheet updates
+│   ├── LeagueTransactions.js # Transaction tracking
+│   ├── LeagueArchive.js      # Season archiving
+│   ├── Retention*.js (5)     # Retention grade system
+│   └── README.md             # Apps Script documentation
 ├── website/                  # Next.js public website
-├── docs/                     # Documentation & migration plans
+│   └── README.md             # Website documentation
+├── discord-bot/              # Discord bot with slash commands
+│   ├── DEPLOYMENT.md         # Railway deployment guide
+│   └── README.md             # Bot documentation
 ├── vercel.json               # Vercel deployment config
 └── README.md                 # This file
 ```
@@ -32,7 +45,7 @@ CLB-League-Hub/
 1. Open your Google Sheets spreadsheet
 2. Extensions → Apps Script
 3. Copy contents of `apps-script/*.js` into your project
-4. Run **Player Stats → Update All**
+4. Run **Player Stats → 🚀 Update All** (completes in ~45s)
 
 ### For Developers (Website)
 ```bash
@@ -45,123 +58,93 @@ npm run dev
 
 Visit http://localhost:3000
 
+### For Discord Bot
+See [`discord-bot/DEPLOYMENT.md`](discord-bot/DEPLOYMENT.md) for Railway deployment instructions.
+
 ---
 
-## Overview
+## 📊 v2.0 Schema (Consolidated Stats)
 
----
+### Core Data Sheets
 
-## Sheet Descriptions
+#### **Player Data** (Consolidated v2.0)
+All player statistics in one sheet:
+- Player name, team, games played
+- **Hitting Stats**: AB, H, HR, RBI, BB, K, ROB, DP, TB, AVG, OBP, SLG, OPS
+- **Pitching Stats**: W, L, SV, ERA, IP, BF, H, HR, R, BB, K, BAA, WHIP
+- **Fielding Stats**: NP (Nice Plays), E (Errors), SB (Stolen Bases)
 
-### Core Stat Sheets
-
-#### **🧮 Team**
-Aggregated team statistics across all categories:
+#### **Team Data** (Consolidated v2.0)
+Team rosters with aggregated stats:
+- Team name, player roster
+- Aggregate team hitting, pitching, and fielding totals
 - Win-loss records
-- Team hitting totals and averages
-- Team pitching totals and averages
-- Team fielding statistics
 
-#### **🧮 Hitting**
-Complete offensive statistics for all players:
-- **Counting Stats**: Games Played, At-Bats, Hits, Home Runs, RBIs, Walks, Strikeouts, Double Plays, Total Bases
-- **Calculated Metrics**: Batting Average (AVG), On-Base Percentage (OBP), Slugging Percentage (SLG), On-Base Plus Slugging (OPS)
-- **Sluggers-Specific Stat**: ROB (Hits Robbed) - tracks how often defensive "Nice Plays" were made against the batter
+#### **Standings**
+Current league standings:
+- Rank, Team, W, L, Win%, RS, RA, Diff
+- Tiebreakers: head-to-head record, then run differential
 
-#### **🧮 Pitching**
-Complete pitching statistics for all players:
-- **Counting Stats**: Games Played, Wins, Losses, Saves, Innings Pitched, Batters Faced, Hits Allowed, Home Runs Allowed, Runs Allowed, Walks Allowed, Strikeouts
-- **Calculated Metrics**: Earned Run Average (ERA), Batting Average Against (BAA), Walks + Hits per Inning Pitched (WHIP)
+#### **Schedule**
+Season schedule with results:
+- Week, Away Team, Home Team
+- Game results: scores, winner, loser, MVP, pitchers, box score links
 
-#### **🧮 Fielding & Running**
-Defensive and baserunning statistics:
-- **Fielding**: Games Played, Nice Plays (exceptional defensive plays), Errors
-- **Baserunning**: Stolen Bases
+#### **Rosters**
+Team roster assignments (read-only reference)
 
----
+#### **Transactions**
+Transaction log:
+- Week, Type (Trade/Sign/Release/Promote/Demote), Players, Teams
 
-### Dynamic Display Sheets
-
-#### **🏆 Rankings**
-The league homepage featuring:
-- **Full Standings**: Ranked by win percentage, with tiebreakers for head-to-head record and run differential
-- **League Leaders**: Top performers in key statistical categories (batting, pitching, fielding)
-- **Recent Results**: Game scores from recent weeks with color-coded winners/losers
-- **This Week's Games**: Upcoming matchups for the current week
-
-#### **📅 Schedule**
-Comprehensive schedule view:
-- **Standings**: Current league standings (same as Rankings sheet)
-- **Completed Games**: All finished games organized by week with clickable links to game sheets
-- **Scheduled Games**: All upcoming games organized by week
-
-#### **🧢 Team Sheets** (One per Team)
-Individual team pages showing:
-- **Player Statistics**: Full hitting, pitching, and fielding stats for all team members
-- **League Standings**: Current standings with the team's row highlighted
-- **Team Schedule**: All games (completed and upcoming) with color-coded win/loss results
+#### **Star Points**
+Star point allocation tracking (custom CLB mechanic)
 
 ---
 
-### Retention System
+## ⚡ UpdateAll Flow (3 Steps)
 
-#### **Retention Grades**
+The streamlined v2.0 update process:
+
+**Game Processing** (reads all game sheets once)
+- Extracts player stats, team stats, schedule data
+- Caches in memory for performance
+
+**Step 1: Update Player Data**
+- Writes consolidated player statistics
+
+**Step 2: Update Team Data**
+- Writes team rosters and aggregated stats
+- Writes game results to Schedule sheet
+
+**Step 3: Update Standings**
+- Calculates standings with tiebreakers
+- Adds head-to-head tooltips
+
+**Total Time**: ~30-45 seconds for full season
+
+---
+
+## 🏆 Retention System
+
+### **Retention Grades Sheet**
 An advanced analytical sheet that calculates each player's probability of returning to their current team next season. The system uses a weighted formula incorporating multiple factors to generate a final retention grade on a 5-95 scale.
 
 **The Five Retention Factors:**
 
-1. **Team Success**
-   - **What it measures**: How well the team performed during the season
-   - **Components**:
-     - Regular season standing (1st place through 8th place)
-     - Postseason performance (Champion, Runner-up, Semifinal, Quarterfinal, or Missed Playoffs)
-   - **Why it matters**: Players on successful teams are more likely to return. Last place finishes significantly hurt retention.
-
-2. **Play Time**
-   - **What it measures**: How much the player actually played and how they were used
-   - **Components**:
-     - Games played percentage (how many team games the player appeared in)
-     - Usage quality (average lineup position for hitters, innings per game for pitchers)
-   - **Why it matters**: Players who play regularly and are used properly (e.g., star hitters in the top 3 of the lineup) are more likely to stay. Benchwarmers and misused stars are flight risks.
-
-3. **Performance**
-   - **What it measures**: Statistical performance relative to other players in the league
-   - **Components**:
-     - Offensive contribution (percentile ranking in AVG, OBP, SLG, OPS, HR, RBI)
-     - Defensive contribution (percentile ranking in Nice Plays minus Errors per game)
-     - Pitching contribution (percentile ranking in ERA, WHIP, BAA)
-   - **Advanced Features**:
-     - **Auto-flagging**: Elite players on struggling teams receive a retention penalty (flight risk)
-     - **Draft expectations**: Performance is evaluated against draft position (high picks underperforming get penalized, late picks overperforming may feel undervalued)
-   - **Why it matters**: Players who excel statistically are valuable assets, but mismatches between ability and situation create retention risk.
-
-4. **Chemistry**
-   - **What it measures**: Player-team fit and locker room dynamics
-   - **How it works**: Commissioners enter scores from 0-20 based on team evaluation
-   - **Why it matters**: Good chemistry keeps players with their teams even when other factors suggest they might leave.
-
-5. **Team Direction**
-   - **What it measures**: The team's perceived competitive outlook for the next season
-   - **How it works**: One score per team (0-20), inherited by all players on that team
-   - **Why it matters**: Players want to be on teams with a bright future. Rebuilding teams lose players, contenders retain them.
-
-**Manual Adjustments:**
-- **Draft/Trade Value**: Records the round in which each player was drafted (1-8), used for draft expectations calculations
-- **Modifiers**: Commissioner can apply adjustments to Team Success, Play Time, and Performance factors to account for context (trades, star point use, etc.)
+1. **Team Success** (Regular season standing + Postseason performance)
+2. **Play Time** (Games played % + Usage quality)
+3. **Performance** (Statistical percentile rankings with elite player flight risk detection)
+4. **Chemistry** (Commissioner-assigned locker room dynamics score)
+5. **Team Direction** (Competitive outlook for next season)
 
 **Output:**
-- **Final Grade**: A number from 5 to 95 representing retention probability
-  - 70-95: Excellent retention probability (green)
-  - 55-69: Good retention probability (light blue)
-  - 40-54: Uncertain retention (yellow)
-  - 5-39: Poor retention probability (red)
-- **Details Column**: Shows the breakdown of each factor's contribution
-
----
-
-## Support & Feedback
-
-For questions, bug reports, or feature requests, contact Vasquez or file an issue at the [CLB League Hub GitHub repository](https://github.com/Vasqu3z/CLB-League-Hub).
+- **Final Grade**: 5-95 retention probability scale
+  - 70-95: Excellent (green)
+  - 55-69: Good (light blue)
+  - 40-54: Uncertain (yellow)
+  - 5-39: Poor (red)
+- **Details**: Breakdown of each factor's contribution
 
 ---
 
@@ -170,11 +153,9 @@ For questions, bug reports, or feature requests, contact Vasquez or file an issu
 The Next.js website provides a modern, mobile-friendly interface:
 
 - **🏆 Standings** - League standings with team records
-- **📊 League Leaders** - Top performers (Phase 1 - in progress)
-- **📅 Schedule** - Game schedule and results (Phase 1 - planned)
-- **🧢 Team Pages** - Rosters and stats (Phase 1 - planned)
-- **🗂️ Historical Archives** - Browse past seasons (Phase 1 - planned)
-- **💰 Transactions** - Transaction timeline (Phase 1 - planned)
+- **📅 Schedule** - Full season schedule with results and box score links
+- **🧢 Team Pages** - Team rosters with aggregated stats (Hitting, Pitching, Fielding)
+- **🔍 Player Lookup** - Search and view individual player statistics
 
 ### Website Deployment
 
@@ -184,27 +165,68 @@ The Next.js website provides a modern, mobile-friendly interface:
 4. Add environment variables: `SHEETS_SPREADSHEET_ID`, `GOOGLE_CREDENTIALS`
 5. Deploy!
 
-**Live at:** `https://your-project.vercel.app`
+---
+
+## 🤖 Discord Bot
+
+Real-time stats access via Discord slash commands:
+
+- `/standings` - View league standings
+- `/schedule` - View season schedule with results
+- `/player <name>` - Look up player stats
+- `/team <name>` - View team roster and stats
+
+**Deployment**: Railway (see `discord-bot/DEPLOYMENT.md`)
 
 ---
 
 ## 📚 Documentation
 
-- **[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)** - 16-week migration roadmap
-- **[module-migration-analysis.md](module-migration-analysis.md)** - Module analysis
-- **[sheets-vs-website-assessment.md](sheets-vs-website-assessment.md)** - Pros/cons
+- **[apps-script/README.md](apps-script/README.md)** - Apps Script v2.0 architecture guide
 - **[website/README.md](website/README.md)** - Website technical docs
 - **[website/SETUP_GUIDE.md](website/SETUP_GUIDE.md)** - Deployment guide
+- **[discord-bot/README.md](discord-bot/README.md)** - Discord bot documentation
+- **[discord-bot/DEPLOYMENT.md](discord-bot/DEPLOYMENT.md)** - Railway deployment guide
+- **[Gold Standard Implementation Guide.md](Gold%20Standard%20Implementation%20Guide.md)** - Coding standards
+
+---
+
+## 🔧 Technical Stack
+
+**Apps Script Backend:**
+- Google Apps Script (JavaScript)
+- Google Sheets API
+- Batch I/O operations for performance
+- In-memory data caching
+
+**Website:**
+- Next.js 15 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
+- Google Sheets API v4
+
+**Discord Bot:**
+- Discord.js v14
+- Node.js
+- Google Sheets API v4
+- Railway hosting
+
+---
+
+## 📈 Version History
+
+- **v3.0 (Apps Script)** - v2.0 schema consolidation, ~40% faster UpdateAll
+- **v1.0 (Website)** - Next.js 15 modern web interface
+- **v1.0 (Discord Bot)** - Real-time Discord slash commands
 
 ---
 
 ## Credits
 
 **System Design & Development**: Vasquez w/ assistance from Claude AI
-**Version**: 3.0 (Apps Script) + 1.0 (Website)
-**Last Updated**: November 9, 2025
+**Version**: 3.0 (Apps Script) + 1.0 (Website) + 1.0 (Discord Bot)
+**Last Updated**: January 2025
 
 **Built with ❤️ for CLB**
 ⚾ Super Mario Sluggers AI League 🎮
-
-

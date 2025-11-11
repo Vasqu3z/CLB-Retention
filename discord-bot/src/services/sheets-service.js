@@ -28,9 +28,10 @@
 import { google } from 'googleapis';
 import {
   SHEET_NAMES,
-  HITTING_COLUMNS,
-  PITCHING_COLUMNS,
-  FIELDING_COLUMNS,
+  PLAYER_DATA_COLUMNS,
+  SCHEDULE_COLUMNS,
+  STANDINGS_COLUMNS,
+  STAT_CALCULATORS,
   TEAM_STATS_COLUMNS,
   DATA_START_ROW,
   QUALIFICATION,
@@ -184,7 +185,8 @@ class SheetsService {
    * @param {string} playerName - Player name to search for (case-insensitive)
    * @returns {Promise<Object|null>} Player stats object with hitting, pitching, and fielding data, or null if not found
    * @description
-   * - Performs parallel reads from three stat sheets (P1: Performance)
+   * - v2.0: Reads from single Player Data sheet (columns A-Y)
+   * - Calculates derived stats (AVG, OBP, SLG, OPS, ERA, WHIP, BAA) on-the-fly
    * - Returns unified player object with all stats
    * - Missing stats default to '0'
    */
@@ -195,74 +197,80 @@ class SheetsService {
 
     const normalizedName = playerName.trim().toLowerCase();
 
-    const [hittingData, pitchingData, fieldingData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.HITTING),
-      this.getSheetData(SHEET_NAMES.PITCHING),
-      this.getSheetData(SHEET_NAMES.FIELDING)
-    ]);
+    // v2.0: Single sheet read instead of 3 parallel reads
+    const playerData = await this.getSheetData(SHEET_NAMES.PLAYER_DATA);
 
-    const hittingRow = hittingData
-      .slice(1)
-      .find(row => row[HITTING_COLUMNS.PLAYER_NAME]?.toLowerCase() === normalizedName);
+    const playerRow = playerData
+      .slice(DATA_START_ROW - 1) // Skip header row
+      .find(row => row[PLAYER_DATA_COLUMNS.PLAYER_NAME]?.toLowerCase() === normalizedName);
 
-    const pitchingRow = pitchingData
-      .slice(1)
-      .find(row => row[PITCHING_COLUMNS.PLAYER_NAME]?.toLowerCase() === normalizedName);
-
-    const fieldingRow = fieldingData
-      .slice(1)
-      .find(row => row[FIELDING_COLUMNS.PLAYER_NAME]?.toLowerCase() === normalizedName);
-
-    if (!hittingRow && !pitchingRow && !fieldingRow) {
+    if (!playerRow) {
       return null;
     }
 
-    const getValue = (row, index) => row?.[index] || '0';
+    const getValue = (index) => playerRow[index] || '0';
+    const getNum = (index) => parseFloat(getValue(index)) || 0;
+
+    // Extract raw stats for derived calculations
+    const ab = getNum(PLAYER_DATA_COLUMNS.AB);
+    const h = getNum(PLAYER_DATA_COLUMNS.H);
+    const bb = getNum(PLAYER_DATA_COLUMNS.BB);
+    const tb = getNum(PLAYER_DATA_COLUMNS.TB);
+    const ip = getNum(PLAYER_DATA_COLUMNS.IP);
+    const bf = getNum(PLAYER_DATA_COLUMNS.BF);
+    const r = getNum(PLAYER_DATA_COLUMNS.R);
+    const hAllowed = getNum(PLAYER_DATA_COLUMNS.H_ALLOWED);
+    const bbAllowed = getNum(PLAYER_DATA_COLUMNS.BB_ALLOWED);
+
+    // Calculate derived stats
+    const avg = STAT_CALCULATORS.AVG(h, ab);
+    const obp = STAT_CALCULATORS.OBP(h, bb, ab);
+    const slg = STAT_CALCULATORS.SLG(tb, ab);
+    const ops = STAT_CALCULATORS.OPS(h, bb, tb, ab);
+    const era = STAT_CALCULATORS.ERA(r, ip);
+    const baa = STAT_CALCULATORS.BAA(hAllowed, bf);
+    const whip = STAT_CALCULATORS.WHIP(hAllowed, bbAllowed, ip);
 
     return {
-      name: hittingRow?.[HITTING_COLUMNS.PLAYER_NAME] ||
-            pitchingRow?.[PITCHING_COLUMNS.PLAYER_NAME] ||
-            fieldingRow?.[FIELDING_COLUMNS.PLAYER_NAME],
-      team: hittingRow?.[HITTING_COLUMNS.TEAM] ||
-            pitchingRow?.[PITCHING_COLUMNS.TEAM] ||
-            fieldingRow?.[FIELDING_COLUMNS.TEAM],
+      name: getValue(PLAYER_DATA_COLUMNS.PLAYER_NAME),
+      team: getValue(PLAYER_DATA_COLUMNS.TEAM),
       hitting: {
-        gp: getValue(hittingRow, HITTING_COLUMNS.GP),
-        ab: getValue(hittingRow, HITTING_COLUMNS.AB),
-        h: getValue(hittingRow, HITTING_COLUMNS.H),
-        hr: getValue(hittingRow, HITTING_COLUMNS.HR),
-        rbi: getValue(hittingRow, HITTING_COLUMNS.RBI),
-        bb: getValue(hittingRow, HITTING_COLUMNS.BB),
-        k: getValue(hittingRow, HITTING_COLUMNS.K),
-        rob: getValue(hittingRow, HITTING_COLUMNS.ROB),
-        dp: getValue(hittingRow, HITTING_COLUMNS.DP),
-        tb: getValue(hittingRow, HITTING_COLUMNS.TB),
-        avg: getValue(hittingRow, HITTING_COLUMNS.AVG),
-        obp: getValue(hittingRow, HITTING_COLUMNS.OBP),
-        slg: getValue(hittingRow, HITTING_COLUMNS.SLG),
-        ops: getValue(hittingRow, HITTING_COLUMNS.OPS)
+        gp: getValue(PLAYER_DATA_COLUMNS.GP),
+        ab: getValue(PLAYER_DATA_COLUMNS.AB),
+        h: getValue(PLAYER_DATA_COLUMNS.H),
+        hr: getValue(PLAYER_DATA_COLUMNS.HR),
+        rbi: getValue(PLAYER_DATA_COLUMNS.RBI),
+        bb: getValue(PLAYER_DATA_COLUMNS.BB),
+        k: getValue(PLAYER_DATA_COLUMNS.K),
+        rob: getValue(PLAYER_DATA_COLUMNS.ROB),
+        dp: getValue(PLAYER_DATA_COLUMNS.DP),
+        tb: getValue(PLAYER_DATA_COLUMNS.TB),
+        avg: avg.toFixed(3),
+        obp: obp.toFixed(3),
+        slg: slg.toFixed(3),
+        ops: ops.toFixed(3)
       },
       pitching: {
-        gp: getValue(pitchingRow, PITCHING_COLUMNS.GP),
-        w: getValue(pitchingRow, PITCHING_COLUMNS.W),
-        l: getValue(pitchingRow, PITCHING_COLUMNS.L),
-        sv: getValue(pitchingRow, PITCHING_COLUMNS.SV),
-        era: getValue(pitchingRow, PITCHING_COLUMNS.ERA),
-        ip: getValue(pitchingRow, PITCHING_COLUMNS.IP),
-        bf: getValue(pitchingRow, PITCHING_COLUMNS.BF),
-        h: getValue(pitchingRow, PITCHING_COLUMNS.H),
-        hr: getValue(pitchingRow, PITCHING_COLUMNS.HR),
-        r: getValue(pitchingRow, PITCHING_COLUMNS.R),
-        bb: getValue(pitchingRow, PITCHING_COLUMNS.BB),
-        k: getValue(pitchingRow, PITCHING_COLUMNS.K),
-        baa: getValue(pitchingRow, PITCHING_COLUMNS.BAA),
-        whip: getValue(pitchingRow, PITCHING_COLUMNS.WHIP)
+        gp: getValue(PLAYER_DATA_COLUMNS.GP),
+        w: getValue(PLAYER_DATA_COLUMNS.W),
+        l: getValue(PLAYER_DATA_COLUMNS.L),
+        sv: getValue(PLAYER_DATA_COLUMNS.SV),
+        era: era.toFixed(2),
+        ip: getValue(PLAYER_DATA_COLUMNS.IP),
+        bf: getValue(PLAYER_DATA_COLUMNS.BF),
+        h: getValue(PLAYER_DATA_COLUMNS.H_ALLOWED),
+        hr: getValue(PLAYER_DATA_COLUMNS.HR_ALLOWED),
+        r: getValue(PLAYER_DATA_COLUMNS.R),
+        bb: getValue(PLAYER_DATA_COLUMNS.BB_ALLOWED),
+        k: getValue(PLAYER_DATA_COLUMNS.K_PITCHED),
+        baa: baa.toFixed(3),
+        whip: whip.toFixed(2)
       },
       fielding: {
-        gp: getValue(fieldingRow, FIELDING_COLUMNS.GP),
-        np: getValue(fieldingRow, FIELDING_COLUMNS.NP),
-        e: getValue(fieldingRow, FIELDING_COLUMNS.E),
-        sb: getValue(fieldingRow, FIELDING_COLUMNS.SB)
+        gp: getValue(PLAYER_DATA_COLUMNS.GP),
+        np: getValue(PLAYER_DATA_COLUMNS.NP),
+        e: getValue(PLAYER_DATA_COLUMNS.E),
+        sb: getValue(PLAYER_DATA_COLUMNS.SB)
       }
     };
   }
@@ -274,10 +282,10 @@ class SheetsService {
 
     const normalizedName = teamName.trim().toLowerCase();
 
-    // Fetch both Team Data and Rankings to get Runs Scored
-    const [teamData, rankingsData] = await Promise.all([
+    // v2.0: Fetch Team Data and Standings to get Runs Scored
+    const [teamData, standingsData] = await Promise.all([
       this.getSheetData(SHEET_NAMES.TEAM_DATA),
-      this.getSheetData(SHEET_NAMES.RANKINGS, 'A2:H')
+      this.getSheetData(SHEET_NAMES.STANDINGS, 'A2:H')
     ]);
 
     const teamRow = teamData
@@ -293,9 +301,9 @@ class SheetsService {
 
     const gp = getNum(TEAM_STATS_COLUMNS.GP);
 
-    // Get Runs Scored from Rankings sheet (column F, index 5)
-    const rankingsRow = rankingsData.find(row => row[1]?.toLowerCase().trim() === normalizedName);
-    const runsScored = rankingsRow ? (parseFloat(rankingsRow[5]) || 0) : 0;
+    // Get Runs Scored from Standings sheet (column F, index 5)
+    const standingsRow = standingsData.find(row => row[1]?.toLowerCase().trim() === normalizedName);
+    const runsScored = standingsRow ? (parseFloat(standingsRow[5]) || 0) : 0;
 
     // Parse hitting stats: AB, H, HR, RBI, BB, K, ROB, DP, TB
     const ab = getNum(TEAM_STATS_COLUMNS.HITTING_START + 0);
@@ -369,9 +377,10 @@ class SheetsService {
   }
 
   async getStandings() {
-    // Rankings sheet structure: Row 1 = Title, Row 2 = Empty, Row 3 = Headers, Row 4+ = Data
+    // v2.0: Standings sheet structure
+    // Row 1 = "Standings" title, Row 2 = Blank, Row 3 = Headers, Row 4+ = Data
     // Columns: Rank, Team, W, L, Win%, RS, RA, Diff
-    const data = await this.getSheetData(SHEET_NAMES.RANKINGS, 'A4:H');
+    const data = await this.getSheetData(SHEET_NAMES.STANDINGS, 'A4:H');
     return data
       .filter(row => row[0] && row[1] && row[1].trim()) // Filter valid rows with team names
       .map(row => ({
@@ -387,11 +396,9 @@ class SheetsService {
   }
 
   async getLeagueLeaders(category, stat) {
-    const [hittingData, pitchingData, fieldingData, playerData, teamData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.HITTING),
-      this.getSheetData(SHEET_NAMES.PITCHING),
-      this.getSheetData(SHEET_NAMES.FIELDING),
-      this.getSheetData(SHEET_NAMES.PLAYER_DATA, `A${DATA_START_ROW}:B`),
+    // v2.0: Read from single Player Data sheet and calculate derived stats
+    const [playerData, teamData] = await Promise.all([
+      this.getSheetData(SHEET_NAMES.PLAYER_DATA),
       this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:C`)
     ]);
 
@@ -405,19 +412,21 @@ class SheetsService {
       if (teamName) teamGPMap[teamName] = gp;
     });
 
-    if (category === 'batting') {
-      hittingData.slice(1).forEach(row => {
-        const playerName = row[HITTING_COLUMNS.PLAYER_NAME];
-        const team = row[HITTING_COLUMNS.TEAM];
-        if (!playerName || !team) return;
+    // Process Player Data rows (skip header)
+    playerData.slice(DATA_START_ROW - 1).forEach(row => {
+      const playerName = row[PLAYER_DATA_COLUMNS.PLAYER_NAME];
+      const team = row[PLAYER_DATA_COLUMNS.TEAM];
+      if (!playerName || !team) return;
 
-        const teamGP = teamGPMap[team] || 0;
-        const ab = parseFloat(row[HITTING_COLUMNS.AB]) || 0;
-        const h = parseFloat(row[HITTING_COLUMNS.H]) || 0;
-        const hr = parseFloat(row[HITTING_COLUMNS.HR]) || 0;
-        const rbi = parseFloat(row[HITTING_COLUMNS.RBI]) || 0;
-        const bb = parseFloat(row[HITTING_COLUMNS.BB]) || 0;
-        const tb = parseFloat(row[HITTING_COLUMNS.TB]) || 0;
+      const teamGP = teamGPMap[team] || 0;
+
+      if (category === 'batting') {
+        const ab = parseFloat(row[PLAYER_DATA_COLUMNS.AB]) || 0;
+        const h = parseFloat(row[PLAYER_DATA_COLUMNS.H]) || 0;
+        const hr = parseFloat(row[PLAYER_DATA_COLUMNS.HR]) || 0;
+        const rbi = parseFloat(row[PLAYER_DATA_COLUMNS.RBI]) || 0;
+        const bb = parseFloat(row[PLAYER_DATA_COLUMNS.BB]) || 0;
+        const tb = parseFloat(row[PLAYER_DATA_COLUMNS.TB]) || 0;
 
         const qualifyingAB = teamGP * QUALIFICATION.MIN_AB_MULTIPLIER;
 
@@ -426,7 +435,7 @@ class SheetsService {
 
         switch (stat) {
           case 'obp':
-            value = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
+            value = STAT_CALCULATORS.OBP(h, bb, ab);
             qualified = ab >= qualifyingAB;
             break;
           case 'hits':
@@ -442,13 +451,11 @@ class SheetsService {
             qualified = rbi > 0;
             break;
           case 'slg':
-            value = ab > 0 ? tb / ab : 0;
+            value = STAT_CALCULATORS.SLG(tb, ab);
             qualified = ab >= qualifyingAB;
             break;
           case 'ops':
-            const obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
-            const slg = ab > 0 ? tb / ab : 0;
-            value = obp + slg;
+            value = STAT_CALCULATORS.OPS(h, bb, tb, ab);
             qualified = ab >= qualifyingAB;
             break;
         }
@@ -456,22 +463,15 @@ class SheetsService {
         if (qualified && value > 0) {
           leaders.push({ name: playerName, team, value });
         }
-      });
-    } else if (category === 'pitching') {
-      pitchingData.slice(1).forEach(row => {
-        const playerName = row[PITCHING_COLUMNS.PLAYER_NAME];
-        const team = row[PITCHING_COLUMNS.TEAM];
-        if (!playerName || !team) return;
-
-        const teamGP = teamGPMap[team] || 0;
-        const ip = parseFloat(row[PITCHING_COLUMNS.IP]) || 0;
-        const bf = parseFloat(row[PITCHING_COLUMNS.BF]) || 0;
-        const h = parseFloat(row[PITCHING_COLUMNS.H]) || 0;
-        const r = parseFloat(row[PITCHING_COLUMNS.R]) || 0;
-        const bb = parseFloat(row[PITCHING_COLUMNS.BB]) || 0;
-        const w = parseFloat(row[PITCHING_COLUMNS.W]) || 0;
-        const l = parseFloat(row[PITCHING_COLUMNS.L]) || 0;
-        const sv = parseFloat(row[PITCHING_COLUMNS.SV]) || 0;
+      } else if (category === 'pitching') {
+        const ip = parseFloat(row[PLAYER_DATA_COLUMNS.IP]) || 0;
+        const bf = parseFloat(row[PLAYER_DATA_COLUMNS.BF]) || 0;
+        const h = parseFloat(row[PLAYER_DATA_COLUMNS.H_ALLOWED]) || 0;
+        const r = parseFloat(row[PLAYER_DATA_COLUMNS.R]) || 0;
+        const bb = parseFloat(row[PLAYER_DATA_COLUMNS.BB_ALLOWED]) || 0;
+        const w = parseFloat(row[PLAYER_DATA_COLUMNS.W]) || 0;
+        const l = parseFloat(row[PLAYER_DATA_COLUMNS.L]) || 0;
+        const sv = parseFloat(row[PLAYER_DATA_COLUMNS.SV]) || 0;
 
         const qualifyingIP = teamGP * QUALIFICATION.MIN_IP_MULTIPLIER;
 
@@ -496,15 +496,15 @@ class SheetsService {
             qualified = sv > 0;
             break;
           case 'era':
-            value = ip > 0 ? (r * 9) / ip : 0;
+            value = STAT_CALCULATORS.ERA(r, ip);
             qualified = ip >= qualifyingIP;
             break;
           case 'whip':
-            value = ip > 0 ? (h + bb) / ip : 0;
+            value = STAT_CALCULATORS.WHIP(h, bb, ip);
             qualified = ip >= qualifyingIP;
             break;
           case 'baa':
-            value = bf > 0 ? h / bf : 0;
+            value = STAT_CALCULATORS.BAA(h, bf);
             qualified = ip >= qualifyingIP;
             break;
         }
@@ -512,16 +512,10 @@ class SheetsService {
         if (qualified && value > 0) {
           leaders.push({ name: playerName, team, value });
         }
-      });
-    } else if (category === 'fielding') {
-      fieldingData.slice(1).forEach(row => {
-        const playerName = row[FIELDING_COLUMNS.PLAYER_NAME];
-        const team = row[FIELDING_COLUMNS.TEAM];
-        if (!playerName || !team) return;
-
-        const np = parseFloat(row[FIELDING_COLUMNS.NP]) || 0;
-        const e = parseFloat(row[FIELDING_COLUMNS.E]) || 0;
-        const sb = parseFloat(row[FIELDING_COLUMNS.SB]) || 0;
+      } else if (category === 'fielding') {
+        const np = parseFloat(row[PLAYER_DATA_COLUMNS.NP]) || 0;
+        const e = parseFloat(row[PLAYER_DATA_COLUMNS.E]) || 0;
+        const sb = parseFloat(row[PLAYER_DATA_COLUMNS.SB]) || 0;
 
         let value = 0;
 
@@ -540,8 +534,8 @@ class SheetsService {
         if (value > 0) {
           leaders.push({ name: playerName, team, value });
         }
-      });
-    }
+      }
+    });
 
     // Sort (ERA, WHIP, BAA are lower is better)
     const lowerIsBetter = ['era', 'whip', 'baa'].includes(stat);
@@ -582,77 +576,27 @@ class SheetsService {
   }
 
   async getScheduleData(filter) {
-    // Read Season Schedule sheet (master schedule) and Discord Schedule column J (completed games with hyperlinks)
-    // NOTE: Column J has headers ("Week 1", "Completed Games") interspersed with game results
-    // We need to filter out headers and only match actual game result rows
-    const [scheduleData, leagueScheduleRawData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.SEASON_SCHEDULE, 'A2:C'), // Week, Home Team, Away Team
-      this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J') // ONLY column J (completed games with hyperlinks)
-    ]);
+    // v2.0: Read consolidated Schedule sheet
+    // Columns: Week, Away Team, Home Team, Away Score, Home Score, Winner, Game #, Date, MVP, Home RS, Away RS, Box Score URL
+    const scheduleData = await this.getSheetData(SHEET_NAMES.SCHEDULE, 'A2:L');
 
-    // Parse Discord Schedule to extract completed games with their week numbers
-    // Track week headers as we go through the data
-    const completedGames = [];
-    let parsedWeekNumber = null;
-
-    leagueScheduleRawData.forEach(row => {
-      const cellData = row[0];
-      if (!cellData || !cellData.text) return;
-
-      const text = cellData.text.trim();
-
-      // Check if this is a week header (e.g., "Week 1", "Week 2")
-      const weekMatch = text.match(/^Week\s+(\d+)$/i);
-      if (weekMatch) {
-        parsedWeekNumber = parseInt(weekMatch[1]);
-        return;
-      }
-
-      // Check if this is a game result (contains "||")
-      if (text.includes('||')) {
-        completedGames.push({
-          week: parsedWeekNumber,
-          result: text,
-          hyperlink: cellData.hyperlink || null
-        });
-      }
-    });
-
-    logger.debug('SheetsService', `Read ${scheduleData.length} games from Season Schedule, found ${completedGames.length} completed games in Discord Schedule`);
-
-    // Build schedule with game status - match by week + team names
+    // Build games array from Schedule sheet data
     const games = scheduleData
-      .filter(row => row[0] && row[1] && row[2]) // Has week, home, away
-      .map((row, index) => {
-        const week = parseInt(row[0]);
-        const homeTeam = row[1].trim();
-        const awayTeam = row[2].trim();
+      .filter(row => row[SCHEDULE_COLUMNS.WEEK] && row[SCHEDULE_COLUMNS.AWAY_TEAM] && row[SCHEDULE_COLUMNS.HOME_TEAM])
+      .map(row => {
+        const week = parseInt(row[SCHEDULE_COLUMNS.WEEK]);
+        const awayTeam = row[SCHEDULE_COLUMNS.AWAY_TEAM]?.trim();
+        const homeTeam = row[SCHEDULE_COLUMNS.HOME_TEAM]?.trim();
+        const awayScore = row[SCHEDULE_COLUMNS.AWAY_SCORE];
+        const homeScore = row[SCHEDULE_COLUMNS.HOME_SCORE];
+        const winner = row[SCHEDULE_COLUMNS.WINNER]?.trim();
+        const boxScoreUrl = row[SCHEDULE_COLUMNS.BOX_SCORE_URL]?.trim();
 
-        let played = false;
-        let result = null;
-        let boxScoreUrl = null;
+        // Game is played if it has scores
+        const played = !!(awayScore && homeScore);
 
-        // Find a completed game that matches this week AND teams
-        const matchingGame = completedGames.find(game =>
-          game.week === week &&
-          game.result.includes(homeTeam) &&
-          game.result.includes(awayTeam)
-        );
-
-        if (matchingGame) {
-          played = true;
-          result = matchingGame.result;
-          boxScoreUrl = matchingGame.hyperlink;
-
-          // Debug first few matches
-          if (index < 3) {
-            logger.debug('SheetsService', `Match ${index}: Week ${week} - ${homeTeam} vs ${awayTeam} = ${result.substring(0, 40)}`);
-          }
-        } else {
-          if (index < 3) {
-            logger.debug('SheetsService', `No match ${index}: Week ${week} - ${homeTeam} vs ${awayTeam}`);
-          }
-        }
+        // Format result string like "Team1: Score1 || Team2: Score2"
+        const result = played ? `${awayTeam}: ${awayScore} || ${homeTeam}: ${homeScore}` : null;
 
         return {
           week,
@@ -660,7 +604,7 @@ class SheetsService {
           awayTeam,
           played,
           result,
-          boxScoreUrl
+          boxScoreUrl: boxScoreUrl || null
         };
       });
 
@@ -704,56 +648,44 @@ class SheetsService {
   }
 
   async getHeadToHeadData(team1Name, team2Name) {
-    // Get all completed games from Discord Schedule
-    const leagueScheduleRawData = await this.getSheetDataWithHyperlinks(SHEET_NAMES.LEAGUE_SCHEDULE, 'J:J');
+    // v2.0: Get all completed games from Schedule sheet
+    const scheduleData = await this.getSheetData(SHEET_NAMES.SCHEDULE, 'A2:L');
 
     const team1Lower = team1Name.toLowerCase().trim();
     const team2Lower = team2Name.toLowerCase().trim();
 
-    // Parse Discord Schedule to find games between these two teams
+    // Find games between these two teams
     const matchupGames = [];
-    let currentWeek = null;
 
-    leagueScheduleRawData.forEach(row => {
-      const cellData = row[0];
-      if (!cellData || !cellData.text) return;
-      const text = cellData.text.trim();
+    scheduleData.forEach(row => {
+      const week = parseInt(row[SCHEDULE_COLUMNS.WEEK]);
+      const awayTeam = row[SCHEDULE_COLUMNS.AWAY_TEAM]?.trim();
+      const homeTeam = row[SCHEDULE_COLUMNS.HOME_TEAM]?.trim();
+      const awayScore = row[SCHEDULE_COLUMNS.AWAY_SCORE];
+      const homeScore = row[SCHEDULE_COLUMNS.HOME_SCORE];
+      const boxScoreUrl = row[SCHEDULE_COLUMNS.BOX_SCORE_URL]?.trim();
 
-      // Track week headers
-      const weekMatch = text.match(/^Week\s+(\d+)$/i);
-      if (weekMatch) {
-        currentWeek = parseInt(weekMatch[1]);
-        return;
-      }
+      if (!awayTeam || !homeTeam || !awayScore || !homeScore) return;
+
+      const awayLower = awayTeam.toLowerCase();
+      const homeLower = homeTeam.toLowerCase();
 
       // Check if this game involves both teams
-      if (text.includes('||')) {
-        const textLower = text.toLowerCase();
-        if (textLower.includes(team1Lower) && textLower.includes(team2Lower)) {
-          // Parse the result: "Team1: Score1 || Team2: Score2"
-          const parts = text.split('||').map(p => p.trim());
-          if (parts.length === 2) {
-            const team1Result = parts[0].split(':').map(p => p.trim());
-            const team2Result = parts[1].split(':').map(p => p.trim());
+      if ((awayLower.includes(team1Lower) && homeLower.includes(team2Lower)) ||
+          (awayLower.includes(team2Lower) && homeLower.includes(team1Lower))) {
 
-            if (team1Result.length === 2 && team2Result.length === 2) {
-              const firstTeam = team1Result[0];
-              const firstScore = parseInt(team1Result[1]);
-              const secondTeam = team2Result[0];
-              const secondScore = parseInt(team2Result[1]);
+        const score1 = parseInt(awayScore);
+        const score2 = parseInt(homeScore);
 
-              matchupGames.push({
-                week: currentWeek,
-                team1: firstTeam,
-                score1: firstScore,
-                team2: secondTeam,
-                score2: secondScore,
-                boxScoreUrl: cellData.hyperlink || null,
-                winner: firstScore > secondScore ? firstTeam : secondTeam
-              });
-            }
-          }
-        }
+        matchupGames.push({
+          week: week,
+          team1: awayTeam,
+          score1: score1,
+          team2: homeTeam,
+          score2: score2,
+          boxScoreUrl: boxScoreUrl || null,
+          winner: score1 > score2 ? awayTeam : homeTeam
+        });
       }
     });
 

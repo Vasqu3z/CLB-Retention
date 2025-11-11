@@ -3,10 +3,10 @@
 
 function initializeTransactionLog() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var transactionSheet = ss.getSheetByName(CONFIG.TRANSACTION_LOG_SHEET);
+  var transactionSheet = ss.getSheetByName(CONFIG.TRANSACTIONS_SHEET);
   
   if (!transactionSheet) {
-    transactionSheet = ss.insertSheet(CONFIG.TRANSACTION_LOG_SHEET);
+    transactionSheet = ss.insertSheet(CONFIG.TRANSACTIONS_SHEET);
     transactionSheet.getRange(1, 1, 1, 4).setValues([["Date", "Week", "Type", "Description"]]);
     transactionSheet.getRange(1, 1, 1, 4).setFontWeight("bold").setBackground("#e8e8e8");
     transactionSheet.setFrozenRows(1);
@@ -456,7 +456,7 @@ function processSignSelection(player, team, week) {
 
 function viewTransactionLog() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var transactionSheet = ss.getSheetByName(CONFIG.TRANSACTION_LOG_SHEET);
+  var transactionSheet = ss.getSheetByName(CONFIG.TRANSACTIONS_SHEET);
   
   if (!transactionSheet) {
     SpreadsheetApp.getUi().alert("No transactions logged yet!");

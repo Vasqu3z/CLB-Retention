@@ -5,10 +5,8 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Player Stats')
-      // Simplified menu - removed step-by-step updates
       .addItem('🚀 Update All', 'updateAll')
       .addItem('📊 Compare Players', 'showPlayerComparison')
-      .addItem('🔧 Recalculate All Formulas', 'recalculateFormulas')
       .addSeparator()
       // Transactions (collapsed)
       .addSubMenu(ui.createMenu('💰 Transactions')
@@ -55,51 +53,40 @@ function updateAll() {
     SpreadsheetApp.flush();
     
     // ===== STEP 1: Update player stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 5: Updating player stats...", "Update All", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 3: Updating player stats...", "Update All", -1);
     var step1Start = new Date();
     updateAllPlayerStatsFromCache(gameData.playerStats);
     var step1Time = ((new Date() - step1Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
-    
+
     // ===== STEP 2: Update team stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 5: Updating team stats...", "Update All", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 3: Updating team stats...", "Update All", -1);
     var step2Start = new Date();
     updateAllTeamStatsFromCache(gameData.teamStats);
     var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
-    
-    // ===== STEP 3: Update team sheets (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 5: Updating team sheets...", "Update All", -1);
+
+    // Write game results to Schedule
+    logInfo("UpdateAll", "Writing game results to Schedule");
+    writeGameResultsToSeasonSchedule(gameData.scheduleData);
+
+    // ===== STEP 3: Update standings (using cached data) =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating standings...", "Update All", -1);
     var step3Start = new Date();
-    updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);
-    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
-    SpreadsheetApp.flush();
-    
-    // ===== STEP 4: Update league hub (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Update All", -1);
-    var step4Start = new Date();
     // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
-    var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
+    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
-    
-    // ===== STEP 5: Update league schedule (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 5 of 5: Updating league schedule...", "Update All", -1);
-    var step5Start = new Date();
-    updateLeagueScheduleFromCache(gameData.scheduleData, gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.boxScoreUrl);
-    var step5Time = ((new Date() - step5Start) / 1000).toFixed(1);
-    SpreadsheetApp.flush();
-    
+
     var totalTime = ((new Date() - startTime) / 1000).toFixed(1);
-    
+
     // Concise message that fits in toast
-    var stepsTime = (parseFloat(step1Time) + parseFloat(step2Time) + 
-                     parseFloat(step3Time) + parseFloat(step4Time) + 
-                     parseFloat(step5Time)).toFixed(1);
-    
+    var stepsTime = (parseFloat(step1Time) + parseFloat(step2Time) +
+                     parseFloat(step3Time)).toFixed(1);
+
     var message = "✅ Update Complete!\n\n" +
                   "Game Processing: " + processingTime + "s\n" +
-                  "Steps 1-5: " + stepsTime + "s\n" +
+                  "Steps 1-3: " + stepsTime + "s\n" +
                   "─────────────\n" +
                   "Total: " + totalTime + "s";
     
@@ -167,47 +154,38 @@ function quickUpdate() {
     logInfo("Quick Update", "Game processing completed in " + processingTime + "s");
     SpreadsheetApp.flush();
     
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 5: Updating player stats...", "Quick Update", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 3: Updating player stats...", "Quick Update", -1);
     var step1Start = new Date();
     updateAllPlayerStatsFromCache(gameData.playerStats);
     var step1Time = ((new Date() - step1Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
-    
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 5: Updating team stats...", "Quick Update", -1);
+
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 3: Updating team stats...", "Quick Update", -1);
     var step2Start = new Date();
     updateAllTeamStatsFromCache(gameData.teamStats);
     var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
-    
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 5: Updating team sheets...", "Quick Update", -1);
+
+    // Write game results to Schedule
+    logInfo("QuickUpdate", "Writing game results to Schedule");
+    writeGameResultsToSeasonSchedule(gameData.scheduleData);
+
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating standings...", "Quick Update", -1);
     var step3Start = new Date();
-    updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);
-    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
-    SpreadsheetApp.flush();
-    
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating league hub...", "Quick Update", -1);
-    var step4Start = new Date();
     // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
-    var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
+    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
-    
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 5 of 5: Updating league schedule...", "Quick Update", -1);
-    var step5Start = new Date();
-    updateLeagueScheduleFromCache(gameData.scheduleData, gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.boxScoreUrl);
-    var step5Time = ((new Date() - step5Start) / 1000).toFixed(1);
-    SpreadsheetApp.flush();
-    
+
     var totalTime = ((new Date() - startTime) / 1000).toFixed(1);
-    
+
     // Concise message that fits in toast
-    var stepsTime = (parseFloat(step1Time) + parseFloat(step2Time) + 
-                     parseFloat(step3Time) + parseFloat(step4Time) + 
-                     parseFloat(step5Time)).toFixed(1);
-    
+    var stepsTime = (parseFloat(step1Time) + parseFloat(step2Time) +
+                     parseFloat(step3Time)).toFixed(1);
+
     var message = "⚡ Quick Update Complete!\n\n" +
                   "Game Processing: " + processingTime + "s\n" +
-                  "Steps 1-5: " + stepsTime + "s\n" +
+                  "Steps 1-3: " + stepsTime + "s\n" +
                   "─────────────\n" +
                   "Total: " + totalTime + "s";
     
@@ -301,28 +279,12 @@ function updateAllTeamStats() {
   }
 }
 
-function updateTeamSheets() {
-  // Manual execution - process games fresh
-  var gameData = processAllGameSheetsOnce();
-  if (gameData) {
-    updateTeamSheetsFromCache(gameData.teamStatsWithH2H, gameData.scheduleData, gameData.boxScoreUrl);
-  }
-}
-
 function updateLeagueHub() {
   // Manual execution - process games fresh
   var gameData = processAllGameSheetsOnce();
   if (gameData) {
     // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
-  }
-}
-
-function updateLeagueSchedule() {
-  // Manual execution - process games fresh
-  var gameData = processAllGameSheetsOnce();
-  if (gameData) {
-    updateLeagueScheduleFromCache(gameData.scheduleData, gameData.teamStatsWithH2H, gameData.gamesByWeek, gameData.boxScoreUrl);
   }
 }
 

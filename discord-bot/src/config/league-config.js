@@ -10,8 +10,8 @@
  * 3. Coordinate changes with Apps Script repository
  * 4. Test against updated sheets before deploying
  *
- * Last Schema Sync: 2025-01-08
- * Schema Version: 1.0.0
+ * Last Schema Sync: 2025-01-10
+ * Schema Version: 2.0.0
  *
  * Purpose:
  * - Centralized configuration for sheet names, column mappings, and formatting constants
@@ -32,16 +32,117 @@
  */
 
 export const SHEET_NAMES = {
-  HITTING: '🧮 Hitting',
-  PITCHING: '🧮 Pitching',
-  FIELDING: '🧮 Fielding & Running',
-  TEAM_DATA: 'Team Data',
-  RANKINGS: '🏆 Rankings',
-  PLAYER_DATA: 'Player Data',
-  SEASON_SCHEDULE: 'Season Schedule',
-  LEAGUE_SCHEDULE: 'Discord Schedule'  // Hidden sheet without emoji for API compatibility
+  // v2.0 - Consolidated structure
+  PLAYER_DATA: 'Player Data',      // Single source of truth for all player stats
+  TEAM_DATA: 'Team Data',           // Team standings and captain info
+  SCHEDULE: 'Schedule',             // Season schedule with game results (formerly Season Schedule)
+  STANDINGS: 'Standings',           // League standings table (formerly 🏆 Rankings)
+  IMAGE_URLS: 'Image URLs',         // Player/team/league image URLs
+
+  // Deprecated (v2.0) - kept for backwards compatibility during migration
+  // These will be removed in v2.1
+  HITTING: '🧮 Hitting',            // DEPRECATED - use PLAYER_DATA
+  PITCHING: '🧮 Pitching',          // DEPRECATED - use PLAYER_DATA
+  FIELDING: '🧮 Fielding & Running', // DEPRECATED - use PLAYER_DATA
+  RANKINGS: '🏆 Rankings',          // DEPRECATED - renamed to STANDINGS
+  SEASON_SCHEDULE: 'Season Schedule', // DEPRECATED - renamed to SCHEDULE
+  LEAGUE_SCHEDULE: 'Discord Schedule' // DEPRECATED - use SCHEDULE
 };
 
+/**
+ * Player Data Sheet Column Mappings (v2.0)
+ *
+ * Single source of truth containing all player statistics.
+ * Columns A-Y (indices 0-24) contain identity and raw stats.
+ * Derived stats (AVG, OBP, SLG, OPS, ERA, WHIP, BAA) must be calculated on-the-fly.
+ *
+ * Structure: Identity (2) | GP (1) | Hitting (9) | WLS (3) | Pitching (7) | Fielding (3)
+ * Total: 25 columns (A-Y)
+ */
+export const PLAYER_DATA_COLUMNS = {
+  // Identity
+  PLAYER_NAME: 0,   // Column A
+  TEAM: 1,          // Column B
+
+  // General
+  GP: 2,            // Column C - Games played
+
+  // Hitting (raw stats only - indices 3-11)
+  AB: 3,            // Column D - At bats
+  H: 4,             // Column E - Hits
+  HR: 5,            // Column F - Home runs
+  RBI: 6,           // Column G - Runs batted in
+  BB: 7,            // Column H - Walks
+  K: 8,             // Column I - Strikeouts
+  ROB: 9,           // Column J - Hits robbed
+  DP: 10,           // Column K - Double plays
+  TB: 11,           // Column L - Total bases
+
+  // WLS (Win-Loss-Save record - indices 12-14)
+  W: 12,            // Column M - Wins
+  L: 13,            // Column N - Losses
+  SV: 14,           // Column O - Saves
+
+  // Pitching (raw stats only - indices 15-21)
+  IP: 15,           // Column P - Innings pitched
+  BF: 16,           // Column Q - Batters faced
+  H_ALLOWED: 17,    // Column R - Hits allowed
+  HR_ALLOWED: 18,   // Column S - Home runs allowed
+  R: 19,            // Column T - Runs allowed
+  BB_ALLOWED: 20,   // Column U - Walks allowed
+  K_PITCHED: 21,    // Column V - Strikeouts (pitching)
+
+  // Fielding (indices 22-24)
+  NP: 22,           // Column W - Nice plays
+  E: 23,            // Column X - Errors
+  SB: 24            // Column Y - Stolen bases
+};
+
+/**
+ * Schedule Sheet Column Mappings (v2.0)
+ *
+ * Formerly "Season Schedule" - now consolidated single schedule sheet.
+ * Contains both upcoming games and completed games with scores.
+ * Box score URLs are stored as plain strings (NOT HYPERLINK formulas).
+ */
+export const SCHEDULE_COLUMNS = {
+  WEEK: 0,              // Column A - Week number
+  AWAY_TEAM: 1,         // Column B - Away team name
+  HOME_TEAM: 2,         // Column C - Home team name
+  AWAY_SCORE: 3,        // Column D - Away team score (blank if not played)
+  HOME_SCORE: 4,        // Column E - Home team score (blank if not played)
+  WINNER: 5,            // Column F - Winning team (blank if not played)
+  GAME_NUM: 6,          // Column G - Game sheet ID (e.g., "#125")
+  GAME_DATE: 7,         // Column H - Date game was played
+  GAME_MVP: 8,          // Column I - MVP player name
+  HOME_RS: 9,           // Column J - Home runs scored
+  AWAY_RS: 10,          // Column K - Away runs scored
+  BOX_SCORE_URL: 11     // Column L - Plain URL to box score (NOT HYPERLINK)
+};
+
+/**
+ * Standings Sheet Column Mappings (v2.0)
+ *
+ * Formerly "🏆 Rankings" - now simplified to standings table only.
+ * League leaders are calculated by website/bot from Player Data.
+ */
+export const STANDINGS_COLUMNS = {
+  RANK: 0,              // Column A - Team rank (e.g., "1", "T-2")
+  TEAM: 1,              // Column B - Team name
+  W: 2,                 // Column C - Wins
+  L: 3,                 // Column D - Losses
+  WIN_PCT: 4,           // Column E - Win percentage (".XXX" format)
+  RS: 5,                // Column F - Runs scored
+  RA: 6,                // Column G - Runs allowed
+  DIFF: 7               // Column H - Run differential
+};
+
+/**
+ * DEPRECATED Column Mappings (v1.0)
+ *
+ * These are kept for backwards compatibility during migration.
+ * Will be removed in v2.1 once all code is migrated to Player Data.
+ */
 export const HITTING_COLUMNS = {
   PLAYER_NAME: 0,
   TEAM: 1,
@@ -101,6 +202,29 @@ export const TEAM_STATS_COLUMNS = {
   PITCHING_NUM_COLS: 7,
   FIELDING_START: 21,
   FIELDING_NUM_COLS: 3
+};
+
+/**
+ * Stat calculation helpers
+ *
+ * These functions calculate derived stats from raw Player Data values.
+ * All functions handle division by zero gracefully.
+ */
+export const STAT_CALCULATORS = {
+  // Hitting derived stats
+  AVG: (h, ab) => ab > 0 ? h / ab : 0,
+  OBP: (h, bb, ab) => (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0,
+  SLG: (tb, ab) => ab > 0 ? tb / ab : 0,
+  OPS: (h, bb, tb, ab) => {
+    const obp = (ab + bb) > 0 ? (h + bb) / (ab + bb) : 0;
+    const slg = ab > 0 ? tb / ab : 0;
+    return obp + slg;
+  },
+
+  // Pitching derived stats
+  ERA: (r, ip) => ip > 0 ? (r * 7) / ip : 0,
+  BAA: (h, bf) => bf > 0 ? h / bf : 0,
+  WHIP: (h, bb, ip) => ip > 0 ? (h + bb) / ip : 0
 };
 
 export const STAT_LABELS = {

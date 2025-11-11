@@ -278,7 +278,7 @@ function testWeightedGradeCalculation() {
  */
 function showDebugInfo() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(CONFIG.RETENTION_GRADES_SHEET);
+  var sheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
 
   var debugInfo = 'DEBUG INFORMATION\n\n';
 

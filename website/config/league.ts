@@ -152,5 +152,25 @@ export function getTeamBySlug(slug: string): Team | undefined {
 }
 
 export function getTeamByName(name: string): Team | undefined {
-  return LEAGUE_CONFIG.teams.find((team) => team.name === name);
+  // Normalize the input name for matching (trim whitespace, normalize case)
+  const normalizedInput = name.trim();
+
+  // First try exact match
+  let team = LEAGUE_CONFIG.teams.find((team) => team.name === normalizedInput);
+
+  // If no exact match, try case-insensitive match
+  if (!team) {
+    team = LEAGUE_CONFIG.teams.find(
+      (team) => team.name.toLowerCase() === normalizedInput.toLowerCase()
+    );
+  }
+
+  // If still no match, try matching by shortName
+  if (!team) {
+    team = LEAGUE_CONFIG.teams.find(
+      (team) => team.shortName.toLowerCase() === normalizedInput.toLowerCase()
+    );
+  }
+
+  return team;
 }

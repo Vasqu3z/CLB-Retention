@@ -78,6 +78,12 @@ function processAllGameSheetsOnce() {
       var losingPitcher = String(batchData[47][15]).trim();   // R50 (index 47, col 15)
       var savePitcher = String(batchData[46][15]).trim();     // R49 (index 46, col 15)
 
+      // ===== Extract MVP from cell Q48 =====
+      // Q48 is row 48, column Q (column 17 in sheet, index 15 in batch since batch starts at B)
+      // Row 48 in sheet = index 45 in batch (48 - 3)
+      // Batch is B3:R50, so Q (col 17) = batch index 15 (17 - 2)
+      var gameMVP = String(batchData[45][15]).trim();  // Q48 (index 45, col 15)
+
       // Create gameData object
       var gameData = {
         awayTeam: awayTeam,
@@ -92,7 +98,8 @@ function processAllGameSheetsOnce() {
         homeTeamPitchField: team2PitchField, // team2 = Home (row 27)
         winningPitcher: winningPitcher,
         losingPitcher: losingPitcher,
-        savePitcher: savePitcher
+        savePitcher: savePitcher,
+        gameMVP: gameMVP                     // NEW: Game MVP from Q48
       };
 
       // Extract week number
@@ -131,7 +138,7 @@ function processAllGameSheetsOnce() {
         weekNum: weekNum
       });
       
-      updateScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner);
+      updateScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData);
       
       // Progress update
       if ((g + 1) % CONFIG.PROGRESS_UPDATE_FREQUENCY === 0) {
@@ -194,7 +201,7 @@ function initializeTeamStats(ss) {
       teamStats[teamName] = {
         gamesPlayed: 0, wins: 0, losses: 0,
         hitting: [0,0,0,0,0,0,0,0,0], // AB, H, HR, RBI, BB, K, ROB, DP, TB
-        pitching: [0,0,0,0,0,0,0], // IP, BF, H, HR, R, BB, K
+        pitching: [0,0,0,0,0,0,0,0], // IP, BF, H, HR, R, BB, K, SV
         fielding: [0,0,0] // Nice Plays, Errors, SB
       };
     }
@@ -238,18 +245,19 @@ function initializeTeamStatsWithH2H(ss) {
 }
 
 function initializeScheduleData(ss, boxScoreSS) {
-  var scheduleSheet = ss.getSheetByName(CONFIG.SEASON_SCHEDULE_SHEET);
+  var scheduleSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET);
   if (!scheduleSheet || scheduleSheet.getLastRow() < 2) {
     return [];
   }
-  
+
   var scheduleData = scheduleSheet.getRange(2, 1, scheduleSheet.getLastRow() - 1, 3).getValues();
   var schedule = [];
-  
+
   for (var i = 0; i < scheduleData.length; i++) {
     var week = scheduleData[i][0];
-    var homeTeam = String(scheduleData[i][1]).trim();
-    var awayTeam = String(scheduleData[i][2]).trim();
+    // Column order: A=Week, B=Away Team, C=Home Team
+    var awayTeam = String(scheduleData[i][1]).trim();
+    var homeTeam = String(scheduleData[i][2]).trim();
     
     if (week && homeTeam && awayTeam) {
       schedule.push({
@@ -334,9 +342,15 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
   // Process home team (team1)
   if (team1 && teamStats[team1]) {
     teamStats[team1].gamesPlayed++;
-    if (team1 === winner) teamStats[team1].wins++;
+    if (team1 === winner) {
+      teamStats[team1].wins++;
+      // Track team save if this team won and there was a save pitcher
+      if (gameData.savePitcher) {
+        teamStats[team1].pitching[7]++; // SV is index 7
+      }
+    }
     if (team1 === loser) teamStats[team1].losses++;
-    
+
     // Hitting stats
     for (var s = 0; s < 9; s++) {
       var val = gameData.homeTeamTotals[s];
@@ -344,7 +358,7 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
         teamStats[team1].hitting[s] += val;
       }
     }
-    
+
     // Pitching stats (indices 0-6)
     for (var s = 0; s < 7; s++) {
       var val = gameData.homeTeamPitchField[s];
@@ -352,7 +366,7 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
         teamStats[team1].pitching[s] += val;
       }
     }
-    
+
     // Fielding stats (indices 7-9)
     for (var s = 0; s < 3; s++) {
       var val = gameData.homeTeamPitchField[s + 7];
@@ -365,9 +379,15 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
   // Process away team (team2)
   if (team2 && teamStats[team2]) {
     teamStats[team2].gamesPlayed++;
-    if (team2 === winner) teamStats[team2].wins++;
+    if (team2 === winner) {
+      teamStats[team2].wins++;
+      // Track team save if this team won and there was a save pitcher
+      if (gameData.savePitcher) {
+        teamStats[team2].pitching[7]++; // SV is index 7
+      }
+    }
     if (team2 === loser) teamStats[team2].losses++;
-    
+
     // Hitting stats
     for (var s = 0; s < 9; s++) {
       var val = gameData.awayTeamTotals[s];
@@ -375,7 +395,7 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
         teamStats[team2].hitting[s] += val;
       }
     }
-    
+
     // Pitching stats (indices 0-6)
     for (var s = 0; s < 7; s++) {
       var val = gameData.awayTeamPitchField[s];
@@ -430,15 +450,87 @@ function processTeamStatsWithH2HFromGame(teamStats, team1, team2, winner, loser,
   }
 }
 
-function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner) {
+function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData) {
   for (var s = 0; s < scheduleData.length; s++) {
     if (scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2) {
       scheduleData[s].played = true;
       scheduleData[s].homeScore = runs1;
       scheduleData[s].awayScore = runs2;
       scheduleData[s].winner = winner;
+      scheduleData[s].loser = loser;
       scheduleData[s].sheetId = sheet.getSheetId();
+
+      // NEW: Add MVP and pitcher data
+      scheduleData[s].mvp = gameData.gameMVP || "";
+      scheduleData[s].winningPitcher = gameData.winningPitcher || "";
+      scheduleData[s].losingPitcher = gameData.losingPitcher || "";
+      scheduleData[s].savePitcher = gameData.savePitcher || "";
+
       break;
     }
   }
+}
+
+// ===== WRITE GAME RESULTS BACK TO SCHEDULE =====
+function writeGameResultsToSeasonSchedule(scheduleData) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var scheduleSheet = ss.getSheetByName(CONFIG.SCHEDULE_SHEET);
+
+  if (!scheduleSheet) {
+    logError("Write Game Results", "Schedule sheet not found", "");
+    return;
+  }
+
+  // Add headers if they don't exist yet (columns D-L)
+  var headers = scheduleSheet.getRange(1, 1, 1, 13).getValues()[0];
+
+  if (!headers[3] || headers[3] === "") {
+    // Write new column headers
+    scheduleSheet.getRange(1, 4, 1, 9).setValues([[
+      "Away Score", "Home Score", "Winning Team", "Losing Team", "Game MVP",
+      "Winning Pitcher", "Losing Pitcher", "Saving Pitcher", "Box Score Link"
+    ]]);
+    scheduleSheet.getRange(1, 4, 1, 9).setFontWeight("bold").setBackground("#e8e8e8");
+  }
+
+  // Write game results for each completed game
+  for (var i = 0; i < scheduleData.length; i++) {
+    var game = scheduleData[i];
+
+    if (game.played && game.sheetId) {
+      var rowNum = i + 2; // +2 because data starts at row 2 (row 1 is headers)
+
+      // Build box score URL
+      var boxScoreUrl = "";
+      if (game.sheetId) {
+        try {
+          var boxScoreSS = getBoxScoreSpreadsheet();
+          if (boxScoreSS) {
+            boxScoreUrl = boxScoreSS.getUrl() + "#gid=" + game.sheetId;
+          }
+        } catch (e) {
+          logWarning("Write Game Results", "Could not build box score URL", e.toString());
+        }
+      }
+
+      // Write game results to columns D-L
+      var gameResults = [
+        game.awayScore !== undefined && game.awayScore !== null ? game.awayScore : "",
+        game.homeScore !== undefined && game.homeScore !== null ? game.homeScore : "",
+        game.winner || "",
+        game.loser || "",
+        game.mvp || "",
+        game.winningPitcher || "",
+        game.losingPitcher || "",
+        game.savePitcher || "",
+        boxScoreUrl
+      ];
+
+      // Write game results (columns D-L)
+      // Column L already contains the plain URL, which the website will render as a clickable link
+      scheduleSheet.getRange(rowNum, 4, 1, 9).setValues([gameResults]);
+    }
+  }
+
+  logInfo("Write Game Results", "Wrote " + scheduleData.filter(function(g) { return g.played; }).length + " completed games to Schedule");
 }

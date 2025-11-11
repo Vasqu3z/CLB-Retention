@@ -28,12 +28,9 @@ var RETENTION_CONFIG = {
   // ===== NO SHEET NAMES HERE - USE CONFIG OBJECT =====
   // Sheet names are defined in main CONFIG.js and referenced via:
   // CONFIG.PLAYER_STATS_SHEET
-  // CONFIG.HITTING_STATS_SHEET
-  // CONFIG.PITCHING_STATS_SHEET
-  // CONFIG.FIELDING_STATS_SHEET
   // CONFIG.TEAM_STATS_SHEET
-  // CONFIG.RETENTION_GRADES_SHEET
-  // CONFIG.LEAGUE_HUB_SHEET (for standings data)
+  // CONFIG.RETENTION_SHEET
+  // CONFIG.STANDINGS_SHEET (for standings data)
 
   // ===== STATS SHEET COLUMN MAPPINGS =====
   // Column maps moved to CONFIG.STATS_COLUMN_MAPS (LeagueConfig.js)

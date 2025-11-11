@@ -224,9 +224,10 @@ function processAllPlayoffGameSheetsOnce() {
       // ===== Extract MVP from cell Q48 =====
       var gameMVP = String(batchData[45][15]).trim();  // Q48
 
-      // Extract playoff code from sheet name (everything after *)
-      // Examples: *Q1 → "Q1", *S1-A → "S1-A", *F2 → "F2"
-      var playoffCodeMatch = sheetName.match(/\*(.+)/);
+      // Extract playoff code from sheet name (only the code part after *)
+      // Examples: *CS1-A → "CS1-A", *CS1-A | extra text → "CS1-A", *KC2 → "KC2"
+      // Matches: * followed by letters, numbers, and optional dash-letter, stops at space or |
+      var playoffCodeMatch = sheetName.match(/\*([A-Z]+\d+(?:-[A-Z])?)/);
       var playoffCode = playoffCodeMatch ? playoffCodeMatch[1].trim() : "";
 
       // Create gameData object

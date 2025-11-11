@@ -22,16 +22,16 @@ function debugPlayoffGameSheets() {
   for (var i = 0; i < sheets.length; i++) {
     var sheetName = sheets[i].getName();
     if (sheetName.startsWith(CONFIG.PLAYOFF_GAME_PREFIX)) {
-      // Extract code
-      var match = sheetName.match(/\*(.+)/);
+      // Extract code (same logic as production code)
+      var match = sheetName.match(/\*([A-Z]+\d+(?:-[A-Z])?)/);
       var code = match ? match[1].trim() : "";
 
       // Read teams
-      var awayTeam = sheets[i].getRange("B3").getValue();
-      var homeTeam = sheets[i].getRange("B4").getValue();
+      var awayTeam = String(sheets[i].getRange("B3").getValue()).trim();
+      var homeTeam = String(sheets[i].getRange("B4").getValue()).trim();
 
       Logger.log("✓ FOUND: " + sheetName);
-      Logger.log("  Code: " + code);
+      Logger.log("  Extracted Code: '" + code + "'");
       Logger.log("  Teams: " + awayTeam + " @ " + homeTeam);
       Logger.log("");
       found.push(sheetName);
@@ -116,7 +116,8 @@ function debugPlayoffMatching() {
   for (var i = 0; i < sheets.length; i++) {
     var sheetName = sheets[i].getName();
     if (sheetName.startsWith(CONFIG.PLAYOFF_GAME_PREFIX)) {
-      var match = sheetName.match(/\*(.+)/);
+      // Extract code (same logic as production code)
+      var match = sheetName.match(/\*([A-Z]+\d+(?:-[A-Z])?)/);
       var code = match ? match[1].trim() : "";
       var awayTeam = String(sheets[i].getRange("B3").getValue()).trim();
       var homeTeam = String(sheets[i].getRange("B4").getValue()).trim();

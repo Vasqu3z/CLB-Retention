@@ -94,20 +94,26 @@ function LeaderCard({ title, leaders }: { title: string; leaders: LeaderEntry[] 
               <div className="flex justify-between items-center">
                 <div>
                   <span className="text-gray-600 mr-1">{leader.rank}.</span>
-                  <span className="font-medium">{leader.player}</span>
-                  {teamConfig && (
-                    <Link
-                      href={`/teams/${teamConfig.slug}`}
-                      className="ml-2 text-xs hover:underline"
-                      style={{ color: teamConfig.primaryColor }}
-                    >
-                      ({leader.team})
-                    </Link>
-                  )}
-                  {!teamConfig && leader.team && (
-                    <span className="ml-2 text-xs text-gray-500">
-                      ({leader.team})
-                    </span>
+                  {leader.isTieSummary ? (
+                    <span className="font-medium italic text-gray-600">{leader.player}</span>
+                  ) : (
+                    <>
+                      <span className="font-medium">{leader.player}</span>
+                      {teamConfig && (
+                        <Link
+                          href={`/teams/${teamConfig.slug}`}
+                          className="ml-2 text-xs hover:underline"
+                          style={{ color: teamConfig.primaryColor }}
+                        >
+                          ({leader.team})
+                        </Link>
+                      )}
+                      {!teamConfig && leader.team && (
+                        <span className="ml-2 text-xs text-gray-500">
+                          ({leader.team})
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
                 <span className="text-gray-900 font-semibold">

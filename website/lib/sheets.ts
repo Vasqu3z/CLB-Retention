@@ -160,7 +160,9 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
     // Calculate hitting rate stats
     const avg = ab > 0 ? (h / ab).toFixed(3).substring(1) : '.000';
     const obp = (ab + bb) > 0 ? ((h + bb) / (ab + bb)).toFixed(3).substring(1) : '.000';
-    const slg = ab > 0 ? (tb / ab).toFixed(3).substring(1) : '.000';
+    // SLG can be >= 1.000, so only remove leading zero if < 1
+    const slgValue = ab > 0 ? tb / ab : 0;
+    const slg = slgValue >= 1 ? slgValue.toFixed(3) : (slgValue > 0 ? slgValue.toFixed(3).substring(1) : '.000');
     const ops = ab > 0 && (ab + bb) > 0
       ? ((h + bb) / (ab + bb) + tb / ab).toFixed(3)
       : '0.000';
@@ -434,7 +436,9 @@ async function getAllPlayers(): Promise<PlayerStats[]> {
     // Calculate hitting rate stats
     const avg = ab > 0 ? (h / ab).toFixed(3).substring(1) : '.000';
     const obp = (ab + bb) > 0 ? ((h + bb) / (ab + bb)).toFixed(3).substring(1) : '.000';
-    const slg = ab > 0 ? (tb / ab).toFixed(3).substring(1) : '.000';
+    // SLG can be >= 1.000, so only remove leading zero if < 1
+    const slgValue = ab > 0 ? tb / ab : 0;
+    const slg = slgValue >= 1 ? slgValue.toFixed(3) : (slgValue > 0 ? slgValue.toFixed(3).substring(1) : '.000');
     const ops = ab > 0 && (ab + bb) > 0
       ? ((h + bb) / (ab + bb) + tb / ab).toFixed(3)
       : '0.000';
@@ -496,57 +500,55 @@ function formatLeaders(
     isAscending ? a.value - b.value : b.value - a.value
   );
 
-  const leaders: LeaderEntry[] = [];
+  // Group players by value
+  const groups: { rank: number; players: typeof sorted }[] = [];
   let currentRank = 1;
-  let previousValue: number | null = null;
-  let tiedPlayers: typeof sorted = [];
+  let currentValue: number | null = null;
+  let currentGroup: typeof sorted = [];
 
-  // Iterate through all players
-  for (let i = 0; i < sorted.length; i++) {
-    const player = sorted[i];
-
-    if (previousValue !== null && player.value !== previousValue) {
-      // Different value - check if adding this tied group would exceed 5
-      if (leaders.length >= 5) {
-        // Already have 5+ entries, stop
-        break;
-      }
-
-      if (leaders.length + tiedPlayers.length > 5) {
-        // Adding this group would push us over 5, so stop without adding it
-        break;
-      }
-
-      // Add all tied players individually
-      for (const tiedPlayer of tiedPlayers) {
-        const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
-        leaders.push({
-          rank: rankLabel,
-          player: tiedPlayer.player,
-          team: tiedPlayer.team,
-          value: tiedPlayer.formatted,
-          rawValue: tiedPlayer.value,
-        });
-      }
-
-      currentRank += tiedPlayers.length;
-      tiedPlayers = [];
+  for (const player of sorted) {
+    if (currentValue !== null && player.value !== currentValue) {
+      groups.push({ rank: currentRank, players: currentGroup });
+      currentRank += currentGroup.length;
+      currentGroup = [];
     }
-
-    tiedPlayers.push(player);
-    previousValue = player.value;
+    currentGroup.push(player);
+    currentValue = player.value;
+  }
+  if (currentGroup.length > 0) {
+    groups.push({ rank: currentRank, players: currentGroup });
   }
 
-  // Add remaining tied players if they fit
-  if (tiedPlayers.length > 0 && leaders.length < 5 && leaders.length + tiedPlayers.length <= 5) {
-    for (const tiedPlayer of tiedPlayers) {
-      const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
+  // Build leaders array, ensuring exactly 5 entries
+  const leaders: LeaderEntry[] = [];
+
+  for (const group of groups) {
+    if (leaders.length >= 5) break;
+
+    const remainingSlots = 5 - leaders.length;
+
+    if (group.players.length <= remainingSlots) {
+      // Add all players individually
+      for (const player of group.players) {
+        const rankLabel = group.players.length > 1 ? `T-${group.rank}` : String(group.rank);
+        leaders.push({
+          rank: rankLabel,
+          player: player.player,
+          team: player.team,
+          value: player.formatted,
+          rawValue: player.value,
+        });
+      }
+    } else {
+      // Add tie summary (takes 1 slot)
+      const rankLabel = group.players.length > 1 ? `T-${group.rank}` : String(group.rank);
       leaders.push({
         rank: rankLabel,
-        player: tiedPlayer.player,
-        team: tiedPlayer.team,
-        value: tiedPlayer.formatted,
-        rawValue: tiedPlayer.value,
+        player: `${group.players.length} players tied`,
+        team: '',
+        value: group.players[0].formatted,
+        rawValue: group.players[0].value,
+        isTieSummary: true,
       });
     }
   }

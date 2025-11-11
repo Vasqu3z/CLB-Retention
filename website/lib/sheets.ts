@@ -305,6 +305,202 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
   return schedule;
 }
 
+// ===== PLAYOFF SCHEDULE =====
+export interface PlayoffGame {
+  code: string; // Q1, S1-A, F2, etc.
+  homeTeam: string;
+  awayTeam: string;
+  played: boolean;
+  homeScore?: number;
+  awayScore?: number;
+  winner?: string;
+  boxScoreUrl?: string;
+  mvp?: string;
+  winningPitcher?: string;
+  losingPitcher?: string;
+  savePitcher?: string;
+}
+
+export async function getPlayoffSchedule(): Promise<PlayoffGame[]> {
+  // Read from "🏆 Schedule" sheet - identical structure to regular schedule
+  // Columns: A=Week(code), B=Away Team, C=Home Team, D=Away Score, E=Home Score,
+  // F=Winning Team, G=Losing Team, H=MVP, I=WP, J=LP, K=SV, L=Box Score Link
+  const scheduleData = await getSheetData("'🏆 Schedule'!A2:L100");
+
+  const schedule: PlayoffGame[] = [];
+
+  for (const row of scheduleData) {
+    const code = String(row[0] || '').trim();
+    const awayTeam = String(row[1] || '').trim();
+    const homeTeam = String(row[2] || '').trim();
+
+    if (!code || !homeTeam || !awayTeam) continue;
+
+    // Check if game has been played
+    const awayScore = row[3];
+    const homeScore = row[4];
+    const hasScores = awayScore !== undefined && awayScore !== null && awayScore !== '' &&
+                      homeScore !== undefined && homeScore !== null && homeScore !== '';
+
+    if (hasScores) {
+      // Game has been played
+      const winner = String(row[5] || '').trim();
+      const loser = String(row[6] || '').trim();
+      const mvp = String(row[7] || '').trim();
+      const winningPitcher = String(row[8] || '').trim();
+      const losingPitcher = String(row[9] || '').trim();
+      const savePitcher = String(row[10] || '').trim();
+      const boxScoreUrl = String(row[11] || '').trim();
+
+      schedule.push({
+        code,
+        homeTeam,
+        awayTeam,
+        played: true,
+        homeScore: Number(homeScore),
+        awayScore: Number(awayScore),
+        winner,
+        boxScoreUrl,
+        mvp,
+        winningPitcher,
+        losingPitcher,
+        savePitcher,
+      });
+    } else {
+      // Game is upcoming
+      schedule.push({
+        code,
+        homeTeam,
+        awayTeam,
+        played: false,
+      });
+    }
+  }
+
+  return schedule;
+}
+
+// ===== PLAYOFF BRACKET BUILDER =====
+export interface SeriesResult {
+  seriesId: string; // Q1, S1-A, F1, etc.
+  teamA: string;
+  teamB: string;
+  winsA: number;
+  winsB: number;
+  winner?: string; // Set when series is clinched
+  games: PlayoffGame[];
+}
+
+export interface BracketRound {
+  name: string; // "Quarterfinals", "Semifinals", "Finals"
+  series: SeriesResult[];
+}
+
+/**
+ * Groups playoff games by series and calculates wins
+ * Returns a map of series ID → SeriesResult
+ */
+export function groupGamesBySeries(games: PlayoffGame[]): Map<string, SeriesResult> {
+  const seriesMap = new Map<string, SeriesResult>();
+
+  for (const game of games) {
+    // Extract series ID from code (Q1, S1-A, F2 → Q1, S1-A, F1)
+    // Remove the game number suffix to get series ID
+    let seriesId = game.code;
+    const match = game.code.match(/^([A-Z]\d+)(?:-([A-Z]))?$/);
+    if (match) {
+      // Q1-A, S1-A → S1-A (keep letter)
+      // Q1, F2 → Q1, F1 (remove number after letter)
+      const base = match[1]; // Q1, S1, F2
+      const letter = match[2]; // A, B, or undefined
+
+      if (letter) {
+        seriesId = `${base}-${letter}`; // S1-A
+      } else {
+        // Extract just the letter part: Q1 → Q, F2 → F
+        const roundLetter = base[0];
+        seriesId = `${roundLetter}1`; // Normalize to round prefix + 1
+      }
+    }
+
+    if (!seriesMap.has(seriesId)) {
+      seriesMap.set(seriesId, {
+        seriesId,
+        teamA: game.homeTeam || 'TBD',
+        teamB: game.awayTeam || 'TBD',
+        winsA: 0,
+        winsB: 0,
+        games: [],
+      });
+    }
+
+    const series = seriesMap.get(seriesId)!;
+    series.games.push(game);
+
+    // Count wins if game is played
+    if (game.played && game.winner) {
+      if (game.winner === series.teamA) {
+        series.winsA++;
+      } else if (game.winner === series.teamB) {
+        series.winsB++;
+      }
+    }
+  }
+
+  // Determine series winners based on wins required
+  // This is a simple heuristic: if one team has ≥2, ≥3, or ≥4 wins, they won
+  for (const series of seriesMap.values()) {
+    if (series.winsA >= 4 || series.winsB >= 4) {
+      series.winner = series.winsA > series.winsB ? series.teamA : series.teamB;
+    } else if (series.winsA >= 3 || series.winsB >= 3) {
+      series.winner = series.winsA > series.winsB ? series.teamA : series.teamB;
+    } else if (series.winsA >= 2 || series.winsB >= 2) {
+      series.winner = series.winsA > series.winsB ? series.teamA : series.teamB;
+    }
+  }
+
+  return seriesMap;
+}
+
+/**
+ * Builds bracket structure organized by round
+ * Detects rounds automatically based on series codes
+ */
+export function buildBracket(seriesMap: Map<string, SeriesResult>): BracketRound[] {
+  const rounds: BracketRound[] = [];
+
+  // Group series by round prefix (Q, S, F)
+  const roundMap = new Map<string, SeriesResult[]>();
+
+  for (const series of seriesMap.values()) {
+    const roundPrefix = series.seriesId[0]; // Q, S, or F
+    if (!roundMap.has(roundPrefix)) {
+      roundMap.set(roundPrefix, []);
+    }
+    roundMap.get(roundPrefix)!.push(series);
+  }
+
+  // Convert to BracketRound array with proper names
+  const roundNames: Record<string, string> = {
+    'Q': 'Quarterfinals',
+    'S': 'Semifinals',
+    'F': 'Finals',
+  };
+
+  // Sort by expected bracket order
+  const order = ['Q', 'S', 'F'];
+  for (const prefix of order) {
+    if (roundMap.has(prefix)) {
+      rounds.push({
+        name: roundNames[prefix] || `Round ${prefix}`,
+        series: roundMap.get(prefix)!,
+      });
+    }
+  }
+
+  return rounds;
+}
+
 // ===== TEAM DATA =====
 export interface TeamData {
   teamName: string;

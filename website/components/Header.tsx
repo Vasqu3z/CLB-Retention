@@ -30,6 +30,12 @@ export default function Header() {
               Schedule
             </Link>
             <Link
+              href="/playoffs"
+              className="hover:text-gray-200 transition"
+            >
+              Playoffs
+            </Link>
+            <Link
               href="/teams"
               className="hover:text-gray-200 transition"
             >

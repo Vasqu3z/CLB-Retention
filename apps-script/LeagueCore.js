@@ -5,8 +5,8 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Player Stats')
-      .addItem('🧮 UpdateSeason', 'updateAll')
-      .addItem('🏆 UpdatePostseason', 'updateAllPlayoffs')
+      .addItem('🧮 Process Regular Season', 'updateAll')
+      .addItem('🏆 Process Postseason', 'updateAllPlayoffs')
       .addItem('📊 Compare Players', 'showPlayerComparison')
       .addSeparator()
       // Transactions (collapsed)
@@ -420,3 +420,4 @@ function calculateFinalRetentionGrades() {
   }
 
 }
+

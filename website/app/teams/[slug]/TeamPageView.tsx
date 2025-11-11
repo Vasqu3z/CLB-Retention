@@ -4,19 +4,41 @@ import { useState } from 'react';
 import { Team } from '@/config/league';
 import { PlayerStats, ScheduleGame, StandingsRow, TeamData } from '@/lib/sheets';
 import Link from 'next/link';
+import SeasonToggle from '@/components/SeasonToggle';
 
 interface TeamPageViewProps {
   team: Team;
-  roster: PlayerStats[];
-  schedule: ScheduleGame[];
-  standing?: StandingsRow;
-  teamData?: TeamData;
+  regularRoster: PlayerStats[];
+  regularSchedule: ScheduleGame[];
+  regularStanding?: StandingsRow;
+  regularTeamData?: TeamData;
+  playoffRoster: PlayerStats[];
+  playoffSchedule: ScheduleGame[];
+  playoffStanding?: StandingsRow;
+  playoffTeamData?: TeamData;
 }
 
 type SortField = keyof PlayerStats | 'none';
 type SortDirection = 'asc' | 'desc';
 
-export default function TeamPageView({ team, roster, schedule, standing, teamData }: TeamPageViewProps) {
+export default function TeamPageView({
+  team,
+  regularRoster,
+  regularSchedule,
+  regularStanding,
+  regularTeamData,
+  playoffRoster,
+  playoffSchedule,
+  playoffStanding,
+  playoffTeamData,
+}: TeamPageViewProps) {
+  const [isPlayoffs, setIsPlayoffs] = useState(false);
+
+  // Use appropriate data based on toggle
+  const roster = isPlayoffs ? playoffRoster : regularRoster;
+  const schedule = isPlayoffs ? playoffSchedule : regularSchedule;
+  const standing = isPlayoffs ? playoffStanding : regularStanding;
+  const teamData = isPlayoffs ? playoffTeamData : regularTeamData;
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
@@ -101,9 +123,12 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
         className="mb-8 p-6 rounded-lg"
         style={{ backgroundColor: `${team.primaryColor}20`, borderLeft: `4px solid ${team.primaryColor}` }}
       >
-        <h1 className="text-4xl font-bold mb-4" style={{ color: team.primaryColor }}>
-          {team.name}
-        </h1>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <h1 className="text-4xl font-bold" style={{ color: team.primaryColor }}>
+            {team.name}
+          </h1>
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+        </div>
 
         {/* Team Stats Summary */}
         {standing && (

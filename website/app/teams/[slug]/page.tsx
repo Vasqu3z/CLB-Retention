@@ -1,5 +1,5 @@
 import { getTeamBySlug } from '@/config/league';
-import { getTeamRoster, getSchedule, getStandings, getTeamData } from '@/lib/sheets';
+import { getTeamRoster, getSchedule, getStandings, getTeamData, getPlayoffSchedule } from '@/lib/sheets';
 import { notFound } from 'next/navigation';
 import TeamPageView from './TeamPageView';
 
@@ -14,32 +14,54 @@ export default async function TeamPage({ params }: { params: Promise<{ slug: str
     notFound();
   }
 
-  // Fetch team roster, schedule, standings, and team data
-  const [roster, fullSchedule, standings, teamDataList] = await Promise.all([
-    getTeamRoster(team.name),
+  // Fetch both regular season and playoff data
+  const [
+    regularRoster,
+    regularFullSchedule,
+    regularStandings,
+    regularTeamDataList,
+    playoffRoster,
+    playoffFullSchedule,
+    playoffStandings,
+    playoffTeamDataList,
+  ] = await Promise.all([
+    getTeamRoster(team.name, false),
     getSchedule(),
-    getStandings(),
-    getTeamData(team.name),
+    getStandings(false),
+    getTeamData(team.name, false),
+    getTeamRoster(team.name, true),
+    getPlayoffSchedule(),
+    getStandings(true),
+    getTeamData(team.name, true),
   ]);
 
-  // Filter schedule for this team
-  const teamSchedule = fullSchedule.filter(
+  // Filter schedules for this team
+  const regularTeamSchedule = regularFullSchedule.filter(
+    (game) => game.homeTeam === team.name || game.awayTeam === team.name
+  );
+  const playoffTeamSchedule = playoffFullSchedule.filter(
     (game) => game.homeTeam === team.name || game.awayTeam === team.name
   );
 
-  // Find team's standings record
-  const teamStanding = standings.find((s) => s.team === team.name);
+  // Find team's standings records
+  const regularTeamStanding = regularStandings.find((s) => s.team === team.name);
+  const playoffTeamStanding = playoffStandings.find((s) => s.team === team.name);
 
   // Get team data (should only be one result when filtered by team name)
-  const teamData = teamDataList.length > 0 ? teamDataList[0] : undefined;
+  const regularTeamData = regularTeamDataList.length > 0 ? regularTeamDataList[0] : undefined;
+  const playoffTeamData = playoffTeamDataList.length > 0 ? playoffTeamDataList[0] : undefined;
 
   return (
     <TeamPageView
       team={team}
-      roster={roster}
-      schedule={teamSchedule}
-      standing={teamStanding}
-      teamData={teamData}
+      regularRoster={regularRoster}
+      regularSchedule={regularTeamSchedule}
+      regularStanding={regularTeamStanding}
+      regularTeamData={regularTeamData}
+      playoffRoster={playoffRoster}
+      playoffSchedule={playoffTeamSchedule}
+      playoffStanding={playoffTeamStanding}
+      playoffTeamData={playoffTeamData}
     />
   );
 }

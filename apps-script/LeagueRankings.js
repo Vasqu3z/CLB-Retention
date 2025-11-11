@@ -238,21 +238,12 @@ function updatePlayoffBracketFromCache(playoffGameData) {
   var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
   var standingsData = standingsSheet.getRange(layout.STANDINGS_START_ROW, layout.STANDINGS.START_COL + 1, 8, layout.STANDINGS.NUM_COLS).getValues();
 
-  // Build seeding data
-  var seedingData = [];
+  // Build team lookup by seed (1-8)
+  var teamsBySeeds = {};
   for (var i = 0; i < standingsData.length && i < 8; i++) {
-    var rank = standingsData[i][0];
     var team = standingsData[i][1];
-    var wins = standingsData[i][2];
-    var losses = standingsData[i][3];
-    var winPct = standingsData[i][4];
-
     if (!team || team === "") break;
-
-    var status = playoffsStarted ? "Locked" : "Projected";
-    var record = wins + "-" + losses + " (" + winPct + ")";
-
-    seedingData.push([i + 1, team, status, record]);
+    teamsBySeeds[i + 1] = team;  // Seed 1-8 maps to team name
   }
 
   // Clear the sheet
@@ -260,46 +251,7 @@ function updatePlayoffBracketFromCache(playoffGameData) {
 
   var currentRow = 1;
 
-  // ===== SECTION 1: PLAYOFF SEEDING =====
-  bracketSheet.getRange(currentRow, 1, 1, 4).merge()
-    .setValue("Playoff Seeding")
-    .setFontWeight("bold")
-    .setFontSize(14)
-    .setBackground("#4a86e8")
-    .setFontColor("#ffffff")
-    .setHorizontalAlignment("center")
-    .setVerticalAlignment("middle");
-  currentRow += 2;
-
-  // Seeding header
-  bracketSheet.getRange(currentRow, 1, 1, 4)
-    .setValues([["Seed", "Team", "Status", "Record"]])
-    .setFontWeight("bold")
-    .setBackground("#e8e8e8")
-    .setHorizontalAlignment("center")
-    .setVerticalAlignment("middle");
-  currentRow++;
-
-  var seedingStartRow = currentRow;
-
-  // Write seeding data
-  if (seedingData.length > 0) {
-    bracketSheet.getRange(seedingStartRow, 1, seedingData.length, 4).setValues(seedingData);
-
-    // Format seeding rows
-    for (var i = 0; i < seedingData.length; i++) {
-      var rowRange = bracketSheet.getRange(seedingStartRow + i, 1, 1, 4);
-      rowRange.setBackground(i % 2 === 1 ? "#f3f3f3" : "#ffffff");
-      rowRange.setHorizontalAlignment("center");
-      rowRange.setVerticalAlignment("middle");
-    }
-
-    currentRow += seedingData.length;
-  }
-
-  currentRow += 2;
-
-  // ===== SECTION 2: BRACKET MATCHUPS =====
+  // ===== BRACKET MATCHUPS =====
   bracketSheet.getRange(currentRow, 1, 1, 9).merge()
     .setValue("Bracket Matchups")
     .setFontWeight("bold")
@@ -352,14 +304,14 @@ function updatePlayoffBracketFromCache(playoffGameData) {
     var winner = "";
 
     // Resolve team names based on seeds or previous series winners
-    if (typeof matchup.highSeed === "number" && seedingData[matchup.highSeed - 1]) {
-      teamA = seedingData[matchup.highSeed - 1][1];
+    if (typeof matchup.highSeed === "number" && teamsBySeeds[matchup.highSeed]) {
+      teamA = teamsBySeeds[matchup.highSeed];
     } else if (typeof matchup.highSeed === "string" && seriesResults[matchup.highSeed]) {
       teamA = seriesResults[matchup.highSeed].winner || "TBD";
     }
 
-    if (typeof matchup.lowSeed === "number" && seedingData[matchup.lowSeed - 1]) {
-      teamB = seedingData[matchup.lowSeed - 1][1];
+    if (typeof matchup.lowSeed === "number" && teamsBySeeds[matchup.lowSeed]) {
+      teamB = teamsBySeeds[matchup.lowSeed];
     } else if (typeof matchup.lowSeed === "string" && seriesResults[matchup.lowSeed]) {
       teamB = seriesResults[matchup.lowSeed].winner || "TBD";
     }

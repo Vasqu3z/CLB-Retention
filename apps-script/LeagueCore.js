@@ -75,22 +75,31 @@ function updateAll() {
     SpreadsheetApp.flush();
 
     // ===== STEP 4: Update standings (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 4: Updating season standings...", "Update Regular Season", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 5: Updating season standings...", "Update Regular Season", -1);
     var step4Start = new Date();
     // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
     var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
+    // ===== STEP 5: Update playoff bracket =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 5 of 5: Updating playoff bracket...", "Update Regular Season", -1);
+    var step5Start = new Date();
+    // Update bracket to lock when regular season completes (no playoff games yet)
+    updatePlayoffBracketFromCache(null);
+    var step5Time = ((new Date() - step5Start) / 1000).toFixed(1);
+    SpreadsheetApp.flush();
+
     var totalTime = ((new Date() - startTime) / 1000).toFixed(1);
 
     // Concise message that fits in toast
     var stepsTime = (parseFloat(step1Time) + parseFloat(step2Time) +
-                     parseFloat(step3Time) + parseFloat(step4Time)).toFixed(1);
+                     parseFloat(step3Time) + parseFloat(step4Time) +
+                     parseFloat(step5Time)).toFixed(1);
 
     var message = "✅ Update Complete!\n\n" +
                   "Game Processing: " + processingTime + "s\n" +
-                  "Steps 1-4: " + stepsTime + "s\n" +
+                  "Steps 1-5: " + stepsTime + "s\n" +
                   "─────────────\n" +
                   "Total: " + totalTime + "s";
 

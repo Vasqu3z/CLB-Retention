@@ -404,22 +404,27 @@ export function groupGamesBySeries(games: PlayoffGame[]): Map<string, SeriesResu
   const seriesMap = new Map<string, SeriesResult>();
 
   for (const game of games) {
-    // Extract series ID from code (Q1, S1-A, F2 → Q1, S1-A, F1)
+    // Extract series ID from code
+    // Examples: WC1, CS1-A, KC2 → WC, CS1-A, KC
     // Remove the game number suffix to get series ID
     let seriesId = game.code;
-    const match = game.code.match(/^([A-Z]\d+)(?:-([A-Z]))?$/);
+
+    // Match patterns like: WC1, CS1-A, KC2
+    // Group 1: Round prefix (WC, CS, KC, Q, S, F)
+    // Group 2: Game/Series number (1, 2, etc.)
+    // Group 3: Optional series letter (A, B, etc.)
+    const match = game.code.match(/^([A-Z]+)(\d+)(?:-([A-Z]))?$/);
     if (match) {
-      // Q1-A, S1-A → S1-A (keep letter)
-      // Q1, F2 → Q1, F1 (remove number after letter)
-      const base = match[1]; // Q1, S1, F2
-      const letter = match[2]; // A, B, or undefined
+      const roundPrefix = match[1]; // WC, CS, KC, Q, S, F
+      const number = match[2];      // 1, 2, 3, etc.
+      const letter = match[3];      // A, B, or undefined
 
       if (letter) {
-        seriesId = `${base}-${letter}`; // S1-A
+        // Multi-series round: CS1-A, CS1-B → CS1-A, CS1-B (keep full ID)
+        seriesId = `${roundPrefix}${number}-${letter}`;
       } else {
-        // Extract just the letter part: Q1 → Q, F2 → F
-        const roundLetter = base[0];
-        seriesId = `${roundLetter}1`; // Normalize to round prefix + 1
+        // Single series round: WC1, WC2, KC1 → WC, KC (just use prefix)
+        seriesId = roundPrefix;
       }
     }
 
@@ -469,11 +474,20 @@ export function groupGamesBySeries(games: PlayoffGame[]): Map<string, SeriesResu
 export function buildBracket(seriesMap: Map<string, SeriesResult>): BracketRound[] {
   const rounds: BracketRound[] = [];
 
-  // Group series by round prefix (Q, S, F)
+  // Group series by round prefix (WC, CS, KC, Q, S, F)
   const roundMap = new Map<string, SeriesResult[]>();
 
   for (const series of seriesMap.values()) {
-    const roundPrefix = series.seriesId[0]; // Q, S, or F
+    // Extract round prefix from series ID
+    // Examples: WC, CS1-A, KC → WC, CS, KC
+    let roundPrefix = series.seriesId;
+
+    // If series has a number-letter format (CS1-A), extract just the letter prefix
+    const match = series.seriesId.match(/^([A-Z]+)/);
+    if (match) {
+      roundPrefix = match[1]; // Extract WC, CS, KC, Q, S, F
+    }
+
     if (!roundMap.has(roundPrefix)) {
       roundMap.set(roundPrefix, []);
     }
@@ -483,12 +497,15 @@ export function buildBracket(seriesMap: Map<string, SeriesResult>): BracketRound
   // Convert to BracketRound array with proper names
   const roundNames: Record<string, string> = {
     'Q': 'Quarterfinals',
+    'WC': 'Wild Card',
     'S': 'Semifinals',
+    'CS': 'Conference Semifinals',
     'F': 'Finals',
+    'KC': 'King Comet Championship',
   };
 
   // Sort by expected bracket order
-  const order = ['Q', 'S', 'F'];
+  const order = ['Q', 'WC', 'S', 'CS', 'F', 'KC'];
   for (const prefix of order) {
     if (roundMap.has(prefix)) {
       rounds.push({

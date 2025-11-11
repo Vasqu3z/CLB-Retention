@@ -238,6 +238,10 @@ export interface ScheduleGame {
   awayScore?: number;
   winner?: string;
   boxScoreUrl?: string;
+  mvp?: string;
+  winningPitcher?: string;
+  losingPitcher?: string;
+  savePitcher?: string;
 }
 
 export async function getSchedule(): Promise<ScheduleGame[]> {
@@ -264,6 +268,11 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
     if (hasScores) {
       // Game has been played - read results from columns D-L
       const winner = String(row[5] || '').trim();
+      const loser = String(row[6] || '').trim();
+      const mvp = String(row[7] || '').trim();
+      const winningPitcher = String(row[8] || '').trim();
+      const losingPitcher = String(row[9] || '').trim();
+      const savePitcher = String(row[10] || '').trim();
       const boxScoreUrl = String(row[11] || '').trim();
 
       schedule.push({
@@ -275,6 +284,10 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
         awayScore: Number(awayScore),
         winner,
         boxScoreUrl,
+        mvp,
+        winningPitcher,
+        losingPitcher,
+        savePitcher,
       });
     } else {
       // Game is upcoming
@@ -488,34 +501,32 @@ function formatLeaders(
   let previousValue: number | null = null;
   let tiedPlayers: typeof sorted = [];
 
-  // Iterate through all players, but stop when we have 5 distinct ranks
+  // Iterate through all players
   for (let i = 0; i < sorted.length; i++) {
     const player = sorted[i];
 
     if (previousValue !== null && player.value !== previousValue) {
-      // Different value - add any tied players first
-      if (tiedPlayers.length > 1) {
-        leaders.push({
-          rank: `T-${currentRank}`,
-          player: `${tiedPlayers.length} Players Tied`,
-          team: '',
-          value: tiedPlayers[0].formatted,
-          rawValue: tiedPlayers[0].value,
-          isTieSummary: true,
-        });
-      } else if (tiedPlayers.length === 1) {
-        leaders.push({
-          rank: String(currentRank),
-          player: tiedPlayers[0].player,
-          team: tiedPlayers[0].team,
-          value: tiedPlayers[0].formatted,
-          rawValue: tiedPlayers[0].value,
-        });
+      // Different value - check if adding this tied group would exceed 5
+      if (leaders.length >= 5) {
+        // Already have 5+ entries, stop
+        break;
       }
 
-      // If we've added 5 leader entries (distinct ranks), stop
-      if (leaders.length >= 5) {
+      if (leaders.length + tiedPlayers.length > 5) {
+        // Adding this group would push us over 5, so stop without adding it
         break;
+      }
+
+      // Add all tied players individually
+      for (const tiedPlayer of tiedPlayers) {
+        const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
+        leaders.push({
+          rank: rankLabel,
+          player: tiedPlayer.player,
+          team: tiedPlayer.team,
+          value: tiedPlayer.formatted,
+          rawValue: tiedPlayer.value,
+        });
       }
 
       currentRank += tiedPlayers.length;
@@ -526,24 +537,16 @@ function formatLeaders(
     previousValue = player.value;
   }
 
-  // Add remaining tied players (if we haven't reached 5 entries yet)
-  if (leaders.length < 5 && tiedPlayers.length > 0) {
-    if (tiedPlayers.length > 1) {
+  // Add remaining tied players if they fit
+  if (tiedPlayers.length > 0 && leaders.length < 5 && leaders.length + tiedPlayers.length <= 5) {
+    for (const tiedPlayer of tiedPlayers) {
+      const rankLabel = tiedPlayers.length > 1 ? `T-${currentRank}` : String(currentRank);
       leaders.push({
-        rank: `T-${currentRank}`,
-        player: `${tiedPlayers.length} Players Tied`,
-        team: '',
-        value: tiedPlayers[0].formatted,
-        rawValue: tiedPlayers[0].value,
-        isTieSummary: true,
-      });
-    } else if (tiedPlayers.length === 1) {
-      leaders.push({
-        rank: String(currentRank),
-        player: tiedPlayers[0].player,
-        team: tiedPlayers[0].team,
-        value: tiedPlayers[0].formatted,
-        rawValue: tiedPlayers[0].value,
+        rank: rankLabel,
+        player: tiedPlayer.player,
+        team: tiedPlayer.team,
+        value: tiedPlayer.formatted,
+        rawValue: tiedPlayer.value,
       });
     }
   }
@@ -572,12 +575,16 @@ export async function getCalculatedBattingLeaders() {
   const slg = formatLeaders(
     qualifiedHitters
       .filter(p => p.slg)
-      .map(p => ({
-        player: p.name,
-        team: p.team,
-        value: parseFloat('0' + p.slg!),
-        formatted: p.slg!,
-      }))
+      .map(p => {
+        // Handle SLG >= 1.000 (doesn't have leading zero removed)
+        const slgValue = p.slg!.startsWith('.') ? parseFloat('0' + p.slg!) : parseFloat(p.slg!);
+        return {
+          player: p.name,
+          team: p.team,
+          value: slgValue,
+          formatted: p.slg!,
+        };
+      })
   );
 
   const ops = formatLeaders(

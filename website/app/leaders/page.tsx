@@ -86,24 +86,6 @@ function LeaderCard({ title, leaders }: { title: string; leaders: LeaderEntry[] 
           const teamConfig = leader.team ? getTeamByName(leader.team) : null;
           const isEven = idx % 2 === 1;
 
-          if (leader.isTieSummary) {
-            return (
-              <div
-                key={idx}
-                className={`py-2 px-3 rounded text-sm ${isEven ? 'bg-gray-50' : ''}`}
-              >
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700 font-medium">
-                    {leader.rank}. {leader.player}
-                  </span>
-                  <span className="text-gray-900 font-semibold">
-                    {leader.value}
-                  </span>
-                </div>
-              </div>
-            );
-          }
-
           return (
             <div
               key={idx}

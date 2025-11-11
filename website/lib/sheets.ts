@@ -118,6 +118,7 @@ export interface PlayerStats {
   w?: number;
   l?: number;
   sv?: number;
+  hAllowed?: number; // Hits Allowed
   hrAllowed?: number; // Home Runs Allowed
   era?: string;
   whip?: string;
@@ -210,6 +211,7 @@ export async function getTeamRoster(teamName: string): Promise<PlayerStats[]> {
       w,
       l,
       sv,
+      hAllowed: pitchingH,
       hrAllowed: pitchingHR,
       era,
       whip,
@@ -455,7 +457,7 @@ async function getAllPlayers(): Promise<PlayerStats[]> {
       team,
       gp,
       ab, h, hr, rbi, rob, dp, avg, obp, slg, ops,
-      ip, w, l, sv, hrAllowed: pitchingHR, era, whip, baa,
+      ip, w, l, sv, hAllowed: pitchingH, hrAllowed: pitchingHR, era, whip, baa,
       np, e, sb, cs, oaa,
     });
   }

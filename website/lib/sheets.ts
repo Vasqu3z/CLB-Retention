@@ -416,12 +416,12 @@ export function groupGamesBySeries(games: PlayoffGame[]): Map<string, SeriesResu
     const match = game.code.match(/^([A-Z]+)(\d+)(?:-([A-Z]))?$/);
     if (match) {
       const roundPrefix = match[1]; // WC, CS, KC, Q, S, F
-      const number = match[2];      // 1, 2, 3, etc.
-      const letter = match[3];      // A, B, or undefined
+      const number = match[2];      // 1, 2, 3, etc. (game number)
+      const letter = match[3];      // A, B, or undefined (series letter)
 
       if (letter) {
-        // Multi-series round: CS1-A, CS1-B → CS1-A, CS1-B (keep full ID)
-        seriesId = `${roundPrefix}${number}-${letter}`;
+        // Multi-series round: CS1-A, CS2-A → CS-A (drop game number, keep series letter)
+        seriesId = `${roundPrefix}-${letter}`;
       } else {
         // Single series round: WC1, WC2, KC1 → WC, KC (just use prefix)
         seriesId = roundPrefix;
@@ -497,11 +497,11 @@ export function buildBracket(seriesMap: Map<string, SeriesResult>): BracketRound
   // Convert to BracketRound array with proper names
   const roundNames: Record<string, string> = {
     'Q': 'Quarterfinals',
-    'WC': 'Wild Card',
+    'WC': 'Wildcard Round',
     'S': 'Semifinals',
-    'CS': 'Conference Semifinals',
+    'CS': 'Castle Series',
     'F': 'Finals',
-    'KC': 'King Comet Championship',
+    'KC': 'Kingdom Cup',
   };
 
   // Sort by expected bracket order

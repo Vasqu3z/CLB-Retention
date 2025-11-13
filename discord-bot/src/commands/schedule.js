@@ -12,9 +12,9 @@ export const data = new SlashCommandBuilder()
       .setDescription('Select schedule view')
       .setRequired(false)
       .addChoices(
-        { name: 'Recent', value: 'recent' },
-        { name: 'Current', value: 'current' },
-        { name: 'Upcoming', value: 'upcoming' }
+        { name: 'Recent - Last completed week', value: 'recent' },
+        { name: 'Current - This week', value: 'current' },
+        { name: 'Upcoming - Next week', value: 'upcoming' }
       )
   )
   .addIntegerOption(option =>

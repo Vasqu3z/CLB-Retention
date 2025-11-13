@@ -643,6 +643,11 @@ class SheetsService {
           if (!week) {
             week = parseInt(weekRaw);
           }
+
+          // Debug logging
+          if (process.env.DEBUG_SCHEDULE) {
+            logger.info('SheetsService', `Playoff round parsing: "${trimmedRound}" -> week ${week}, roundName: ${roundName}`);
+          }
         } else {
           week = parseInt(weekRaw);
         }

@@ -156,6 +156,14 @@ export async function execute(interaction) {
 
         const games = await sheetsService.getScheduleData(filter, true);
 
+        // Debug logging
+        console.log(`[DEBUG] Full bracket - Games found:`, games?.length || 0);
+        if (games && games.length > 0) {
+          games.forEach((game, i) => {
+            console.log(`[DEBUG] Game ${i}: week=${game.week}, roundName=${game.roundName}, ${game.awayTeam} @ ${game.homeTeam}`);
+          });
+        }
+
         if (!games || games.length === 0) {
           const errorEmbed = createErrorEmbed('No playoff games found.');
           await interaction.editReply({ embeds: [errorEmbed] });
@@ -171,6 +179,14 @@ export async function execute(interaction) {
         displayValue = round.name;
 
         const games = await sheetsService.getScheduleData(filter, true);
+
+        // Debug logging
+        console.log(`[DEBUG] Fetching round ${round.number} (${round.name})`);
+        console.log(`[DEBUG] Filter:`, filter);
+        console.log(`[DEBUG] Games found:`, games?.length || 0);
+        if (games && games.length > 0) {
+          console.log(`[DEBUG] First game:`, games[0]);
+        }
 
         if (!games || games.length === 0) {
           const errorEmbed = createErrorEmbed(`No playoff games found for ${round.name}.`);

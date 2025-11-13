@@ -400,6 +400,9 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
     if (filter.type === 'team') {
       // For team schedules, show week header inline
       scheduleText += `**${weekKey}:** `;
+    } else if (filter.type === 'all' || filter.type === 'round') {
+      // For playoff bracket views, show round as section header
+      scheduleText += `\n**${weekKey}**\n`;
     }
 
     weekGames.forEach((game, gameIndex) => {
@@ -474,6 +477,9 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
         } else {
           scheduleText += `${gameText}\n`;
         }
+      } else if (filter.type === 'all' || filter.type === 'round') {
+        // Playoff bracket views: no game number prefix, just list games
+        scheduleText += `${gameText}\n`;
       } else {
         // Week schedules (schedule/scores): add "Game #:" prefix
         scheduleText += `Game ${gameIndex + 1}: ${gameText}\n`;

@@ -8,26 +8,28 @@ export const data = new SlashCommandBuilder()
   .setDescription('View league or team schedule (regular season only)')
   .addStringOption(option =>
     option
-      .setName('view')
-      .setDescription('Select schedule view')
-      .setRequired(false)
+      .setName('type')
+      .setDescription('Schedule type')
+      .setRequired(true)
       .addChoices(
         { name: 'Recent - Last completed week', value: 'recent' },
         { name: 'Current - This week', value: 'current' },
-        { name: 'Upcoming - Next week', value: 'upcoming' }
+        { name: 'Upcoming - Next week', value: 'upcoming' },
+        { name: 'Week - Specific week number', value: 'week' },
+        { name: 'Team - Full team schedule', value: 'team' }
       )
   )
   .addIntegerOption(option =>
     option
       .setName('week')
-      .setDescription('View a specific week (defaults to current week if none selected)')
+      .setDescription('Week number (required if type is Week)')
       .setRequired(false)
       .setMinValue(1)
   )
   .addStringOption(option =>
     option
       .setName('team')
-      .setDescription('Team name (shows full season schedule for team)')
+      .setDescription('Team name (required if type is Team)')
       .setRequired(false)
       .setAutocomplete(true)
   );
@@ -58,27 +60,34 @@ export async function execute(interaction) {
   await interaction.deferReply();
 
   try {
-    const viewValue = interaction.options.getString('view');
+    const scheduleType = interaction.options.getString('type');
     const weekNumber = interaction.options.getInteger('week');
     const teamName = interaction.options.getString('team');
 
     let filter;
     let displayValue;
 
-    // Priority: team > week > view (default: current)
-    if (teamName) {
-      // Show full schedule for a specific team
-      filter = { type: 'team', teamName: teamName };
-      displayValue = teamName;
-    } else if (weekNumber) {
-      // Show specific week
+    // Handle based on selected type
+    if (scheduleType === 'week') {
+      if (!weekNumber) {
+        const errorEmbed = createErrorEmbed('Please provide a week number when using the Week option.');
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
       filter = { type: 'week', weekNumber: weekNumber };
       displayValue = `Week ${weekNumber}`;
+    } else if (scheduleType === 'team') {
+      if (!teamName) {
+        const errorEmbed = createErrorEmbed('Please provide a team name when using the Team option.');
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
+      filter = { type: 'team', teamName: teamName };
+      displayValue = teamName;
     } else {
-      // Use view choice, default to 'current'
-      const viewType = viewValue || 'current';
-      filter = { type: viewType };
-      displayValue = viewType;
+      // Recent, Current, or Upcoming
+      filter = { type: scheduleType };
+      displayValue = scheduleType;
     }
 
     // Regular season only (isPlayoffs = false)

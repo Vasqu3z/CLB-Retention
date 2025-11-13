@@ -732,7 +732,10 @@ function formatLeaders(
 
 export async function getCalculatedBattingLeaders(isPlayoffs: boolean = false) {
   const [players, avgTeamGP] = await Promise.all([getAllPlayers(isPlayoffs), getAverageTeamGP(isPlayoffs)]);
-  const qualifyingAB = avgTeamGP * 2.1;
+
+  // Calculate qualifying AB threshold with a minimum of 6 ABs for playoffs
+  const calculatedThreshold = avgTeamGP * 2.1;
+  const qualifyingAB = isPlayoffs ? Math.max(calculatedThreshold, 6) : calculatedThreshold;
 
   // Rate stats require qualification
   const qualifiedHitters = players.filter(p => p.ab && p.ab >= qualifyingAB);
@@ -813,7 +816,10 @@ export async function getCalculatedBattingLeaders(isPlayoffs: boolean = false) {
 
 export async function getCalculatedPitchingLeaders(isPlayoffs: boolean = false) {
   const [players, avgTeamGP] = await Promise.all([getAllPlayers(isPlayoffs), getAverageTeamGP(isPlayoffs)]);
-  const qualifyingIP = avgTeamGP * 1.0;
+
+  // Calculate qualifying IP threshold with a minimum of 3 IP for playoffs
+  const calculatedThreshold = avgTeamGP * 1.0;
+  const qualifyingIP = isPlayoffs ? Math.max(calculatedThreshold, 3) : calculatedThreshold;
 
   // Rate stats require qualification
   const qualifiedPitchers = players.filter(p => p.ip && p.ip >= qualifyingIP);

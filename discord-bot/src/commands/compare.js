@@ -6,11 +6,15 @@ import { DISCORD_LIMITS } from '../config/league-config.js';
 export const data = new SlashCommandBuilder()
   .setName('compare')
   .setDescription('Compare stats between two players or teams')
-  .addBooleanOption(option =>
+  .addStringOption(option =>
     option
-      .setName('team')
-      .setDescription('Compare teams instead of players')
-      .setRequired(false)
+      .setName('type')
+      .setDescription('Compare players or teams')
+      .setRequired(true)
+      .addChoices(
+        { name: 'Player', value: 'player' },
+        { name: 'Team', value: 'team' }
+      )
   )
   .addStringOption(option =>
     option
@@ -40,7 +44,8 @@ export const data = new SlashCommandBuilder()
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
-    const isTeam = interaction.options.getBoolean('team') || false;
+    const type = interaction.options.getString('type');
+    const isTeam = type === 'team';
     const season = interaction.options.getString('season');
     const isPlayoffs = season === 'postseason';
 
@@ -80,7 +85,8 @@ export async function execute(interaction) {
   try {
     const name1 = interaction.options.getString('name1');
     const name2 = interaction.options.getString('name2');
-    const isTeam = interaction.options.getBoolean('team') || false;
+    const type = interaction.options.getString('type');
+    const isTeam = type === 'team';
     const season = interaction.options.getString('season');
     const isPlayoffs = season === 'postseason';
 

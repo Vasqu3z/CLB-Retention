@@ -8,19 +8,19 @@ export const data = new SlashCommandBuilder()
   .setDescription('View league or team schedule (regular season only)')
   .addStringOption(option =>
     option
-      .setName('filter')
-      .setDescription('Schedule filter')
+      .setName('view')
+      .setDescription('Select schedule view')
       .setRequired(false)
       .addChoices(
-        { name: 'Recent - Last completed week', value: 'recent' },
-        { name: 'Current - This week', value: 'current' },
-        { name: 'Upcoming - Next week', value: 'upcoming' }
+        { name: 'Recent', value: 'recent' },
+        { name: 'Current', value: 'current' },
+        { name: 'Upcoming', value: 'upcoming' }
       )
   )
   .addIntegerOption(option =>
     option
       .setName('week')
-      .setDescription('Specific week number')
+      .setDescription('View a specific week (defaults to current week if none selected)')
       .setRequired(false)
       .setMinValue(1)
   )
@@ -58,14 +58,14 @@ export async function execute(interaction) {
   await interaction.deferReply();
 
   try {
-    const filterValue = interaction.options.getString('filter');
+    const viewValue = interaction.options.getString('view');
     const weekNumber = interaction.options.getInteger('week');
     const teamName = interaction.options.getString('team');
 
     let filter;
     let displayValue;
 
-    // Priority: team > week > filter (default: current)
+    // Priority: team > week > view (default: current)
     if (teamName) {
       // Show full schedule for a specific team
       filter = { type: 'team', teamName: teamName };
@@ -75,10 +75,10 @@ export async function execute(interaction) {
       filter = { type: 'week', weekNumber: weekNumber };
       displayValue = `Week ${weekNumber}`;
     } else {
-      // Use filter choice, default to 'current'
-      const filterType = filterValue || 'current';
-      filter = { type: filterType };
-      displayValue = filterType;
+      // Use view choice, default to 'current'
+      const viewType = viewValue || 'current';
+      filter = { type: viewType };
+      displayValue = viewType;
     }
 
     // Regular season only (isPlayoffs = false)

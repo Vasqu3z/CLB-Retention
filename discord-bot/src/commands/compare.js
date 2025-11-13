@@ -6,46 +6,70 @@ import { DISCORD_LIMITS } from '../config/league-config.js';
 export const data = new SlashCommandBuilder()
   .setName('compare')
   .setDescription('Compare stats between two players or teams')
-  .addStringOption(option =>
-    option
-      .setName('type')
-      .setDescription('Compare players or teams')
-      .setRequired(true)
-      .addChoices(
-        { name: 'Player', value: 'player' },
-        { name: 'Team', value: 'team' }
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('player')
+      .setDescription('Compare two players')
+      .addStringOption(option =>
+        option
+          .setName('name1')
+          .setDescription('First player name')
+          .setRequired(true)
+          .setAutocomplete(true)
+      )
+      .addStringOption(option =>
+        option
+          .setName('name2')
+          .setDescription('Second player name')
+          .setRequired(true)
+          .setAutocomplete(true)
+      )
+      .addStringOption(option =>
+        option
+          .setName('season')
+          .setDescription('Choose season type')
+          .setRequired(true)
+          .addChoices(
+            { name: 'Regular Season', value: 'regular' },
+            { name: 'Postseason', value: 'postseason' }
+          )
       )
   )
-  .addStringOption(option =>
-    option
-      .setName('name1')
-      .setDescription('First player or team name')
-      .setRequired(true)
-      .setAutocomplete(true)
-  )
-  .addStringOption(option =>
-    option
-      .setName('name2')
-      .setDescription('Second player or team name')
-      .setRequired(true)
-      .setAutocomplete(true)
-  )
-  .addStringOption(option =>
-    option
-      .setName('season')
-      .setDescription('Choose season type')
-      .setRequired(true)
-      .addChoices(
-        { name: 'Regular Season', value: 'regular' },
-        { name: 'Postseason', value: 'postseason' }
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('team')
+      .setDescription('Compare two teams')
+      .addStringOption(option =>
+        option
+          .setName('name1')
+          .setDescription('First team name')
+          .setRequired(true)
+          .setAutocomplete(true)
+      )
+      .addStringOption(option =>
+        option
+          .setName('name2')
+          .setDescription('Second team name')
+          .setRequired(true)
+          .setAutocomplete(true)
+      )
+      .addStringOption(option =>
+        option
+          .setName('season')
+          .setDescription('Choose season type')
+          .setRequired(true)
+          .addChoices(
+            { name: 'Regular Season', value: 'regular' },
+            { name: 'Postseason', value: 'postseason' }
+          )
       )
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
-    const type = interaction.options.getString('type');
-    const isTeam = type === 'team';
+    const subcommand = interaction.options.getSubcommand();
+    const isTeam = subcommand === 'team';
     const season = interaction.options.getString('season');
     const isPlayoffs = season === 'postseason';
 
@@ -85,8 +109,8 @@ export async function execute(interaction) {
   try {
     const name1 = interaction.options.getString('name1');
     const name2 = interaction.options.getString('name2');
-    const type = interaction.options.getString('type');
-    const isTeam = type === 'team';
+    const subcommand = interaction.options.getSubcommand();
+    const isTeam = subcommand === 'team';
     const season = interaction.options.getString('season');
     const isPlayoffs = season === 'postseason';
 

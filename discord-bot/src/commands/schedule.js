@@ -6,39 +6,51 @@ import { DISCORD_LIMITS } from '../config/league-config.js';
 export const data = new SlashCommandBuilder()
   .setName('schedule')
   .setDescription('View league or team schedule')
-  .addStringOption(option =>
-    option
-      .setName('type')
-      .setDescription('Schedule type')
-      .setRequired(true)
-      .addChoices(
-        { name: 'Recent - Last completed week', value: 'recent' },
-        { name: 'Current - This week', value: 'current' },
-        { name: 'Upcoming - Next week', value: 'upcoming' },
-        { name: 'Week', value: 'week' },
-        { name: 'Team', value: 'team' }
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('recent')
+      .setDescription('Last completed week')
+  )
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('current')
+      .setDescription('This week')
+  )
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('upcoming')
+      .setDescription('Next week')
+  )
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('week')
+      .setDescription('View specific week')
+      .addIntegerOption(option =>
+        option
+          .setName('number')
+          .setDescription('Week number')
+          .setRequired(true)
+          .setMinValue(1)
       )
   )
-  .addIntegerOption(option =>
-    option
-      .setName('week')
-      .setDescription('Week number (ignore unless using Week type)')
-      .setRequired(false)
-      .setMinValue(1)
-  )
-  .addStringOption(option =>
-    option
+  .addSubcommand(subcommand =>
+    subcommand
       .setName('team')
-      .setDescription('Team name (ignore unless using Team type)')
-      .setRequired(false)
-      .setAutocomplete(true)
+      .setDescription('View team schedule')
+      .addStringOption(option =>
+        option
+          .setName('name')
+          .setDescription('Team name')
+          .setRequired(true)
+          .setAutocomplete(true)
+      )
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
 
-    // Autocomplete for team parameter - regular season only
+    // Autocomplete for team name
     const teams = await sheetsService.getAllTeamNames(false);
     const filtered = teams
       .filter(team => team.captain && team.captain.trim() !== '' && team.captain !== 'Unknown')
@@ -60,21 +72,15 @@ export async function execute(interaction) {
   await interaction.deferReply();
 
   try {
-    const scheduleType = interaction.options.getString('type');
-    const weekNumber = interaction.options.getInteger('week');
-    const teamName = interaction.options.getString('team');
+    const subcommand = interaction.options.getSubcommand();
 
     let filter;
     let displayValue;
     let isPlayoffs = false;
 
-    // Handle based on selected type
-    if (scheduleType === 'week') {
-      if (!weekNumber) {
-        const errorEmbed = createErrorEmbed('Please provide a week number when using the Week option.');
-        await interaction.editReply({ embeds: [errorEmbed] });
-        return;
-      }
+    // Handle based on subcommand
+    if (subcommand === 'week') {
+      const weekNumber = interaction.options.getInteger('number');
       filter = { type: 'week', weekNumber: weekNumber };
       displayValue = `Week ${weekNumber}`;
 
@@ -94,12 +100,8 @@ export async function execute(interaction) {
       const embed = await createScheduleEmbed(games, filter, displayValue, isPlayoffs);
       await interaction.editReply({ embeds: [embed] });
 
-    } else if (scheduleType === 'team') {
-      if (!teamName) {
-        const errorEmbed = createErrorEmbed('Please provide a team name when using the Team option.');
-        await interaction.editReply({ embeds: [errorEmbed] });
-        return;
-      }
+    } else if (subcommand === 'team') {
+      const teamName = interaction.options.getString('name');
       filter = { type: 'team', teamName: teamName };
       displayValue = teamName;
 
@@ -121,8 +123,8 @@ export async function execute(interaction) {
 
     } else {
       // Recent, Current, or Upcoming - automatically check both regular season and playoffs
-      filter = { type: scheduleType };
-      displayValue = scheduleType;
+      filter = { type: subcommand };
+      displayValue = subcommand;
 
       // First try regular season
       let games = await sheetsService.getScheduleData(filter, false);

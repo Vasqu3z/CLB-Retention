@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Team } from '@/config/league';
-import { PlayerStats, ScheduleGame, StandingsRow, TeamData } from '@/lib/sheets';
+import { PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
 import Link from 'next/link';
 import SeasonToggle from '@/components/SeasonToggle';
 
@@ -13,7 +13,7 @@ interface TeamPageViewProps {
   regularStanding?: StandingsRow;
   regularTeamData?: TeamData;
   playoffRoster: PlayerStats[];
-  playoffSchedule: ScheduleGame[];
+  playoffSchedule: PlayoffGame[];
   playoffStanding?: StandingsRow;
   playoffTeamData?: TeamData;
 }
@@ -36,7 +36,7 @@ export default function TeamPageView({
 
   // Use appropriate data based on toggle
   const roster = isPlayoffs ? playoffRoster : regularRoster;
-  const schedule = isPlayoffs ? playoffSchedule : regularSchedule;
+  const schedule: (ScheduleGame | PlayoffGame)[] = isPlayoffs ? playoffSchedule : regularSchedule;
   const standing = isPlayoffs ? playoffStanding : regularStanding;
   const teamData = isPlayoffs ? playoffTeamData : regularTeamData;
   const [sortField, setSortField] = useState<SortField>('name');
@@ -476,15 +476,18 @@ function SortableHeader({
 }
 
 // Team Game Row Component
-function TeamGameRow({ game, teamName }: { game: ScheduleGame; teamName: string }) {
+function TeamGameRow({ game, teamName }: { game: ScheduleGame | PlayoffGame; teamName: string }) {
   const isHome = game.homeTeam === teamName;
   const opponent = isHome ? game.awayTeam : game.homeTeam;
+
+  // Determine the game identifier (week number or playoff code)
+  const gameIdentifier = 'week' in game ? `Week ${game.week}` : game.code;
 
   if (!game.played) {
     return (
       <div className="px-6 py-4">
         <div className="text-sm text-gray-500">
-          Week {game.week} • vs {opponent} {isHome ? '(Home)' : '(Away)'}
+          {gameIdentifier} • vs {opponent} {isHome ? '(Home)' : '(Away)'}
         </div>
       </div>
     );
@@ -498,7 +501,7 @@ function TeamGameRow({ game, teamName }: { game: ScheduleGame; teamName: string 
     <div className="px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm text-gray-500 mb-1">Week {game.week}</div>
+          <div className="text-sm text-gray-500 mb-1">{gameIdentifier}</div>
           <div className="font-medium" style={{ color: won ? '#059669' : '#DC2626' }}>
             {won ? 'W' : 'L'} {teamScore}-{oppScore} vs {opponent} {isHome ? '(Home)' : '(Away)'}
           </div>

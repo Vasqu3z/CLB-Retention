@@ -57,45 +57,52 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
   // Read from standings sheet, rows 4-11 (8 teams), columns A-H
   // Skip rows 1-3: row 1 = title, row 2 = blank, row 3 = headers
   const sheetName = isPlayoffs ? "'🏆 Standings'" : "'🥇 Standings'";
-  const data = await getSheetData(`${sheetName}!A4:H11`);
 
-  // Also fetch cell notes for H2H records (column B = team names)
-  const auth = await getAuthClient();
-  const sheetId = process.env.SHEETS_SPREADSHEET_ID;
-
-  let notes: string[] = [];
   try {
-    const response = await sheets.spreadsheets.get({
-      auth: auth as any,
-      spreadsheetId: sheetId,
-      ranges: [`${sheetName}!B4:B11`],
-      includeGridData: true,
-    });
+    const data = await getSheetData(`${sheetName}!A4:H11`);
 
-    // Extract notes from the response
-    if (response.data.sheets && response.data.sheets[0].data) {
-      const rowData = response.data.sheets[0].data[0].rowData || [];
-      notes = rowData.map((row) => {
-        const cell = row.values?.[0];
-        return cell?.note || '';
+    // Also fetch cell notes for H2H records (column B = team names)
+    const auth = await getAuthClient();
+    const sheetId = process.env.SHEETS_SPREADSHEET_ID;
+
+    let notes: string[] = [];
+    try {
+      const response = await sheets.spreadsheets.get({
+        auth: auth as any,
+        spreadsheetId: sheetId,
+        ranges: [`${sheetName}!B4:B11`],
+        includeGridData: true,
       });
-    }
-  } catch (error) {
-    console.error('Error fetching cell notes:', error);
-    // Continue without notes if there's an error
-  }
 
-  return data.map((row, idx) => ({
-    rank: String(row[0] || ''),
-    team: String(row[1] || ''),
-    wins: Number(row[2]) || 0,
-    losses: Number(row[3]) || 0,
-    winPct: String(row[4] || '0.000'),
-    runsScored: Number(row[5]) || 0,
-    runsAllowed: Number(row[6]) || 0,
-    runDiff: Number(row[7]) || 0,
-    h2hNote: notes[idx] || undefined,
-  }));
+      // Extract notes from the response
+      if (response.data.sheets && response.data.sheets[0].data) {
+        const rowData = response.data.sheets[0].data[0].rowData || [];
+        notes = rowData.map((row) => {
+          const cell = row.values?.[0];
+          return cell?.note || '';
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching cell notes:', error);
+      // Continue without notes if there's an error
+    }
+
+    return data.map((row, idx) => ({
+      rank: String(row[0] || ''),
+      team: String(row[1] || ''),
+      wins: Number(row[2]) || 0,
+      losses: Number(row[3]) || 0,
+      winPct: String(row[4] || '0.000'),
+      runsScored: Number(row[5]) || 0,
+      runsAllowed: Number(row[6]) || 0,
+      runDiff: Number(row[7]) || 0,
+      h2hNote: notes[idx] || undefined,
+    }));
+  } catch (error) {
+    console.error(`Error fetching standings (isPlayoffs=${isPlayoffs}):`, error);
+    // Return empty array if playoff standings don't exist yet
+    return [];
+  }
 }
 
 // ===== TEAM ROSTER =====
@@ -133,11 +140,17 @@ export interface PlayerStats {
 }
 
 export async function getTeamRoster(teamName: string, isPlayoffs: boolean = false): Promise<PlayerStats[]> {
-  // Read from player stats sheet
-  const sheetName = isPlayoffs ? "'🏆 Players'!A2:Z100" : "'🧮 Players'!A2:Z100";
-  const playerData = await getSheetData(sheetName);
+  try {
+    // Read from player stats sheet
+    const sheetName = isPlayoffs ? "'🏆 Players'!A2:Z100" : "'🧮 Players'!A2:Z100";
+    const playerData = await getSheetData(sheetName);
 
-  return parsePlayerStats(playerData, teamName);
+    return parsePlayerStats(playerData, teamName);
+  } catch (error) {
+    console.error(`Error fetching team roster (team=${teamName}, isPlayoffs=${isPlayoffs}):`, error);
+    // Return empty array if playoff player data doesn't exist yet
+    return [];
+  }
 }
 
 // Helper function to parse player stats (used by both regular and playoff)
@@ -565,53 +578,59 @@ export interface TeamData {
 }
 
 export async function getTeamData(teamName?: string, isPlayoffs: boolean = false): Promise<TeamData[]> {
-  // Read from team stats sheet
-  const sheetName = isPlayoffs ? "'🏆 Teams'!A2:Z20" : "'🧮 Teams'!A2:Z20";
-  const data = await getSheetData(sheetName);
+  try {
+    // Read from team stats sheet
+    const sheetName = isPlayoffs ? "'🏆 Teams'!A2:Z20" : "'🧮 Teams'!A2:Z20";
+    const data = await getSheetData(sheetName);
 
-  const teamDataList = data
-    .filter((row) => row[0] && String(row[0]).trim() !== '')
-    .map((row) => ({
-      teamName: String(row[0] || '').trim(),
-      captain: String(row[1] || '').trim(),
-      gp: Number(row[2]) || 0,
-      wins: Number(row[3]) || 0,
-      losses: Number(row[4]) || 0,
-      hitting: {
-        ab: Number(row[5]) || 0,
-        h: Number(row[6]) || 0,
-        hr: Number(row[7]) || 0,
-        rbi: Number(row[8]) || 0,
-        bb: Number(row[9]) || 0,
-        k: Number(row[10]) || 0,
-        rob: Number(row[11]) || 0,
-        dp: Number(row[12]) || 0,
-        tb: Number(row[13]) || 0,
-      },
-      pitching: {
-        ip: Number(row[14]) || 0,
-        bf: Number(row[15]) || 0,
-        h: Number(row[16]) || 0,
-        hr: Number(row[17]) || 0,
-        r: Number(row[18]) || 0,
-        bb: Number(row[19]) || 0,
-        k: Number(row[20]) || 0,
-        sv: Number(row[21]) || 0,
-      },
-      fielding: {
-        np: Number(row[22]) || 0,
-        e: Number(row[23]) || 0,
-        sb: Number(row[24]) || 0,
-        cs: Number(row[25]) || 0,
-      },
-    }));
+    const teamDataList = data
+      .filter((row) => row[0] && String(row[0]).trim() !== '')
+      .map((row) => ({
+        teamName: String(row[0] || '').trim(),
+        captain: String(row[1] || '').trim(),
+        gp: Number(row[2]) || 0,
+        wins: Number(row[3]) || 0,
+        losses: Number(row[4]) || 0,
+        hitting: {
+          ab: Number(row[5]) || 0,
+          h: Number(row[6]) || 0,
+          hr: Number(row[7]) || 0,
+          rbi: Number(row[8]) || 0,
+          bb: Number(row[9]) || 0,
+          k: Number(row[10]) || 0,
+          rob: Number(row[11]) || 0,
+          dp: Number(row[12]) || 0,
+          tb: Number(row[13]) || 0,
+        },
+        pitching: {
+          ip: Number(row[14]) || 0,
+          bf: Number(row[15]) || 0,
+          h: Number(row[16]) || 0,
+          hr: Number(row[17]) || 0,
+          r: Number(row[18]) || 0,
+          bb: Number(row[19]) || 0,
+          k: Number(row[20]) || 0,
+          sv: Number(row[21]) || 0,
+        },
+        fielding: {
+          np: Number(row[22]) || 0,
+          e: Number(row[23]) || 0,
+          sb: Number(row[24]) || 0,
+          cs: Number(row[25]) || 0,
+        },
+      }));
 
-  // If teamName is provided, filter to just that team
-  if (teamName) {
-    return teamDataList.filter((td) => td.teamName === teamName);
+    // If teamName is provided, filter to just that team
+    if (teamName) {
+      return teamDataList.filter((td) => td.teamName === teamName);
+    }
+
+    return teamDataList;
+  } catch (error) {
+    console.error(`Error fetching team data (isPlayoffs=${isPlayoffs}):`, error);
+    // Return empty array if playoff team data doesn't exist yet
+    return [];
   }
-
-  return teamDataList;
 }
 
 // ===== LEAGUE LEADERS (calculated from Player Data) =====
@@ -625,10 +644,16 @@ export interface LeaderEntry {
 }
 
 async function getAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]> {
-  // Read all players from player stats sheet (not filtered by team)
-  const sheetName = isPlayoffs ? "'🏆 Players'!A2:Z100" : "'🧮 Players'!A2:Z100";
-  const playerData = await getSheetData(sheetName);
-  return parsePlayerStats(playerData);
+  try {
+    // Read all players from player stats sheet (not filtered by team)
+    const sheetName = isPlayoffs ? "'🏆 Players'!A2:Z100" : "'🧮 Players'!A2:Z100";
+    const playerData = await getSheetData(sheetName);
+    return parsePlayerStats(playerData);
+  } catch (error) {
+    console.error(`Error fetching all players (isPlayoffs=${isPlayoffs}):`, error);
+    // Return empty array if playoff player data doesn't exist yet
+    return [];
+  }
 }
 
 async function getAverageTeamGP(isPlayoffs: boolean = false): Promise<number> {

@@ -53,11 +53,15 @@ export const data = new SlashCommandBuilder()
       .setRequired(true)
       .setAutocomplete(true)
   )
-  .addBooleanOption(option =>
+  .addStringOption(option =>
     option
-      .setName('postseason')
-      .setDescription('Show playoff leaders instead of regular season')
+      .setName('season')
+      .setDescription('Choose season type')
       .setRequired(false)
+      .addChoices(
+        { name: 'Regular Season', value: 'regular' },
+        { name: 'Postseason', value: 'postseason' }
+      )
   );
 
 export async function autocomplete(interaction) {
@@ -88,7 +92,8 @@ export async function execute(interaction) {
 
   try {
     const stat = interaction.options.getString('stat');
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
+    const season = interaction.options.getString('season');
+    const isPlayoffs = season === 'postseason';
     const statInfo = RANKING_STATS[stat];
 
     if (!statInfo) {

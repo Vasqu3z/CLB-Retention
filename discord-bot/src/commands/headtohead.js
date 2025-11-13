@@ -20,17 +20,22 @@ export const data = new SlashCommandBuilder()
       .setRequired(true)
       .setAutocomplete(true)
   )
-  .addBooleanOption(option =>
+  .addStringOption(option =>
     option
-      .setName('postseason')
-      .setDescription('Show playoff matchups instead of regular season')
+      .setName('season')
+      .setDescription('Choose season type')
       .setRequired(false)
+      .addChoices(
+        { name: 'Regular Season', value: 'regular' },
+        { name: 'Postseason', value: 'postseason' }
+      )
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
+    const season = interaction.options.getString('season');
+    const isPlayoffs = season === 'postseason';
 
     const teams = await sheetsService.getAllTeamNames(isPlayoffs);
 
@@ -56,7 +61,8 @@ export async function execute(interaction) {
   try {
     const team1Name = interaction.options.getString('team1');
     const team2Name = interaction.options.getString('team2');
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
+    const season = interaction.options.getString('season');
+    const isPlayoffs = season === 'postseason';
 
     if (team1Name.toLowerCase() === team2Name.toLowerCase()) {
       const errorEmbed = createErrorEmbed('Please select two different teams.');

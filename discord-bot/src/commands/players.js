@@ -13,17 +13,22 @@ export const data = new SlashCommandBuilder()
       .setRequired(true)
       .setAutocomplete(true)
   )
-  .addBooleanOption(option =>
+  .addStringOption(option =>
     option
-      .setName('postseason')
-      .setDescription('Show playoff stats instead of regular season')
+      .setName('season')
+      .setDescription('Choose season type')
       .setRequired(false)
+      .addChoices(
+        { name: 'Regular Season', value: 'regular' },
+        { name: 'Postseason', value: 'postseason' }
+      )
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
+    const season = interaction.options.getString('season');
+    const isPlayoffs = season === 'postseason';
 
     const players = await sheetsService.getAllPlayerNames(isPlayoffs);
 
@@ -47,7 +52,8 @@ export async function execute(interaction) {
 
   try {
     const playerName = interaction.options.getString('name');
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
+    const season = interaction.options.getString('season');
+    const isPlayoffs = season === 'postseason';
     const playerStats = await sheetsService.getPlayerStats(playerName, isPlayoffs);
 
     if (!playerStats) {

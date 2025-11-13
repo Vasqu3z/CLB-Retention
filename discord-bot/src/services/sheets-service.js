@@ -681,6 +681,10 @@ class SheetsService {
         // All games for a specific week
         return games.filter(g => g.week === filter.weekNumber);
 
+      case 'round':
+        // All games for a specific playoff round (round number maps to week number)
+        return games.filter(g => g.week === filter.roundNumber);
+
       case 'all':
         // All games (used for determining completed weeks)
         return games;

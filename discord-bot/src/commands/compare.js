@@ -26,18 +26,23 @@ export const data = new SlashCommandBuilder()
       .setDescription('Compare teams instead of players')
       .setRequired(false)
   )
-  .addBooleanOption(option =>
+  .addStringOption(option =>
     option
-      .setName('postseason')
-      .setDescription('Show playoff stats instead of regular season')
+      .setName('season')
+      .setDescription('Choose season type')
       .setRequired(false)
+      .addChoices(
+        { name: 'Regular Season', value: 'regular' },
+        { name: 'Postseason', value: 'postseason' }
+      )
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
     const isTeam = interaction.options.getBoolean('team') || false;
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
+    const season = interaction.options.getString('season');
+    const isPlayoffs = season === 'postseason';
 
     if (isTeam) {
       // Autocomplete for teams
@@ -76,7 +81,8 @@ export async function execute(interaction) {
     const name1 = interaction.options.getString('name1');
     const name2 = interaction.options.getString('name2');
     const isTeam = interaction.options.getBoolean('team') || false;
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
+    const season = interaction.options.getString('season');
+    const isPlayoffs = season === 'postseason';
 
     if (name1.toLowerCase() === name2.toLowerCase()) {
       const entityType = isTeam ? 'teams' : 'players';

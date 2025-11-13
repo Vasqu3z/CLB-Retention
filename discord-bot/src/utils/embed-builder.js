@@ -358,6 +358,8 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
     title = `Week ${filter.weekNumber} Schedule${seasonType}`;
   } else if (filter.type === 'team') {
     title = `${filterValue} Schedule${seasonType}`;
+  } else if (filter.type === 'round') {
+    title = `Playoff Bracket - ${filterValue}`;
   }
 
   embed.setTitle(title);

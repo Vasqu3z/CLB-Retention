@@ -5,22 +5,11 @@ import { DISCORD_LIMITS } from '../config/league-config.js';
 
 export const data = new SlashCommandBuilder()
   .setName('schedule')
-  .setDescription('View league or team schedule')
-  .addStringOption(option =>
-    option
-      .setName('filter')
-      .setDescription('Schedule filter: recent, current, or upcoming')
-      .setRequired(false)
-      .addChoices(
-        { name: 'Recent - Last completed week', value: 'recent' },
-        { name: 'Current - This week', value: 'current' },
-        { name: 'Upcoming - Next week', value: 'upcoming' }
-      )
-  )
+  .setDescription('View league or team schedule (regular season only)')
   .addIntegerOption(option =>
     option
       .setName('week')
-      .setDescription('Specific week number')
+      .setDescription('Specific week number (defaults to current week)')
       .setRequired(false)
       .setMinValue(1)
   )
@@ -30,21 +19,14 @@ export const data = new SlashCommandBuilder()
       .setDescription('Team name (shows full season schedule for team)')
       .setRequired(false)
       .setAutocomplete(true)
-  )
-  .addBooleanOption(option =>
-    option
-      .setName('postseason')
-      .setDescription('Show playoff schedule instead of regular season')
-      .setRequired(false)
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
 
-    // Autocomplete for team parameter
-    const teams = await sheetsService.getAllTeamNames(isPlayoffs);
+    // Autocomplete for team parameter - regular season only
+    const teams = await sheetsService.getAllTeamNames(false);
     const filtered = teams
       .filter(team => team.captain && team.captain.trim() !== '' && team.captain !== 'Unknown')
       .filter(team => team.name.toLowerCase().includes(focusedValue) || team.captain.toLowerCase().includes(focusedValue))
@@ -65,15 +47,13 @@ export async function execute(interaction) {
   await interaction.deferReply();
 
   try {
-    const filterValue = interaction.options.getString('filter');
     const weekNumber = interaction.options.getInteger('week');
     const teamName = interaction.options.getString('team');
-    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
 
     let filter;
     let displayValue;
 
-    // Priority: team > week > filter (default: current)
+    // Priority: team > week > default to current
     if (teamName) {
       // Show full schedule for a specific team
       filter = { type: 'team', teamName: teamName };
@@ -83,22 +63,21 @@ export async function execute(interaction) {
       filter = { type: 'week', weekNumber: weekNumber };
       displayValue = `Week ${weekNumber}`;
     } else {
-      // Use filter choice, default to 'current'
-      const filterType = filterValue || 'current';
-      filter = { type: filterType };
-      displayValue = filterType;
+      // Default to current week
+      filter = { type: 'current' };
+      displayValue = 'current';
     }
 
-    const games = await sheetsService.getScheduleData(filter, isPlayoffs);
+    // Regular season only (isPlayoffs = false)
+    const games = await sheetsService.getScheduleData(filter, false);
 
     if (!games || games.length === 0) {
-      const seasonType = isPlayoffs ? 'playoff' : 'regular season';
-      const errorEmbed = createErrorEmbed(`No ${seasonType} games found for the selected filter.`);
+      const errorEmbed = createErrorEmbed('No games found for the selected filter.');
       await interaction.editReply({ embeds: [errorEmbed] });
       return;
     }
 
-    const embed = await createScheduleEmbed(games, filter, displayValue, isPlayoffs);
+    const embed = await createScheduleEmbed(games, filter, displayValue, false);
     await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();

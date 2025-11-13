@@ -6,10 +6,21 @@ import { DISCORD_LIMITS } from '../config/league-config.js';
 export const data = new SlashCommandBuilder()
   .setName('schedule')
   .setDescription('View league or team schedule (regular season only)')
+  .addStringOption(option =>
+    option
+      .setName('filter')
+      .setDescription('Schedule filter')
+      .setRequired(false)
+      .addChoices(
+        { name: 'Recent - Last completed week', value: 'recent' },
+        { name: 'Current - This week', value: 'current' },
+        { name: 'Upcoming - Next week', value: 'upcoming' }
+      )
+  )
   .addIntegerOption(option =>
     option
       .setName('week')
-      .setDescription('Specific week number (defaults to current week)')
+      .setDescription('Specific week number')
       .setRequired(false)
       .setMinValue(1)
   )
@@ -47,13 +58,14 @@ export async function execute(interaction) {
   await interaction.deferReply();
 
   try {
+    const filterValue = interaction.options.getString('filter');
     const weekNumber = interaction.options.getInteger('week');
     const teamName = interaction.options.getString('team');
 
     let filter;
     let displayValue;
 
-    // Priority: team > week > default to current
+    // Priority: team > week > filter (default: current)
     if (teamName) {
       // Show full schedule for a specific team
       filter = { type: 'team', teamName: teamName };
@@ -63,9 +75,10 @@ export async function execute(interaction) {
       filter = { type: 'week', weekNumber: weekNumber };
       displayValue = `Week ${weekNumber}`;
     } else {
-      // Default to current week
-      filter = { type: 'current' };
-      displayValue = 'current';
+      // Use filter choice, default to 'current'
+      const filterType = filterValue || 'current';
+      filter = { type: filterType };
+      displayValue = filterType;
     }
 
     // Regular season only (isPlayoffs = false)

@@ -17,7 +17,7 @@ export const data = new SlashCommandBuilder()
     option
       .setName('season')
       .setDescription('Choose season type')
-      .setRequired(false)
+      .setRequired(true)
       .addChoices(
         { name: 'Regular Season', value: 'regular' },
         { name: 'Postseason', value: 'postseason' }

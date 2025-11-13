@@ -6,6 +6,12 @@ import { DISCORD_LIMITS } from '../config/league-config.js';
 export const data = new SlashCommandBuilder()
   .setName('compare')
   .setDescription('Compare stats between two players or teams')
+  .addBooleanOption(option =>
+    option
+      .setName('team')
+      .setDescription('Compare teams instead of players')
+      .setRequired(false)
+  )
   .addStringOption(option =>
     option
       .setName('name1')
@@ -20,17 +26,11 @@ export const data = new SlashCommandBuilder()
       .setRequired(true)
       .setAutocomplete(true)
   )
-  .addBooleanOption(option =>
-    option
-      .setName('team')
-      .setDescription('Compare teams instead of players')
-      .setRequired(false)
-  )
   .addStringOption(option =>
     option
       .setName('season')
       .setDescription('Choose season type')
-      .setRequired(false)
+      .setRequired(true)
       .addChoices(
         { name: 'Regular Season', value: 'regular' },
         { name: 'Postseason', value: 'postseason' }

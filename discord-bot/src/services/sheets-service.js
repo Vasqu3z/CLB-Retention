@@ -35,7 +35,8 @@ import {
   TEAM_STATS_COLUMNS,
   DATA_START_ROW,
   QUALIFICATION,
-  CACHE_CONFIG
+  CACHE_CONFIG,
+  PLAYOFF_ROUND_NAMES
 } from '../config/league-config.js';
 import logger from '../utils/logger.js';
 
@@ -627,7 +628,25 @@ class SheetsService {
     const games = scheduleData
       .filter(row => row[SCHEDULE_COLUMNS.WEEK] && row[SCHEDULE_COLUMNS.AWAY_TEAM] && row[SCHEDULE_COLUMNS.HOME_TEAM])
       .map(row => {
-        const week = parseInt(row[SCHEDULE_COLUMNS.WEEK]);
+        const weekRaw = row[SCHEDULE_COLUMNS.WEEK];
+
+        // For playoffs, map round names to numbers; for regular season, parse as integer
+        let week;
+        let roundName = null;
+        if (isPlayoffs) {
+          // Try to match the round name to a number
+          const trimmedRound = weekRaw.trim();
+          week = PLAYOFF_ROUND_NAMES[trimmedRound];
+          roundName = trimmedRound;
+
+          // If no match found, try parseInt as fallback
+          if (!week) {
+            week = parseInt(weekRaw);
+          }
+        } else {
+          week = parseInt(weekRaw);
+        }
+
         const awayTeam = row[SCHEDULE_COLUMNS.AWAY_TEAM]?.trim();
         const homeTeam = row[SCHEDULE_COLUMNS.HOME_TEAM]?.trim();
         const awayScore = row[SCHEDULE_COLUMNS.AWAY_SCORE];
@@ -643,6 +662,7 @@ class SheetsService {
 
         return {
           week,
+          roundName,
           homeTeam,
           awayTeam,
           played,
@@ -707,7 +727,20 @@ class SheetsService {
     const matchupGames = [];
 
     scheduleData.forEach(row => {
-      const week = parseInt(row[SCHEDULE_COLUMNS.WEEK]);
+      const weekRaw = row[SCHEDULE_COLUMNS.WEEK];
+
+      // For playoffs, map round names to numbers; for regular season, parse as integer
+      let week;
+      if (isPlayoffs) {
+        const trimmedRound = weekRaw?.trim();
+        week = PLAYOFF_ROUND_NAMES[trimmedRound];
+        if (!week) {
+          week = parseInt(weekRaw);
+        }
+      } else {
+        week = parseInt(weekRaw);
+      }
+
       const awayTeam = row[SCHEDULE_COLUMNS.AWAY_TEAM]?.trim();
       const homeTeam = row[SCHEDULE_COLUMNS.HOME_TEAM]?.trim();
       const awayScore = row[SCHEDULE_COLUMNS.AWAY_SCORE];

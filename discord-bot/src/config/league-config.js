@@ -317,3 +317,19 @@ export const DISCORD_LIMITS = {
   EMBED_FIELD_VALUE_MAX: 1024,
   AUTOCOMPLETE_MAX_CHOICES: 25
 };
+
+// Playoff round mappings
+export const PLAYOFF_ROUNDS = {
+  1: 'Wildcard Round',
+  2: 'Castle Series',
+  3: 'Kingdom Cup'
+};
+
+// Reverse mapping for looking up round number from round name
+export const PLAYOFF_ROUND_NAMES = {
+  'Wildcard Round': 1,
+  'Castle Series (CS)': 2,
+  'Castle Series': 2,
+  'Kingdom Cup (KC)': 3,
+  'Kingdom Cup': 3
+};

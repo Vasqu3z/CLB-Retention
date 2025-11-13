@@ -27,7 +27,7 @@
  */
 
 import { EmbedBuilder } from 'discord.js';
-import { STAT_LABELS, EMBED_FORMATTING } from '../config/league-config.js';
+import { STAT_LABELS, EMBED_FORMATTING, PLAYOFF_ROUND_NAMES } from '../config/league-config.js';
 import sheetsService from '../services/sheets-service.js';
 
 const COLORS = {
@@ -349,13 +349,17 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
   const seasonType = isPlayoffs ? ' (Playoffs)' : '';
   let title = `League Schedule${seasonType}`;
   if (filter.type === 'recent') {
-    title = `Recent Games - Week ${games[0]?.week || '?'}${seasonType}`;
+    const weekLabel = isPlayoffs && games[0]?.roundName ? games[0].roundName : `Week ${games[0]?.week || '?'}`;
+    title = `Recent Games - ${weekLabel}${seasonType}`;
   } else if (filter.type === 'current') {
-    title = `Current Week - Week ${games[0]?.week || '?'}${seasonType}`;
+    const weekLabel = isPlayoffs && games[0]?.roundName ? games[0].roundName : `Week ${games[0]?.week || '?'}`;
+    title = `Current Week - ${weekLabel}${seasonType}`;
   } else if (filter.type === 'upcoming') {
-    title = `Upcoming Games - Week ${games[0]?.week || '?'}${seasonType}`;
+    const weekLabel = isPlayoffs && games[0]?.roundName ? games[0].roundName : `Week ${games[0]?.week || '?'}`;
+    title = `Upcoming Games - ${weekLabel}${seasonType}`;
   } else if (filter.type === 'week') {
-    title = `Week ${filter.weekNumber} Schedule${seasonType}`;
+    const weekLabel = isPlayoffs && games[0]?.roundName ? games[0].roundName : `Week ${filter.weekNumber}`;
+    title = `${weekLabel} Schedule${seasonType}`;
   } else if (filter.type === 'team') {
     title = `${filterValue} Schedule${seasonType}`;
   } else if (filter.type === 'round') {
@@ -367,7 +371,7 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
   // Group games by week for team schedules
   const gamesByWeek = {};
   games.forEach(game => {
-    const weekKey = `Week ${game.week}`;
+    const weekKey = isPlayoffs && game.roundName ? game.roundName : `Week ${game.week}`;
     if (!gamesByWeek[weekKey]) {
       gamesByWeek[weekKey] = [];
     }
@@ -376,8 +380,15 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
 
   // Build schedule display
   const weekKeys = Object.keys(gamesByWeek).sort((a, b) => {
-    const numA = parseInt(a.replace('Week ', ''));
-    const numB = parseInt(b.replace('Week ', ''));
+    // For playoffs, use round names mapping; for regular season, parse week number
+    let numA, numB;
+    if (isPlayoffs) {
+      numA = PLAYOFF_ROUND_NAMES[a] || parseInt(a.replace('Week ', ''));
+      numB = PLAYOFF_ROUND_NAMES[b] || parseInt(b.replace('Week ', ''));
+    } else {
+      numA = parseInt(a.replace('Week ', ''));
+      numB = parseInt(b.replace('Week ', ''));
+    }
     return numA - numB;
   });
 

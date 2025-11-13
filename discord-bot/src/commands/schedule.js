@@ -15,21 +15,21 @@ export const data = new SlashCommandBuilder()
         { name: 'Recent - Last completed week', value: 'recent' },
         { name: 'Current - This week', value: 'current' },
         { name: 'Upcoming - Next week', value: 'upcoming' },
-        { name: 'Week - View specific week (provide week number)', value: 'week' },
-        { name: 'Team - View team schedule (provide team name)', value: 'team' }
+        { name: 'Week', value: 'week' },
+        { name: 'Team', value: 'team' }
       )
   )
   .addIntegerOption(option =>
     option
       .setName('week')
-      .setDescription('Week number (only for Week type)')
+      .setDescription('Week number (ignore unless using Week type)')
       .setRequired(false)
       .setMinValue(1)
   )
   .addStringOption(option =>
     option
       .setName('team')
-      .setDescription('Team name (only for Team type)')
+      .setDescription('Team name (ignore unless using Team type)')
       .setRequired(false)
       .setAutocomplete(true)
   );

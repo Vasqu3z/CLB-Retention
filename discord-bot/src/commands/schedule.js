@@ -5,7 +5,7 @@ import { DISCORD_LIMITS } from '../config/league-config.js';
 
 export const data = new SlashCommandBuilder()
   .setName('schedule')
-  .setDescription('View league or team schedule (regular season only)')
+  .setDescription('View league or team schedule')
   .addStringOption(option =>
     option
       .setName('type')
@@ -15,21 +15,21 @@ export const data = new SlashCommandBuilder()
         { name: 'Recent - Last completed week', value: 'recent' },
         { name: 'Current - This week', value: 'current' },
         { name: 'Upcoming - Next week', value: 'upcoming' },
-        { name: 'Week - Specific week number', value: 'week' },
-        { name: 'Team - Full team schedule', value: 'team' }
+        { name: 'Week - View specific week (provide week number)', value: 'week' },
+        { name: 'Team - View team schedule (provide team name)', value: 'team' }
       )
   )
   .addIntegerOption(option =>
     option
       .setName('week')
-      .setDescription('Week number (required if type is Week)')
+      .setDescription('Week number (only for Week type)')
       .setRequired(false)
       .setMinValue(1)
   )
   .addStringOption(option =>
     option
       .setName('team')
-      .setDescription('Team name (required if type is Team)')
+      .setDescription('Team name (only for Team type)')
       .setRequired(false)
       .setAutocomplete(true)
   );
@@ -66,6 +66,7 @@ export async function execute(interaction) {
 
     let filter;
     let displayValue;
+    let isPlayoffs = false;
 
     // Handle based on selected type
     if (scheduleType === 'week') {
@@ -76,6 +77,23 @@ export async function execute(interaction) {
       }
       filter = { type: 'week', weekNumber: weekNumber };
       displayValue = `Week ${weekNumber}`;
+
+      // Check both regular season and playoffs for this week
+      let games = await sheetsService.getScheduleData(filter, false);
+      if (!games || games.length === 0) {
+        games = await sheetsService.getScheduleData(filter, true);
+        isPlayoffs = true;
+      }
+
+      if (!games || games.length === 0) {
+        const errorEmbed = createErrorEmbed(`No games found for Week ${weekNumber}.`);
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
+
+      const embed = await createScheduleEmbed(games, filter, displayValue, isPlayoffs);
+      await interaction.editReply({ embeds: [embed] });
+
     } else if (scheduleType === 'team') {
       if (!teamName) {
         const errorEmbed = createErrorEmbed('Please provide a team name when using the Team option.');
@@ -84,23 +102,46 @@ export async function execute(interaction) {
       }
       filter = { type: 'team', teamName: teamName };
       displayValue = teamName;
+
+      // Check both regular season and playoffs for this team
+      let games = await sheetsService.getScheduleData(filter, false);
+      if (!games || games.length === 0) {
+        games = await sheetsService.getScheduleData(filter, true);
+        isPlayoffs = true;
+      }
+
+      if (!games || games.length === 0) {
+        const errorEmbed = createErrorEmbed(`No games found for ${teamName}.`);
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
+
+      const embed = await createScheduleEmbed(games, filter, displayValue, isPlayoffs);
+      await interaction.editReply({ embeds: [embed] });
+
     } else {
-      // Recent, Current, or Upcoming
+      // Recent, Current, or Upcoming - automatically check both regular season and playoffs
       filter = { type: scheduleType };
       displayValue = scheduleType;
+
+      // First try regular season
+      let games = await sheetsService.getScheduleData(filter, false);
+
+      // If no regular season games, check playoffs
+      if (!games || games.length === 0) {
+        games = await sheetsService.getScheduleData(filter, true);
+        isPlayoffs = true;
+      }
+
+      if (!games || games.length === 0) {
+        const errorEmbed = createErrorEmbed('No games found for the selected filter.');
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
+
+      const embed = await createScheduleEmbed(games, filter, displayValue, isPlayoffs);
+      await interaction.editReply({ embeds: [embed] });
     }
-
-    // Regular season only (isPlayoffs = false)
-    const games = await sheetsService.getScheduleData(filter, false);
-
-    if (!games || games.length === 0) {
-      const errorEmbed = createErrorEmbed('No games found for the selected filter.');
-      await interaction.editReply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = await createScheduleEmbed(games, filter, displayValue, false);
-    await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();
   } catch (error) {

@@ -54,9 +54,14 @@ export interface StandingsRow {
 }
 
 export async function getStandings(isPlayoffs: boolean = false): Promise<StandingsRow[]> {
+  // Playoffs don't have standings - they use a bracket system
+  if (isPlayoffs) {
+    return [];
+  }
+
   // Read from standings sheet, rows 4-11 (8 teams), columns A-H
   // Skip rows 1-3: row 1 = title, row 2 = blank, row 3 = headers
-  const sheetName = isPlayoffs ? "'🏆 Standings'" : "'🥇 Standings'";
+  const sheetName = "'🥇 Standings'";
 
   try {
     const data = await getSheetData(`${sheetName}!A4:H11`);
@@ -99,8 +104,7 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
       h2hNote: notes[idx] || undefined,
     }));
   } catch (error) {
-    console.error(`Error fetching standings (isPlayoffs=${isPlayoffs}):`, error);
-    // Return empty array if playoff standings don't exist yet
+    console.error(`Error fetching standings:`, error);
     return [];
   }
 }
@@ -733,9 +737,9 @@ function formatLeaders(
 export async function getCalculatedBattingLeaders(isPlayoffs: boolean = false) {
   const [players, avgTeamGP] = await Promise.all([getAllPlayers(isPlayoffs), getAverageTeamGP(isPlayoffs)]);
 
-  // Calculate qualifying AB threshold with a minimum of 6 ABs for playoffs
+  // Calculate qualifying AB threshold with a minimum of 5 ABs for playoffs
   const calculatedThreshold = avgTeamGP * 2.1;
-  const qualifyingAB = isPlayoffs ? Math.max(calculatedThreshold, 6) : calculatedThreshold;
+  const qualifyingAB = isPlayoffs ? Math.max(calculatedThreshold, 5) : calculatedThreshold;
 
   // Rate stats require qualification
   const qualifiedHitters = players.filter(p => p.ab && p.ab >= qualifyingAB);
@@ -817,9 +821,9 @@ export async function getCalculatedBattingLeaders(isPlayoffs: boolean = false) {
 export async function getCalculatedPitchingLeaders(isPlayoffs: boolean = false) {
   const [players, avgTeamGP] = await Promise.all([getAllPlayers(isPlayoffs), getAverageTeamGP(isPlayoffs)]);
 
-  // Calculate qualifying IP threshold with a minimum of 3 IP for playoffs
+  // Calculate qualifying IP threshold with a minimum of 2 IP for playoffs
   const calculatedThreshold = avgTeamGP * 1.0;
-  const qualifyingIP = isPlayoffs ? Math.max(calculatedThreshold, 3) : calculatedThreshold;
+  const qualifyingIP = isPlayoffs ? Math.max(calculatedThreshold, 2) : calculatedThreshold;
 
   // Rate stats require qualification
   const qualifiedPitchers = players.filter(p => p.ip && p.ip >= qualifyingIP);

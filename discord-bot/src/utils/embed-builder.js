@@ -46,10 +46,11 @@ function formatRateStat(value) {
   return value;
 }
 
-export async function createPlayerStatsEmbed(playerData) {
+export async function createPlayerStatsEmbed(playerData, isPlayoffs = false) {
+  const seasonType = isPlayoffs ? ' (Playoffs)' : '';
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
-    .setTitle(`${playerData.name}`)
+    .setTitle(`${playerData.name}${seasonType}`)
     .setDescription(`**Team:** ${playerData.team}\n**Games:** ${playerData.hitting.gp || playerData.pitching.gp || playerData.fielding.gp}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
@@ -118,10 +119,11 @@ export async function createPlayerStatsEmbed(playerData) {
   return embed;
 }
 
-export async function createTeamStatsEmbed(teamData) {
+export async function createTeamStatsEmbed(teamData, isPlayoffs = false) {
+  const seasonType = isPlayoffs ? ' (Playoffs)' : '';
   const embed = new EmbedBuilder()
     .setColor(COLORS.SUCCESS)
-    .setTitle(`${teamData.name}`)
+    .setTitle(`${teamData.name}${seasonType}`)
     .setDescription(`**General Manager:** ${teamData.captain}\n**Record:** ${teamData.wins}-${teamData.losses} (${formatRateStat((parseInt(teamData.wins) / parseInt(teamData.gp) || 0).toFixed(3))})`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
@@ -246,10 +248,11 @@ export function createInfoEmbed(title, message) {
     .setTimestamp();
 }
 
-export async function createRankingsEmbed(statFullName, leaders, format, statLabel = null) {
+export async function createRankingsEmbed(statFullName, leaders, format, statLabel = null, isPlayoffs = false) {
+  const seasonType = isPlayoffs ? 'Playoff' : 'Regular Season';
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
-    .setTitle(`League Leaders - ${statFullName}`)
+    .setTitle(`${seasonType} Leaders - ${statFullName}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
@@ -321,7 +324,7 @@ export async function createRosterEmbed(roster) {
   return embed;
 }
 
-export async function createScheduleEmbed(games, filter, filterValue) {
+export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs = false) {
   const embed = new EmbedBuilder()
     .setColor(COLORS.INFO)
     .setTimestamp()
@@ -343,17 +346,18 @@ export async function createScheduleEmbed(games, filter, filterValue) {
   }
 
   // Set title based on filter type
-  let title = 'League Schedule';
+  const seasonType = isPlayoffs ? ' (Playoffs)' : '';
+  let title = `League Schedule${seasonType}`;
   if (filter.type === 'recent') {
-    title = `Recent Games - Week ${games[0]?.week || '?'}`;
+    title = `Recent Games - Week ${games[0]?.week || '?'}${seasonType}`;
   } else if (filter.type === 'current') {
-    title = `Current Week - Week ${games[0]?.week || '?'}`;
+    title = `Current Week - Week ${games[0]?.week || '?'}${seasonType}`;
   } else if (filter.type === 'upcoming') {
-    title = `Upcoming Games - Week ${games[0]?.week || '?'}`;
+    title = `Upcoming Games - Week ${games[0]?.week || '?'}${seasonType}`;
   } else if (filter.type === 'week') {
-    title = `Week ${filter.weekNumber} Schedule`;
+    title = `Week ${filter.weekNumber} Schedule${seasonType}`;
   } else if (filter.type === 'team') {
-    title = `${filterValue} Schedule`;
+    title = `${filterValue} Schedule${seasonType}`;
   }
 
   embed.setTitle(title);
@@ -469,10 +473,11 @@ export async function createScheduleEmbed(games, filter, filterValue) {
   return embed;
 }
 
-export async function createHeadToHeadEmbed(matchupData) {
+export async function createHeadToHeadEmbed(matchupData, isPlayoffs = false) {
+  const seasonType = isPlayoffs ? ' (Playoffs)' : '';
   const embed = new EmbedBuilder()
     .setColor(COLORS.INFO)
-    .setTitle(`${matchupData.team1} vs ${matchupData.team2}`)
+    .setTitle(`${matchupData.team1} vs ${matchupData.team2}${seasonType}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
 
@@ -527,10 +532,11 @@ export async function createHeadToHeadEmbed(matchupData) {
   return embed;
 }
 
-export function createPlayerCompareEmbed(player1Data, player2Data) {
+export function createPlayerCompareEmbed(player1Data, player2Data, isPlayoffs = false) {
+  const seasonType = isPlayoffs ? ' (Playoffs)' : '';
   const embed = new EmbedBuilder()
     .setColor(COLORS.PRIMARY)
-    .setTitle(`${player1Data.name} vs ${player2Data.name}`)
+    .setTitle(`${player1Data.name} vs ${player2Data.name}${seasonType}`)
     .setDescription(`**${player1Data.name}'s Team:** ${player1Data.team}\n**${player2Data.name}'s Team:** ${player2Data.team}`)
     .setTimestamp()
     .setFooter({ text: 'CLB League Hub' });
@@ -712,6 +718,183 @@ export function createPlayerCompareEmbed(player1Data, player2Data) {
       `NP: ${np.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${np.p2}\n` +
       `E:  ${e.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${e.p2}\n` +
       `SB: ${sb.p1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${sb.p2}\n` +
+      `\`\`\``;
+
+    embed.addFields({
+      name: 'Fielding Stats',
+      value: fieldingText,
+      inline: false
+    });
+  }
+
+  return embed;
+}
+
+export function createTeamCompareEmbed(team1Data, team2Data, isPlayoffs = false) {
+  const seasonType = isPlayoffs ? ' (Playoffs)' : '';
+  const embed = new EmbedBuilder()
+    .setColor(COLORS.SUCCESS)
+    .setTitle(`${team1Data.name} vs ${team2Data.name}${seasonType}`)
+    .setDescription(`**${team1Data.name} GM:** ${team1Data.captain}\n**${team2Data.name} GM:** ${team2Data.captain}`)
+    .setTimestamp()
+    .setFooter({ text: 'CLB League Hub' });
+
+  // Helper to compare two values and add visual indicator (* on right for better value)
+  const compareValues = (val1, val2, higherIsBetter = true) => {
+    const num1 = parseFloat(val1) || 0;
+    const num2 = parseFloat(val2) || 0;
+
+    if (num1 === num2) {
+      return { t1: val1, t2: val2 };
+    }
+
+    if (higherIsBetter) {
+      return {
+        t1: num1 > num2 ? `${val1}${EMBED_FORMATTING.BETTER_STAT_MARKER}` : val1,
+        t2: num2 > num1 ? `${val2}${EMBED_FORMATTING.BETTER_STAT_MARKER}` : val2
+      };
+    } else {
+      return {
+        t1: num1 < num2 ? `${val1}${EMBED_FORMATTING.BETTER_STAT_MARKER}` : val1,
+        t2: num2 < num1 ? `${val2}${EMBED_FORMATTING.BETTER_STAT_MARKER}` : val2
+      };
+    }
+  };
+
+  // Record comparison
+  const gp = compareValues(team1Data.gp || '0', team2Data.gp || '0');
+  const wins = compareValues(team1Data.wins || '0', team2Data.wins || '0');
+  const losses = compareValues(team1Data.losses || '0', team2Data.losses || '0', false);
+  const winPct = compareValues(
+    (parseInt(team1Data.wins) / parseInt(team1Data.gp) || 0).toFixed(3),
+    (parseInt(team2Data.wins) / parseInt(team2Data.gp) || 0).toFixed(3)
+  );
+
+  // Truncate team names to fit in column headers
+  const t1Name = team1Data.name.length > EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH ?
+    team1Data.name.substring(0, EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH) : team1Data.name;
+  const t2Name = team2Data.name.length > EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH ?
+    team2Data.name.substring(0, EMBED_FORMATTING.MAX_PLAYER_NAME_LENGTH) : team2Data.name;
+
+  const recordText =
+    `\`\`\`\n` +
+    `      ${t1Name.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${t2Name}\n` +
+    `${EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.COMPARE_TOTAL_WIDTH + 2)}\n` +
+    `GP:   ${gp.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${gp.t2}\n` +
+    `W:    ${wins.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${wins.t2}\n` +
+    `L:    ${losses.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${losses.t2}\n` +
+    `PCT:  ${formatRateStat(winPct.t1).padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${formatRateStat(winPct.t2)}\n` +
+    `\`\`\``;
+
+  embed.addFields({
+    name: 'Team Record',
+    value: recordText,
+    inline: false
+  });
+
+  // Hitting comparison
+  if (team1Data.hitting && team2Data.hitting) {
+    const rpg = compareValues(
+      team1Data.hitting.runsPerGame || '0',
+      team2Data.hitting.runsPerGame || '0'
+    );
+    const ab = compareValues(
+      team1Data.hitting.ab || '0',
+      team2Data.hitting.ab || '0'
+    );
+    const avg = compareValues(
+      team1Data.hitting.avg || '.000',
+      team2Data.hitting.avg || '.000'
+    );
+    const hr = compareValues(
+      team1Data.hitting.hr || '0',
+      team2Data.hitting.hr || '0'
+    );
+    const rbi = compareValues(
+      team1Data.hitting.rbi || '0',
+      team2Data.hitting.rbi || '0'
+    );
+    const ops = compareValues(
+      team1Data.hitting.ops || '.000',
+      team2Data.hitting.ops || '.000'
+    );
+
+    const hittingText =
+      `\`\`\`\n` +
+      `       ${t1Name.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${t2Name}\n` +
+      `${EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.COMPARE_TOTAL_WIDTH + 3)}\n` +
+      `R/G:   ${rpg.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${rpg.t2}\n` +
+      `AB:    ${ab.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${ab.t2}\n` +
+      `AVG:   ${formatRateStat(avg.t1).padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${formatRateStat(avg.t2)}\n` +
+      `HR:    ${hr.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${hr.t2}\n` +
+      `RBI:   ${rbi.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${rbi.t2}\n` +
+      `OPS:   ${formatRateStat(ops.t1).padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${formatRateStat(ops.t2)}\n` +
+      `\`\`\``;
+
+    embed.addFields({
+      name: 'Hitting Stats',
+      value: hittingText,
+      inline: false
+    });
+  }
+
+  // Pitching comparison
+  if (team1Data.pitching && team2Data.pitching) {
+    const rapg = compareValues(
+      ((parseInt(team1Data.pitching.r) || 0) / (parseInt(team1Data.gp) || 1)).toFixed(2),
+      ((parseInt(team2Data.pitching.r) || 0) / (parseInt(team2Data.gp) || 1)).toFixed(2),
+      false // lower is better
+    );
+    const whip = compareValues(
+      team1Data.pitching.whip || '0.00',
+      team2Data.pitching.whip || '0.00',
+      false // lower is better
+    );
+    const baa = compareValues(
+      team1Data.pitching.baa || '.000',
+      team2Data.pitching.baa || '.000',
+      false // lower is better
+    );
+
+    const pitchingText =
+      `\`\`\`\n` +
+      `        ${t1Name.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${t2Name}\n` +
+      `${EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.COMPARE_TOTAL_WIDTH + 4)}\n` +
+      `RA/G:   ${rapg.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${rapg.t2}\n` +
+      `WHIP:   ${formatRateStat(whip.t1).padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${formatRateStat(whip.t2)}\n` +
+      `BAA:    ${formatRateStat(baa.t1).padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${formatRateStat(baa.t2)}\n` +
+      `\`\`\``;
+
+    embed.addFields({
+      name: 'Pitching Stats',
+      value: pitchingText,
+      inline: false
+    });
+  }
+
+  // Fielding comparison
+  if (team1Data.fielding && team2Data.fielding) {
+    const nppg = compareValues(
+      team1Data.fielding.npPerGame || '0',
+      team2Data.fielding.npPerGame || '0'
+    );
+    const e = compareValues(
+      team1Data.fielding.e || '0',
+      team2Data.fielding.e || '0',
+      false // lower is better
+    );
+    const sb = compareValues(
+      team1Data.fielding.sb || '0',
+      team2Data.fielding.sb || '0'
+    );
+
+    const fieldingText =
+      `\`\`\`\n` +
+      `        ${t1Name.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${t2Name}\n` +
+      `${EMBED_FORMATTING.SEPARATOR_CHAR.repeat(EMBED_FORMATTING.COMPARE_TOTAL_WIDTH + 4)}\n` +
+      `NP/G:   ${nppg.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${nppg.t2}\n` +
+      `E:      ${e.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${e.t2}\n` +
+      `SB:     ${sb.t1.padEnd(EMBED_FORMATTING.COMPARE_VALUE_WIDTH)} ${sb.t2}\n` +
       `\`\`\``;
 
     embed.addFields({

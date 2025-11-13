@@ -19,13 +19,20 @@ export const data = new SlashCommandBuilder()
       .setDescription('Second team')
       .setRequired(true)
       .setAutocomplete(true)
+  )
+  .addBooleanOption(option =>
+    option
+      .setName('postseason')
+      .setDescription('Show playoff matchups instead of regular season')
+      .setRequired(false)
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
+    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
 
-    const teams = await sheetsService.getAllTeamNames();
+    const teams = await sheetsService.getAllTeamNames(isPlayoffs);
 
     const filtered = teams
       .filter(team => team.captain && team.captain.trim() !== '' && team.captain !== 'Unknown')
@@ -49,6 +56,7 @@ export async function execute(interaction) {
   try {
     const team1Name = interaction.options.getString('team1');
     const team2Name = interaction.options.getString('team2');
+    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
 
     if (team1Name.toLowerCase() === team2Name.toLowerCase()) {
       const errorEmbed = createErrorEmbed('Please select two different teams.');
@@ -56,15 +64,16 @@ export async function execute(interaction) {
       return;
     }
 
-    const matchupData = await sheetsService.getHeadToHeadData(team1Name, team2Name);
+    const matchupData = await sheetsService.getHeadToHeadData(team1Name, team2Name, isPlayoffs);
 
     if (!matchupData || matchupData.games.length === 0) {
-      const errorEmbed = createErrorEmbed(`No games found between ${team1Name} and ${team2Name}.`);
+      const seasonType = isPlayoffs ? 'playoff' : 'regular season';
+      const errorEmbed = createErrorEmbed(`No ${seasonType} games found between ${team1Name} and ${team2Name}.`);
       await interaction.editReply({ embeds: [errorEmbed] });
       return;
     }
 
-    const embed = await createHeadToHeadEmbed(matchupData);
+    const embed = await createHeadToHeadEmbed(matchupData, isPlayoffs);
     await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();

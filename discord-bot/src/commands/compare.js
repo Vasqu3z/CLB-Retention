@@ -1,41 +1,68 @@
 import { SlashCommandBuilder } from 'discord.js';
 import sheetsService from '../services/sheets-service.js';
-import { createPlayerCompareEmbed, createErrorEmbed } from '../utils/embed-builder.js';
+import { createPlayerCompareEmbed, createTeamCompareEmbed, createErrorEmbed } from '../utils/embed-builder.js';
 import { DISCORD_LIMITS } from '../config/league-config.js';
 
 export const data = new SlashCommandBuilder()
   .setName('compare')
-  .setDescription('Compare stats between two players')
+  .setDescription('Compare stats between two players or teams')
   .addStringOption(option =>
     option
-      .setName('player1')
-      .setDescription('First player')
+      .setName('name1')
+      .setDescription('First player or team name')
       .setRequired(true)
       .setAutocomplete(true)
   )
   .addStringOption(option =>
     option
-      .setName('player2')
-      .setDescription('Second player')
+      .setName('name2')
+      .setDescription('Second player or team name')
       .setRequired(true)
       .setAutocomplete(true)
+  )
+  .addBooleanOption(option =>
+    option
+      .setName('team')
+      .setDescription('Compare teams instead of players')
+      .setRequired(false)
+  )
+  .addBooleanOption(option =>
+    option
+      .setName('postseason')
+      .setDescription('Show playoff stats instead of regular season')
+      .setRequired(false)
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
+    const isTeam = interaction.options.getBoolean('team') || false;
+    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
 
-    const players = await sheetsService.getAllPlayerNames();
-
-    const filtered = players
-      .filter(player => player.name.toLowerCase().includes(focusedValue) || player.team.toLowerCase().includes(focusedValue))
-      .slice(0, DISCORD_LIMITS.AUTOCOMPLETE_MAX_CHOICES)
-      .map(player => ({
-        name: `${player.name} - ${player.team}`,
-        value: player.name
-      }));
-
-    await interaction.respond(filtered);
+    if (isTeam) {
+      // Autocomplete for teams
+      const teams = await sheetsService.getAllTeamNames(isPlayoffs);
+      const filtered = teams
+        .filter(team => team.captain && team.captain.trim() !== '' && team.captain !== 'Unknown')
+        .filter(team => team.name.toLowerCase().includes(focusedValue) || team.captain.toLowerCase().includes(focusedValue))
+        .slice(0, DISCORD_LIMITS.AUTOCOMPLETE_MAX_CHOICES)
+        .map(team => ({
+          name: `${team.name} - ${team.captain}`,
+          value: team.name
+        }));
+      await interaction.respond(filtered);
+    } else {
+      // Autocomplete for players
+      const players = await sheetsService.getAllPlayerNames(isPlayoffs);
+      const filtered = players
+        .filter(player => player.name.toLowerCase().includes(focusedValue) || player.team.toLowerCase().includes(focusedValue))
+        .slice(0, DISCORD_LIMITS.AUTOCOMPLETE_MAX_CHOICES)
+        .map(player => ({
+          name: `${player.name} - ${player.team}`,
+          value: player.name
+        }));
+      await interaction.respond(filtered);
+    }
   } catch (error) {
     console.error('Error in compare autocomplete:', error);
     await interaction.respond([]);
@@ -46,39 +73,66 @@ export async function execute(interaction) {
   await interaction.deferReply();
 
   try {
-    const player1Name = interaction.options.getString('player1');
-    const player2Name = interaction.options.getString('player2');
+    const name1 = interaction.options.getString('name1');
+    const name2 = interaction.options.getString('name2');
+    const isTeam = interaction.options.getBoolean('team') || false;
+    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
 
-    if (player1Name.toLowerCase() === player2Name.toLowerCase()) {
-      const errorEmbed = createErrorEmbed('Please select two different players.');
+    if (name1.toLowerCase() === name2.toLowerCase()) {
+      const entityType = isTeam ? 'teams' : 'players';
+      const errorEmbed = createErrorEmbed(`Please select two different ${entityType}.`);
       await interaction.editReply({ embeds: [errorEmbed] });
       return;
     }
 
-    const [player1Data, player2Data] = await Promise.all([
-      sheetsService.getPlayerStats(player1Name),
-      sheetsService.getPlayerStats(player2Name)
-    ]);
+    if (isTeam) {
+      // Compare teams
+      const [team1Data, team2Data] = await Promise.all([
+        sheetsService.getTeamStats(name1, isPlayoffs),
+        sheetsService.getTeamStats(name2, isPlayoffs)
+      ]);
 
-    if (!player1Data) {
-      const errorEmbed = createErrorEmbed(`Player "${player1Name}" not found.`);
-      await interaction.editReply({ embeds: [errorEmbed] });
-      return;
+      if (!team1Data) {
+        const errorEmbed = createErrorEmbed(`Team "${name1}" not found.`);
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
+
+      if (!team2Data) {
+        const errorEmbed = createErrorEmbed(`Team "${name2}" not found.`);
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
+
+      const embed = createTeamCompareEmbed(team1Data, team2Data, isPlayoffs);
+      await interaction.editReply({ embeds: [embed] });
+    } else {
+      // Compare players
+      const [player1Data, player2Data] = await Promise.all([
+        sheetsService.getPlayerStats(name1, isPlayoffs),
+        sheetsService.getPlayerStats(name2, isPlayoffs)
+      ]);
+
+      if (!player1Data) {
+        const errorEmbed = createErrorEmbed(`Player "${name1}" not found.`);
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
+
+      if (!player2Data) {
+        const errorEmbed = createErrorEmbed(`Player "${name2}" not found.`);
+        await interaction.editReply({ embeds: [errorEmbed] });
+        return;
+      }
+
+      const embed = createPlayerCompareEmbed(player1Data, player2Data, isPlayoffs);
+      await interaction.editReply({ embeds: [embed] });
     }
-
-    if (!player2Data) {
-      const errorEmbed = createErrorEmbed(`Player "${player2Name}" not found.`);
-      await interaction.editReply({ embeds: [errorEmbed] });
-      return;
-    }
-
-    const embed = createPlayerCompareEmbed(player1Data, player2Data);
-    await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();
   } catch (error) {
-    console.error('Error comparing players:', error);
-    const errorEmbed = createErrorEmbed('An error occurred while comparing players. Please try again later.');
+    console.error('Error in compare command:', error);
+    const errorEmbed = createErrorEmbed('An error occurred while comparing. Please try again later.');
     await interaction.editReply({ embeds: [errorEmbed] });
   }
 }

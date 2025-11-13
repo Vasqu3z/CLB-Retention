@@ -52,6 +52,12 @@ export const data = new SlashCommandBuilder()
       .setDescription('Stat category')
       .setRequired(true)
       .setAutocomplete(true)
+  )
+  .addBooleanOption(option =>
+    option
+      .setName('postseason')
+      .setDescription('Show playoff leaders instead of regular season')
+      .setRequired(false)
   );
 
 export async function autocomplete(interaction) {
@@ -82,6 +88,7 @@ export async function execute(interaction) {
 
   try {
     const stat = interaction.options.getString('stat');
+    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
     const statInfo = RANKING_STATS[stat];
 
     if (!statInfo) {
@@ -90,15 +97,16 @@ export async function execute(interaction) {
       return;
     }
 
-    const rankings = await sheetsService.getLeagueLeaders(statInfo.category, stat);
+    const rankings = await sheetsService.getLeagueLeaders(statInfo.category, stat, isPlayoffs);
 
     if (!rankings || rankings.length === 0) {
-      const errorEmbed = createErrorEmbed(`No data available for ${statInfo.label}`);
+      const seasonType = isPlayoffs ? 'playoff' : 'regular season';
+      const errorEmbed = createErrorEmbed(`No ${seasonType} data available for ${statInfo.label}`);
       await interaction.editReply({ embeds: [errorEmbed] });
       return;
     }
 
-    const embed = await createRankingsEmbed(statInfo.fullName, rankings, statInfo.format, statInfo.label);
+    const embed = await createRankingsEmbed(statInfo.fullName, rankings, statInfo.format, statInfo.label, isPlayoffs);
     await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();

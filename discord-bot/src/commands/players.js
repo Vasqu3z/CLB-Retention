@@ -4,7 +4,7 @@ import { createPlayerStatsEmbed, createErrorEmbed } from '../utils/embed-builder
 import { DISCORD_LIMITS } from '../config/league-config.js';
 
 export const data = new SlashCommandBuilder()
-  .setName('playerstats')
+  .setName('players')
   .setDescription('Get detailed stats for a specific player')
   .addStringOption(option =>
     option
@@ -12,13 +12,20 @@ export const data = new SlashCommandBuilder()
       .setDescription('Player name')
       .setRequired(true)
       .setAutocomplete(true)
+  )
+  .addBooleanOption(option =>
+    option
+      .setName('postseason')
+      .setDescription('Show playoff stats instead of regular season')
+      .setRequired(false)
   );
 
 export async function autocomplete(interaction) {
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase();
+    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
 
-    const players = await sheetsService.getAllPlayerNames();
+    const players = await sheetsService.getAllPlayerNames(isPlayoffs);
 
     const filtered = players
       .filter(player => player.name.toLowerCase().includes(focusedValue))
@@ -30,7 +37,7 @@ export async function autocomplete(interaction) {
 
     await interaction.respond(filtered);
   } catch (error) {
-    console.error('Error in playerstats autocomplete:', error);
+    console.error('Error in players autocomplete:', error);
     await interaction.respond([]);
   }
 }
@@ -40,15 +47,17 @@ export async function execute(interaction) {
 
   try {
     const playerName = interaction.options.getString('name');
-    const playerStats = await sheetsService.getPlayerStats(playerName);
+    const isPlayoffs = interaction.options.getBoolean('postseason') || false;
+    const playerStats = await sheetsService.getPlayerStats(playerName, isPlayoffs);
 
     if (!playerStats) {
-      const errorEmbed = createErrorEmbed(`Player "${playerName}" not found in the league.`);
+      const seasonType = isPlayoffs ? 'playoff' : 'regular season';
+      const errorEmbed = createErrorEmbed(`Player "${playerName}" not found in the ${seasonType} stats.`);
       await interaction.editReply({ embeds: [errorEmbed] });
       return;
     }
 
-    const embed = await createPlayerStatsEmbed(playerStats);
+    const embed = await createPlayerStatsEmbed(playerStats, isPlayoffs);
     await interaction.editReply({ embeds: [embed] });
 
     sheetsService.refreshCache();

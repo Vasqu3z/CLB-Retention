@@ -39,6 +39,11 @@ export const SHEET_NAMES = {
   STANDINGS: '🥇 Standings',        // League standings table (formerly 🏆 Rankings)
   IMAGE_URLS: 'Image URLs',         // Player/team/league image URLs
 
+  // Playoff sheets (v2.1)
+  PLAYOFF_PLAYER_DATA: '🏆 Players', // Playoff player stats
+  PLAYOFF_TEAM_DATA: '🏆 Teams',    // Playoff team stats
+  PLAYOFF_SCHEDULE: '🏆 Schedule',  // Playoff schedule and bracket
+
   // Deprecated (v2.0) - kept for backwards compatibility during migration
   // These will be removed in v2.1
   HITTING: '🧮 Hitting',            // DEPRECATED - use PLAYER_DATA

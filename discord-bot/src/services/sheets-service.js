@@ -162,8 +162,29 @@ class SheetsService {
     this.lastCacheUpdate = Date.now();
   }
 
-  async getAllPlayerNames() {
-    const data = await this.getSheetData(SHEET_NAMES.PLAYER_DATA, `A${DATA_START_ROW}:B`);
+  /**
+   * Helper to get the appropriate sheet name based on playoff status
+   * @param {boolean} isPlayoffs - Whether to use playoff sheets
+   * @returns {Object} Object with playerSheet, teamSheet, scheduleSheet names
+   */
+  getSheetNames(isPlayoffs = false) {
+    if (isPlayoffs) {
+      return {
+        playerSheet: SHEET_NAMES.PLAYOFF_PLAYER_DATA,
+        teamSheet: SHEET_NAMES.PLAYOFF_TEAM_DATA,
+        scheduleSheet: SHEET_NAMES.PLAYOFF_SCHEDULE
+      };
+    }
+    return {
+      playerSheet: SHEET_NAMES.PLAYER_DATA,
+      teamSheet: SHEET_NAMES.TEAM_DATA,
+      scheduleSheet: SHEET_NAMES.SCHEDULE
+    };
+  }
+
+  async getAllPlayerNames(isPlayoffs = false) {
+    const { playerSheet } = this.getSheetNames(isPlayoffs);
+    const data = await this.getSheetData(playerSheet, `A${DATA_START_ROW}:B`);
     return data
       .filter(row => row[0] && row[0].trim())
       .map(row => ({
@@ -172,8 +193,9 @@ class SheetsService {
       }));
   }
 
-  async getAllTeamNames() {
-    const data = await this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:B`);
+  async getAllTeamNames(isPlayoffs = false) {
+    const { teamSheet } = this.getSheetNames(isPlayoffs);
+    const data = await this.getSheetData(teamSheet, `A${DATA_START_ROW}:B`);
     return data
       .filter(row => row[0] && row[0].trim())
       .map(row => ({
@@ -185,22 +207,25 @@ class SheetsService {
   /**
    * Fetch comprehensive stats for a specific player across all categories
    * @param {string} playerName - Player name to search for (case-insensitive)
+   * @param {boolean} isPlayoffs - Whether to fetch playoff stats instead of regular season
    * @returns {Promise<Object|null>} Player stats object with hitting, pitching, and fielding data, or null if not found
    * @description
    * - v2.0: Reads from single Player Data sheet (columns A-Y)
+   * - v2.1: Supports playoff stats via isPlayoffs parameter
    * - Calculates derived stats (AVG, OBP, SLG, OPS, ERA, WHIP, BAA) on-the-fly
    * - Returns unified player object with all stats
    * - Missing stats default to '0'
    */
-  async getPlayerStats(playerName) {
+  async getPlayerStats(playerName, isPlayoffs = false) {
     if (!playerName) {
       return null;
     }
 
     const normalizedName = playerName.trim().toLowerCase();
+    const { playerSheet } = this.getSheetNames(isPlayoffs);
 
     // v2.0: Single sheet read instead of 3 parallel reads
-    const playerData = await this.getSheetData(SHEET_NAMES.PLAYER_DATA);
+    const playerData = await this.getSheetData(playerSheet);
 
     const playerRow = playerData
       .slice(DATA_START_ROW - 1) // Skip header row
@@ -277,17 +302,19 @@ class SheetsService {
     };
   }
 
-  async getTeamStats(teamName) {
+  async getTeamStats(teamName, isPlayoffs = false) {
     if (!teamName) {
       return null;
     }
 
     const normalizedName = teamName.trim().toLowerCase();
+    const { teamSheet } = this.getSheetNames(isPlayoffs);
 
     // v2.0: Fetch Team Data and Standings to get Runs Scored
+    // Note: Playoffs don't have standings, so we'll get runsScored from team data
     const [teamData, standingsData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.TEAM_DATA),
-      this.getSheetData(SHEET_NAMES.STANDINGS, 'A2:H')
+      this.getSheetData(teamSheet),
+      isPlayoffs ? Promise.resolve([]) : this.getSheetData(SHEET_NAMES.STANDINGS, 'A2:H')
     ]);
 
     const teamRow = teamData
@@ -378,7 +405,12 @@ class SheetsService {
     };
   }
 
-  async getStandings() {
+  async getStandings(isPlayoffs = false) {
+    // Playoffs don't have standings - they use a bracket system
+    if (isPlayoffs) {
+      return [];
+    }
+
     // v2.0: Standings sheet structure
     // Row 1 = "Standings" title, Row 2 = Blank, Row 3 = Headers, Row 4+ = Data
     // Columns: Rank, Team, W, L, Win%, RS, RA, Diff
@@ -397,11 +429,13 @@ class SheetsService {
       }));
   }
 
-  async getLeagueLeaders(category, stat) {
+  async getLeagueLeaders(category, stat, isPlayoffs = false) {
     // v2.0: Read from single Player Data sheet and calculate derived stats
+    // v2.1: Supports playoff stats via isPlayoffs parameter
+    const { playerSheet, teamSheet } = this.getSheetNames(isPlayoffs);
     const [playerData, teamData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.PLAYER_DATA),
-      this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:C`)
+      this.getSheetData(playerSheet),
+      this.getSheetData(teamSheet, `A${DATA_START_ROW}:C`)
     ]);
 
     const leaders = [];
@@ -430,7 +464,9 @@ class SheetsService {
         const bb = parseFloat(row[PLAYER_DATA_COLUMNS.BB]) || 0;
         const tb = parseFloat(row[PLAYER_DATA_COLUMNS.TB]) || 0;
 
-        const qualifyingAB = teamGP * QUALIFICATION.MIN_AB_MULTIPLIER;
+        // For playoffs, use minimum of 5 ABs or calculated threshold
+        const calculatedAB = teamGP * QUALIFICATION.MIN_AB_MULTIPLIER;
+        const qualifyingAB = isPlayoffs ? Math.max(calculatedAB, 5) : calculatedAB;
 
         let value = 0;
         let qualified = true;
@@ -475,7 +511,9 @@ class SheetsService {
         const l = parseFloat(row[PLAYER_DATA_COLUMNS.L]) || 0;
         const sv = parseFloat(row[PLAYER_DATA_COLUMNS.SV]) || 0;
 
-        const qualifyingIP = teamGP * QUALIFICATION.MIN_IP_MULTIPLIER;
+        // For playoffs, use minimum of 2 IP or calculated threshold
+        const calculatedIP = teamGP * QUALIFICATION.MIN_IP_MULTIPLIER;
+        const qualifyingIP = isPlayoffs ? Math.max(calculatedIP, 2) : calculatedIP;
 
         let value = 0;
         let qualified = true;
@@ -547,15 +585,16 @@ class SheetsService {
     return leaders.slice(0, 5);
   }
 
-  async getTeamRoster(teamName) {
+  async getTeamRoster(teamName, isPlayoffs = false) {
     if (!teamName) {
       return null;
     }
 
     const normalizedName = teamName.trim().toLowerCase();
+    const { playerSheet, teamSheet } = this.getSheetNames(isPlayoffs);
     const [playerData, teamData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.PLAYER_DATA, `A${DATA_START_ROW}:B`),
-      this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:B`)
+      this.getSheetData(playerSheet, `A${DATA_START_ROW}:B`),
+      this.getSheetData(teamSheet, `A${DATA_START_ROW}:B`)
     ]);
 
     // Find the team
@@ -577,10 +616,12 @@ class SheetsService {
     };
   }
 
-  async getScheduleData(filter) {
+  async getScheduleData(filter, isPlayoffs = false) {
     // v2.0: Read consolidated Schedule sheet
+    // v2.1: Supports playoff schedule via isPlayoffs parameter
     // Columns: Week, Away Team, Home Team, Away Score, Home Score, Winner, Game #, Date, MVP, Home RS, Away RS, Box Score URL
-    const scheduleData = await this.getSheetData(SHEET_NAMES.SCHEDULE, 'A2:L');
+    const { scheduleSheet } = this.getSheetNames(isPlayoffs);
+    const scheduleData = await this.getSheetData(scheduleSheet, 'A2:L');
 
     // Build games array from Schedule sheet data
     const games = scheduleData
@@ -649,9 +690,11 @@ class SheetsService {
     }
   }
 
-  async getHeadToHeadData(team1Name, team2Name) {
+  async getHeadToHeadData(team1Name, team2Name, isPlayoffs = false) {
     // v2.0: Get all completed games from Schedule sheet
-    const scheduleData = await this.getSheetData(SHEET_NAMES.SCHEDULE, 'A2:L');
+    // v2.1: Supports playoff games via isPlayoffs parameter
+    const { scheduleSheet } = this.getSheetNames(isPlayoffs);
+    const scheduleData = await this.getSheetData(scheduleSheet, 'A2:L');
 
     const team1Lower = team1Name.toLowerCase().trim();
     const team2Lower = team2Name.toLowerCase().trim();

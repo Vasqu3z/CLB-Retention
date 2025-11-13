@@ -44,6 +44,23 @@ export const data = new SlashCommandBuilder()
           .setRequired(true)
           .setAutocomplete(true)
       )
+  )
+  .addSubcommand(subcommand =>
+    subcommand
+      .setName('postseason')
+      .setDescription('View playoff bracket')
+      .addStringOption(option =>
+        option
+          .setName('round')
+          .setDescription('Playoff round')
+          .setRequired(true)
+          .addChoices(
+            { name: 'Wildcard Round', value: 'wc' },
+            { name: 'Castle Series', value: 'cs' },
+            { name: 'Kingdom Cup', value: 'kc' },
+            { name: 'Full Bracket', value: 'full' }
+          )
+      )
   );
 
 export async function autocomplete(interaction) {
@@ -120,6 +137,50 @@ export async function execute(interaction) {
 
       const embed = await createScheduleEmbed(games, filter, displayValue, isPlayoffs);
       await interaction.editReply({ embeds: [embed] });
+
+    } else if (subcommand === 'postseason') {
+      const roundChoice = interaction.options.getString('round');
+      isPlayoffs = true;
+
+      // Map round choices to round numbers and names
+      const roundMap = {
+        'wc': { number: 1, name: 'Wildcard Round' },
+        'cs': { number: 2, name: 'Castle Series' },
+        'kc': { number: 3, name: 'Kingdom Cup' }
+      };
+
+      if (roundChoice === 'full') {
+        // Show all playoff games
+        filter = { type: 'all' };
+        displayValue = 'Full Bracket';
+
+        const games = await sheetsService.getScheduleData(filter, true);
+
+        if (!games || games.length === 0) {
+          const errorEmbed = createErrorEmbed('No playoff games found.');
+          await interaction.editReply({ embeds: [errorEmbed] });
+          return;
+        }
+
+        const embed = await createScheduleEmbed(games, filter, displayValue, true);
+        await interaction.editReply({ embeds: [embed] });
+      } else {
+        // Show specific round
+        const round = roundMap[roundChoice];
+        filter = { type: 'round', roundNumber: round.number };
+        displayValue = round.name;
+
+        const games = await sheetsService.getScheduleData(filter, true);
+
+        if (!games || games.length === 0) {
+          const errorEmbed = createErrorEmbed(`No playoff games found for ${round.name}.`);
+          await interaction.editReply({ embeds: [errorEmbed] });
+          return;
+        }
+
+        const embed = await createScheduleEmbed(games, filter, displayValue, true);
+        await interaction.editReply({ embeds: [embed] });
+      }
 
     } else {
       // Recent, Current, or Upcoming - automatically check both regular season and playoffs

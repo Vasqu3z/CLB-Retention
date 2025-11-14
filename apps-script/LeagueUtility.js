@@ -98,27 +98,20 @@ function getPlayoffGameSheets(boxScoreSS) {
 
   var sheets = boxScoreSS.getSheets();
   var playoffGameSheets = [];
-  var skippedSheets = [];
 
   for (var i = 0; i < sheets.length; i++) {
     var sheetName = sheets[i].getName();
-    // Include only playoff game sheets (starting with #P)
+    // Include only playoff game sheets (starting with *)
     if (sheetName.startsWith(CONFIG.PLAYOFF_GAME_PREFIX)) {
-      if (validateGameSheet(sheets[i])) {
-        playoffGameSheets.push(sheets[i]);
-      } else {
-        skippedSheets.push(sheetName);
-        logWarning("Playoff Game Sheets", "Skipped invalid sheet", sheetName);
-      }
+      // Skip validation for playoff games to improve performance
+      // Playoff games are assumed to be valid if they have the correct prefix
+      // Validation reads data from every sheet, which is expensive when there are many sheets
+      playoffGameSheets.push(sheets[i]);
     }
   }
 
-  if (skippedSheets.length > 0) {
-    logWarning("Playoff Game Sheets", "Skipped " + skippedSheets.length + " invalid sheet(s)", skippedSheets.join(", "));
-  }
-
   _spreadsheetCache.playoffGameSheets = playoffGameSheets;
-  logInfo("Cache", "Loaded " + playoffGameSheets.length + " valid playoff game sheets into cache");
+  logInfo("Cache", "Loaded " + playoffGameSheets.length + " playoff game sheets into cache");
   return playoffGameSheets;
 }
 

@@ -951,12 +951,27 @@ function writeGameResultsToPlayoffSchedule(scheduleData) {
     scheduleSheet.getRange(1, 4, 1, 9).setFontWeight("bold").setBackground("#e8e8e8");
   }
 
+  // Read current schedule structure (after it was just rewritten by updatePlayoffScheduleStructure)
+  var lastRow = scheduleSheet.getLastRow();
+  if (lastRow < 2) {
+    logWarning("Write Playoff Game Results", "No schedule data found in sheet", "");
+    return;
+  }
+
+  var currentSchedule = scheduleSheet.getRange(2, 1, lastRow - 1, 3).getValues();
+
   // Write game results for each completed game
   for (var i = 0; i < scheduleData.length; i++) {
     var game = scheduleData[i];
 
     if (game.played && game.sheetId) {
-      var rowNum = i + 2; // +2 because data starts at row 2 (row 1 is headers)
+      // Find the row where this game appears in the current schedule structure
+      var rowNum = findPlayoffGameRow(currentSchedule, game.week, game.awayTeam, game.homeTeam);
+
+      if (rowNum < 0) {
+        logWarning("Write Playoff Game Results", "Could not find matching row for game", game.week + ": " + game.awayTeam + " @ " + game.homeTeam);
+        continue;
+      }
 
       // Build box score URL
       var boxScoreUrl = "";
@@ -990,4 +1005,29 @@ function writeGameResultsToPlayoffSchedule(scheduleData) {
   }
 
   logInfo("Write Playoff Game Results", "Wrote " + scheduleData.filter(function(g) { return g.played; }).length + " completed playoff games to Playoff Schedule");
+}
+
+/**
+ * Find the row number for a playoff game in the current schedule structure
+ * @param {Array<Array>} currentSchedule - Current schedule data from sheet (columns A-C)
+ * @param {string} code - Game code (e.g., "CS1-A", "KC2")
+ * @param {string} awayTeam - Away team name
+ * @param {string} homeTeam - Home team name
+ * @returns {number} Row number (1-indexed), or -1 if not found
+ */
+function findPlayoffGameRow(currentSchedule, code, awayTeam, homeTeam) {
+  for (var i = 0; i < currentSchedule.length; i++) {
+    var rowCode = String(currentSchedule[i][0] || "").trim();
+    var rowAway = String(currentSchedule[i][1] || "").trim();
+    var rowHome = String(currentSchedule[i][2] || "").trim();
+
+    // Match by code AND teams to ensure we have the right game
+    if (rowCode === String(code).trim() &&
+        rowAway === String(awayTeam).trim() &&
+        rowHome === String(homeTeam).trim()) {
+      return i + 2; // +2 because data starts at row 2 (row 1 is headers)
+    }
+  }
+
+  return -1; // Not found
 }

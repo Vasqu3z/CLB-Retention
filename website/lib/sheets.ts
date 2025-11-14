@@ -2,6 +2,17 @@
 // This module reads data from the Google Sheets spreadsheet
 
 import { google } from 'googleapis';
+import {
+  STANDINGS_SHEET,
+  PLAYER_STATS_SHEET,
+  TEAM_STATS_SHEET,
+  SCHEDULE_SHEET,
+  QUALIFICATION_THRESHOLDS,
+  PLAYOFF_SERIES,
+  DISPLAY_CONFIG,
+  buildSheetRange,
+  buildFullRange,
+} from '@/config/sheets';
 
 const sheets = google.sheets('v4');
 
@@ -53,6 +64,11 @@ export interface StandingsRow {
   h2hNote?: string; // Head-to-head record tooltip
 }
 
+/**
+ * Fetches regular season standings with win/loss records and run differentials
+ * @param isPlayoffs - If true, returns empty array (playoffs use bracket system instead)
+ * @returns Array of team standings sorted by rank with optional H2H tooltips
+ */
 export async function getStandings(isPlayoffs: boolean = false): Promise<StandingsRow[]> {
   // Playoffs don't have standings - they use a bracket system
   if (isPlayoffs) {
@@ -61,10 +77,17 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
 
   // Read from standings sheet, rows 4-11 (8 teams), columns A-H
   // Skip rows 1-3: row 1 = title, row 2 = blank, row 3 = headers
-  const sheetName = "'🥇 Standings'";
+  const sheetName = STANDINGS_SHEET.NAME;
 
   try {
-    const data = await getSheetData(`${sheetName}!A4:H11`);
+    const range = buildSheetRange(
+      sheetName,
+      STANDINGS_SHEET.DATA_START_ROW,
+      STANDINGS_SHEET.DATA_END_ROW,
+      STANDINGS_SHEET.START_COL,
+      STANDINGS_SHEET.END_COL
+    );
+    const data = await getSheetData(range);
 
     // Also fetch cell notes for H2H records (column B = team names)
     const auth = await getAuthClient();
@@ -72,10 +95,17 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
 
     let notes: string[] = [];
     try {
+      const notesRange = buildSheetRange(
+        sheetName,
+        STANDINGS_SHEET.DATA_START_ROW,
+        STANDINGS_SHEET.DATA_END_ROW,
+        STANDINGS_SHEET.NOTES_COL,
+        STANDINGS_SHEET.NOTES_COL
+      );
       const response = await sheets.spreadsheets.get({
         auth: auth as any,
         spreadsheetId: sheetId,
-        ranges: [`${sheetName}!B4:B11`],
+        ranges: [notesRange],
         includeGridData: true,
       });
 
@@ -93,14 +123,14 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
     }
 
     return data.map((row, idx) => ({
-      rank: String(row[0] || ''),
-      team: String(row[1] || ''),
-      wins: Number(row[2]) || 0,
-      losses: Number(row[3]) || 0,
-      winPct: String(row[4] || '0.000'),
-      runsScored: Number(row[5]) || 0,
-      runsAllowed: Number(row[6]) || 0,
-      runDiff: Number(row[7]) || 0,
+      rank: String(row[STANDINGS_SHEET.COLUMNS.RANK] || ''),
+      team: String(row[STANDINGS_SHEET.COLUMNS.TEAM] || ''),
+      wins: Number(row[STANDINGS_SHEET.COLUMNS.WINS]) || 0,
+      losses: Number(row[STANDINGS_SHEET.COLUMNS.LOSSES]) || 0,
+      winPct: String(row[STANDINGS_SHEET.COLUMNS.WIN_PCT] || '0.000'),
+      runsScored: Number(row[STANDINGS_SHEET.COLUMNS.RUNS_SCORED]) || 0,
+      runsAllowed: Number(row[STANDINGS_SHEET.COLUMNS.RUNS_ALLOWED]) || 0,
+      runDiff: Number(row[STANDINGS_SHEET.COLUMNS.RUN_DIFF]) || 0,
       h2hNote: notes[idx] || undefined,
     }));
   } catch (error) {
@@ -146,8 +176,15 @@ export interface PlayerStats {
 export async function getTeamRoster(teamName: string, isPlayoffs: boolean = false): Promise<PlayerStats[]> {
   try {
     // Read from player stats sheet
-    const sheetName = isPlayoffs ? "'🏆 Players'!A2:Z100" : "'🧮 Players'!A2:Z100";
-    const playerData = await getSheetData(sheetName);
+    const sheetName = isPlayoffs ? PLAYER_STATS_SHEET.PLAYOFFS : PLAYER_STATS_SHEET.REGULAR_SEASON;
+    const range = buildFullRange(
+      sheetName,
+      PLAYER_STATS_SHEET.DATA_START_ROW,
+      PLAYER_STATS_SHEET.MAX_ROWS,
+      PLAYER_STATS_SHEET.START_COL,
+      PLAYER_STATS_SHEET.END_COL
+    );
+    const playerData = await getSheetData(range);
 
     return parsePlayerStats(playerData, teamName);
   } catch (error) {
@@ -157,29 +194,35 @@ export async function getTeamRoster(teamName: string, isPlayoffs: boolean = fals
   }
 }
 
-// Helper function to parse player stats (used by both regular and playoff)
+/**
+ * Parses raw player stat data from Google Sheets into structured PlayerStats objects
+ * Calculates rate stats (AVG, OBP, SLG, OPS, ERA, WHIP, BAA) from counting stats
+ * @param playerData - 2D array from Sheets API (columns A-Z)
+ * @param teamFilter - Optional team name to filter roster by
+ * @returns Array of PlayerStats with both counting and calculated rate stats
+ */
 function parsePlayerStats(playerData: any[][], teamFilter?: string): PlayerStats[] {
   const players: PlayerStats[] = [];
 
   for (const row of playerData) {
-    const playerName = String(row[0] || '').trim();
-    const team = String(row[1] || '').trim();
+    const playerName = String(row[PLAYER_STATS_SHEET.COLUMNS.NAME] || '').trim();
+    const team = String(row[PLAYER_STATS_SHEET.COLUMNS.TEAM] || '').trim();
 
     if (!playerName) continue;
     if (teamFilter && team !== teamFilter) continue;
 
-    const gp = Number(row[2]) || 0;
+    const gp = Number(row[PLAYER_STATS_SHEET.COLUMNS.GP]) || 0;
 
-    // Hitting stats (columns D-L, indices 3-11)
-    const ab = Number(row[3]) || 0;
-    const h = Number(row[4]) || 0;
-    const hr = Number(row[5]) || 0;
-    const rbi = Number(row[6]) || 0;
-    const bb = Number(row[7]) || 0;
-    const k = Number(row[8]) || 0;
-    const rob = Number(row[9]) || 0;
-    const dp = Number(row[10]) || 0;
-    const tb = Number(row[11]) || 0;
+    // Hitting stats (columns D-L)
+    const ab = Number(row[PLAYER_STATS_SHEET.COLUMNS.AB]) || 0;
+    const h = Number(row[PLAYER_STATS_SHEET.COLUMNS.H]) || 0;
+    const hr = Number(row[PLAYER_STATS_SHEET.COLUMNS.HR]) || 0;
+    const rbi = Number(row[PLAYER_STATS_SHEET.COLUMNS.RBI]) || 0;
+    const bb = Number(row[PLAYER_STATS_SHEET.COLUMNS.BB]) || 0;
+    const k = Number(row[PLAYER_STATS_SHEET.COLUMNS.K]) || 0;
+    const rob = Number(row[PLAYER_STATS_SHEET.COLUMNS.ROB]) || 0;
+    const dp = Number(row[PLAYER_STATS_SHEET.COLUMNS.DP]) || 0;
+    const tb = Number(row[PLAYER_STATS_SHEET.COLUMNS.TB]) || 0;
 
     // Calculate hitting rate stats
     const avg = ab > 0 ? (h / ab).toFixed(3).substring(1) : '.000';
@@ -191,28 +234,28 @@ function parsePlayerStats(playerData: any[][], teamFilter?: string): PlayerStats
       ? ((h + bb) / (ab + bb) + tb / ab).toFixed(3)
       : '0.000';
 
-    // Pitching stats (columns M-O for W/L/SV, then P-V for pitching, indices 12-21)
-    const w = Number(row[12]) || 0;
-    const l = Number(row[13]) || 0;
-    const sv = Number(row[14]) || 0;
-    const ip = Number(row[15]) || 0;
-    const bf = Number(row[16]) || 0;
-    const pitchingH = Number(row[17]) || 0;
-    const pitchingHR = Number(row[18]) || 0;
-    const r = Number(row[19]) || 0;
-    const pitchingBB = Number(row[20]) || 0;
-    const pitchingK = Number(row[21]) || 0;
+    // Pitching stats (columns M-O for W/L/SV, then P-V for pitching)
+    const w = Number(row[PLAYER_STATS_SHEET.COLUMNS.W]) || 0;
+    const l = Number(row[PLAYER_STATS_SHEET.COLUMNS.L]) || 0;
+    const sv = Number(row[PLAYER_STATS_SHEET.COLUMNS.SV]) || 0;
+    const ip = Number(row[PLAYER_STATS_SHEET.COLUMNS.IP]) || 0;
+    const bf = Number(row[PLAYER_STATS_SHEET.COLUMNS.BF]) || 0;
+    const pitchingH = Number(row[PLAYER_STATS_SHEET.COLUMNS.H_ALLOWED]) || 0;
+    const pitchingHR = Number(row[PLAYER_STATS_SHEET.COLUMNS.HR_ALLOWED]) || 0;
+    const r = Number(row[PLAYER_STATS_SHEET.COLUMNS.R]) || 0;
+    const pitchingBB = Number(row[PLAYER_STATS_SHEET.COLUMNS.BB_ALLOWED]) || 0;
+    const pitchingK = Number(row[PLAYER_STATS_SHEET.COLUMNS.K_PITCHED]) || 0;
 
     // Calculate pitching rate stats
     const era = ip > 0 ? ((r * 9) / ip).toFixed(2) : '0.00';
     const whip = ip > 0 ? ((pitchingH + pitchingBB) / ip).toFixed(2) : '0.00';
     const baa = bf > 0 ? (pitchingH / bf).toFixed(3).substring(1) : '.000';
 
-    // Fielding stats (columns W-Z, indices 22-25)
-    const np = Number(row[22]) || 0;
-    const e = Number(row[23]) || 0;
-    const sb = Number(row[24]) || 0;
-    const cs = Number(row[25]) || 0;
+    // Fielding stats (columns W-Z)
+    const np = Number(row[PLAYER_STATS_SHEET.COLUMNS.NP]) || 0;
+    const e = Number(row[PLAYER_STATS_SHEET.COLUMNS.E]) || 0;
+    const sb = Number(row[PLAYER_STATS_SHEET.COLUMNS.SB]) || 0;
+    const cs = Number(row[PLAYER_STATS_SHEET.COLUMNS.CS]) || 0;
 
     // Calculate OAA (Outs Above Average)
     const oaa = np - e;
@@ -272,34 +315,39 @@ export interface ScheduleGame {
 
 export async function getSchedule(): Promise<ScheduleGame[]> {
   // Read from "📅 Schedule" sheet - includes game results in columns D-L
-  // Columns: A=Week, B=Away Team, C=Home Team, D=Away Score, E=Home Score,
-  // F=Winning Team, G=Losing Team, H=MVP, I=WP, J=LP, K=SV, L=Box Score Link
-  const scheduleData = await getSheetData("'📅 Schedule'!A2:L100");
+  const range = buildFullRange(
+    SCHEDULE_SHEET.REGULAR_SEASON,
+    SCHEDULE_SHEET.DATA_START_ROW,
+    SCHEDULE_SHEET.MAX_ROWS,
+    SCHEDULE_SHEET.START_COL,
+    SCHEDULE_SHEET.END_COL
+  );
+  const scheduleData = await getSheetData(range);
 
   const schedule: ScheduleGame[] = [];
 
   for (const row of scheduleData) {
-    const week = Number(row[0]) || 0;
-    const awayTeam = String(row[1] || '').trim();
-    const homeTeam = String(row[2] || '').trim();
+    const week = Number(row[SCHEDULE_SHEET.COLUMNS.WEEK]) || 0;
+    const awayTeam = String(row[SCHEDULE_SHEET.COLUMNS.AWAY_TEAM] || '').trim();
+    const homeTeam = String(row[SCHEDULE_SHEET.COLUMNS.HOME_TEAM] || '').trim();
 
     if (week === 0 || !homeTeam || !awayTeam) continue;
 
     // Check if game has been played (column D will have away score if played)
-    const awayScore = row[3];
-    const homeScore = row[4];
+    const awayScore = row[SCHEDULE_SHEET.COLUMNS.AWAY_SCORE];
+    const homeScore = row[SCHEDULE_SHEET.COLUMNS.HOME_SCORE];
     const hasScores = awayScore !== undefined && awayScore !== null && awayScore !== '' &&
                       homeScore !== undefined && homeScore !== null && homeScore !== '';
 
     if (hasScores) {
       // Game has been played - read results from columns D-L
-      const winner = String(row[5] || '').trim();
-      const loser = String(row[6] || '').trim();
-      const mvp = String(row[7] || '').trim();
-      const winningPitcher = String(row[8] || '').trim();
-      const losingPitcher = String(row[9] || '').trim();
-      const savePitcher = String(row[10] || '').trim();
-      const boxScoreUrl = String(row[11] || '').trim();
+      const winner = String(row[SCHEDULE_SHEET.COLUMNS.WINNER] || '').trim();
+      const loser = String(row[SCHEDULE_SHEET.COLUMNS.LOSER] || '').trim();
+      const mvp = String(row[SCHEDULE_SHEET.COLUMNS.MVP] || '').trim();
+      const winningPitcher = String(row[SCHEDULE_SHEET.COLUMNS.WINNING_PITCHER] || '').trim();
+      const losingPitcher = String(row[SCHEDULE_SHEET.COLUMNS.LOSING_PITCHER] || '').trim();
+      const savePitcher = String(row[SCHEDULE_SHEET.COLUMNS.SAVE_PITCHER] || '').trim();
+      const boxScoreUrl = String(row[SCHEDULE_SHEET.COLUMNS.BOX_SCORE_URL] || '').trim();
 
       schedule.push({
         week,
@@ -347,34 +395,39 @@ export interface PlayoffGame {
 
 export async function getPlayoffSchedule(): Promise<PlayoffGame[]> {
   // Read from "🏆 Schedule" sheet - identical structure to regular schedule
-  // Columns: A=Week(code), B=Away Team, C=Home Team, D=Away Score, E=Home Score,
-  // F=Winning Team, G=Losing Team, H=MVP, I=WP, J=LP, K=SV, L=Box Score Link
-  const scheduleData = await getSheetData("'🏆 Schedule'!A2:L100");
+  const range = buildFullRange(
+    SCHEDULE_SHEET.PLAYOFFS,
+    SCHEDULE_SHEET.DATA_START_ROW,
+    SCHEDULE_SHEET.MAX_ROWS,
+    SCHEDULE_SHEET.START_COL,
+    SCHEDULE_SHEET.END_COL
+  );
+  const scheduleData = await getSheetData(range);
 
   const schedule: PlayoffGame[] = [];
 
   for (const row of scheduleData) {
-    const code = String(row[0] || '').trim();
-    const awayTeam = String(row[1] || '').trim();
-    const homeTeam = String(row[2] || '').trim();
+    const code = String(row[SCHEDULE_SHEET.COLUMNS.WEEK] || '').trim();
+    const awayTeam = String(row[SCHEDULE_SHEET.COLUMNS.AWAY_TEAM] || '').trim();
+    const homeTeam = String(row[SCHEDULE_SHEET.COLUMNS.HOME_TEAM] || '').trim();
 
     if (!code || !homeTeam || !awayTeam) continue;
 
     // Check if game has been played
-    const awayScore = row[3];
-    const homeScore = row[4];
+    const awayScore = row[SCHEDULE_SHEET.COLUMNS.AWAY_SCORE];
+    const homeScore = row[SCHEDULE_SHEET.COLUMNS.HOME_SCORE];
     const hasScores = awayScore !== undefined && awayScore !== null && awayScore !== '' &&
                       homeScore !== undefined && homeScore !== null && homeScore !== '';
 
     if (hasScores) {
       // Game has been played
-      const winner = String(row[5] || '').trim();
-      const loser = String(row[6] || '').trim();
-      const mvp = String(row[7] || '').trim();
-      const winningPitcher = String(row[8] || '').trim();
-      const losingPitcher = String(row[9] || '').trim();
-      const savePitcher = String(row[10] || '').trim();
-      const boxScoreUrl = String(row[11] || '').trim();
+      const winner = String(row[SCHEDULE_SHEET.COLUMNS.WINNER] || '').trim();
+      const loser = String(row[SCHEDULE_SHEET.COLUMNS.LOSER] || '').trim();
+      const mvp = String(row[SCHEDULE_SHEET.COLUMNS.MVP] || '').trim();
+      const winningPitcher = String(row[SCHEDULE_SHEET.COLUMNS.WINNING_PITCHER] || '').trim();
+      const losingPitcher = String(row[SCHEDULE_SHEET.COLUMNS.LOSING_PITCHER] || '').trim();
+      const savePitcher = String(row[SCHEDULE_SHEET.COLUMNS.SAVE_PITCHER] || '').trim();
+      const boxScoreUrl = String(row[SCHEDULE_SHEET.COLUMNS.BOX_SCORE_URL] || '').trim();
 
       schedule.push({
         code,
@@ -477,13 +530,12 @@ export function groupGamesBySeries(games: PlayoffGame[]): Map<string, SeriesResu
   }
 
   // Determine series winners based on wins required
-  // This is a simple heuristic: if one team has ≥2, ≥3, or ≥4 wins, they won
   for (const series of seriesMap.values()) {
-    if (series.winsA >= 4 || series.winsB >= 4) {
+    if (series.winsA >= PLAYOFF_SERIES.BEST_OF_7_WINS_REQUIRED || series.winsB >= PLAYOFF_SERIES.BEST_OF_7_WINS_REQUIRED) {
       series.winner = series.winsA > series.winsB ? series.teamA : series.teamB;
-    } else if (series.winsA >= 3 || series.winsB >= 3) {
+    } else if (series.winsA >= PLAYOFF_SERIES.BEST_OF_5_WINS_REQUIRED || series.winsB >= PLAYOFF_SERIES.BEST_OF_5_WINS_REQUIRED) {
       series.winner = series.winsA > series.winsB ? series.teamA : series.teamB;
-    } else if (series.winsA >= 2 || series.winsB >= 2) {
+    } else if (series.winsA >= PLAYOFF_SERIES.BEST_OF_3_WINS_REQUIRED || series.winsB >= PLAYOFF_SERIES.BEST_OF_3_WINS_REQUIRED) {
       series.winner = series.winsA > series.winsB ? series.teamA : series.teamB;
     }
   }
@@ -584,43 +636,50 @@ export interface TeamData {
 export async function getTeamData(teamName?: string, isPlayoffs: boolean = false): Promise<TeamData[]> {
   try {
     // Read from team stats sheet
-    const sheetName = isPlayoffs ? "'🏆 Teams'!A2:Z20" : "'🧮 Teams'!A2:Z20";
-    const data = await getSheetData(sheetName);
+    const sheetName = isPlayoffs ? TEAM_STATS_SHEET.PLAYOFFS : TEAM_STATS_SHEET.REGULAR_SEASON;
+    const range = buildFullRange(
+      sheetName,
+      TEAM_STATS_SHEET.DATA_START_ROW,
+      TEAM_STATS_SHEET.MAX_ROWS,
+      TEAM_STATS_SHEET.START_COL,
+      TEAM_STATS_SHEET.END_COL
+    );
+    const data = await getSheetData(range);
 
     const teamDataList = data
-      .filter((row) => row[0] && String(row[0]).trim() !== '')
+      .filter((row) => row[TEAM_STATS_SHEET.COLUMNS.NAME] && String(row[TEAM_STATS_SHEET.COLUMNS.NAME]).trim() !== '')
       .map((row) => ({
-        teamName: String(row[0] || '').trim(),
-        captain: String(row[1] || '').trim(),
-        gp: Number(row[2]) || 0,
-        wins: Number(row[3]) || 0,
-        losses: Number(row[4]) || 0,
+        teamName: String(row[TEAM_STATS_SHEET.COLUMNS.NAME] || '').trim(),
+        captain: String(row[TEAM_STATS_SHEET.COLUMNS.CAPTAIN] || '').trim(),
+        gp: Number(row[TEAM_STATS_SHEET.COLUMNS.GP]) || 0,
+        wins: Number(row[TEAM_STATS_SHEET.COLUMNS.WINS]) || 0,
+        losses: Number(row[TEAM_STATS_SHEET.COLUMNS.LOSSES]) || 0,
         hitting: {
-          ab: Number(row[5]) || 0,
-          h: Number(row[6]) || 0,
-          hr: Number(row[7]) || 0,
-          rbi: Number(row[8]) || 0,
-          bb: Number(row[9]) || 0,
-          k: Number(row[10]) || 0,
-          rob: Number(row[11]) || 0,
-          dp: Number(row[12]) || 0,
-          tb: Number(row[13]) || 0,
+          ab: Number(row[TEAM_STATS_SHEET.COLUMNS.AB]) || 0,
+          h: Number(row[TEAM_STATS_SHEET.COLUMNS.H]) || 0,
+          hr: Number(row[TEAM_STATS_SHEET.COLUMNS.HR]) || 0,
+          rbi: Number(row[TEAM_STATS_SHEET.COLUMNS.RBI]) || 0,
+          bb: Number(row[TEAM_STATS_SHEET.COLUMNS.BB]) || 0,
+          k: Number(row[TEAM_STATS_SHEET.COLUMNS.K]) || 0,
+          rob: Number(row[TEAM_STATS_SHEET.COLUMNS.ROB]) || 0,
+          dp: Number(row[TEAM_STATS_SHEET.COLUMNS.DP]) || 0,
+          tb: Number(row[TEAM_STATS_SHEET.COLUMNS.TB]) || 0,
         },
         pitching: {
-          ip: Number(row[14]) || 0,
-          bf: Number(row[15]) || 0,
-          h: Number(row[16]) || 0,
-          hr: Number(row[17]) || 0,
-          r: Number(row[18]) || 0,
-          bb: Number(row[19]) || 0,
-          k: Number(row[20]) || 0,
-          sv: Number(row[21]) || 0,
+          ip: Number(row[TEAM_STATS_SHEET.COLUMNS.IP]) || 0,
+          bf: Number(row[TEAM_STATS_SHEET.COLUMNS.BF]) || 0,
+          h: Number(row[TEAM_STATS_SHEET.COLUMNS.H_ALLOWED]) || 0,
+          hr: Number(row[TEAM_STATS_SHEET.COLUMNS.HR_ALLOWED]) || 0,
+          r: Number(row[TEAM_STATS_SHEET.COLUMNS.R]) || 0,
+          bb: Number(row[TEAM_STATS_SHEET.COLUMNS.BB_ALLOWED]) || 0,
+          k: Number(row[TEAM_STATS_SHEET.COLUMNS.K_PITCHED]) || 0,
+          sv: Number(row[TEAM_STATS_SHEET.COLUMNS.SV]) || 0,
         },
         fielding: {
-          np: Number(row[22]) || 0,
-          e: Number(row[23]) || 0,
-          sb: Number(row[24]) || 0,
-          cs: Number(row[25]) || 0,
+          np: Number(row[TEAM_STATS_SHEET.COLUMNS.NP]) || 0,
+          e: Number(row[TEAM_STATS_SHEET.COLUMNS.E]) || 0,
+          sb: Number(row[TEAM_STATS_SHEET.COLUMNS.SB]) || 0,
+          cs: Number(row[TEAM_STATS_SHEET.COLUMNS.CS]) || 0,
         },
       }));
 
@@ -647,11 +706,23 @@ export interface LeaderEntry {
   isTieSummary?: boolean;
 }
 
+/**
+ * Fetches all players from the stats sheet without filtering by team
+ * @param isPlayoffs - If true, reads from playoff sheet; otherwise regular season
+ * @returns Array of all PlayerStats objects with calculated rate stats
+ */
 async function getAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]> {
   try {
     // Read all players from player stats sheet (not filtered by team)
-    const sheetName = isPlayoffs ? "'🏆 Players'!A2:Z100" : "'🧮 Players'!A2:Z100";
-    const playerData = await getSheetData(sheetName);
+    const sheetName = isPlayoffs ? PLAYER_STATS_SHEET.PLAYOFFS : PLAYER_STATS_SHEET.REGULAR_SEASON;
+    const range = buildFullRange(
+      sheetName,
+      PLAYER_STATS_SHEET.DATA_START_ROW,
+      PLAYER_STATS_SHEET.MAX_ROWS,
+      PLAYER_STATS_SHEET.START_COL,
+      PLAYER_STATS_SHEET.END_COL
+    );
+    const playerData = await getSheetData(range);
     return parsePlayerStats(playerData);
   } catch (error) {
     console.error(`Error fetching all players (isPlayoffs=${isPlayoffs}):`, error);
@@ -660,6 +731,12 @@ async function getAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]
   }
 }
 
+/**
+ * Calculates the average games played across all teams
+ * Used as baseline for qualification thresholds (multiply by AB_MULTIPLIER or IP_MULTIPLIER)
+ * @param isPlayoffs - If true, reads playoff team data; otherwise regular season
+ * @returns Average games played per team, or 0 if no team data
+ */
 async function getAverageTeamGP(isPlayoffs: boolean = false): Promise<number> {
   const teamData = await getTeamData(undefined, isPlayoffs);
   if (teamData.length === 0) return 0;
@@ -667,6 +744,13 @@ async function getAverageTeamGP(isPlayoffs: boolean = false): Promise<number> {
   return totalGP / teamData.length;
 }
 
+/**
+ * Formats leaderboard data with proper ranking, handling ties and display limits
+ * Groups tied players and shows exactly 5 entries (individual players or tie summaries)
+ * @param players - Array of player data with value and formatted string
+ * @param isAscending - If true, sorts ascending (lower is better); false for descending
+ * @returns Array of exactly 5 LeaderEntry objects with proper tie labeling (T-1, T-2, etc.)
+ */
 function formatLeaders(
   players: { player: string; team: string; value: number; formatted: string }[],
   isAscending: boolean = false
@@ -697,13 +781,13 @@ function formatLeaders(
     groups.push({ rank: currentRank, players: currentGroup });
   }
 
-  // Build leaders array, ensuring exactly 5 entries
+  // Build leaders array, ensuring exactly DISPLAY_CONFIG.LEADERS_COUNT entries
   const leaders: LeaderEntry[] = [];
 
   for (const group of groups) {
-    if (leaders.length >= 5) break;
+    if (leaders.length >= DISPLAY_CONFIG.LEADERS_COUNT) break;
 
-    const remainingSlots = 5 - leaders.length;
+    const remainingSlots = DISPLAY_CONFIG.LEADERS_COUNT - leaders.length;
 
     if (group.players.length <= remainingSlots) {
       // Add all players individually
@@ -734,12 +818,21 @@ function formatLeaders(
   return leaders;
 }
 
+/**
+ * Calculates batting leaderboards across 6 categories (OBP, SLG, OPS, H, HR, RBI)
+ * Rate stats (OBP/SLG/OPS) require qualification (AB >= avgTeamGP * 2.1, min 5 for playoffs)
+ * Counting stats (H/HR/RBI) have no qualification requirement
+ * @param isPlayoffs - If true, uses playoff data and lower minimum AB; otherwise regular season
+ * @returns Object with 6 leaderboards, each containing top 5 leaders
+ */
 export async function getCalculatedBattingLeaders(isPlayoffs: boolean = false) {
   const [players, avgTeamGP] = await Promise.all([getAllPlayers(isPlayoffs), getAverageTeamGP(isPlayoffs)]);
 
-  // Calculate qualifying AB threshold with a minimum of 5 ABs for playoffs
-  const calculatedThreshold = avgTeamGP * 2.1;
-  const qualifyingAB = isPlayoffs ? Math.max(calculatedThreshold, 5) : calculatedThreshold;
+  // Calculate qualifying AB threshold with minimum for playoffs
+  const calculatedThreshold = avgTeamGP * QUALIFICATION_THRESHOLDS.BATTING.AB_MULTIPLIER;
+  const qualifyingAB = isPlayoffs
+    ? Math.max(calculatedThreshold, QUALIFICATION_THRESHOLDS.BATTING.PLAYOFF_MINIMUM_AB)
+    : calculatedThreshold;
 
   // Rate stats require qualification
   const qualifiedHitters = players.filter(p => p.ab && p.ab >= qualifyingAB);
@@ -818,12 +911,21 @@ export async function getCalculatedBattingLeaders(isPlayoffs: boolean = false) {
   return { obp, hits, hr, rbi, slg, ops };
 }
 
+/**
+ * Calculates pitching leaderboards across 7 categories (IP, W, L, SV, ERA, WHIP, BAA)
+ * Rate stats (ERA/WHIP/BAA) require qualification (IP >= avgTeamGP * 1.0, min 2 for playoffs)
+ * Counting stats (IP/W/L/SV) have no qualification requirement
+ * @param isPlayoffs - If true, uses playoff data and lower minimum IP; otherwise regular season
+ * @returns Object with 7 leaderboards, each containing top 5 leaders
+ */
 export async function getCalculatedPitchingLeaders(isPlayoffs: boolean = false) {
   const [players, avgTeamGP] = await Promise.all([getAllPlayers(isPlayoffs), getAverageTeamGP(isPlayoffs)]);
 
-  // Calculate qualifying IP threshold with a minimum of 2 IP for playoffs
-  const calculatedThreshold = avgTeamGP * 1.0;
-  const qualifyingIP = isPlayoffs ? Math.max(calculatedThreshold, 2) : calculatedThreshold;
+  // Calculate qualifying IP threshold with minimum for playoffs
+  const calculatedThreshold = avgTeamGP * QUALIFICATION_THRESHOLDS.PITCHING.IP_MULTIPLIER;
+  const qualifyingIP = isPlayoffs
+    ? Math.max(calculatedThreshold, QUALIFICATION_THRESHOLDS.PITCHING.PLAYOFF_MINIMUM_IP)
+    : calculatedThreshold;
 
   // Rate stats require qualification
   const qualifiedPitchers = players.filter(p => p.ip && p.ip >= qualifyingIP);
@@ -912,6 +1014,12 @@ export async function getCalculatedPitchingLeaders(isPlayoffs: boolean = false) 
   return { ip, wins, losses, saves, era, whip, baa };
 }
 
+/**
+ * Calculates fielding leaderboards across 3 categories (NP, E, SB)
+ * All fielding stats are counting stats with no qualification requirement
+ * @param isPlayoffs - If true, uses playoff data; otherwise regular season
+ * @returns Object with 3 leaderboards (Nice Plays, Errors, Stolen Bases), each with top 5 leaders
+ */
 export async function getCalculatedFieldingLeaders(isPlayoffs: boolean = false) {
   const players = await getAllPlayers(isPlayoffs);
 

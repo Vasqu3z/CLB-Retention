@@ -881,9 +881,9 @@ function getSeriesWinner(scheduleData, roundCode, seriesLetter) {
   var seriesGames = [];
   for (var i = 0; i < scheduleData.length; i++) {
     var game = scheduleData[i];
-    if (!game.code) continue;
+    if (!game.week) continue;  // Fixed: was game.code, should be game.week
 
-    var code = String(game.code).toUpperCase();
+    var code = String(game.week).toUpperCase();  // Fixed: was game.code, should be game.week
 
     // Check if code matches round
     if (code.indexOf(roundCode) !== 0) continue;

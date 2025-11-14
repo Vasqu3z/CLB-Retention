@@ -150,15 +150,44 @@ function updateAllPlayoffs() {
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating playoff schedule...", "Update Postseason", -1);
     var step3Start = new Date();
 
-    // Get regular season standings for seeding
-    var regularSeasonGameData = _spreadsheetCache.gameData;
-    if (!regularSeasonGameData) {
-      // If not cached, process regular season quickly to get standings
-      regularSeasonGameData = processAllGameSheetsOnce();
+    // Check if we need to regenerate the playoff schedule structure
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var scheduleSheet = ss.getSheetByName(CONFIG.PLAYOFF_SCHEDULE_SHEET);
+    var needsStructureUpdate = false;
+
+    if (!scheduleSheet || scheduleSheet.getLastRow() < 2) {
+      // No schedule exists yet, need to generate it
+      needsStructureUpdate = true;
+    } else {
+      // Check if schedule has real teams or just placeholders
+      var firstGameRow = scheduleSheet.getRange(2, 2, 1, 2).getValues()[0];  // Away and Home team
+      var awayTeam = String(firstGameRow[0] || "").trim();
+      var homeTeam = String(firstGameRow[1] || "").trim();
+
+      // If teams are TBD or placeholders, need to regenerate with seeds
+      if (!awayTeam || !homeTeam || awayTeam === "TBD" || homeTeam === "TBD" ||
+          awayTeam.indexOf("Winner") >= 0 || homeTeam.indexOf("Winner") >= 0) {
+        needsStructureUpdate = true;
+      }
     }
 
-    // Generate/update playoff schedule structure with seeds and placeholders
-    updatePlayoffScheduleStructure(regularSeasonGameData.teamStatsWithH2H, playoffGameData.scheduleData);
+    // Only regenerate structure if needed (saves processing regular season games)
+    if (needsStructureUpdate) {
+      logInfo("Update Playoffs", "Regenerating playoff schedule structure with seeding");
+
+      // Get regular season standings for seeding
+      var regularSeasonGameData = _spreadsheetCache.gameData;
+      if (!regularSeasonGameData) {
+        SpreadsheetApp.getActiveSpreadsheet().toast("Loading regular season standings for playoff seeding...", "Update Postseason", -1);
+        // If not cached, process regular season to get standings
+        regularSeasonGameData = processAllGameSheetsOnce();
+      }
+
+      // Generate/update playoff schedule structure with seeds and placeholders
+      updatePlayoffScheduleStructure(regularSeasonGameData.teamStatsWithH2H, playoffGameData.scheduleData);
+    } else {
+      logInfo("Update Playoffs", "Using existing playoff schedule structure (teams already set)");
+    }
 
     // Write completed game results to the schedule
     writeGameResultsToPlayoffSchedule(playoffGameData.scheduleData);

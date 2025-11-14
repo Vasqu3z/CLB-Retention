@@ -2,7 +2,11 @@
 // Master game sheet processor - reads all games once and returns all needed data
 // 100% config-driven I/O, no hardcoded ranges
 
-// ===== MASTER FUNCTION: Process all game sheets once =====
+/**
+ * Processes all regular season game sheets in a single pass
+ * Reads all game data once and returns consolidated stats for players, teams, and schedule
+ * @returns {object} Game data object containing playerStats, teamStats, teamStatsWithH2H, scheduleData, and boxScoreUrl
+ */
 function processAllGameSheetsOnce() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var boxScoreSS = getBoxScoreSpreadsheet();

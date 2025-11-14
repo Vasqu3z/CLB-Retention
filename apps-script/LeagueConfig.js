@@ -230,7 +230,10 @@ var CONFIG = {
       PLAYER_NAME_COL: 0,         // Column A (1)
       TEAM_NAME_COL: 1,           // Column B (2)
       DATA_START_COL: 2,          // Column C (3) - First stat (GP)
-      TOTAL_STAT_COLUMNS: 23      // GP (1) + Hitting (9) + WLS (3) + Pitching (7) + Fielding (3)
+      TOTAL_STAT_COLUMNS: 23,     // GP (1) + Hitting (9) + WLS (3) + Pitching (7) + Fielding (3)
+      HITTING_STATS_COUNT: 9,     // AB, H, HR, RBI, BB, K, ROB, DP, TB
+      PITCHING_STATS_COUNT: 7,    // IP, BF, H, HR, R, BB, K (no SV in array)
+      FIELDING_STATS_COUNT: 3     // NP, E, SB
     },
 
     // Team Sheets layout

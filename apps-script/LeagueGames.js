@@ -779,10 +779,9 @@ function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, ru
 /**
  * Auto-generates playoff schedule structure with team seeds and placeholders
  * Called before writing game results to ensure all games are present
- * @param {object} teamStatsWithH2H - Team stats with head-to-head records for seeding
  * @param {Array} scheduleData - Completed playoff games data for determining winners
  */
-function updatePlayoffScheduleStructure(teamStatsWithH2H, scheduleData) {
+function updatePlayoffScheduleStructure(scheduleData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var scheduleSheet = ss.getSheetByName(CONFIG.PLAYOFF_SCHEDULE_SHEET);
 
@@ -813,24 +812,17 @@ function updatePlayoffScheduleStructure(teamStatsWithH2H, scheduleData) {
     }
   }
 
-  // Use existing seeds if available, otherwise calculate from standings
+  // Use existing seeds if available, otherwise read from standings sheet (FAST!)
   var seeds = {};
   if (Object.keys(existingSeeds).length >= 4) {
     // Seeds already set, use them
     seeds = existingSeeds;
     logInfo("Update Playoff Schedule", "Using existing playoff seeds from schedule");
   } else {
-    // Calculate seeds from regular season standings
-    var teamOrder = Object.keys(teamStatsWithH2H);
-    teamOrder.sort(function(teamA, teamB) {
-      return compareTeamsByStandings(teamA, teamB, teamStatsWithH2H);
-    });
-
-    // Extract top 8 teams for playoff seeding
-    for (var i = 0; i < Math.min(8, teamOrder.length); i++) {
-      seeds[i + 1] = teamOrder[i];
-    }
-    logInfo("Update Playoff Schedule", "Calculated playoff seeds from regular season standings");
+    // Read seeds from already-calculated standings sheet
+    // This avoids reprocessing 50+ regular season games!
+    seeds = getPlayoffSeedsFromStandings();
+    logInfo("Update Playoff Schedule", "Read playoff seeds from standings sheet");
   }
 
   // Determine series winners from completed games

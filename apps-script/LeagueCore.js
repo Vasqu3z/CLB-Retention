@@ -150,40 +150,10 @@ function updateAllPlayoffs() {
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating playoff schedule...", "Update Postseason", -1);
     var step3Start = new Date();
 
-    // Get regular season standings for seeding (only if needed)
-    var regularSeasonGameData = _spreadsheetCache.gameData;
-
-    // Only process regular season if we don't have standings cached
-    // This is needed for initial playoff bracket seeding
-    if (!regularSeasonGameData) {
-      var ss = SpreadsheetApp.getActiveSpreadsheet();
-      var scheduleSheet = ss.getSheetByName(CONFIG.PLAYOFF_SCHEDULE_SHEET);
-
-      // Check if we need seeding (no schedule exists or has TBD teams)
-      var needsSeeding = false;
-      if (!scheduleSheet || scheduleSheet.getLastRow() < 2) {
-        needsSeeding = true;
-      } else {
-        // Check first CS game for TBD (would indicate initial setup needed)
-        var firstCSRow = scheduleSheet.getRange(2, 2, 1, 2).getValues()[0];
-        var awayTeam = String(firstCSRow[0] || "").trim();
-        if (awayTeam === "TBD" || awayTeam === "") {
-          needsSeeding = true;
-        }
-      }
-
-      if (needsSeeding) {
-        SpreadsheetApp.getActiveSpreadsheet().toast("Loading regular season standings for playoff seeding...", "Update Postseason", -1);
-        regularSeasonGameData = processAllGameSheetsOnce();
-      } else {
-        // Create minimal teamStatsWithH2H object (seeding already done, just need structure for function)
-        regularSeasonGameData = { teamStatsWithH2H: {} };
-      }
-    }
-
     // Always update playoff schedule structure to propagate series winners
     // This function handles both initial seeding AND advancing winners to next rounds
-    updatePlayoffScheduleStructure(regularSeasonGameData.teamStatsWithH2H, playoffGameData.scheduleData);
+    // Note: Seeds are read from standings sheet (fast) or preserved from existing schedule
+    updatePlayoffScheduleStructure(playoffGameData.scheduleData);
 
     // Write completed game results to the schedule
     writeGameResultsToPlayoffSchedule(playoffGameData.scheduleData);

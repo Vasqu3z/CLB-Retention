@@ -122,6 +122,56 @@ function clearCache() {
   logInfo("Cache", "Cleared spreadsheet cache");
 }
 
+/**
+ * Read playoff seeds from the already-calculated standings sheet
+ * This avoids reprocessing 50+ regular season games just for seeding
+ * @returns {object} Object with seed numbers as keys (1-8) and team names as values
+ */
+function getPlayoffSeedsFromStandings() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var standingsSheet = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
+
+  if (!standingsSheet) {
+    logWarning("Get Playoff Seeds", "Standings sheet not found", CONFIG.STANDINGS_SHEET);
+    return {};
+  }
+
+  var lastRow = standingsSheet.getLastRow();
+  if (lastRow < 5) { // Need at least 4 teams (header + 4 rows)
+    logWarning("Get Playoff Seeds", "Not enough teams in standings", "Only " + (lastRow - 1) + " teams found");
+    return {};
+  }
+
+  // Standings sheet format: Row 1 = header, Row 2+ = teams in order
+  // Column A or B typically has team names (depends on if there's a rank column)
+  // Read first 8 teams (for potential 8-team bracket)
+  var numTeams = Math.min(8, lastRow - 1);
+
+  // Try to find team name column - usually column A (rank) and B (team name)
+  var firstRow = standingsSheet.getRange(1, 1, 1, 3).getValues()[0];
+  var teamCol = 1; // Default to column A
+
+  // Check if first column looks like "Rank" or "#"
+  var firstHeader = String(firstRow[0]).toLowerCase();
+  if (firstHeader.indexOf("rank") >= 0 || firstHeader === "#" || firstHeader === "rk") {
+    teamCol = 2; // Team names are in column B
+  }
+
+  // Read team names from standings (already in ranked order)
+  var teamData = standingsSheet.getRange(2, teamCol, numTeams, 1).getValues();
+
+  var seeds = {};
+  for (var i = 0; i < teamData.length; i++) {
+    var teamName = String(teamData[i][0]).trim();
+    if (teamName && teamName !== "") {
+      seeds[i + 1] = teamName; // Seed 1 = first place, Seed 2 = second place, etc.
+    }
+  }
+
+  logInfo("Get Playoff Seeds", "Read " + Object.keys(seeds).length + " playoff seeds from standings sheet");
+  return seeds;
+}
+
 // ===== GAME SHEET VALIDATION =====
 
 function validateGameSheet(sheet) {

@@ -634,17 +634,23 @@ class SheetsService {
         // For playoffs, extract round prefix from game codes; for regular season, parse as integer
         let week;
         let roundName = null;
+        let seriesId = null;
         if (isPlayoffs) {
           // Playoff schedule uses game codes like: WC1, WC2, CS1-A, CS2-B, KC1, KC2
-          // Extract the round prefix (WC, CS, KC, Q, S, F)
+          // Extract: round prefix (WC, CS, KC), game number, and optional series letter (A, B)
           const gameCode = weekRaw.trim();
-          const match = gameCode.match(/^([A-Z]+)/); // Extract leading letters
+          const match = gameCode.match(/^([A-Z]+)(\d+)(?:-([A-Z]))?$/); // e.g., "CS1-A" -> ["CS1-A", "CS", "1", "A"]
 
           if (match) {
             const roundPrefix = match[1]; // e.g., "WC", "CS", "KC"
+            const gameNumber = match[2]; // e.g., "1", "2"
+            const seriesLetter = match[3]; // e.g., "A", "B", or undefined
+
             week = PLAYOFF_CODE_TO_ROUND[roundPrefix];
             roundName = PLAYOFF_ROUNDS[week]; // Convert number back to full name
-            console.log(`[SHEETS] Playoff code "${gameCode}" -> prefix "${roundPrefix}" -> week ${week} (${roundName})`);
+            seriesId = seriesLetter ? `${roundName} - Series ${seriesLetter}` : roundName;
+
+            console.log(`[SHEETS] Playoff code "${gameCode}" -> prefix "${roundPrefix}", game ${gameNumber}, series "${seriesLetter || 'none'}" -> week ${week} (${seriesId})`);
           } else {
             // Fallback to parseInt if no prefix match
             week = parseInt(gameCode);
@@ -670,6 +676,7 @@ class SheetsService {
         return {
           week,
           roundName,
+          seriesId, // e.g., "Castle Series - Series A" or just "Wildcard Round"
           homeTeam,
           awayTeam,
           played,

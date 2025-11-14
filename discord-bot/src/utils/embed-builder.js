@@ -368,10 +368,12 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
 
   embed.setTitle(title);
 
-  // Group games by week for team schedules
+  // Group games by week/round/series
   const gamesByWeek = {};
   games.forEach(game => {
-    const weekKey = isPlayoffs && game.roundName ? game.roundName : `Week ${game.week}`;
+    // For playoffs, use seriesId (which includes series letter if present)
+    // For regular season, use week number
+    const weekKey = isPlayoffs && game.seriesId ? game.seriesId : `Week ${game.week}`;
     if (!gamesByWeek[weekKey]) {
       gamesByWeek[weekKey] = [];
     }
@@ -380,14 +382,25 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
 
   // Build schedule display
   const weekKeys = Object.keys(gamesByWeek).sort((a, b) => {
-    // For playoffs, match round names to numbers; for regular season, parse week number
+    // For playoffs, handle series identifiers; for regular season, parse week number
     let numA, numB;
     if (isPlayoffs) {
-      // Check if this is a known playoff round name
-      numA = Object.entries(PLAYOFF_ROUNDS).find(([num, name]) => name === a)?.[0] || parseInt(a.replace('Week ', ''));
-      numB = Object.entries(PLAYOFF_ROUNDS).find(([num, name]) => name === b)?.[0] || parseInt(b.replace('Week ', ''));
+      // Extract base round name (e.g., "Castle Series" from "Castle Series - Series A")
+      const baseRoundA = a.includes(' - Series ') ? a.split(' - Series ')[0] : a;
+      const baseRoundB = b.includes(' - Series ') ? b.split(' - Series ')[0] : b;
+      const seriesLetterA = a.includes(' - Series ') ? a.split(' - Series ')[1] : '';
+      const seriesLetterB = b.includes(' - Series ') ? b.split(' - Series ')[1] : '';
+
+      // Map round names to numbers
+      numA = Object.entries(PLAYOFF_ROUNDS).find(([num, name]) => name === baseRoundA)?.[0] || parseInt(a.replace('Week ', ''));
+      numB = Object.entries(PLAYOFF_ROUNDS).find(([num, name]) => name === baseRoundB)?.[0] || parseInt(b.replace('Week ', ''));
       numA = parseInt(numA);
       numB = parseInt(numB);
+
+      // If same round, sort by series letter
+      if (numA === numB) {
+        return seriesLetterA.localeCompare(seriesLetterB);
+      }
     } else {
       numA = parseInt(a.replace('Week ', ''));
       numB = parseInt(b.replace('Week ', ''));

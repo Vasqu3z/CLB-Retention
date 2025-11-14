@@ -35,7 +35,9 @@ import {
   TEAM_STATS_COLUMNS,
   DATA_START_ROW,
   QUALIFICATION,
-  CACHE_CONFIG
+  CACHE_CONFIG,
+  PLAYOFF_CODE_TO_ROUND,
+  PLAYOFF_ROUNDS
 } from '../config/league-config.js';
 import logger from '../utils/logger.js';
 
@@ -162,8 +164,29 @@ class SheetsService {
     this.lastCacheUpdate = Date.now();
   }
 
-  async getAllPlayerNames() {
-    const data = await this.getSheetData(SHEET_NAMES.PLAYER_DATA, `A${DATA_START_ROW}:B`);
+  /**
+   * Helper to get the appropriate sheet name based on playoff status
+   * @param {boolean} isPlayoffs - Whether to use playoff sheets
+   * @returns {Object} Object with playerSheet, teamSheet, scheduleSheet names
+   */
+  getSheetNames(isPlayoffs = false) {
+    if (isPlayoffs) {
+      return {
+        playerSheet: SHEET_NAMES.PLAYOFF_PLAYER_DATA,
+        teamSheet: SHEET_NAMES.PLAYOFF_TEAM_DATA,
+        scheduleSheet: SHEET_NAMES.PLAYOFF_SCHEDULE
+      };
+    }
+    return {
+      playerSheet: SHEET_NAMES.PLAYER_DATA,
+      teamSheet: SHEET_NAMES.TEAM_DATA,
+      scheduleSheet: SHEET_NAMES.SCHEDULE
+    };
+  }
+
+  async getAllPlayerNames(isPlayoffs = false) {
+    const { playerSheet } = this.getSheetNames(isPlayoffs);
+    const data = await this.getSheetData(playerSheet, `A${DATA_START_ROW}:B`);
     return data
       .filter(row => row[0] && row[0].trim())
       .map(row => ({
@@ -172,8 +195,9 @@ class SheetsService {
       }));
   }
 
-  async getAllTeamNames() {
-    const data = await this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:B`);
+  async getAllTeamNames(isPlayoffs = false) {
+    const { teamSheet } = this.getSheetNames(isPlayoffs);
+    const data = await this.getSheetData(teamSheet, `A${DATA_START_ROW}:B`);
     return data
       .filter(row => row[0] && row[0].trim())
       .map(row => ({
@@ -185,22 +209,25 @@ class SheetsService {
   /**
    * Fetch comprehensive stats for a specific player across all categories
    * @param {string} playerName - Player name to search for (case-insensitive)
+   * @param {boolean} isPlayoffs - Whether to fetch playoff stats instead of regular season
    * @returns {Promise<Object|null>} Player stats object with hitting, pitching, and fielding data, or null if not found
    * @description
    * - v2.0: Reads from single Player Data sheet (columns A-Y)
+   * - v2.1: Supports playoff stats via isPlayoffs parameter
    * - Calculates derived stats (AVG, OBP, SLG, OPS, ERA, WHIP, BAA) on-the-fly
    * - Returns unified player object with all stats
    * - Missing stats default to '0'
    */
-  async getPlayerStats(playerName) {
+  async getPlayerStats(playerName, isPlayoffs = false) {
     if (!playerName) {
       return null;
     }
 
     const normalizedName = playerName.trim().toLowerCase();
+    const { playerSheet } = this.getSheetNames(isPlayoffs);
 
     // v2.0: Single sheet read instead of 3 parallel reads
-    const playerData = await this.getSheetData(SHEET_NAMES.PLAYER_DATA);
+    const playerData = await this.getSheetData(playerSheet);
 
     const playerRow = playerData
       .slice(DATA_START_ROW - 1) // Skip header row
@@ -277,17 +304,19 @@ class SheetsService {
     };
   }
 
-  async getTeamStats(teamName) {
+  async getTeamStats(teamName, isPlayoffs = false) {
     if (!teamName) {
       return null;
     }
 
     const normalizedName = teamName.trim().toLowerCase();
+    const { teamSheet } = this.getSheetNames(isPlayoffs);
 
     // v2.0: Fetch Team Data and Standings to get Runs Scored
+    // Note: Playoffs don't have standings, so we'll get runsScored from team data
     const [teamData, standingsData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.TEAM_DATA),
-      this.getSheetData(SHEET_NAMES.STANDINGS, 'A2:H')
+      this.getSheetData(teamSheet),
+      isPlayoffs ? Promise.resolve([]) : this.getSheetData(SHEET_NAMES.STANDINGS, 'A2:H')
     ]);
 
     const teamRow = teamData
@@ -378,7 +407,12 @@ class SheetsService {
     };
   }
 
-  async getStandings() {
+  async getStandings(isPlayoffs = false) {
+    // Playoffs don't have standings - they use a bracket system
+    if (isPlayoffs) {
+      return [];
+    }
+
     // v2.0: Standings sheet structure
     // Row 1 = "Standings" title, Row 2 = Blank, Row 3 = Headers, Row 4+ = Data
     // Columns: Rank, Team, W, L, Win%, RS, RA, Diff
@@ -397,11 +431,13 @@ class SheetsService {
       }));
   }
 
-  async getLeagueLeaders(category, stat) {
+  async getLeagueLeaders(category, stat, isPlayoffs = false) {
     // v2.0: Read from single Player Data sheet and calculate derived stats
+    // v2.1: Supports playoff stats via isPlayoffs parameter
+    const { playerSheet, teamSheet } = this.getSheetNames(isPlayoffs);
     const [playerData, teamData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.PLAYER_DATA),
-      this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:C`)
+      this.getSheetData(playerSheet),
+      this.getSheetData(teamSheet, `A${DATA_START_ROW}:C`)
     ]);
 
     const leaders = [];
@@ -430,7 +466,9 @@ class SheetsService {
         const bb = parseFloat(row[PLAYER_DATA_COLUMNS.BB]) || 0;
         const tb = parseFloat(row[PLAYER_DATA_COLUMNS.TB]) || 0;
 
-        const qualifyingAB = teamGP * QUALIFICATION.MIN_AB_MULTIPLIER;
+        // For playoffs, use minimum of 5 ABs or calculated threshold
+        const calculatedAB = teamGP * QUALIFICATION.MIN_AB_MULTIPLIER;
+        const qualifyingAB = isPlayoffs ? Math.max(calculatedAB, 5) : calculatedAB;
 
         let value = 0;
         let qualified = true;
@@ -475,7 +513,9 @@ class SheetsService {
         const l = parseFloat(row[PLAYER_DATA_COLUMNS.L]) || 0;
         const sv = parseFloat(row[PLAYER_DATA_COLUMNS.SV]) || 0;
 
-        const qualifyingIP = teamGP * QUALIFICATION.MIN_IP_MULTIPLIER;
+        // For playoffs, use minimum of 2 IP or calculated threshold
+        const calculatedIP = teamGP * QUALIFICATION.MIN_IP_MULTIPLIER;
+        const qualifyingIP = isPlayoffs ? Math.max(calculatedIP, 2) : calculatedIP;
 
         let value = 0;
         let qualified = true;
@@ -547,15 +587,16 @@ class SheetsService {
     return leaders.slice(0, 5);
   }
 
-  async getTeamRoster(teamName) {
+  async getTeamRoster(teamName, isPlayoffs = false) {
     if (!teamName) {
       return null;
     }
 
     const normalizedName = teamName.trim().toLowerCase();
+    const { playerSheet, teamSheet } = this.getSheetNames(isPlayoffs);
     const [playerData, teamData] = await Promise.all([
-      this.getSheetData(SHEET_NAMES.PLAYER_DATA, `A${DATA_START_ROW}:B`),
-      this.getSheetData(SHEET_NAMES.TEAM_DATA, `A${DATA_START_ROW}:B`)
+      this.getSheetData(playerSheet, `A${DATA_START_ROW}:B`),
+      this.getSheetData(teamSheet, `A${DATA_START_ROW}:B`)
     ]);
 
     // Find the team
@@ -577,16 +618,48 @@ class SheetsService {
     };
   }
 
-  async getScheduleData(filter) {
+  async getScheduleData(filter, isPlayoffs = false) {
     // v2.0: Read consolidated Schedule sheet
+    // v2.1: Supports playoff schedule via isPlayoffs parameter
     // Columns: Week, Away Team, Home Team, Away Score, Home Score, Winner, Game #, Date, MVP, Home RS, Away RS, Box Score URL
-    const scheduleData = await this.getSheetData(SHEET_NAMES.SCHEDULE, 'A2:L');
+    const { scheduleSheet } = this.getSheetNames(isPlayoffs);
+    const scheduleData = await this.getSheetData(scheduleSheet, 'A2:L');
 
     // Build games array from Schedule sheet data
     const games = scheduleData
       .filter(row => row[SCHEDULE_COLUMNS.WEEK] && row[SCHEDULE_COLUMNS.AWAY_TEAM] && row[SCHEDULE_COLUMNS.HOME_TEAM])
       .map(row => {
-        const week = parseInt(row[SCHEDULE_COLUMNS.WEEK]);
+        const weekRaw = row[SCHEDULE_COLUMNS.WEEK];
+
+        // For playoffs, extract round prefix from game codes; for regular season, parse as integer
+        let week;
+        let roundName = null;
+        let seriesId = null;
+        if (isPlayoffs) {
+          // Playoff schedule uses game codes like: WC1, WC2, CS1-A, CS2-B, KC1, KC2
+          // Extract: round prefix (WC, CS, KC), game number, and optional series letter (A, B)
+          const gameCode = weekRaw.trim();
+          const match = gameCode.match(/^([A-Z]+)(\d+)(?:-([A-Z]))?$/); // e.g., "CS1-A" -> ["CS1-A", "CS", "1", "A"]
+
+          if (match) {
+            const roundPrefix = match[1]; // e.g., "WC", "CS", "KC"
+            const gameNumber = match[2]; // e.g., "1", "2"
+            const seriesLetter = match[3]; // e.g., "A", "B", or undefined
+
+            week = PLAYOFF_CODE_TO_ROUND[roundPrefix];
+            roundName = PLAYOFF_ROUNDS[week]; // Convert number back to full name
+            seriesId = seriesLetter ? `${roundName} - Series ${seriesLetter}` : roundName;
+
+            console.log(`[SHEETS] Playoff code "${gameCode}" -> prefix "${roundPrefix}", game ${gameNumber}, series "${seriesLetter || 'none'}" -> week ${week} (${seriesId})`);
+          } else {
+            // Fallback to parseInt if no prefix match
+            week = parseInt(gameCode);
+            console.log(`[SHEETS] Playoff code "${gameCode}" -> parseInt -> week ${week}`);
+          }
+        } else {
+          week = parseInt(weekRaw);
+        }
+
         const awayTeam = row[SCHEDULE_COLUMNS.AWAY_TEAM]?.trim();
         const homeTeam = row[SCHEDULE_COLUMNS.HOME_TEAM]?.trim();
         const awayScore = row[SCHEDULE_COLUMNS.AWAY_SCORE];
@@ -602,6 +675,8 @@ class SheetsService {
 
         return {
           week,
+          roundName,
+          seriesId, // e.g., "Castle Series - Series A" or just "Wildcard Round"
           homeTeam,
           awayTeam,
           played,
@@ -614,19 +689,35 @@ class SheetsService {
     const maxCompletedWeek = Math.max(0, ...games.filter(g => g.played).map(g => g.week));
     const currentWeek = maxCompletedWeek + 1;
 
+    // Debug logging for recent/current/upcoming
+    if (filter.type === 'recent' || filter.type === 'current' || filter.type === 'upcoming') {
+      console.log(`[SHEETS] ${filter.type} filter for ${isPlayoffs ? 'playoffs' : 'regular season'}:`);
+      console.log(`[SHEETS] Total games: ${games.length}`);
+      console.log(`[SHEETS] Played games: ${games.filter(g => g.played).length}`);
+      console.log(`[SHEETS] Max completed week: ${maxCompletedWeek}`);
+      console.log(`[SHEETS] Current week: ${currentWeek}`);
+      console.log(`[SHEETS] All game weeks: ${games.map(g => `W${g.week}${g.played ? '✓' : '○'}`).join(', ')}`);
+    }
+
     // Filter based on request type
     switch (filter.type) {
       case 'recent':
         // Last completed week
-        return games.filter(g => g.played && g.week === maxCompletedWeek);
+        const recentGames = games.filter(g => g.played && g.week === maxCompletedWeek);
+        console.log(`[SHEETS] Recent: Looking for played games in week ${maxCompletedWeek}, found ${recentGames.length}`);
+        return recentGames;
 
       case 'current':
         // Current week (may have some completed games)
-        return games.filter(g => g.week === currentWeek);
+        const currentGames = games.filter(g => g.week === currentWeek);
+        console.log(`[SHEETS] Current: Looking for games in week ${currentWeek}, found ${currentGames.length}`);
+        return currentGames;
 
       case 'upcoming':
         // Next week
-        return games.filter(g => g.week === currentWeek + 1);
+        const upcomingGames = games.filter(g => g.week === currentWeek + 1);
+        console.log(`[SHEETS] Upcoming: Looking for games in week ${currentWeek + 1}, found ${upcomingGames.length}`);
+        return upcomingGames;
 
       case 'team':
         // All games for a specific team
@@ -640,6 +731,15 @@ class SheetsService {
         // All games for a specific week
         return games.filter(g => g.week === filter.weekNumber);
 
+      case 'round':
+        // All games for a specific playoff round (round number maps to week number)
+        console.log(`[SHEETS] Filtering for round ${filter.roundNumber}`);
+        console.log(`[SHEETS] Total games available:`, games.length);
+        console.log(`[SHEETS] Game week numbers:`, games.map(g => `${g.week}(${g.roundName})`).join(', '));
+        const filtered = games.filter(g => g.week === filter.roundNumber);
+        console.log(`[SHEETS] Games matching week ${filter.roundNumber}:`, filtered.length);
+        return filtered;
+
       case 'all':
         // All games (used for determining completed weeks)
         return games;
@@ -649,9 +749,11 @@ class SheetsService {
     }
   }
 
-  async getHeadToHeadData(team1Name, team2Name) {
+  async getHeadToHeadData(team1Name, team2Name, isPlayoffs = false) {
     // v2.0: Get all completed games from Schedule sheet
-    const scheduleData = await this.getSheetData(SHEET_NAMES.SCHEDULE, 'A2:L');
+    // v2.1: Supports playoff games via isPlayoffs parameter
+    const { scheduleSheet } = this.getSheetNames(isPlayoffs);
+    const scheduleData = await this.getSheetData(scheduleSheet, 'A2:L');
 
     const team1Lower = team1Name.toLowerCase().trim();
     const team2Lower = team2Name.toLowerCase().trim();
@@ -660,7 +762,23 @@ class SheetsService {
     const matchupGames = [];
 
     scheduleData.forEach(row => {
-      const week = parseInt(row[SCHEDULE_COLUMNS.WEEK]);
+      const weekRaw = row[SCHEDULE_COLUMNS.WEEK];
+
+      // For playoffs, extract round prefix from game codes; for regular season, parse as integer
+      let week;
+      if (isPlayoffs) {
+        const gameCode = weekRaw?.trim();
+        const match = gameCode?.match(/^([A-Z]+)/);
+        if (match) {
+          const roundPrefix = match[1];
+          week = PLAYOFF_CODE_TO_ROUND[roundPrefix];
+        } else {
+          week = parseInt(weekRaw);
+        }
+      } else {
+        week = parseInt(weekRaw);
+      }
+
       const awayTeam = row[SCHEDULE_COLUMNS.AWAY_TEAM]?.trim();
       const homeTeam = row[SCHEDULE_COLUMNS.HOME_TEAM]?.trim();
       const awayScore = row[SCHEDULE_COLUMNS.AWAY_SCORE];

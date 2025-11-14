@@ -5,15 +5,23 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 export default async function TeamsPage() {
-  const [teamData, standings] = await Promise.all([
-    getTeamData(),
-    getStandings(),
+  // Fetch both regular season and playoff data
+  const [regularTeamData, regularStandings, playoffTeamData, playoffStandings] = await Promise.all([
+    getTeamData(undefined, false),
+    getStandings(false),
+    getTeamData(undefined, true),
+    getStandings(true),
   ]);
 
   return (
     <div className="max-w-7xl mx-auto">
       <h1 className="text-4xl font-bold mb-8">Team Statistics</h1>
-      <TeamStatsView teamData={teamData} standings={standings} />
+      <TeamStatsView
+        regularTeamData={regularTeamData}
+        regularStandings={regularStandings}
+        playoffTeamData={playoffTeamData}
+        playoffStandings={playoffStandings}
+      />
     </div>
   );
 }

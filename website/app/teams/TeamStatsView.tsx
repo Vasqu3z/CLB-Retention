@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { TeamData, StandingsRow } from '@/lib/sheets';
 import Link from 'next/link';
 import { getActiveTeams } from '@/config/league';
+import SeasonToggle from '@/components/SeasonToggle';
 
 type SortField = string;
 type SortDirection = 'asc' | 'desc';
@@ -33,11 +34,23 @@ function SortableHeader({ field, sortField, sortDirection, onSort, children }: S
 }
 
 interface TeamStatsViewProps {
-  teamData: TeamData[];
-  standings: StandingsRow[];
+  regularTeamData: TeamData[];
+  regularStandings: StandingsRow[];
+  playoffTeamData: TeamData[];
+  playoffStandings: StandingsRow[];
 }
 
-export default function TeamStatsView({ teamData, standings }: TeamStatsViewProps) {
+export default function TeamStatsView({
+  regularTeamData,
+  regularStandings,
+  playoffTeamData,
+  playoffStandings
+}: TeamStatsViewProps) {
+  const [isPlayoffs, setIsPlayoffs] = useState(false);
+
+  // Use appropriate data based on toggle
+  const teamData = isPlayoffs ? playoffTeamData : regularTeamData;
+  const standings = isPlayoffs ? playoffStandings : regularStandings;
   const [hittingSortField, setHittingSortField] = useState<SortField>('rGame');
   const [hittingSortDirection, setHittingSortDirection] = useState<SortDirection>('desc');
   const [pitchingSortField, setPitchingSortField] = useState<SortField>('era');
@@ -224,7 +237,12 @@ export default function TeamStatsView({ teamData, standings }: TeamStatsViewProp
   });
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
+      {/* Season Toggle */}
+      <div className="flex justify-end">
+        <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+      </div>
+
       {/* Hitting Statistics */}
       <section>
         <h2 className="text-2xl font-bold mb-4">Hitting Statistics</h2>

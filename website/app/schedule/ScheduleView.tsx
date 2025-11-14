@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { ScheduleGame } from '@/lib/sheets';
 import { Team } from '@/config/league';
-import { getTeamByName } from '@/config/league';
 
 interface ScheduleViewProps {
   schedule: ScheduleGame[];
@@ -37,7 +36,7 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <h1 className="text-4xl font-bold">Season Schedule</h1>
 
@@ -62,21 +61,23 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
         </div>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-12">
         {weekKeys.map((weekKey) => {
           const weekGames = gamesByWeek[weekKey].filter(filterGame);
 
           if (weekGames.length === 0) return null;
 
           return (
-            <div key={weekKey} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gray-100 px-6 py-3 border-b border-gray-300">
-                <h2 className="text-xl font-bold text-gray-800">{weekKey}</h2>
+            <div key={weekKey} className="bg-white rounded-lg shadow-lg overflow-hidden">
+              {/* Week Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                <h2 className="text-2xl font-bold text-white">{weekKey}</h2>
               </div>
 
-              <div className="divide-y divide-gray-200">
+              {/* Game Cards */}
+              <div className="p-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {weekGames.map((game, idx) => (
-                  <GameRow key={`${weekKey}-${idx}`} game={game} />
+                  <GameCard key={`${weekKey}-${idx}`} game={game} />
                 ))}
               </div>
             </div>
@@ -85,134 +86,148 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
       </div>
 
       {/* Legend */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <h3 className="font-semibold text-gray-700 mb-2">Legend:</h3>
-        <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-          <span className="flex items-center gap-2">
-            <span className="w-3 h-3 bg-green-600 rounded"></span>
-            Winner
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="w-3 h-3 bg-red-600 rounded"></span>
-            Loser
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="italic text-gray-500">Italic</span>
-            Upcoming Game
-          </span>
-        </div>
+      <div className="mt-6 bg-gray-50 rounded-lg p-6 text-sm text-gray-600">
+        <p className="font-semibold text-gray-700 mb-2">How to Read the Schedule</p>
+        <ul className="space-y-1">
+          <li>• Green highlight indicates the winning team</li>
+          <li>• Click a game card to view the full box score</li>
+          <li>• Italic text shows upcoming games</li>
+        </ul>
       </div>
     </div>
   );
 }
 
-function GameRow({ game }: { game: ScheduleGame }) {
+function GameCard({ game }: { game: ScheduleGame }) {
   if (!game.played) {
-    // Upcoming game - format: "Away @ Home"
+    // Upcoming game
     return (
-      <div className="px-6 py-4 hover:bg-gray-50 transition">
-        <div className="text-gray-500 italic text-center">
-          <span className="font-medium">{game.awayTeam}</span>
-          {' @ '}
-          <span className="font-medium">{game.homeTeam}</span>
+      <div className="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors">
+        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+          <span className="text-sm font-semibold text-gray-700">Upcoming Game</span>
+        </div>
+        <div className="p-4 space-y-3">
+          <div className="flex items-center justify-between p-3 rounded bg-gray-50">
+            <span className="font-semibold text-gray-500 italic">{game.awayTeam}</span>
+            <span className="text-sm text-gray-400">@</span>
+          </div>
+          <div className="flex items-center justify-between p-3 rounded bg-gray-50">
+            <span className="font-semibold text-gray-500 italic">{game.homeTeam}</span>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Completed game - format: "Away Score @ Score Home"
+  // Completed game
   const homeWon = game.winner === game.homeTeam;
   const awayWon = game.winner === game.awayTeam;
 
   const content = (
-    <div>
-      <div className="flex items-center justify-center gap-3 text-lg">
+    <div className="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors">
+      <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-semibold text-gray-700">Final</span>
+          {game.boxScoreUrl && (
+            <span className="text-xs text-blue-600">
+              View Box Score →
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3">
         {/* Away Team */}
-        <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-          <span
-            className="font-semibold truncate"
-            style={{
-              color: awayWon ? '#059669' : '#DC2626',
-              fontWeight: awayWon ? 'bold' : 'normal'
-            }}
-          >
+        <div
+          className={`flex items-center justify-between p-3 rounded ${
+            awayWon
+              ? 'bg-green-50 border-2 border-green-400'
+              : 'bg-gray-50'
+          }`}
+        >
+          <span className={`font-semibold ${
+            awayWon ? 'text-green-700' : 'text-gray-900'
+          }`}>
             {game.awayTeam}
           </span>
-          <span
-            className="text-xl font-bold tabular-nums"
-            style={{ color: awayWon ? '#059669' : '#DC2626' }}
-          >
+          <span className={`text-xl font-bold ${
+            awayWon ? 'text-green-700' : 'text-gray-700'
+          }`}>
             {game.awayScore}
           </span>
         </div>
 
-        {/* @ Symbol */}
-        <span className="text-gray-400 font-medium text-sm">@</span>
-
         {/* Home Team */}
-        <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
-          <span
-            className="text-xl font-bold tabular-nums"
-            style={{ color: homeWon ? '#059669' : '#DC2626' }}
-          >
-            {game.homeScore}
-          </span>
-          <span
-            className="font-semibold truncate"
-            style={{
-              color: homeWon ? '#059669' : '#DC2626',
-              fontWeight: homeWon ? 'bold' : 'normal'
-            }}
-          >
+        <div
+          className={`flex items-center justify-between p-3 rounded ${
+            homeWon
+              ? 'bg-green-50 border-2 border-green-400'
+              : 'bg-gray-50'
+          }`}
+        >
+          <span className={`font-semibold ${
+            homeWon ? 'text-green-700' : 'text-gray-900'
+          }`}>
             {game.homeTeam}
           </span>
+          <span className={`text-xl font-bold ${
+            homeWon ? 'text-green-700' : 'text-gray-700'
+          }`}>
+            {game.homeScore}
+          </span>
         </div>
-      </div>
-      {/* Game Details: MVP and Pitchers */}
-      {(game.mvp || game.winningPitcher || game.losingPitcher || game.savePitcher) && (
-        <div className="mt-2 text-xs text-gray-600 text-center space-y-1">
-          {game.mvp && (
-            <div><span className="font-semibold">MVP:</span> {game.mvp}</div>
-          )}
-          <div className="flex gap-4 justify-center flex-wrap">
-            {game.winningPitcher && (
-              <span><span className="font-semibold">W:</span> {game.winningPitcher}</span>
-            )}
-            {game.losingPitcher && (
-              <span><span className="font-semibold">L:</span> {game.losingPitcher}</span>
-            )}
-            {game.savePitcher && (
-              <span><span className="font-semibold">SV:</span> {game.savePitcher}</span>
-            )}
+
+        {/* Game Details */}
+        {(game.mvp || game.winningPitcher || game.losingPitcher || game.savePitcher) && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+              Game Details
+            </p>
+            <div className="space-y-1 text-sm text-gray-600">
+              {game.mvp && (
+                <div className="flex justify-between">
+                  <span className="font-semibold">MVP:</span>
+                  <span>{game.mvp}</span>
+                </div>
+              )}
+              {game.winningPitcher && (
+                <div className="flex justify-between">
+                  <span className="font-semibold">W:</span>
+                  <span>{game.winningPitcher}</span>
+                </div>
+              )}
+              {game.losingPitcher && (
+                <div className="flex justify-between">
+                  <span className="font-semibold">L:</span>
+                  <span>{game.losingPitcher}</span>
+                </div>
+              )}
+              {game.savePitcher && (
+                <div className="flex justify-between">
+                  <span className="font-semibold">SV:</span>
+                  <span>{game.savePitcher}</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 
-  // If box score URL exists, make entire row clickable
+  // If box score URL exists, make card clickable
   if (game.boxScoreUrl) {
     return (
       <a
         href={game.boxScoreUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="block px-6 py-4 hover:bg-gray-50 transition cursor-pointer"
+        className="block cursor-pointer"
       >
         {content}
-        <div className="text-center mt-1">
-          <span className="text-xs text-blue-600 hover:underline">
-            View Box Score →
-          </span>
-        </div>
       </a>
     );
   }
 
-  // No link available
-  return (
-    <div className="px-6 py-4 hover:bg-gray-50 transition">
-      {content}
-    </div>
-  );
+  return content;
 }

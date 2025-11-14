@@ -20,15 +20,16 @@ var CONFIG = {
   PLAYOFF_PLAYER_STATS_SHEET: "🏆 Players",
   PLAYOFF_TEAM_STATS_SHEET: "🏆 Teams",
   PLAYOFF_SCHEDULE_SHEET: "🏆 Schedule",
+  PLAYOFF_BRACKET_SHEET: "🏆 Bracket",
 
   // External spreadsheet containing box scores (game sheets)
   BOX_SCORE_SPREADSHEET_ID: "17x5VoZxGV88RYAiHEcq0M-rxSyZ0fp66OktmJk2AaEU",
 
   // Prefix for game sheets in the box score spreadsheet
-  GAME_SHEET_PREFIX: "#",
+  GAME_SHEET_PREFIX: "#W",
 
   // Prefix for playoff game sheets
-  PLAYOFF_GAME_PREFIX: "#P",
+  PLAYOFF_GAME_PREFIX: "*",
 
   // ===== DEBUG SETTINGS =====
   DEBUG: {
@@ -52,6 +53,18 @@ var CONFIG = {
   MAX_IP_PER_GAME: 7.0,
   MAX_HITS_PER_GAME: 6,
   MAX_HR_PER_GAME: 6,
+
+  // Playoff configuration
+  PLAYOFF_TEAMS: 8,
+  ENABLE_WILDCARD_ROUND: false,    // Set to true for 5-team playoffs (1,2,3 + 4v5), false for 4-team playoffs (1v4, 2v3)
+  QUARTERFINALS_WINS_REQUIRED: 2,  // Best of 3
+  SEMIFINALS_WINS_REQUIRED: 3,     // Best of 5
+  FINALS_WINS_REQUIRED: 4,         // Best of 7
+
+  // Playoff round prefixes (used in game sheet names and schedule)
+  WILDCARD_ROUND_PREFIX: "WC",      // Quarterfinals/Wildcard (*Q1, *Q2)
+  SEMIFINAL_ROUND_PREFIX: "CS",     // Semifinals (*S1-A, *S2-B)
+  FINALS_ROUND_PREFIX: "KC",        // Finals (*F1, *F2)
 
   // Title qualification multipliers
   MIN_AB_MULTIPLIER: 2.1,
@@ -259,3 +272,4 @@ var _spreadsheetCache = {
   playoffGameSheets: null,
   gameData: null
 };
+

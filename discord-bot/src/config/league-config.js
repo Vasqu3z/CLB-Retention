@@ -39,6 +39,11 @@ export const SHEET_NAMES = {
   STANDINGS: '🥇 Standings',        // League standings table (formerly 🏆 Rankings)
   IMAGE_URLS: 'Image URLs',         // Player/team/league image URLs
 
+  // Playoff sheets (v2.1)
+  PLAYOFF_PLAYER_DATA: '🏆 Players', // Playoff player stats
+  PLAYOFF_TEAM_DATA: '🏆 Teams',    // Playoff team stats
+  PLAYOFF_SCHEDULE: '🏆 Schedule',  // Playoff schedule and bracket
+
   // Deprecated (v2.0) - kept for backwards compatibility during migration
   // These will be removed in v2.1
   HITTING: '🧮 Hitting',            // DEPRECATED - use PLAYER_DATA
@@ -311,4 +316,22 @@ export const DISCORD_LIMITS = {
   EMBED_DESCRIPTION_MAX: 4096,
   EMBED_FIELD_VALUE_MAX: 1024,
   AUTOCOMPLETE_MAX_CHOICES: 25
+};
+
+// Playoff round mappings
+export const PLAYOFF_ROUNDS = {
+  1: 'Wildcard Round',
+  2: 'Castle Series',
+  3: 'Kingdom Cup'
+};
+
+// Mapping of game code prefixes to round numbers
+// Playoff schedule uses codes like: WC1, WC2, CS1-A, CS2-B, KC1, KC2
+export const PLAYOFF_CODE_TO_ROUND = {
+  'WC': 1,  // Wildcard Round: WC1, WC2, WC3, etc.
+  'CS': 2,  // Castle Series: CS1-A, CS2-A, CS1-B, CS2-B
+  'KC': 3,  // Kingdom Cup: KC1, KC2, KC3, etc.
+  'Q': 1,   // Alternative: Quarterfinals
+  'S': 2,   // Alternative: Semifinals
+  'F': 3    // Alternative: Finals
 };

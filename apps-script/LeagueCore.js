@@ -5,7 +5,8 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Player Stats')
-      .addItem('🚀 Update All', 'updateAll')
+      .addItem('🧮 Process Regular Season', 'updateAll')
+      .addItem('🏆 Process Postseason', 'updateAllPlayoffs')
       .addItem('📊 Compare Players', 'showPlayerComparison')
       .addSeparator()
       // Transactions (collapsed)
@@ -22,7 +23,7 @@ function onOpen() {
       // Archive & Maintenance (collapsed)
       .addSubMenu(ui.createMenu('📦 Archive & Maintenance')
           .addItem('Archive Current Season', 'archiveCurrentSeason'))
-      
+
       .addToUi();
 }
 
@@ -30,51 +31,137 @@ function onOpen() {
 function updateAll() {
   var startTime = new Date();
   logInfo("Update All", "Starting full update process");
-  
+
   try {
     // Check for missing transactions before starting
     detectMissingTransactions();
-    
+
     // ===== Process all game sheets ONCE =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Processing all game sheets...", "Update All", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Processing regular season game sheets...", "Update Regular Season", -1);
     var processingStart = new Date();
-    
+
     var gameData = processAllGameSheetsOnce();
     if (!gameData) {
       SpreadsheetApp.getUi().alert("Failed to process game sheets. Check Error Log for details.");
       return;
     }
-    
+
     // Cache the processed data
     _spreadsheetCache.gameData = gameData;
-    
+
     var processingTime = ((new Date() - processingStart) / 1000).toFixed(1);
     logInfo("Update All", "Game processing completed in " + processingTime + "s");
     SpreadsheetApp.flush();
-    
+
     // ===== STEP 1: Update player stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 3: Updating player stats...", "Update All", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 4: Updating players' season stats...", "Update Regular Season", -1);
     var step1Start = new Date();
     updateAllPlayerStatsFromCache(gameData.playerStats);
     var step1Time = ((new Date() - step1Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
     // ===== STEP 2: Update team stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 3: Updating team stats...", "Update All", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 4: Updating teams' season stats...", "Update Regular Season", -1);
     var step2Start = new Date();
     updateAllTeamStatsFromCache(gameData.teamStats);
     var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
-    // Write game results to Schedule
-    logInfo("UpdateAll", "Writing game results to Schedule");
-    writeGameResultsToSeasonSchedule(gameData.scheduleData);
-
-    // ===== STEP 3: Update standings (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating standings...", "Update All", -1);
+    // ===== STEP 3: Update schedule =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 4: Updating season schedule...", "Update Regular Season", -1);
     var step3Start = new Date();
+    writeGameResultsToSeasonSchedule(gameData.scheduleData);
+    var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
+    SpreadsheetApp.flush();
+
+    // ===== STEP 4: Update standings (using cached data) =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 4 of 4: Updating season standings...", "Update Regular Season", -1);
+    var step4Start = new Date();
     // Pass full gameData object for in-memory performance
     updateLeagueHubFromCache(gameData);
+    var step4Time = ((new Date() - step4Start) / 1000).toFixed(1);
+    SpreadsheetApp.flush();
+
+    var totalTime = ((new Date() - startTime) / 1000).toFixed(1);
+
+    // Concise message that fits in toast
+    var stepsTime = (parseFloat(step1Time) + parseFloat(step2Time) +
+                     parseFloat(step3Time) + parseFloat(step4Time)).toFixed(1);
+
+    var message = "✅ Update Complete!\n\n" +
+                  "Game Processing: " + processingTime + "s\n" +
+                  "Steps 1-4: " + stepsTime + "s\n" +
+                  "─────────────\n" +
+                  "Total: " + totalTime + "s";
+
+    SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
+    logInfo("Update All", "Completed successfully in " + totalTime + "s");
+
+    // Cache final data for Retention suite
+    cacheCurrentSeasonStats(gameData);
+
+  } catch (e) {
+    logError("Update All", e.toString(), "N/A");
+    SpreadsheetApp.getUi().alert("Error during update: " + e.toString());
+  }
+
+  // Clear cache after completion
+  clearCache();
+}
+
+// ===== UPDATE ALL PLAYOFFS =====
+function updateAllPlayoffs() {
+  var startTime = new Date();
+  logInfo("Update Playoffs", "Starting playoff update process");
+
+  try {
+    // ===== Process all playoff game sheets ONCE =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Processing postseason game sheets...", "Update Postseason", -1);
+    var processingStart = new Date();
+
+    var playoffGameData = processAllPlayoffGameSheetsOnce();
+    if (!playoffGameData) {
+      SpreadsheetApp.getUi().alert("Failed to process playoff game sheets. Check Error Log for details.");
+      return;
+    }
+
+    // Cache the processed data
+    _spreadsheetCache.playoffGameData = playoffGameData;
+
+    var processingTime = ((new Date() - processingStart) / 1000).toFixed(1);
+    logInfo("Update Playoffs", "Playoff game processing completed in " + processingTime + "s");
+    SpreadsheetApp.flush();
+
+    // ===== STEP 1: Update playoff player stats (using cached data) =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 3: Updating players' postseason stats...", "Update Postseason", -1);
+    var step1Start = new Date();
+    updateAllPlayoffPlayerStatsFromCache(playoffGameData.playerStats);
+    var step1Time = ((new Date() - step1Start) / 1000).toFixed(1);
+    SpreadsheetApp.flush();
+
+    // ===== STEP 2: Update playoff team stats (using cached data) =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 3: Updating teams' postseason stats...", "Update Postseason", -1);
+    var step2Start = new Date();
+    updateAllPlayoffTeamStatsFromCache(playoffGameData.teamStats);
+    var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
+    SpreadsheetApp.flush();
+
+    // ===== STEP 3: Update playoff schedule =====
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating playoff schedule...", "Update Postseason", -1);
+    var step3Start = new Date();
+
+    // Get regular season standings for seeding
+    var regularSeasonGameData = _spreadsheetCache.gameData;
+    if (!regularSeasonGameData) {
+      // If not cached, process regular season quickly to get standings
+      regularSeasonGameData = processAllGameSheetsOnce();
+    }
+
+    // Generate/update playoff schedule structure with seeds and placeholders
+    updatePlayoffScheduleStructure(regularSeasonGameData.teamStatsWithH2H, playoffGameData.scheduleData);
+
+    // Write completed game results to the schedule
+    writeGameResultsToPlayoffSchedule(playoffGameData.scheduleData);
     var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
@@ -89,19 +176,13 @@ function updateAll() {
                   "Steps 1-3: " + stepsTime + "s\n" +
                   "─────────────\n" +
                   "Total: " + totalTime + "s";
-    
-    SpreadsheetApp.getActiveSpreadsheet().toast(message, "Update Complete", 10);
-    logInfo("Update All", "Completed successfully in " + totalTime + "s");
-    
-    SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
-    logInfo("Update All", "Completed successfully in " + totalTime + "s");
 
-    // Cache final data for Retention suite
-    cacheCurrentSeasonStats(gameData);
+    SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
+    logInfo("Update Playoffs", "Completed successfully in " + totalTime + "s");
 
   } catch (e) {
-    logError("Update All", e.toString(), "N/A");
-    SpreadsheetApp.getUi().alert("Error during update: " + e.toString());
+    logError("Update Playoffs", e.toString(), "N/A");
+    SpreadsheetApp.getUi().alert("Error during playoff update: " + e.toString());
   }
 
   // Clear cache after completion
@@ -348,3 +429,4 @@ function calculateFinalRetentionGrades() {
   }
 
 }
+

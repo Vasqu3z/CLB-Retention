@@ -2,21 +2,43 @@
 
 import { useState } from 'react';
 import { Team } from '@/config/league';
-import { PlayerStats, ScheduleGame, StandingsRow, TeamData } from '@/lib/sheets';
+import { PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
 import Link from 'next/link';
+import SeasonToggle from '@/components/SeasonToggle';
 
 interface TeamPageViewProps {
   team: Team;
-  roster: PlayerStats[];
-  schedule: ScheduleGame[];
-  standing?: StandingsRow;
-  teamData?: TeamData;
+  regularRoster: PlayerStats[];
+  regularSchedule: ScheduleGame[];
+  regularStanding?: StandingsRow;
+  regularTeamData?: TeamData;
+  playoffRoster: PlayerStats[];
+  playoffSchedule: PlayoffGame[];
+  playoffStanding?: StandingsRow;
+  playoffTeamData?: TeamData;
 }
 
 type SortField = keyof PlayerStats | 'none';
 type SortDirection = 'asc' | 'desc';
 
-export default function TeamPageView({ team, roster, schedule, standing, teamData }: TeamPageViewProps) {
+export default function TeamPageView({
+  team,
+  regularRoster,
+  regularSchedule,
+  regularStanding,
+  regularTeamData,
+  playoffRoster,
+  playoffSchedule,
+  playoffStanding,
+  playoffTeamData,
+}: TeamPageViewProps) {
+  const [isPlayoffs, setIsPlayoffs] = useState(false);
+
+  // Use appropriate data based on toggle
+  const roster = isPlayoffs ? playoffRoster : regularRoster;
+  const schedule: (ScheduleGame | PlayoffGame)[] = isPlayoffs ? playoffSchedule : regularSchedule;
+  const standing = isPlayoffs ? playoffStanding : regularStanding;
+  const teamData = isPlayoffs ? playoffTeamData : regularTeamData;
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
@@ -101,9 +123,12 @@ export default function TeamPageView({ team, roster, schedule, standing, teamDat
         className="mb-8 p-6 rounded-lg"
         style={{ backgroundColor: `${team.primaryColor}20`, borderLeft: `4px solid ${team.primaryColor}` }}
       >
-        <h1 className="text-4xl font-bold mb-4" style={{ color: team.primaryColor }}>
-          {team.name}
-        </h1>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <h1 className="text-4xl font-bold" style={{ color: team.primaryColor }}>
+            {team.name}
+          </h1>
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+        </div>
 
         {/* Team Stats Summary */}
         {standing && (
@@ -451,15 +476,18 @@ function SortableHeader({
 }
 
 // Team Game Row Component
-function TeamGameRow({ game, teamName }: { game: ScheduleGame; teamName: string }) {
+function TeamGameRow({ game, teamName }: { game: ScheduleGame | PlayoffGame; teamName: string }) {
   const isHome = game.homeTeam === teamName;
   const opponent = isHome ? game.awayTeam : game.homeTeam;
+
+  // Determine the game identifier (week number or playoff code)
+  const gameIdentifier = 'week' in game ? `Week ${game.week}` : game.code;
 
   if (!game.played) {
     return (
       <div className="px-6 py-4">
         <div className="text-sm text-gray-500">
-          Week {game.week} • vs {opponent} {isHome ? '(Home)' : '(Away)'}
+          {gameIdentifier} • vs {opponent} {isHome ? '(Home)' : '(Away)'}
         </div>
       </div>
     );
@@ -473,7 +501,7 @@ function TeamGameRow({ game, teamName }: { game: ScheduleGame; teamName: string 
     <div className="px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm text-gray-500 mb-1">Week {game.week}</div>
+          <div className="text-sm text-gray-500 mb-1">{gameIdentifier}</div>
           <div className="font-medium" style={{ color: won ? '#059669' : '#DC2626' }}>
             {won ? 'W' : 'L'} {teamScore}-{oppScore} vs {opponent} {isHome ? '(Home)' : '(Away)'}
           </div>

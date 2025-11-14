@@ -27,7 +27,7 @@
  */
 
 import { EmbedBuilder } from 'discord.js';
-import { STAT_LABELS, EMBED_FORMATTING, PLAYOFF_ROUND_NAMES } from '../config/league-config.js';
+import { STAT_LABELS, EMBED_FORMATTING, PLAYOFF_ROUNDS } from '../config/league-config.js';
 import sheetsService from '../services/sheets-service.js';
 
 const COLORS = {
@@ -380,11 +380,14 @@ export async function createScheduleEmbed(games, filter, filterValue, isPlayoffs
 
   // Build schedule display
   const weekKeys = Object.keys(gamesByWeek).sort((a, b) => {
-    // For playoffs, use round names mapping; for regular season, parse week number
+    // For playoffs, match round names to numbers; for regular season, parse week number
     let numA, numB;
     if (isPlayoffs) {
-      numA = PLAYOFF_ROUND_NAMES[a] || parseInt(a.replace('Week ', ''));
-      numB = PLAYOFF_ROUND_NAMES[b] || parseInt(b.replace('Week ', ''));
+      // Check if this is a known playoff round name
+      numA = Object.entries(PLAYOFF_ROUNDS).find(([num, name]) => name === a)?.[0] || parseInt(a.replace('Week ', ''));
+      numB = Object.entries(PLAYOFF_ROUNDS).find(([num, name]) => name === b)?.[0] || parseInt(b.replace('Week ', ''));
+      numA = parseInt(numA);
+      numB = parseInt(numB);
     } else {
       numA = parseInt(a.replace('Week ', ''));
       numB = parseInt(b.replace('Week ', ''));

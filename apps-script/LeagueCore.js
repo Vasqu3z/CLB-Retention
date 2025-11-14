@@ -133,22 +133,34 @@ function updateAllPlayoffs() {
     SpreadsheetApp.flush();
 
     // ===== STEP 1: Update playoff player stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 4: Updating players' postseason stats...", "Update Postseason", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 1 of 3: Updating players' postseason stats...", "Update Postseason", -1);
     var step1Start = new Date();
     updateAllPlayoffPlayerStatsFromCache(playoffGameData.playerStats);
     var step1Time = ((new Date() - step1Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
     // ===== STEP 2: Update playoff team stats (using cached data) =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 4: Updating teams' postseason stats...", "Update Postseason", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 2 of 3: Updating teams' postseason stats...", "Update Postseason", -1);
     var step2Start = new Date();
     updateAllPlayoffTeamStatsFromCache(playoffGameData.teamStats);
     var step2Time = ((new Date() - step2Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();
 
     // ===== STEP 3: Update playoff schedule =====
-    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating postseason schedule...", "Update Postseason", -1);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating playoff schedule...", "Update Postseason", -1);
     var step3Start = new Date();
+
+    // Get regular season standings for seeding
+    var regularSeasonGameData = _spreadsheetCache.gameData;
+    if (!regularSeasonGameData) {
+      // If not cached, process regular season quickly to get standings
+      regularSeasonGameData = processAllGameSheetsOnce();
+    }
+
+    // Generate/update playoff schedule structure with seeds and placeholders
+    updatePlayoffScheduleStructure(regularSeasonGameData.teamStatsWithH2H, playoffGameData.scheduleData);
+
+    // Write completed game results to the schedule
     writeGameResultsToPlayoffSchedule(playoffGameData.scheduleData);
     var step3Time = ((new Date() - step3Start) / 1000).toFixed(1);
     SpreadsheetApp.flush();

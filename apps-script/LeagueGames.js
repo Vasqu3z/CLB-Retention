@@ -771,6 +771,155 @@ function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, ru
   }
 }
 
+/**
+ * Auto-generates playoff schedule structure with team seeds and placeholders
+ * Called before writing game results to ensure all games are present
+ * @param {object} teamStatsWithH2H - Team stats with head-to-head records for seeding
+ * @param {Array} scheduleData - Completed playoff games data for determining winners
+ */
+function updatePlayoffScheduleStructure(teamStatsWithH2H, scheduleData) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var scheduleSheet = ss.getSheetByName(CONFIG.PLAYOFF_SCHEDULE_SHEET);
+
+  // Create sheet if it doesn't exist
+  if (!scheduleSheet) {
+    scheduleSheet = ss.insertSheet(CONFIG.PLAYOFF_SCHEDULE_SHEET);
+    logInfo("Update Playoff Schedule", "Created new playoff schedule sheet");
+  }
+
+  // Get final standings (sort teams by record)
+  var teamOrder = Object.keys(teamStatsWithH2H);
+  teamOrder.sort(function(teamA, teamB) {
+    return compareTeamsByStandings(teamA, teamB, teamStatsWithH2H);
+  });
+
+  // Extract top 8 teams for playoff seeding
+  var seeds = {};
+  for (var i = 0; i < Math.min(8, teamOrder.length); i++) {
+    seeds[i + 1] = teamOrder[i];
+  }
+
+  // Determine series winners from completed games
+  var wcWinner = getSeriesWinner(scheduleData, CONFIG.WILDCARD_ROUND_PREFIX);
+  var cs1Winner = getSeriesWinner(scheduleData, CONFIG.SEMIFINAL_ROUND_PREFIX, 'A');
+  var cs2Winner = getSeriesWinner(scheduleData, CONFIG.SEMIFINAL_ROUND_PREFIX, 'B');
+
+  // Build playoff schedule structure
+  var schedule = [];
+
+  // Add header row
+  schedule.push(["Game Code", "Away Team", "Home Team"]);
+
+  // Wildcard Round (Seeds 4 vs 5) - Best of 3
+  schedule.push(["WC1", seeds[5] || "TBD", seeds[4] || "TBD"]);
+  schedule.push(["WC2", seeds[4] || "TBD", seeds[5] || "TBD"]);
+  schedule.push(["WC3", seeds[5] || "TBD", seeds[4] || "TBD"]);
+
+  // Castle Series - Series A (Seed 1 vs WC Winner) - Best of 5
+  var cs1Away = wcWinner || "Winner of WC";
+  var cs1Home = seeds[1] || "TBD";
+  schedule.push(["CS1-A", cs1Away, cs1Home]);
+  schedule.push(["CS2-A", cs1Home, cs1Away]);
+  schedule.push(["CS3-A", cs1Away, cs1Home]);
+  schedule.push(["CS4-A", cs1Home, cs1Away]);
+  schedule.push(["CS5-A", cs1Away, cs1Home]);
+
+  // Castle Series - Series B (Seed 2 vs Seed 3) - Best of 5
+  var cs2Away = seeds[3] || "TBD";
+  var cs2Home = seeds[2] || "TBD";
+  schedule.push(["CS1-B", cs2Away, cs2Home]);
+  schedule.push(["CS2-B", cs2Home, cs2Away]);
+  schedule.push(["CS3-B", cs2Away, cs2Home]);
+  schedule.push(["CS4-B", cs2Home, cs2Away]);
+  schedule.push(["CS5-B", cs2Away, cs2Home]);
+
+  // Kingdom Cup (CS Winners) - Best of 7
+  var kc1Away = cs2Winner || "Winner of CS-B";
+  var kc1Home = cs1Winner || "Winner of CS-A";
+  schedule.push(["KC1", kc1Away, kc1Home]);
+  schedule.push(["KC2", kc1Home, kc1Away]);
+  schedule.push(["KC3", kc1Away, kc1Home]);
+  schedule.push(["KC4", kc1Home, kc1Away]);
+  schedule.push(["KC5", kc1Away, kc1Home]);
+  schedule.push(["KC6", kc1Home, kc1Away]);
+  schedule.push(["KC7", kc1Away, kc1Home]);
+
+  // Write to sheet (columns A-C)
+  scheduleSheet.clear(); // Clear existing data
+  scheduleSheet.getRange(1, 1, schedule.length, 3).setValues(schedule);
+
+  // Format header row
+  scheduleSheet.getRange(1, 1, 1, 3)
+    .setFontWeight("bold")
+    .setBackground("#e8e8e8")
+    .setHorizontalAlignment("center");
+
+  logInfo("Update Playoff Schedule", "Generated schedule structure with " + (schedule.length - 1) + " games");
+}
+
+/**
+ * Determines the winner of a playoff series based on completed games
+ * @param {Array} scheduleData - Array of completed playoff games
+ * @param {string} roundCode - Round prefix (WC, CS, KC)
+ * @param {string} seriesLetter - Optional series identifier for parallel series (A, B)
+ * @returns {string|null} - Winning team name or null if series incomplete
+ */
+function getSeriesWinner(scheduleData, roundCode, seriesLetter) {
+  if (!scheduleData || scheduleData.length === 0) return null;
+
+  // Find all games for this series
+  var seriesGames = [];
+  for (var i = 0; i < scheduleData.length; i++) {
+    var game = scheduleData[i];
+    if (!game.code) continue;
+
+    var code = String(game.code).toUpperCase();
+
+    // Check if code matches round
+    if (code.indexOf(roundCode) !== 0) continue;
+
+    // If series letter specified, check for it
+    if (seriesLetter) {
+      if (code.indexOf('-' + seriesLetter) === -1) continue;
+    }
+
+    seriesGames.push(game);
+  }
+
+  if (seriesGames.length === 0) return null;
+
+  // Count wins for each team
+  var teamWins = {};
+  for (var i = 0; i < seriesGames.length; i++) {
+    var game = seriesGames[i];
+    if (game.played && game.winner) {
+      var winner = String(game.winner).trim();
+      teamWins[winner] = (teamWins[winner] || 0) + 1;
+    }
+  }
+
+  // Determine wins needed based on round
+  var winsNeeded;
+  if (roundCode === CONFIG.WILDCARD_ROUND_PREFIX) {
+    winsNeeded = CONFIG.QUARTERFINALS_WINS_REQUIRED; // Best of 3 = 2 wins
+  } else if (roundCode === CONFIG.SEMIFINAL_ROUND_PREFIX) {
+    winsNeeded = CONFIG.SEMIFINALS_WINS_REQUIRED; // Best of 5 = 3 wins
+  } else if (roundCode === CONFIG.FINALS_ROUND_PREFIX) {
+    winsNeeded = CONFIG.FINALS_WINS_REQUIRED; // Best of 7 = 4 wins
+  } else {
+    return null;
+  }
+
+  // Check if any team has won the series
+  for (var team in teamWins) {
+    if (teamWins[team] >= winsNeeded) {
+      return team;
+    }
+  }
+
+  return null; // Series not complete
+}
+
 function writeGameResultsToPlayoffSchedule(scheduleData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var scheduleSheet = ss.getSheetByName(CONFIG.PLAYOFF_SCHEDULE_SHEET);

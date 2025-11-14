@@ -30,8 +30,8 @@ function processAllGameSheetsOnce() {
   };
   
   // ===== Single read per game =====
-  for (var g = 0; g < gameSheets.length; g++) {
-    var sheet = gameSheets[g];
+  for (var gameIndex = 0; gameIndex < gameSheets.length; gameIndex++) {
+    var sheet = gameSheets[gameIndex];
     var sheetName = sheet.getName();
 
     try {
@@ -51,8 +51,8 @@ function processAllGameSheetsOnce() {
       // We need rows 30-50 (21 rows), columns B-K (10 columns, indices 0-9)
       var hittingStartIndex = CONFIG.BOX_SCORE_HITTING_START_ROW + 1 - 3; // +1 for header skip, -3 for batch offset
       var hittingData = [];
-      for (var h = 0; h < CONFIG.BOX_SCORE_HITTING_NUM_ROWS - 1; h++) {
-        hittingData.push(batchData[hittingStartIndex + h].slice(0, CONFIG.BOX_SCORE_HITTING_NUM_COLS));
+      for (var hitterIndex = 0; hitterIndex < CONFIG.BOX_SCORE_HITTING_NUM_ROWS - 1; hitterIndex++) {
+        hittingData.push(batchData[hittingStartIndex + hitterIndex].slice(0, CONFIG.BOX_SCORE_HITTING_NUM_COLS));
       }
 
       // ===== Extract pitching/fielding data from batch =====
@@ -60,8 +60,8 @@ function processAllGameSheetsOnce() {
       // We need rows 7-27 (21 rows), columns B-R (17 columns, indices 0-16)
       var pitchFieldStartIndex = CONFIG.BOX_SCORE_PITCHING_FIELDING_START_ROW + 1 - 3; // +1 for header skip, -3 for batch offset
       var pitchFieldData = [];
-      for (var p = 0; p < CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_ROWS - 1; p++) {
-        pitchFieldData.push(batchData[pitchFieldStartIndex + p].slice(0, CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_COLS));
+      for (var pitcherIndex = 0; pitcherIndex < CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_ROWS - 1; pitcherIndex++) {
+        pitchFieldData.push(batchData[pitchFieldStartIndex + pitcherIndex].slice(0, CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_COLS));
       }
 
       // ===== Extract team totals from batch =====
@@ -145,9 +145,9 @@ function processAllGameSheetsOnce() {
       updateScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, weekNum);
       
       // Progress update
-      if ((g + 1) % CONFIG.PROGRESS_UPDATE_FREQUENCY === 0) {
+      if ((gameIndex + 1) % CONFIG.PROGRESS_UPDATE_FREQUENCY === 0) {
         SpreadsheetApp.getActiveSpreadsheet().toast(
-          "Processed " + (g + 1) + " of " + gameSheets.length + " games...",
+          "Processed " + (gameIndex + 1) + " of " + gameSheets.length + " games...",
           "Game Processor",
           2
         );
@@ -184,8 +184,8 @@ function processAllPlayoffGameSheetsOnce() {
   };
 
   // ===== Single read per game (same logic as regular season) =====
-  for (var g = 0; g < playoffGameSheets.length; g++) {
-    var sheet = playoffGameSheets[g];
+  for (var gameIndex = 0; gameIndex < playoffGameSheets.length; gameIndex++) {
+    var sheet = playoffGameSheets[gameIndex];
     var sheetName = sheet.getName();
 
     try {
@@ -201,15 +201,15 @@ function processAllPlayoffGameSheetsOnce() {
       // ===== Extract hitting data from batch =====
       var hittingStartIndex = CONFIG.BOX_SCORE_HITTING_START_ROW + 1 - 3;
       var hittingData = [];
-      for (var h = 0; h < CONFIG.BOX_SCORE_HITTING_NUM_ROWS - 1; h++) {
-        hittingData.push(batchData[hittingStartIndex + h].slice(0, CONFIG.BOX_SCORE_HITTING_NUM_COLS));
+      for (var hitterIndex = 0; hitterIndex < CONFIG.BOX_SCORE_HITTING_NUM_ROWS - 1; hitterIndex++) {
+        hittingData.push(batchData[hittingStartIndex + hitterIndex].slice(0, CONFIG.BOX_SCORE_HITTING_NUM_COLS));
       }
 
       // ===== Extract pitching/fielding data from batch =====
       var pitchFieldStartIndex = CONFIG.BOX_SCORE_PITCHING_FIELDING_START_ROW + 1 - 3;
       var pitchFieldData = [];
-      for (var p = 0; p < CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_ROWS - 1; p++) {
-        pitchFieldData.push(batchData[pitchFieldStartIndex + p].slice(0, CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_COLS));
+      for (var pitcherIndex = 0; pitcherIndex < CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_ROWS - 1; pitcherIndex++) {
+        pitchFieldData.push(batchData[pitchFieldStartIndex + pitcherIndex].slice(0, CONFIG.BOX_SCORE_PITCHING_FIELDING_NUM_COLS));
       }
 
       // ===== Extract team totals from batch =====
@@ -271,9 +271,9 @@ function processAllPlayoffGameSheetsOnce() {
       updatePlayoffScheduleDataFromGame(result.scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, playoffCode);
 
       // Progress update
-      if ((g + 1) % CONFIG.PROGRESS_UPDATE_FREQUENCY === 0) {
+      if ((gameIndex + 1) % CONFIG.PROGRESS_UPDATE_FREQUENCY === 0) {
         SpreadsheetApp.getActiveSpreadsheet().toast(
-          "Processed " + (g + 1) + " of " + playoffGameSheets.length + " playoff games...",
+          "Processed " + (gameIndex + 1) + " of " + playoffGameSheets.length + " playoff games...",
           "Playoff Game Processor",
           2
         );
@@ -299,9 +299,9 @@ function initializePlayerStats(ss) {
   
   var playerNamesData = playerStatsSheet.getRange(2, 1, lastRow - 1, 1).getValues();
   var playerStats = {};
-  
-  for (var p = 0; p < playerNamesData.length; p++) {
-    var playerName = String(playerNamesData[p][0]).trim();
+
+  for (var playerIndex = 0; playerIndex < playerNamesData.length; playerIndex++) {
+    var playerName = String(playerNamesData[playerIndex][0]).trim();
     if (playerName && playerName !== "") {
       playerStats[playerName] = {
         gamesPlayed: 0, wins: 0, losses: 0, saves: 0,
@@ -324,9 +324,9 @@ function initializeTeamStats(ss) {
   
   var teamNamesData = teamStatsSheet.getRange(2, 1, lastRow - 1, 1).getValues();
   var teamStats = {};
-  
-  for (var t = 0; t < teamNamesData.length; t++) {
-    var teamName = String(teamNamesData[t][0]).trim();
+
+  for (var teamIndex = 0; teamIndex < teamNamesData.length; teamIndex++) {
+    var teamName = String(teamNamesData[teamIndex][0]).trim();
     if (teamName && teamName !== "") {
       teamStats[teamName] = {
         gamesPlayed: 0, wins: 0, losses: 0,
@@ -349,14 +349,14 @@ function initializeTeamStatsWithH2H(ss) {
   
   var allTeamNames = teamStatsSheet.getRange(2, 1, lastRow - 1, 1).getValues();
   var teamStats = {};
-  
+
   // Initialize all teams
-  for (var i = 0; i < allTeamNames.length; i++) {
-    var tn = String(allTeamNames[i][0]).trim();
+  for (var teamIndex = 0; teamIndex < allTeamNames.length; teamIndex++) {
+    var tn = String(allTeamNames[teamIndex][0]).trim();
     if (tn && tn !== "") {
       teamStats[tn] = {
-        gamesPlayed: 0, wins: 0, losses: 0, 
-        runsScored: 0, runsAllowed: 0, 
+        gamesPlayed: 0, wins: 0, losses: 0,
+        runsScored: 0, runsAllowed: 0,
         headToHead: {}
       };
     }
@@ -383,11 +383,11 @@ function initializeScheduleData(ss, boxScoreSS) {
   var scheduleData = scheduleSheet.getRange(2, 1, scheduleSheet.getLastRow() - 1, 3).getValues();
   var schedule = [];
 
-  for (var i = 0; i < scheduleData.length; i++) {
-    var week = scheduleData[i][0];
+  for (var gameIndex = 0; gameIndex < scheduleData.length; gameIndex++) {
+    var week = scheduleData[gameIndex][0];
     // Column order: A=Week, B=Away Team, C=Home Team
-    var awayTeam = String(scheduleData[i][1]).trim();
-    var homeTeam = String(scheduleData[i][2]).trim();
+    var awayTeam = String(scheduleData[gameIndex][1]).trim();
+    var homeTeam = String(scheduleData[gameIndex][2]).trim();
     
     if (week && homeTeam && awayTeam) {
       schedule.push({
@@ -418,8 +418,8 @@ function initializePlayoffPlayerStats(ss) {
   var playerNamesData = playerStatsSheet.getRange(2, 1, lastRow - 1, 1).getValues();
   var playerStats = {};
 
-  for (var p = 0; p < playerNamesData.length; p++) {
-    var playerName = String(playerNamesData[p][0]).trim();
+  for (var playerIndex = 0; playerIndex < playerNamesData.length; playerIndex++) {
+    var playerName = String(playerNamesData[playerIndex][0]).trim();
     if (playerName && playerName !== "") {
       playerStats[playerName] = {
         gamesPlayed: 0, wins: 0, losses: 0, saves: 0,
@@ -443,8 +443,8 @@ function initializePlayoffTeamStats(ss) {
   var teamNamesData = teamStatsSheet.getRange(2, 1, lastRow - 1, 1).getValues();
   var teamStats = {};
 
-  for (var t = 0; t < teamNamesData.length; t++) {
-    var teamName = String(teamNamesData[t][0]).trim();
+  for (var teamIndex = 0; teamIndex < teamNamesData.length; teamIndex++) {
+    var teamName = String(teamNamesData[teamIndex][0]).trim();
     if (teamName && teamName !== "") {
       teamStats[teamName] = {
         gamesPlayed: 0, wins: 0, losses: 0,
@@ -467,11 +467,11 @@ function initializePlayoffScheduleData(ss, boxScoreSS) {
   var scheduleData = scheduleSheet.getRange(2, 1, scheduleSheet.getLastRow() - 1, 3).getValues();
   var schedule = [];
 
-  for (var i = 0; i < scheduleData.length; i++) {
-    var week = scheduleData[i][0];
+  for (var gameIndex = 0; gameIndex < scheduleData.length; gameIndex++) {
+    var week = scheduleData[gameIndex][0];
     // Column order: A=Week (code like Q1, S1-A, F1), B=Away Team, C=Home Team
-    var awayTeam = String(scheduleData[i][1]).trim();
-    var homeTeam = String(scheduleData[i][2]).trim();
+    var awayTeam = String(scheduleData[gameIndex][1]).trim();
+    var homeTeam = String(scheduleData[gameIndex][2]).trim();
 
     if (week && homeTeam && awayTeam) {
       schedule.push({
@@ -497,15 +497,15 @@ function processPlayerStatsFromData(gameData, playerStats) {
 
   // Process hitting stats
   // Data format: [PlayerName, AB, H, HR, RBI, BB, K, ROB, DP, TB]
-  for (var i = 0; i < gameData.hittingData.length; i++) {
-    var playerName = String(gameData.hittingData[i][0]).trim();
+  for (var rowIndex = 0; rowIndex < gameData.hittingData.length; rowIndex++) {
+    var playerName = String(gameData.hittingData[rowIndex][0]).trim();
     if (playerName && playerStats[playerName]) {
       playersInThisGame[playerName] = true;
       // Hitting stats are at indices 1-9 (9 stats: AB, H, HR, RBI, BB, K, ROB, DP, TB)
-      for (var s = 0; s < 9; s++) {
-        var val = gameData.hittingData[i][s + 1];
+      for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.HITTING_STATS_COUNT; statIndex++) {
+        var val = gameData.hittingData[rowIndex][statIndex + 1];
         if (typeof val === 'number' && !isNaN(val)) {
-          playerStats[playerName].hitting[s] += val;
+          playerStats[playerName].hitting[statIndex] += val;
         }
       }
     }
@@ -518,24 +518,24 @@ function processPlayerStatsFromData(gameData, playerStats) {
   //   Indices 1-6 = Unused cols (C-H)
   //   Indices 7-13 = Pitching stats (cols I-O): IP, BF, H, HR, R, BB, K
   //   Indices 14-16 = Fielding stats (cols P-R): NP, E, SB
-  for (var i = 0; i < gameData.pitchFieldData.length; i++) {
-    var playerName = String(gameData.pitchFieldData[i][0]).trim();
+  for (var rowIndex = 0; rowIndex < gameData.pitchFieldData.length; rowIndex++) {
+    var playerName = String(gameData.pitchFieldData[rowIndex][0]).trim();
     if (playerName && playerStats[playerName]) {
       playersInThisGame[playerName] = true;
 
       // Pitching stats start at column I (index 7 in our 17-column read)
-      for (var s = 0; s < 7; s++) {
-        var val = gameData.pitchFieldData[i][s + 7];
+      for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.PITCHING_STATS_COUNT; statIndex++) {
+        var val = gameData.pitchFieldData[rowIndex][statIndex + 7];
         if (typeof val === 'number' && !isNaN(val)) {
-          playerStats[playerName].pitching[s] += val;
+          playerStats[playerName].pitching[statIndex] += val;
         }
       }
 
       // Fielding stats start at column P (index 14 in our 17-column read)
-      for (var s = 0; s < 3; s++) {
-        var val = gameData.pitchFieldData[i][s + 14];
+      for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.FIELDING_STATS_COUNT; statIndex++) {
+        var val = gameData.pitchFieldData[rowIndex][statIndex + 14];
         if (typeof val === 'number' && !isNaN(val)) {
-          playerStats[playerName].fielding[s] += val;
+          playerStats[playerName].fielding[statIndex] += val;
         }
       }
 
@@ -566,26 +566,26 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
     if (team1 === loser) teamStats[team1].losses++;
 
     // Hitting stats
-    for (var s = 0; s < 9; s++) {
-      var val = gameData.homeTeamTotals[s];
+    for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.HITTING_STATS_COUNT; statIndex++) {
+      var val = gameData.homeTeamTotals[statIndex];
       if (typeof val === 'number' && !isNaN(val)) {
-        teamStats[team1].hitting[s] += val;
+        teamStats[team1].hitting[statIndex] += val;
       }
     }
 
     // Pitching stats (indices 0-6)
-    for (var s = 0; s < 7; s++) {
-      var val = gameData.homeTeamPitchField[s];
+    for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.PITCHING_STATS_COUNT; statIndex++) {
+      var val = gameData.homeTeamPitchField[statIndex];
       if (typeof val === 'number' && !isNaN(val)) {
-        teamStats[team1].pitching[s] += val;
+        teamStats[team1].pitching[statIndex] += val;
       }
     }
 
     // Fielding stats (indices 7-9)
-    for (var s = 0; s < 3; s++) {
-      var val = gameData.homeTeamPitchField[s + 7];
+    for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.FIELDING_STATS_COUNT; statIndex++) {
+      var val = gameData.homeTeamPitchField[statIndex + 7];
       if (typeof val === 'number' && !isNaN(val)) {
-        teamStats[team1].fielding[s] += val;
+        teamStats[team1].fielding[statIndex] += val;
       }
     }
   }
@@ -603,26 +603,26 @@ function processTeamStatsFromData(gameData, teamStats, team1, team2, winner, los
     if (team2 === loser) teamStats[team2].losses++;
 
     // Hitting stats
-    for (var s = 0; s < 9; s++) {
-      var val = gameData.awayTeamTotals[s];
+    for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.HITTING_STATS_COUNT; statIndex++) {
+      var val = gameData.awayTeamTotals[statIndex];
       if (typeof val === 'number' && !isNaN(val)) {
-        teamStats[team2].hitting[s] += val;
+        teamStats[team2].hitting[statIndex] += val;
       }
     }
 
     // Pitching stats (indices 0-6)
-    for (var s = 0; s < 7; s++) {
-      var val = gameData.awayTeamPitchField[s];
+    for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.PITCHING_STATS_COUNT; statIndex++) {
+      var val = gameData.awayTeamPitchField[statIndex];
       if (typeof val === 'number' && !isNaN(val)) {
-        teamStats[team2].pitching[s] += val;
+        teamStats[team2].pitching[statIndex] += val;
       }
     }
-    
+
     // Fielding stats (indices 7-9)
-    for (var s = 0; s < 3; s++) {
-      var val = gameData.awayTeamPitchField[s + 7];
+    for (var statIndex = 0; statIndex < CONFIG.SHEET_STRUCTURE.PLAYER_STATS_SHEET.FIELDING_STATS_COUNT; statIndex++) {
+      var val = gameData.awayTeamPitchField[statIndex + 7];
       if (typeof val === 'number' && !isNaN(val)) {
-        teamStats[team2].fielding[s] += val;
+        teamStats[team2].fielding[statIndex] += val;
       }
     }
   }
@@ -665,21 +665,21 @@ function processTeamStatsWithH2HFromGame(teamStats, team1, team2, winner, loser,
 }
 
 function updateScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, weekNum) {
-  for (var s = 0; s < scheduleData.length; s++) {
+  for (var scheduleIndex = 0; scheduleIndex < scheduleData.length; scheduleIndex++) {
     // Match by week number to ensure correct game assignment (prevents swapping when teams play multiple times)
-    if (scheduleData[s].week == weekNum && scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2) {
-      scheduleData[s].played = true;
-      scheduleData[s].homeScore = runs1;
-      scheduleData[s].awayScore = runs2;
-      scheduleData[s].winner = winner;
-      scheduleData[s].loser = loser;
-      scheduleData[s].sheetId = sheet.getSheetId();
+    if (scheduleData[scheduleIndex].week == weekNum && scheduleData[scheduleIndex].homeTeam === team1 && scheduleData[scheduleIndex].awayTeam === team2) {
+      scheduleData[scheduleIndex].played = true;
+      scheduleData[scheduleIndex].homeScore = runs1;
+      scheduleData[scheduleIndex].awayScore = runs2;
+      scheduleData[scheduleIndex].winner = winner;
+      scheduleData[scheduleIndex].loser = loser;
+      scheduleData[scheduleIndex].sheetId = sheet.getSheetId();
 
       // NEW: Add MVP and pitcher data
-      scheduleData[s].mvp = gameData.gameMVP || "";
-      scheduleData[s].winningPitcher = gameData.winningPitcher || "";
-      scheduleData[s].losingPitcher = gameData.losingPitcher || "";
-      scheduleData[s].savePitcher = gameData.savePitcher || "";
+      scheduleData[scheduleIndex].mvp = gameData.gameMVP || "";
+      scheduleData[scheduleIndex].winningPitcher = gameData.winningPitcher || "";
+      scheduleData[scheduleIndex].losingPitcher = gameData.losingPitcher || "";
+      scheduleData[scheduleIndex].savePitcher = gameData.savePitcher || "";
 
       break;
     }
@@ -709,11 +709,11 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
   }
 
   // Write game results for each completed game
-  for (var i = 0; i < scheduleData.length; i++) {
-    var game = scheduleData[i];
+  for (var gameIndex = 0; gameIndex < scheduleData.length; gameIndex++) {
+    var game = scheduleData[gameIndex];
 
     if (game.played && game.sheetId) {
-      var rowNum = i + 2; // +2 because data starts at row 2 (row 1 is headers)
+      var rowNum = gameIndex + 2; // +2 because data starts at row 2 (row 1 is headers)
 
       // Build box score URL
       var boxScoreUrl = "";
@@ -1061,14 +1061,14 @@ function writeGameResultsToPlayoffSchedule(scheduleData) {
  * @returns {number} Row number (1-indexed), or -1 if not found
  */
 function findPlayoffGameRow(currentSchedule, code, awayTeam, homeTeam) {
-  for (var i = 0; i < currentSchedule.length; i++) {
-    var rowCode = String(currentSchedule[i][0] || "").trim();
+  for (var rowIndex = 0; rowIndex < currentSchedule.length; rowIndex++) {
+    var rowCode = String(currentSchedule[rowIndex][0] || "").trim();
 
     // Match by code ONLY
     // Each playoff code is unique (CS1-A, CS2-B, KC1, etc.)
     // Don't match by teams - they may have been updated by winner propagation
     if (rowCode === String(code).trim()) {
-      return i + 2; // +2 because data starts at row 2 (row 1 is headers)
+      return rowIndex + 2; // +2 because data starts at row 2 (row 1 is headers)
     }
   }
 

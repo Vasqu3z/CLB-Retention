@@ -30,10 +30,10 @@ function savePlayerTeamSnapshot() {
   
   var playerData = playerSheet.getRange(2, 1, lastRow - 1, 2).getValues();
   var snapshot = {};
-  
-  for (var i = 0; i < playerData.length; i++) {
-    var playerName = String(playerData[i][0]).trim();
-    var team = String(playerData[i][1]).trim();
+
+  for (var playerIndex = 0; playerIndex < playerData.length; playerIndex++) {
+    var playerName = String(playerData[playerIndex][0]).trim();
+    var team = String(playerData[playerIndex][1]).trim();
     if (playerName) {
       snapshot[playerName] = team;
     }
@@ -79,11 +79,11 @@ function detectMissingTransactions() {
   var currentData = playerSheet.getRange(2, 1, lastRow - 1, 2).getValues();
   var snapshot = getPlayerTeamSnapshot();
   var changes = [];
-  
-  for (var i = 0; i < currentData.length; i++) {
-    var playerName = String(currentData[i][0]).trim();
-    var currentTeam = String(currentData[i][1]).trim();
-    
+
+  for (var playerIndex = 0; playerIndex < currentData.length; playerIndex++) {
+    var playerName = String(currentData[playerIndex][0]).trim();
+    var currentTeam = String(currentData[playerIndex][1]).trim();
+
     if (playerName && snapshot[playerName]) {
       var previousTeam = snapshot[playerName];
       if (currentTeam !== previousTeam) {
@@ -102,8 +102,8 @@ function detectMissingTransactions() {
   }
   
   var message = "Detected " + changes.length + " unlogged transaction(s):\n\n";
-  for (var i = 0; i < changes.length; i++) {
-    message += "• " + changes[i].player + ": " + changes[i].from + " → " + changes[i].to + "\n";
+  for (var changeIndex = 0; changeIndex < changes.length; changeIndex++) {
+    message += "• " + changes[changeIndex].player + ": " + changes[changeIndex].from + " → " + changes[changeIndex].to + "\n";
   }
   message += "\nWould you like to record these?";
   
@@ -127,9 +127,9 @@ function detectMissingTransactions() {
       
       var transactionSheet = initializeTransactionLog();
       var timestamp = new Date();
-      
-      for (var i = 0; i < changes.length; i++) {
-        var description = changes[i].player + ": " + changes[i].from + " → " + changes[i].to;
+
+      for (var changeIndex = 0; changeIndex < changes.length; changeIndex++) {
+        var description = changes[changeIndex].player + ": " + changes[changeIndex].from + " → " + changes[changeIndex].to;
         transactionSheet.appendRow([timestamp, week, "Auto-Detected", description]);
       }
       
@@ -179,10 +179,10 @@ function showTransactionForm(transactionType) {
   var playerData = playerSheet.getRange(2, 1, playerSheet.getLastRow() - 1, 2).getValues();
   var playerList = [];
   var playerTeamMap = {};
-  
-  for (var i = 0; i < playerData.length; i++) {
-    var name = String(playerData[i][0]).trim();
-    var team = String(playerData[i][1]).trim();
+
+  for (var playerIndex = 0; playerIndex < playerData.length; playerIndex++) {
+    var name = String(playerData[playerIndex][0]).trim();
+    var team = String(playerData[playerIndex][1]).trim();
     if (name) {
       playerList.push(name);
       playerTeamMap[name] = team;
@@ -193,8 +193,8 @@ function showTransactionForm(transactionType) {
   var teamList = [];
   if (teamStatsSheet) {
     var teamData = teamStatsSheet.getRange(2, 1, teamStatsSheet.getLastRow() - 1, 1).getValues();
-    for (var i = 0; i < teamData.length; i++) {
-      var teamName = String(teamData[i][0]).trim();
+    for (var teamIndex = 0; teamIndex < teamData.length; teamIndex++) {
+      var teamName = String(teamData[teamIndex][0]).trim();
       if (teamName) teamList.push(teamName);
     }
   }
@@ -374,14 +374,14 @@ function processTradeSelection(players1, players2, team1, team2, week) {
     var lastRow = playerSheet.getLastRow();
     if (lastRow > 1) {
       var playerData = playerSheet.getRange(2, 1, lastRow - 1, 2).getValues();
-      
-      for (var i = 0; i < playerData.length; i++) {
-        var playerName = String(playerData[i][0]).trim();
-        
+
+      for (var playerIndex = 0; playerIndex < playerData.length; playerIndex++) {
+        var playerName = String(playerData[playerIndex][0]).trim();
+
         if (players1.indexOf(playerName) !== -1) {
-          playerSheet.getRange(i + 2, 2).setValue(team2);
+          playerSheet.getRange(playerIndex + 2, 2).setValue(team2);
         } else if (players2.indexOf(playerName) !== -1) {
-          playerSheet.getRange(i + 2, 2).setValue(team1);
+          playerSheet.getRange(playerIndex + 2, 2).setValue(team1);
         }
       }
     }
@@ -405,17 +405,17 @@ function processCutSelection(player, team, week) {
     var lastRow = playerSheet.getLastRow();
     if (lastRow > 1) {
       var playerData = playerSheet.getRange(2, 1, lastRow - 1, 2).getValues();
-      
-      for (var i = 0; i < playerData.length; i++) {
-        var playerName = String(playerData[i][0]).trim();
+
+      for (var playerIndex = 0; playerIndex < playerData.length; playerIndex++) {
+        var playerName = String(playerData[playerIndex][0]).trim();
         if (playerName === player) {
-          playerSheet.getRange(i + 2, 2).clearContent();
+          playerSheet.getRange(playerIndex + 2, 2).clearContent();
           break;
         }
       }
     }
   }
-  
+
   var description = team + " released " + player;
   var lastRow = Math.max(transactionSheet.getLastRow(), 2);
   transactionSheet.getRange(lastRow + 1, 1, 1, 4).setValues([[new Date(), week, "Cut", description]]);
@@ -434,17 +434,17 @@ function processSignSelection(player, team, week) {
     var lastRow = playerSheet.getLastRow();
     if (lastRow > 1) {
       var playerData = playerSheet.getRange(2, 1, lastRow - 1, 2).getValues();
-      
-      for (var i = 0; i < playerData.length; i++) {
-        var playerName = String(playerData[i][0]).trim();
+
+      for (var playerIndex = 0; playerIndex < playerData.length; playerIndex++) {
+        var playerName = String(playerData[playerIndex][0]).trim();
         if (playerName === player) {
-          playerSheet.getRange(i + 2, 2).setValue(team);
+          playerSheet.getRange(playerIndex + 2, 2).setValue(team);
           break;
         }
       }
     }
   }
-  
+
   var description = team + " signed " + player;
   var lastRow = Math.max(transactionSheet.getLastRow(), 2);
   transactionSheet.getRange(lastRow + 1, 1, 1, 4).setValues([[new Date(), week, "Sign", description]]);

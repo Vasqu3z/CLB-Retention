@@ -689,19 +689,35 @@ class SheetsService {
     const maxCompletedWeek = Math.max(0, ...games.filter(g => g.played).map(g => g.week));
     const currentWeek = maxCompletedWeek + 1;
 
+    // Debug logging for recent/current/upcoming
+    if (filter.type === 'recent' || filter.type === 'current' || filter.type === 'upcoming') {
+      console.log(`[SHEETS] ${filter.type} filter for ${isPlayoffs ? 'playoffs' : 'regular season'}:`);
+      console.log(`[SHEETS] Total games: ${games.length}`);
+      console.log(`[SHEETS] Played games: ${games.filter(g => g.played).length}`);
+      console.log(`[SHEETS] Max completed week: ${maxCompletedWeek}`);
+      console.log(`[SHEETS] Current week: ${currentWeek}`);
+      console.log(`[SHEETS] All game weeks: ${games.map(g => `W${g.week}${g.played ? '✓' : '○'}`).join(', ')}`);
+    }
+
     // Filter based on request type
     switch (filter.type) {
       case 'recent':
         // Last completed week
-        return games.filter(g => g.played && g.week === maxCompletedWeek);
+        const recentGames = games.filter(g => g.played && g.week === maxCompletedWeek);
+        console.log(`[SHEETS] Recent: Looking for played games in week ${maxCompletedWeek}, found ${recentGames.length}`);
+        return recentGames;
 
       case 'current':
         // Current week (may have some completed games)
-        return games.filter(g => g.week === currentWeek);
+        const currentGames = games.filter(g => g.week === currentWeek);
+        console.log(`[SHEETS] Current: Looking for games in week ${currentWeek}, found ${currentGames.length}`);
+        return currentGames;
 
       case 'upcoming':
         // Next week
-        return games.filter(g => g.week === currentWeek + 1);
+        const upcomingGames = games.filter(g => g.week === currentWeek + 1);
+        console.log(`[SHEETS] Upcoming: Looking for games in week ${currentWeek + 1}, found ${upcomingGames.length}`);
+        return upcomingGames;
 
       case 'team':
         // All games for a specific team

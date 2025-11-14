@@ -150,44 +150,40 @@ function updateAllPlayoffs() {
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating playoff schedule...", "Update Postseason", -1);
     var step3Start = new Date();
 
-    // Check if we need to regenerate the playoff schedule structure
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var scheduleSheet = ss.getSheetByName(CONFIG.PLAYOFF_SCHEDULE_SHEET);
-    var needsStructureUpdate = false;
+    // Get regular season standings for seeding (only if needed)
+    var regularSeasonGameData = _spreadsheetCache.gameData;
 
-    if (!scheduleSheet || scheduleSheet.getLastRow() < 2) {
-      // No schedule exists yet, need to generate it
-      needsStructureUpdate = true;
-    } else {
-      // Check if schedule has real teams or just placeholders
-      var firstGameRow = scheduleSheet.getRange(2, 2, 1, 2).getValues()[0];  // Away and Home team
-      var awayTeam = String(firstGameRow[0] || "").trim();
-      var homeTeam = String(firstGameRow[1] || "").trim();
+    // Only process regular season if we don't have standings cached
+    // This is needed for initial playoff bracket seeding
+    if (!regularSeasonGameData) {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var scheduleSheet = ss.getSheetByName(CONFIG.PLAYOFF_SCHEDULE_SHEET);
 
-      // If teams are TBD or placeholders, need to regenerate with seeds
-      if (!awayTeam || !homeTeam || awayTeam === "TBD" || homeTeam === "TBD" ||
-          awayTeam.indexOf("Winner") >= 0 || homeTeam.indexOf("Winner") >= 0) {
-        needsStructureUpdate = true;
+      // Check if we need seeding (no schedule exists or has TBD teams)
+      var needsSeeding = false;
+      if (!scheduleSheet || scheduleSheet.getLastRow() < 2) {
+        needsSeeding = true;
+      } else {
+        // Check first CS game for TBD (would indicate initial setup needed)
+        var firstCSRow = scheduleSheet.getRange(2, 2, 1, 2).getValues()[0];
+        var awayTeam = String(firstCSRow[0] || "").trim();
+        if (awayTeam === "TBD" || awayTeam === "") {
+          needsSeeding = true;
+        }
       }
-    }
 
-    // Only regenerate structure if needed (saves processing regular season games)
-    if (needsStructureUpdate) {
-      logInfo("Update Playoffs", "Regenerating playoff schedule structure with seeding");
-
-      // Get regular season standings for seeding
-      var regularSeasonGameData = _spreadsheetCache.gameData;
-      if (!regularSeasonGameData) {
+      if (needsSeeding) {
         SpreadsheetApp.getActiveSpreadsheet().toast("Loading regular season standings for playoff seeding...", "Update Postseason", -1);
-        // If not cached, process regular season to get standings
         regularSeasonGameData = processAllGameSheetsOnce();
+      } else {
+        // Create minimal teamStatsWithH2H object (seeding already done, just need structure for function)
+        regularSeasonGameData = { teamStatsWithH2H: {} };
       }
-
-      // Generate/update playoff schedule structure with seeds and placeholders
-      updatePlayoffScheduleStructure(regularSeasonGameData.teamStatsWithH2H, playoffGameData.scheduleData);
-    } else {
-      logInfo("Update Playoffs", "Using existing playoff schedule structure (teams already set)");
     }
+
+    // Always update playoff schedule structure to propagate series winners
+    // This function handles both initial seeding AND advancing winners to next rounds
+    updatePlayoffScheduleStructure(regularSeasonGameData.teamStatsWithH2H, playoffGameData.scheduleData);
 
     // Write completed game results to the schedule
     writeGameResultsToPlayoffSchedule(playoffGameData.scheduleData);

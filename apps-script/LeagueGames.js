@@ -787,16 +787,45 @@ function updatePlayoffScheduleStructure(teamStatsWithH2H, scheduleData) {
     logInfo("Update Playoff Schedule", "Created new playoff schedule sheet");
   }
 
-  // Get final standings (sort teams by record)
-  var teamOrder = Object.keys(teamStatsWithH2H);
-  teamOrder.sort(function(teamA, teamB) {
-    return compareTeamsByStandings(teamA, teamB, teamStatsWithH2H);
-  });
+  // Try to extract existing seeds from current schedule (if already seeded)
+  var existingSeeds = {};
+  if (scheduleSheet.getLastRow() >= 2) {
+    // Read existing CS games to extract seeds
+    var existingData = scheduleSheet.getRange(2, 1, Math.min(scheduleSheet.getLastRow() - 1, 20), 3).getValues();
+    for (var i = 0; i < existingData.length; i++) {
+      var code = String(existingData[i][0] || "").trim();
+      var away = String(existingData[i][1] || "").trim();
+      var home = String(existingData[i][2] || "").trim();
 
-  // Extract top 8 teams for playoff seeding
+      // Extract seeds from CS1-A (away=seed4, home=seed1) and CS1-B (away=seed3, home=seed2)
+      if (code === "CS1-A" && away && home && away !== "TBD" && !away.startsWith("Winner")) {
+        existingSeeds[4] = away;
+        existingSeeds[1] = home;
+      } else if (code === "CS1-B" && away && home && away !== "TBD" && !away.startsWith("Winner")) {
+        existingSeeds[3] = away;
+        existingSeeds[2] = home;
+      }
+    }
+  }
+
+  // Use existing seeds if available, otherwise calculate from standings
   var seeds = {};
-  for (var i = 0; i < Math.min(8, teamOrder.length); i++) {
-    seeds[i + 1] = teamOrder[i];
+  if (Object.keys(existingSeeds).length >= 4) {
+    // Seeds already set, use them
+    seeds = existingSeeds;
+    logInfo("Update Playoff Schedule", "Using existing playoff seeds from schedule");
+  } else {
+    // Calculate seeds from regular season standings
+    var teamOrder = Object.keys(teamStatsWithH2H);
+    teamOrder.sort(function(teamA, teamB) {
+      return compareTeamsByStandings(teamA, teamB, teamStatsWithH2H);
+    });
+
+    // Extract top 8 teams for playoff seeding
+    for (var i = 0; i < Math.min(8, teamOrder.length); i++) {
+      seeds[i + 1] = teamOrder[i];
+    }
+    logInfo("Update Playoff Schedule", "Calculated playoff seeds from regular season standings");
   }
 
   // Determine series winners from completed games

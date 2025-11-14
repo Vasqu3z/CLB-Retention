@@ -940,57 +940,75 @@ function updatePlayoffScheduleStructure(scheduleData) {
     schedule.push(["KC" + kcGameNum, kcGameAway, kcGameHome]);
   }
 
-  // Check if this is initial creation or an update
-  var hasHeaders = scheduleSheet.getLastRow() > 0 &&
-                   scheduleSheet.getRange(1, 1).getValue() !== "";
+  var scheduleConfig = CONFIG.SHEET_STRUCTURE.PLAYOFF_SCHEDULE;
+  var headerRow = scheduleConfig.HEADER_ROW;
+  var dataStartRow = scheduleConfig.DATA_START_ROW;
+  var numBasicCols = scheduleConfig.NUM_BASIC_COLS;
+  var codeCol = scheduleConfig.GAME_CODE_COL;
+  var awayCol = scheduleConfig.AWAY_TEAM_COL;
+  var homeCol = scheduleConfig.HOME_TEAM_COL;
+
+  var existingLastRow = scheduleSheet.getLastRow();
+  var hasHeaders = existingLastRow > 0 && scheduleSheet.getRange(headerRow, headerRow).getValue() !== "";
 
   if (!hasHeaders) {
-    // Initial creation - write everything including headers
-    scheduleSheet.getRange(1, 1, schedule.length, 3).setValues(schedule);
+    // Initial creation - batch write full schedule including headers
+    scheduleSheet.getRange(headerRow, headerRow, schedule.length, numBasicCols).setValues(schedule);
 
-    // Format header row
-    scheduleSheet.getRange(1, 1, 1, 3)
+    scheduleSheet.getRange(headerRow, headerRow, headerRow, numBasicCols)
       .setFontWeight("bold")
       .setBackground("#e8e8e8")
       .setHorizontalAlignment("center");
 
-    logInfo("Update Playoff Schedule", "Created initial schedule structure with " + (schedule.length - 1) + " games");
+    logInfo("Update Playoff Schedule", "Created initial schedule with " + (schedule.length - 1) + " games");
   } else {
-    // Smart update - only update team names in existing rows, preserve headers and formatting
-    var existingLastRow = scheduleSheet.getLastRow();
-    var existingCodes = [];
-
-    if (existingLastRow >= 2) {
-      existingCodes = scheduleSheet.getRange(2, 1, existingLastRow - 1, 1).getValues();
+    // Smart update - batch read existing, modify in memory, batch write
+    var existingData = [];
+    if (existingLastRow >= dataStartRow) {
+      existingData = scheduleSheet.getRange(dataStartRow, headerRow, existingLastRow - headerRow, numBasicCols).getValues();
     }
 
-    // For each row in the new schedule (skip header at index 0)
-    for (var schedRowIndex = 1; schedRowIndex < schedule.length; schedRowIndex++) {
-      var gameCode = schedule[schedRowIndex][0];
-      var awayTeam = schedule[schedRowIndex][1];
-      var homeTeam = schedule[schedRowIndex][2];
-
-      // Find matching row in existing sheet
-      var sheetRowNum = -1;
-      for (var existingRowIndex = 0; existingRowIndex < existingCodes.length; existingRowIndex++) {
-        if (String(existingCodes[existingRowIndex][0]).trim() === gameCode) {
-          sheetRowNum = existingRowIndex + 2; // +2 because row 1 is header, and array is 0-indexed
-          break;
-        }
+    // Build code-to-index mapping for fast lookup
+    var codeToIndex = {};
+    for (var existingIndex = 0; existingIndex < existingData.length; existingIndex++) {
+      var code = String(existingData[existingIndex][codeCol] || "").trim();
+      if (code) {
+        codeToIndex[code] = existingIndex;
       }
+    }
 
-      // If row exists, update only the team name columns
-      if (sheetRowNum > 0) {
-        scheduleSheet.getRange(sheetRowNum, 2).setValue(awayTeam); // Column B - Away Team
-        scheduleSheet.getRange(sheetRowNum, 3).setValue(homeTeam); // Column C - Home Team
+    // Update existing rows in memory and collect new rows
+    var updatedCount = 0;
+    var newRows = [];
+
+    for (var schedIndex = 1; schedIndex < schedule.length; schedIndex++) {
+      var gameCode = schedule[schedIndex][codeCol];
+      var awayTeam = schedule[schedIndex][awayCol];
+      var homeTeam = schedule[schedIndex][homeCol];
+
+      if (codeToIndex[gameCode] !== undefined) {
+        // Update existing row in memory (columns B and C only)
+        existingData[codeToIndex[gameCode]][awayCol] = awayTeam;
+        existingData[codeToIndex[gameCode]][homeCol] = homeTeam;
+        updatedCount++;
       } else {
-        // Row doesn't exist yet - append it (handles adding new games as series progress)
-        var newRowNum = scheduleSheet.getLastRow() + 1;
-        scheduleSheet.getRange(newRowNum, 1, 1, 3).setValues([[gameCode, awayTeam, homeTeam]]);
+        // Collect new row for batch append
+        newRows.push([gameCode, awayTeam, homeTeam]);
       }
     }
 
-    logInfo("Update Playoff Schedule", "Updated team names for " + (schedule.length - 1) + " playoff games (smart update)");
+    // Batch write updated existing data (single write operation)
+    if (existingData.length > 0) {
+      scheduleSheet.getRange(dataStartRow, headerRow, existingData.length, numBasicCols).setValues(existingData);
+    }
+
+    // Batch append new rows (single write operation)
+    if (newRows.length > 0) {
+      var appendStartRow = scheduleSheet.getLastRow() + 1;
+      scheduleSheet.getRange(appendStartRow, headerRow, newRows.length, numBasicCols).setValues(newRows);
+    }
+
+    logInfo("Update Playoff Schedule", "Smart update: " + updatedCount + " updated, " + newRows.length + " added");
   }
 }
 

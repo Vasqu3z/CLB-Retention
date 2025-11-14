@@ -248,6 +248,16 @@ var CONFIG = {
       SCHEDULE_NUM_COLS: 7
     },
 
+    // Playoff Schedule sheet layout
+    PLAYOFF_SCHEDULE: {
+      HEADER_ROW: 1,
+      DATA_START_ROW: 2,
+      GAME_CODE_COL: 0,           // Column A - Game code (WC1, CS1-A, KC1, etc.)
+      AWAY_TEAM_COL: 1,           // Column B - Away team name
+      HOME_TEAM_COL: 2,           // Column C - Home team name
+      NUM_BASIC_COLS: 3           // Number of columns in basic structure (Code, Away, Home)
+    },
+
     // Player Comparison sheet layout
     PLAYER_COMPARISON: {
       // Maps stat keys to their 0-based index in the Hitting sheet

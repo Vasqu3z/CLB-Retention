@@ -325,24 +325,13 @@ export const PLAYOFF_ROUNDS = {
   3: 'Kingdom Cup'
 };
 
-// Reverse mapping for looking up round number from round name
-// Includes variations for case-insensitive and flexible matching
-export const PLAYOFF_ROUND_NAMES = {
-  'Wildcard Round': 1,
-  'wildcard round': 1,
-  'Wild Card Round': 1,
-  'wild card round': 1,
-  'Wildcard': 1,
-  'wildcard': 1,
-  'WC': 1,
-  'Castle Series (CS)': 2,
-  'Castle Series': 2,
-  'castle series (cs)': 2,
-  'castle series': 2,
-  'CS': 2,
-  'Kingdom Cup (KC)': 3,
-  'Kingdom Cup': 3,
-  'kingdom cup (kc)': 3,
-  'kingdom cup': 3,
-  'KC': 3
+// Mapping of game code prefixes to round numbers
+// Playoff schedule uses codes like: WC1, WC2, CS1-A, CS2-B, KC1, KC2
+export const PLAYOFF_CODE_TO_ROUND = {
+  'WC': 1,  // Wildcard Round: WC1, WC2, WC3, etc.
+  'CS': 2,  // Castle Series: CS1-A, CS2-A, CS1-B, CS2-B
+  'KC': 3,  // Kingdom Cup: KC1, KC2, KC3, etc.
+  'Q': 1,   // Alternative: Quarterfinals
+  'S': 2,   // Alternative: Semifinals
+  'F': 3    // Alternative: Finals
 };

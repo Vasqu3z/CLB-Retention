@@ -36,7 +36,8 @@ import {
   DATA_START_ROW,
   QUALIFICATION,
   CACHE_CONFIG,
-  PLAYOFF_ROUND_NAMES
+  PLAYOFF_CODE_TO_ROUND,
+  PLAYOFF_ROUNDS
 } from '../config/league-config.js';
 import logger from '../utils/logger.js';
 
@@ -630,22 +631,25 @@ class SheetsService {
       .map(row => {
         const weekRaw = row[SCHEDULE_COLUMNS.WEEK];
 
-        // For playoffs, map round names to numbers; for regular season, parse as integer
+        // For playoffs, extract round prefix from game codes; for regular season, parse as integer
         let week;
         let roundName = null;
         if (isPlayoffs) {
-          // Try to match the round name to a number
-          const trimmedRound = weekRaw.trim();
-          week = PLAYOFF_ROUND_NAMES[trimmedRound];
-          roundName = trimmedRound;
+          // Playoff schedule uses game codes like: WC1, WC2, CS1-A, CS2-B, KC1, KC2
+          // Extract the round prefix (WC, CS, KC, Q, S, F)
+          const gameCode = weekRaw.trim();
+          const match = gameCode.match(/^([A-Z]+)/); // Extract leading letters
 
-          // If no match found, try parseInt as fallback
-          if (!week) {
-            week = parseInt(weekRaw);
+          if (match) {
+            const roundPrefix = match[1]; // e.g., "WC", "CS", "KC"
+            week = PLAYOFF_CODE_TO_ROUND[roundPrefix];
+            roundName = PLAYOFF_ROUNDS[week]; // Convert number back to full name
+            console.log(`[SHEETS] Playoff code "${gameCode}" -> prefix "${roundPrefix}" -> week ${week} (${roundName})`);
+          } else {
+            // Fallback to parseInt if no prefix match
+            week = parseInt(gameCode);
+            console.log(`[SHEETS] Playoff code "${gameCode}" -> parseInt -> week ${week}`);
           }
-
-          // Always log playoff round parsing for debugging
-          console.log(`[SHEETS] Playoff round parsing: "${trimmedRound}" -> week ${week}, roundName: ${roundName}`);
         } else {
           week = parseInt(weekRaw);
         }
@@ -737,12 +741,15 @@ class SheetsService {
     scheduleData.forEach(row => {
       const weekRaw = row[SCHEDULE_COLUMNS.WEEK];
 
-      // For playoffs, map round names to numbers; for regular season, parse as integer
+      // For playoffs, extract round prefix from game codes; for regular season, parse as integer
       let week;
       if (isPlayoffs) {
-        const trimmedRound = weekRaw?.trim();
-        week = PLAYOFF_ROUND_NAMES[trimmedRound];
-        if (!week) {
+        const gameCode = weekRaw?.trim();
+        const match = gameCode?.match(/^([A-Z]+)/);
+        if (match) {
+          const roundPrefix = match[1];
+          week = PLAYOFF_CODE_TO_ROUND[roundPrefix];
+        } else {
           week = parseInt(weekRaw);
         }
       } else {

@@ -750,15 +750,20 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
 
 function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, playoffCode) {
   for (var s = 0; s < scheduleData.length; s++) {
-    // Match by playoff code (week column) to ensure correct game assignment
-    // Examples: Q1, S1-A, F2
-    if (scheduleData[s].week == playoffCode && scheduleData[s].homeTeam === team1 && scheduleData[s].awayTeam === team2) {
+    // Match by playoff code ONLY (not teams, since schedule may have placeholder teams)
+    // Each playoff code is unique (CS1-A, CS2-B, KC1, etc.) so matching by code is sufficient
+    // Teams may be placeholders ("Winner of CS-A") until series winners are determined
+    if (scheduleData[s].week == playoffCode) {
       scheduleData[s].played = true;
       scheduleData[s].homeScore = runs1;
       scheduleData[s].awayScore = runs2;
       scheduleData[s].winner = winner;
       scheduleData[s].loser = loser;
       scheduleData[s].sheetId = sheet.getSheetId();
+
+      // Update team names from actual game (may differ from placeholder teams in schedule)
+      scheduleData[s].homeTeam = team1;
+      scheduleData[s].awayTeam = team2;
 
       // Add MVP and pitcher data
       scheduleData[s].mvp = gameData.gameMVP || "";

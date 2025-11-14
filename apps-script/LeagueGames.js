@@ -748,20 +748,29 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
 
 // ===== PLAYOFF SCHEDULE FUNCTIONS =====
 
+/**
+ * Updates or creates a playoff game entry in the in-memory scheduleData array
+ * Matches by playoff code only (teams may be placeholders until series winners determined)
+ * @param {Array} scheduleData - In-memory array of playoff games
+ * @param {Sheet} sheet - Game sheet object
+ * @param {string} team1 - Home team name
+ * @param {string} team2 - Away team name
+ * @param {number} runs1 - Home team runs
+ * @param {number} runs2 - Away team runs
+ * @param {string} winner - Winning team name
+ * @param {string} loser - Losing team name
+ * @param {object} gameData - Game metadata (MVP, pitchers)
+ * @param {string} playoffCode - Playoff game code (e.g., "CS1-A", "KC2")
+ */
 function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, playoffCode) {
-  // Try to find existing entry for this game code
   var foundIndex = -1;
-  for (var s = 0; s < scheduleData.length; s++) {
-    // Match by playoff code ONLY (not teams, since schedule may have placeholder teams)
-    // Each playoff code is unique (CS1-A, CS2-B, KC1, etc.) so matching by code is sufficient
-    // Teams may be placeholders ("Winner of CS-A") until series winners are determined
-    if (scheduleData[s].week == playoffCode) {
-      foundIndex = s;
+  for (var scheduleIndex = 0; scheduleIndex < scheduleData.length; scheduleIndex++) {
+    if (scheduleData[scheduleIndex].week == playoffCode) {
+      foundIndex = scheduleIndex;
       break;
     }
   }
 
-  // If entry exists, update it; otherwise create new entry
   if (foundIndex >= 0) {
     scheduleData[foundIndex].played = true;
     scheduleData[foundIndex].homeScore = runs1;
@@ -780,10 +789,6 @@ function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, ru
     scheduleData[foundIndex].losingPitcher = gameData.losingPitcher || "";
     scheduleData[foundIndex].savePitcher = gameData.savePitcher || "";
   } else {
-    // Entry doesn't exist - create new one
-    // This handles cases where:
-    // 1. First playoff update (schedule doesn't exist yet)
-    // 2. Later rounds before schedule structure is generated
     scheduleData.push({
       week: playoffCode,
       homeTeam: team1,
@@ -818,17 +823,14 @@ function updatePlayoffScheduleStructure(scheduleData) {
     logInfo("Update Playoff Schedule", "Created new playoff schedule sheet");
   }
 
-  // Try to extract existing seeds from current schedule (if already seeded)
   var existingSeeds = {};
   if (scheduleSheet.getLastRow() >= 2) {
-    // Read existing CS games to extract seeds
     var existingData = scheduleSheet.getRange(2, 1, Math.min(scheduleSheet.getLastRow() - 1, 20), 3).getValues();
-    for (var i = 0; i < existingData.length; i++) {
-      var code = String(existingData[i][0] || "").trim();
-      var away = String(existingData[i][1] || "").trim();
-      var home = String(existingData[i][2] || "").trim();
+    for (var rowIndex = 0; rowIndex < existingData.length; rowIndex++) {
+      var code = String(existingData[rowIndex][0] || "").trim();
+      var away = String(existingData[rowIndex][1] || "").trim();
+      var home = String(existingData[rowIndex][2] || "").trim();
 
-      // Extract seeds from CS1-A (away=seed4, home=seed1) and CS1-B (away=seed3, home=seed2)
       if (code === "CS1-A" && away && home && away !== "TBD" && !away.startsWith("Winner")) {
         existingSeeds[4] = away;
         existingSeeds[1] = home;
@@ -839,15 +841,11 @@ function updatePlayoffScheduleStructure(scheduleData) {
     }
   }
 
-  // Use existing seeds if available, otherwise read from standings sheet (FAST!)
   var seeds = {};
   if (Object.keys(existingSeeds).length >= 4) {
-    // Seeds already set, use them
     seeds = existingSeeds;
     logInfo("Update Playoff Schedule", "Using existing playoff seeds from schedule");
   } else {
-    // Read seeds from already-calculated standings sheet
-    // This avoids reprocessing 50+ regular season games!
     seeds = getPlayoffSeedsFromStandings();
     logInfo("Update Playoff Schedule", "Read playoff seeds from standings sheet");
   }
@@ -863,16 +861,12 @@ function updatePlayoffScheduleStructure(scheduleData) {
   // Add header row
   schedule.push(["Game Code", "Away Team", "Home Team"]);
 
-  // Wildcard Round (Seeds 4 vs 5) - Best of 3 (only if enabled)
   if (CONFIG.ENABLE_WILDCARD_ROUND) {
     schedule.push(["WC1", seeds[5] || "TBD", seeds[4] || "TBD"]);
     schedule.push(["WC2", seeds[4] || "TBD", seeds[5] || "TBD"]);
     schedule.push(["WC3", seeds[5] || "TBD", seeds[4] || "TBD"]);
   }
 
-  // Castle Series - Series A - Best of 5
-  // If WC enabled: Seed 1 vs WC Winner
-  // If WC disabled: Seed 1 vs Seed 4
   var cs1Away, cs1Home;
   if (CONFIG.ENABLE_WILDCARD_ROUND) {
     cs1Away = wcWinner || "Winner of WC";
@@ -896,7 +890,6 @@ function updatePlayoffScheduleStructure(scheduleData) {
   schedule.push(["CS4-B", cs2Home, cs2Away]);
   schedule.push(["CS5-B", cs2Away, cs2Home]);
 
-  // Kingdom Cup (CS Winners) - Best of 7
   var kc1Away = cs2Winner || "Winner of CS-B";
   var kc1Home = cs1Winner || "Winner of CS-A";
   schedule.push(["KC1", kc1Away, kc1Home]);
@@ -907,9 +900,6 @@ function updatePlayoffScheduleStructure(scheduleData) {
   schedule.push(["KC6", kc1Home, kc1Away]);
   schedule.push(["KC7", kc1Away, kc1Home]);
 
-  // Write to sheet (columns A-C only - preserve existing game results in columns D+)
-  // DO NOT clear() - that would destroy all game results!
-  // Just overwrite columns A-C with updated structure (seeds + series winners)
   scheduleSheet.getRange(1, 1, schedule.length, 3).setValues(schedule);
 
   // Format header row
@@ -931,18 +921,15 @@ function updatePlayoffScheduleStructure(scheduleData) {
 function getSeriesWinner(scheduleData, roundCode, seriesLetter) {
   if (!scheduleData || scheduleData.length === 0) return null;
 
-  // Find all games for this series
   var seriesGames = [];
-  for (var i = 0; i < scheduleData.length; i++) {
-    var game = scheduleData[i];
-    if (!game.week) continue;  // Fixed: was game.code, should be game.week
+  for (var gameIndex = 0; gameIndex < scheduleData.length; gameIndex++) {
+    var game = scheduleData[gameIndex];
+    if (!game.week) continue;
 
-    var code = String(game.week).toUpperCase();  // Fixed: was game.code, should be game.week
+    var code = String(game.week).toUpperCase();
 
-    // Check if code matches round
     if (code.indexOf(roundCode) !== 0) continue;
 
-    // If series letter specified, check for it
     if (seriesLetter) {
       if (code.indexOf('-' + seriesLetter) === -1) continue;
     }
@@ -952,10 +939,9 @@ function getSeriesWinner(scheduleData, roundCode, seriesLetter) {
 
   if (seriesGames.length === 0) return null;
 
-  // Count wins for each team
   var teamWins = {};
-  for (var i = 0; i < seriesGames.length; i++) {
-    var game = seriesGames[i];
+  for (var seriesGameIndex = 0; seriesGameIndex < seriesGames.length; seriesGameIndex++) {
+    var game = seriesGames[seriesGameIndex];
     if (game.played && game.winner) {
       var winner = String(game.winner).trim();
       teamWins[winner] = (teamWins[winner] || 0) + 1;
@@ -981,9 +967,14 @@ function getSeriesWinner(scheduleData, roundCode, seriesLetter) {
     }
   }
 
-  return null; // Series not complete
+  return null;
 }
 
+/**
+ * Writes completed playoff game results to the Playoff Schedule sheet
+ * Updates columns D-L with scores, winners, MVPs, and pitchers for completed games
+ * @param {Array} scheduleData - In-memory array of completed playoff games
+ */
 function writeGameResultsToPlayoffSchedule(scheduleData) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var scheduleSheet = ss.getSheetByName(CONFIG.PLAYOFF_SCHEDULE_SHEET);
@@ -993,11 +984,9 @@ function writeGameResultsToPlayoffSchedule(scheduleData) {
     return;
   }
 
-  // Add headers if they don't exist yet (columns D-L)
   var headers = scheduleSheet.getRange(1, 1, 1, 13).getValues()[0];
 
   if (!headers[3] || headers[3] === "") {
-    // Write new column headers
     scheduleSheet.getRange(1, 4, 1, 9).setValues([[
       "Away Score", "Home Score", "Winning Team", "Losing Team", "Game MVP",
       "Winning Pitcher", "Losing Pitcher", "Saving Pitcher", "Box Score Link"
@@ -1005,7 +994,6 @@ function writeGameResultsToPlayoffSchedule(scheduleData) {
     scheduleSheet.getRange(1, 4, 1, 9).setFontWeight("bold").setBackground("#e8e8e8");
   }
 
-  // Read current schedule structure (after it was just rewritten by updatePlayoffScheduleStructure)
   var lastRow = scheduleSheet.getLastRow();
   if (lastRow < 2) {
     logWarning("Write Playoff Game Results", "No schedule data found in sheet", "");
@@ -1014,9 +1002,8 @@ function writeGameResultsToPlayoffSchedule(scheduleData) {
 
   var currentSchedule = scheduleSheet.getRange(2, 1, lastRow - 1, 3).getValues();
 
-  // Write game results for each completed game
-  for (var i = 0; i < scheduleData.length; i++) {
-    var game = scheduleData[i];
+  for (var gameIndex = 0; gameIndex < scheduleData.length; gameIndex++) {
+    var game = scheduleData[gameIndex];
 
     if (game.played && game.sheetId) {
       // Find the row where this game appears in the current schedule structure

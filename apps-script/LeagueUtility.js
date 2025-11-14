@@ -91,6 +91,12 @@ function getGameSheets(boxScoreSS) {
   return gameSheets;
 }
 
+/**
+ * Gets all playoff game sheets from the box score spreadsheet
+ * Filters by CONFIG.PLAYOFF_GAME_PREFIX (e.g., "*") and caches results
+ * @param {Spreadsheet} boxScoreSS - Box score spreadsheet object
+ * @returns {Array<Sheet>} Array of playoff game sheet objects
+ */
 function getPlayoffGameSheets(boxScoreSS) {
   if (_spreadsheetCache.playoffGameSheets) {
     return _spreadsheetCache.playoffGameSheets;
@@ -99,14 +105,10 @@ function getPlayoffGameSheets(boxScoreSS) {
   var sheets = boxScoreSS.getSheets();
   var playoffGameSheets = [];
 
-  for (var i = 0; i < sheets.length; i++) {
-    var sheetName = sheets[i].getName();
-    // Include only playoff game sheets (starting with *)
+  for (var sheetIndex = 0; sheetIndex < sheets.length; sheetIndex++) {
+    var sheetName = sheets[sheetIndex].getName();
     if (sheetName.startsWith(CONFIG.PLAYOFF_GAME_PREFIX)) {
-      // Skip validation for playoff games to improve performance
-      // Playoff games are assumed to be valid if they have the correct prefix
-      // Validation reads data from every sheet, which is expensive when there are many sheets
-      playoffGameSheets.push(sheets[i]);
+      playoffGameSheets.push(sheets[sheetIndex]);
     }
   }
 
@@ -156,10 +158,10 @@ function getPlayoffSeedsFromStandings() {
   var teamData = standingsSheet.getRange(dataStartRow, teamCol, numTeams, 1).getValues();
 
   var seeds = {};
-  for (var i = 0; i < teamData.length; i++) {
-    var teamName = String(teamData[i][0]).trim();
+  for (var teamIndex = 0; teamIndex < teamData.length; teamIndex++) {
+    var teamName = String(teamData[teamIndex][0]).trim();
     if (teamName && teamName !== "") {
-      seeds[i + 1] = teamName; // Seed 1 = first place, Seed 2 = second place, etc.
+      seeds[teamIndex + 1] = teamName;
     }
   }
 

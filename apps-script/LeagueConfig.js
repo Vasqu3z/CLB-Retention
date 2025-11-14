@@ -56,6 +56,7 @@ var CONFIG = {
 
   // Playoff configuration
   PLAYOFF_TEAMS: 8,
+  ENABLE_WILDCARD_ROUND: false,    // Set to true for 5-team playoffs (1,2,3 + 4v5), false for 4-team playoffs (1v4, 2v3)
   QUARTERFINALS_WINS_REQUIRED: 2,  // Best of 3
   SEMIFINALS_WINS_REQUIRED: 3,     // Best of 5
   FINALS_WINS_REQUIRED: 4,         // Best of 7

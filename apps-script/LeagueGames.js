@@ -810,14 +810,24 @@ function updatePlayoffScheduleStructure(teamStatsWithH2H, scheduleData) {
   // Add header row
   schedule.push(["Game Code", "Away Team", "Home Team"]);
 
-  // Wildcard Round (Seeds 4 vs 5) - Best of 3
-  schedule.push(["WC1", seeds[5] || "TBD", seeds[4] || "TBD"]);
-  schedule.push(["WC2", seeds[4] || "TBD", seeds[5] || "TBD"]);
-  schedule.push(["WC3", seeds[5] || "TBD", seeds[4] || "TBD"]);
+  // Wildcard Round (Seeds 4 vs 5) - Best of 3 (only if enabled)
+  if (CONFIG.ENABLE_WILDCARD_ROUND) {
+    schedule.push(["WC1", seeds[5] || "TBD", seeds[4] || "TBD"]);
+    schedule.push(["WC2", seeds[4] || "TBD", seeds[5] || "TBD"]);
+    schedule.push(["WC3", seeds[5] || "TBD", seeds[4] || "TBD"]);
+  }
 
-  // Castle Series - Series A (Seed 1 vs WC Winner) - Best of 5
-  var cs1Away = wcWinner || "Winner of WC";
-  var cs1Home = seeds[1] || "TBD";
+  // Castle Series - Series A - Best of 5
+  // If WC enabled: Seed 1 vs WC Winner
+  // If WC disabled: Seed 1 vs Seed 4
+  var cs1Away, cs1Home;
+  if (CONFIG.ENABLE_WILDCARD_ROUND) {
+    cs1Away = wcWinner || "Winner of WC";
+    cs1Home = seeds[1] || "TBD";
+  } else {
+    cs1Away = seeds[4] || "TBD";
+    cs1Home = seeds[1] || "TBD";
+  }
   schedule.push(["CS1-A", cs1Away, cs1Home]);
   schedule.push(["CS2-A", cs1Home, cs1Away]);
   schedule.push(["CS3-A", cs1Away, cs1Home]);

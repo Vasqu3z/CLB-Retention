@@ -907,8 +907,9 @@ function updatePlayoffScheduleStructure(scheduleData) {
   schedule.push(["KC6", kc1Home, kc1Away]);
   schedule.push(["KC7", kc1Away, kc1Home]);
 
-  // Write to sheet (columns A-C)
-  scheduleSheet.clear(); // Clear existing data
+  // Write to sheet (columns A-C only - preserve existing game results in columns D+)
+  // DO NOT clear() - that would destroy all game results!
+  // Just overwrite columns A-C with updated structure (seeds + series winners)
   scheduleSheet.getRange(1, 1, schedule.length, 3).setValues(schedule);
 
   // Format header row
@@ -1064,20 +1065,18 @@ function writeGameResultsToPlayoffSchedule(scheduleData) {
  * Find the row number for a playoff game in the current schedule structure
  * @param {Array<Array>} currentSchedule - Current schedule data from sheet (columns A-C)
  * @param {string} code - Game code (e.g., "CS1-A", "KC2")
- * @param {string} awayTeam - Away team name
- * @param {string} homeTeam - Home team name
+ * @param {string} awayTeam - Away team name (not used - kept for compatibility)
+ * @param {string} homeTeam - Home team name (not used - kept for compatibility)
  * @returns {number} Row number (1-indexed), or -1 if not found
  */
 function findPlayoffGameRow(currentSchedule, code, awayTeam, homeTeam) {
   for (var i = 0; i < currentSchedule.length; i++) {
     var rowCode = String(currentSchedule[i][0] || "").trim();
-    var rowAway = String(currentSchedule[i][1] || "").trim();
-    var rowHome = String(currentSchedule[i][2] || "").trim();
 
-    // Match by code AND teams to ensure we have the right game
-    if (rowCode === String(code).trim() &&
-        rowAway === String(awayTeam).trim() &&
-        rowHome === String(homeTeam).trim()) {
+    // Match by code ONLY
+    // Each playoff code is unique (CS1-A, CS2-B, KC1, etc.)
+    // Don't match by teams - they may have been updated by winner propagation
+    if (rowCode === String(code).trim()) {
       return i + 2; // +2 because data starts at row 2 (row 1 is headers)
     }
   }

@@ -136,29 +136,24 @@ function getPlayoffSeedsFromStandings() {
     return {};
   }
 
+  var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
+  var dataStartRow = layout.STANDINGS_START_ROW; // Row 4 in config
   var lastRow = standingsSheet.getLastRow();
-  if (lastRow < 5) { // Need at least 4 teams (header + 4 rows)
-    logWarning("Get Playoff Seeds", "Not enough teams in standings", "Only " + (lastRow - 1) + " teams found");
+
+  // Check if we have enough teams (need at least 4 for playoffs)
+  var numDataRows = lastRow - dataStartRow + 1;
+  if (numDataRows < 4) {
+    logWarning("Get Playoff Seeds", "Not enough teams in standings", "Only " + numDataRows + " teams found");
     return {};
   }
 
-  // Standings sheet format: Row 1 = header, Row 2+ = teams in order
-  // Column A or B typically has team names (depends on if there's a rank column)
+  // Standings format per config: Column A = Rank, Column B = Team
   // Read first 8 teams (for potential 8-team bracket)
-  var numTeams = Math.min(8, lastRow - 1);
-
-  // Try to find team name column - usually column A (rank) and B (team name)
-  var firstRow = standingsSheet.getRange(1, 1, 1, 3).getValues()[0];
-  var teamCol = 1; // Default to column A
-
-  // Check if first column looks like "Rank" or "#"
-  var firstHeader = String(firstRow[0]).toLowerCase();
-  if (firstHeader.indexOf("rank") >= 0 || firstHeader === "#" || firstHeader === "rk") {
-    teamCol = 2; // Team names are in column B
-  }
+  var numTeams = Math.min(8, numDataRows);
+  var teamCol = layout.STANDINGS.START_COL + 2; // START_COL is 0 (A), +2 = column B (Team column)
 
   // Read team names from standings (already in ranked order)
-  var teamData = standingsSheet.getRange(2, teamCol, numTeams, 1).getValues();
+  var teamData = standingsSheet.getRange(dataStartRow, teamCol, numTeams, 1).getValues();
 
   var seeds = {};
   for (var i = 0; i < teamData.length; i++) {

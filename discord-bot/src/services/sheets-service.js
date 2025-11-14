@@ -644,10 +644,8 @@ class SheetsService {
             week = parseInt(weekRaw);
           }
 
-          // Debug logging
-          if (process.env.DEBUG_SCHEDULE) {
-            logger.info('SheetsService', `Playoff round parsing: "${trimmedRound}" -> week ${week}, roundName: ${roundName}`);
-          }
+          // Always log playoff round parsing for debugging
+          console.log(`[SHEETS] Playoff round parsing: "${trimmedRound}" -> week ${week}, roundName: ${roundName}`);
         } else {
           week = parseInt(weekRaw);
         }
@@ -708,7 +706,12 @@ class SheetsService {
 
       case 'round':
         // All games for a specific playoff round (round number maps to week number)
-        return games.filter(g => g.week === filter.roundNumber);
+        console.log(`[SHEETS] Filtering for round ${filter.roundNumber}`);
+        console.log(`[SHEETS] Total games available:`, games.length);
+        console.log(`[SHEETS] Game week numbers:`, games.map(g => `${g.week}(${g.roundName})`).join(', '));
+        const filtered = games.filter(g => g.week === filter.roundNumber);
+        console.log(`[SHEETS] Games matching week ${filter.roundNumber}:`, filtered.length);
+        return filtered;
 
       case 'all':
         // All games (used for determining completed weeks)

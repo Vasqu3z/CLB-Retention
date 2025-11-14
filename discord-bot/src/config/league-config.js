@@ -326,10 +326,23 @@ export const PLAYOFF_ROUNDS = {
 };
 
 // Reverse mapping for looking up round number from round name
+// Includes variations for case-insensitive and flexible matching
 export const PLAYOFF_ROUND_NAMES = {
   'Wildcard Round': 1,
+  'wildcard round': 1,
+  'Wild Card Round': 1,
+  'wild card round': 1,
+  'Wildcard': 1,
+  'wildcard': 1,
+  'WC': 1,
   'Castle Series (CS)': 2,
   'Castle Series': 2,
+  'castle series (cs)': 2,
+  'castle series': 2,
+  'CS': 2,
   'Kingdom Cup (KC)': 3,
-  'Kingdom Cup': 3
+  'Kingdom Cup': 3,
+  'kingdom cup (kc)': 3,
+  'kingdom cup': 3,
+  'KC': 3
 };

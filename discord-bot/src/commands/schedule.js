@@ -101,11 +101,13 @@ export async function execute(interaction) {
       filter = { type: 'week', weekNumber: weekNumber };
       displayValue = `Week ${weekNumber}`;
 
-      // Check both regular season and playoffs for this week
-      let games = await sheetsService.getScheduleData(filter, false);
-      if (!games || games.length === 0) {
-        games = await sheetsService.getScheduleData(filter, true);
+      // Check playoffs first (chronologically after regular season), then fall back
+      let games = await sheetsService.getScheduleData(filter, true);
+      if (games && games.length > 0) {
         isPlayoffs = true;
+      } else {
+        games = await sheetsService.getScheduleData(filter, false);
+        isPlayoffs = false;
       }
 
       if (!games || games.length === 0) {
@@ -122,11 +124,13 @@ export async function execute(interaction) {
       filter = { type: 'team', teamName: teamName };
       displayValue = teamName;
 
-      // Check both regular season and playoffs for this team
-      let games = await sheetsService.getScheduleData(filter, false);
-      if (!games || games.length === 0) {
-        games = await sheetsService.getScheduleData(filter, true);
+      // Check playoffs first (chronologically after regular season), then fall back
+      let games = await sheetsService.getScheduleData(filter, true);
+      if (games && games.length > 0) {
         isPlayoffs = true;
+      } else {
+        games = await sheetsService.getScheduleData(filter, false);
+        isPlayoffs = false;
       }
 
       if (!games || games.length === 0) {
@@ -199,17 +203,19 @@ export async function execute(interaction) {
       }
 
     } else {
-      // Recent, Current, or Upcoming - automatically check both regular season and playoffs
+      // Recent, Current, or Upcoming - automatically check both playoffs and regular season
       filter = { type: subcommand };
       displayValue = subcommand;
 
-      // First try regular season
-      let games = await sheetsService.getScheduleData(filter, false);
+      // First try playoffs (since they come after regular season chronologically)
+      let games = await sheetsService.getScheduleData(filter, true);
 
-      // If no regular season games, check playoffs
-      if (!games || games.length === 0) {
-        games = await sheetsService.getScheduleData(filter, true);
+      if (games && games.length > 0) {
         isPlayoffs = true;
+      } else {
+        // If no playoff games, fall back to regular season
+        games = await sheetsService.getScheduleData(filter, false);
+        isPlayoffs = false;
       }
 
       if (!games || games.length === 0) {

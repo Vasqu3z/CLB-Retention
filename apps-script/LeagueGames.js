@@ -749,30 +749,57 @@ function writeGameResultsToSeasonSchedule(scheduleData) {
 // ===== PLAYOFF SCHEDULE FUNCTIONS =====
 
 function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, runs1, runs2, winner, loser, gameData, playoffCode) {
+  // Try to find existing entry for this game code
+  var foundIndex = -1;
   for (var s = 0; s < scheduleData.length; s++) {
     // Match by playoff code ONLY (not teams, since schedule may have placeholder teams)
     // Each playoff code is unique (CS1-A, CS2-B, KC1, etc.) so matching by code is sufficient
     // Teams may be placeholders ("Winner of CS-A") until series winners are determined
     if (scheduleData[s].week == playoffCode) {
-      scheduleData[s].played = true;
-      scheduleData[s].homeScore = runs1;
-      scheduleData[s].awayScore = runs2;
-      scheduleData[s].winner = winner;
-      scheduleData[s].loser = loser;
-      scheduleData[s].sheetId = sheet.getSheetId();
-
-      // Update team names from actual game (may differ from placeholder teams in schedule)
-      scheduleData[s].homeTeam = team1;
-      scheduleData[s].awayTeam = team2;
-
-      // Add MVP and pitcher data
-      scheduleData[s].mvp = gameData.gameMVP || "";
-      scheduleData[s].winningPitcher = gameData.winningPitcher || "";
-      scheduleData[s].losingPitcher = gameData.losingPitcher || "";
-      scheduleData[s].savePitcher = gameData.savePitcher || "";
-
+      foundIndex = s;
       break;
     }
+  }
+
+  // If entry exists, update it; otherwise create new entry
+  if (foundIndex >= 0) {
+    scheduleData[foundIndex].played = true;
+    scheduleData[foundIndex].homeScore = runs1;
+    scheduleData[foundIndex].awayScore = runs2;
+    scheduleData[foundIndex].winner = winner;
+    scheduleData[foundIndex].loser = loser;
+    scheduleData[foundIndex].sheetId = sheet.getSheetId();
+
+    // Update team names from actual game (may differ from placeholder teams in schedule)
+    scheduleData[foundIndex].homeTeam = team1;
+    scheduleData[foundIndex].awayTeam = team2;
+
+    // Add MVP and pitcher data
+    scheduleData[foundIndex].mvp = gameData.gameMVP || "";
+    scheduleData[foundIndex].winningPitcher = gameData.winningPitcher || "";
+    scheduleData[foundIndex].losingPitcher = gameData.losingPitcher || "";
+    scheduleData[foundIndex].savePitcher = gameData.savePitcher || "";
+  } else {
+    // Entry doesn't exist - create new one
+    // This handles cases where:
+    // 1. First playoff update (schedule doesn't exist yet)
+    // 2. Later rounds before schedule structure is generated
+    scheduleData.push({
+      week: playoffCode,
+      homeTeam: team1,
+      awayTeam: team2,
+      played: true,
+      homeScore: runs1,
+      awayScore: runs2,
+      winner: winner,
+      loser: loser,
+      sheetId: sheet.getSheetId(),
+      mvp: gameData.gameMVP || "",
+      winningPitcher: gameData.winningPitcher || "",
+      losingPitcher: gameData.losingPitcher || "",
+      savePitcher: gameData.savePitcher || ""
+    });
+    logInfo("Update Playoff Schedule Data", "Added new game to schedule data", playoffCode + ": " + team2 + " @ " + team1);
   }
 }
 

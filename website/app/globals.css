@@ -52,7 +52,8 @@ body {
   position: relative;
 }
 
-/* Starfield Background */
+/* Starfield Background - DISABLED: Using animated shader background instead */
+/*
 body::before {
   content: '';
   position: fixed;
@@ -81,8 +82,10 @@ body::before {
   0%, 100% { opacity: 0.18; }
   50% { opacity: 0.28; }
 }
+*/
 
-/* Nebula Glow Background */
+/* Nebula Glow Background - DISABLED: Using animated shader background instead */
+/*
 body::after {
   content: '';
   position: fixed;
@@ -114,6 +117,7 @@ body::after {
   0% { transform: translate(0, 0) rotate(0deg); }
   100% { transform: translate(-5%, 5%) rotate(1deg); }
 }
+*/
 
 /* Ensure content appears above backgrounds */
 #__next,

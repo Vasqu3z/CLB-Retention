@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   description: "Official statistics and standings for Comets League Baseball",
 };
 
+// Prevent build-time rendering to avoid Google Sheets API quota during build
+// Pages will be generated on-demand and cached with ISR
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({
   children,
 }: Readonly<{

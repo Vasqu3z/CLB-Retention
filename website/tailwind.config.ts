@@ -9,12 +9,44 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // CLB Brand Colors
-        primary: "#1a73e8",
-        secondary: "#5f6368",
-        success: "#34a853",
-        danger: "#ea4335",
-        warning: "#fbbc04",
+        // Deep Space Base
+        'space-black': 'var(--space-black)',
+        'space-navy': 'var(--space-navy)',
+        'space-blue': 'var(--space-blue)',
+        'space-purple': 'var(--space-purple)',
+
+        // Warm Nebula Accents
+        'nebula-orange': 'var(--nebula-orange)',
+        'nebula-coral': 'var(--nebula-coral)',
+        'comet-yellow': 'var(--comet-yellow)',
+        'solar-gold': 'var(--solar-gold)',
+        'star-pink': 'var(--star-pink)',
+
+        // Cool Accents
+        'nebula-cyan': 'var(--nebula-cyan)',
+        'nebula-teal': 'var(--nebula-teal)',
+
+        // Atmosphere/Text
+        'star-white': 'var(--star-white)',
+        'star-gray': 'var(--star-gray)',
+        'star-dim': 'var(--star-dim)',
+        'cosmic-border': 'var(--cosmic-border)',
+
+        // Functional (aliased for convenience)
+        primary: 'var(--nebula-orange)',
+        secondary: 'var(--solar-gold)',
+        success: 'var(--success)',
+        danger: 'var(--danger)',
+        warning: 'var(--warning)',
+      },
+      fontFamily: {
+        'display': ['Chakra Petch', 'sans-serif'],
+        'body': ['Azeret Mono', 'monospace'],
+        'mono': ['JetBrains Mono', 'monospace'],
+        'stat': ['Orbitron', 'sans-serif'],
+      },
+      backdropBlur: {
+        'glass': '10px',
       },
     },
   },

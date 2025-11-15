@@ -1,19 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Azeret+Mono:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 255, 255, 255;
+  /* Deep Space Base */
+  --space-black: #0B0D1E;
+  --space-navy: #151829;
+  --space-blue: #1E2442;
+  --space-purple: #2A1F3D;
+
+  /* Warm Nebula Accents */
+  --nebula-orange: #FF6B35;
+  --nebula-coral: #FF8C61;
+  --comet-yellow: #FFD23F;
+  --solar-gold: #FFA62B;
+  --star-pink: #FF6F91;
+
+  /* Cool Accents (supporting) */
+  --nebula-cyan: #00D4FF;
+  --nebula-teal: #00FFC6;
+
+  /* Atmosphere/Text */
+  --star-white: #E8EDF5;
+  --star-gray: #8B92A8;
+  --star-dim: #4A5270;
+  --cosmic-border: #2D3348;
+
+  /* Functional Colors */
+  --success: #00FFC6;
+  --danger: #FF6B35;
+  --warning: #FFD23F;
+
+  /* Glass-morphism */
+  --glass-bg: rgba(30, 36, 66, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  margin: 0;
+  padding: 0;
+  font-family: 'Azeret Mono', monospace;
+  color: var(--star-white);
+  background: var(--space-black);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Starfield Background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, white, transparent),
+    radial-gradient(2px 2px at 60px 70px, white, transparent),
+    radial-gradient(1px 1px at 50px 50px, white, transparent),
+    radial-gradient(1px 1px at 130px 80px, white, transparent),
+    radial-gradient(2px 2px at 90px 10px, white, transparent),
+    radial-gradient(1px 1px at 10px 90px, white, transparent),
+    radial-gradient(1px 1px at 150px 150px, white, transparent),
+    radial-gradient(2px 2px at 110px 130px, white, transparent);
+  background-size: 200px 200px;
+  background-repeat: repeat;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+  animation: twinkle 200s linear infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.2; }
+}
+
+/* Nebula Glow Background */
+body::after {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    ellipse at 30% 20%,
+    rgba(255, 107, 53, 0.08) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    ellipse at 70% 80%,
+    rgba(255, 162, 43, 0.06) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    ellipse at 50% 50%,
+    rgba(255, 210, 63, 0.04) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: nebula-drift 60s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(-5%, 5%) rotate(1deg); }
+}
+
+/* Ensure content appears above backgrounds */
+#__next,
+main,
+header,
+footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Headings use Chakra Petch */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Large numbers and stats use Orbitron */
+.stat-number {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+}
+
+/* Data tables use JetBrains Mono */
+table {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--space-navy);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--space-blue);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nebula-orange);
+}
+
+/* Glow effect utility */
+.glow-orange {
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+}
+
+.glow-gold {
+  box-shadow: 0 0 20px rgba(255, 162, 43, 0.3);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+/* Glass-morphism card */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 107, 53, 0.4);
+  box-shadow: 0 8px 32px rgba(255, 107, 53, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Selection color */
+::selection {
+  background: var(--nebula-orange);
+  color: var(--space-black);
 }

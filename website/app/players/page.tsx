@@ -1,7 +1,7 @@
 import { getAllPlayers } from '@/lib/sheets';
 import PlayersView from './PlayersView';
 
-export const dynamic = 'force-dynamic';
+// Use Incremental Static Regeneration with 60-second revalidation
 export const revalidate = 60;
 
 export default async function PlayersPage() {

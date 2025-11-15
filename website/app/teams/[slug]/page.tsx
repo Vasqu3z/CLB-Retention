@@ -1,10 +1,18 @@
-import { getTeamBySlug } from '@/config/league';
+import { getTeamBySlug, getActiveTeams } from '@/config/league';
 import { getTeamRoster, getSchedule, getStandings, getTeamData, getPlayoffSchedule } from '@/lib/sheets';
 import { notFound } from 'next/navigation';
 import TeamPageView from './TeamPageView';
 
-export const revalidate = 60; // Revalidate every 60 seconds
-export const dynamic = 'force-dynamic'; // Prevent static generation to avoid API quota during build
+// Use Incremental Static Regeneration with 60-second revalidation
+export const revalidate = 60;
+
+// Pre-generate all team pages at build time for faster initial load
+export async function generateStaticParams() {
+  const teams = getActiveTeams();
+  return teams.map((team) => ({
+    slug: team.slug,
+  }));
+}
 
 export default async function TeamPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

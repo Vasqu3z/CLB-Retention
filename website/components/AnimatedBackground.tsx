@@ -50,59 +50,104 @@ const AnimatedBackground = () => {
 
         float fbm(vec2 x) {
           float v = 0.0;
-          float a = 0.3;
+          float a = 0.5;
           vec2 shift = vec2(100);
           mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
           for (int i = 0; i < NUM_OCTAVES; ++i) {
             v += a * noise(x);
             x = rot * x * 2.0 + shift;
-            a *= 0.4;
+            a *= 0.5;
           }
           return v;
         }
 
         void main() {
-          // Subtle shake effect
-          vec2 shake = vec2(sin(iTime * 0.6) * 0.002, cos(iTime * 1.05) * 0.002);
-          vec2 p = ((gl_FragCoord.xy + shake * iResolution.xy) - iResolution.xy * 0.5) / iResolution.y * mat2(6.0, -4.0, 4.0, 6.0);
-          vec2 v;
-          vec4 o = vec4(0.0);
+          vec2 uv = gl_FragCoord.xy / iResolution.xy;
+          vec2 p = (gl_FragCoord.xy - iResolution.xy * 0.5) / iResolution.y;
 
-          float f = 2.0 + fbm(p + vec2(iTime * 2.5, 0.0)) * 0.5;
+          vec4 color = vec4(0.0);
 
-          // Cosmic nebula with warm colors (orange/gold) and cool accents (cyan/teal)
-          for (float i = 0.0; i < 30.0; i++) {
-            v = p + cos(i * i + (iTime + p.x * 0.08) * 0.02 + i * vec2(13.0, 11.0)) * 3.5 + vec2(sin(iTime * 1.5 + i) * 0.002, cos(iTime * 1.75 - i) * 0.002);
-            float tailNoise = fbm(v + vec2(iTime * 0.3, i)) * 0.25 * (1.0 - (i / 30.0));
+          // Multiple meteor streams
+          for (float i = 0.0; i < 50.0; i++) {
+            float t = iTime * 0.3 + i * 0.8;
 
-            // Cosmic baseball color palette
-            // Warm nebula (orange #FF6B35, gold #FFA62B, coral #FF8C61)
-            // Cool accents (cyan #00D4FF, teal #00FFC6)
-            float warmMix = sin(i * 0.15 + iTime * 0.2) * 0.5 + 0.5;
-            vec3 warmColor = mix(
-              vec3(1.0, 0.42, 0.21),  // nebula-orange
-              vec3(1.0, 0.65, 0.17),  // solar-gold
-              warmMix
-            );
-            vec3 coolColor = mix(
-              vec3(0.0, 0.83, 1.0),   // nebula-cyan
-              vec3(0.0, 1.0, 0.78),   // nebula-teal
-              sin(i * 0.2 + iTime * 0.15) * 0.5 + 0.5
+            // Meteor trajectory - diagonal movement
+            vec2 meteorPos = vec2(
+              cos(t * 0.4 + i * 2.1) * 2.5,
+              sin(t * 0.5 + i * 1.7) * 1.5 - mod(t + i * 0.3, 3.0) + 1.5
             );
 
-            // Mix warm and cool with slight bias toward warm for cosmic feel
-            vec3 finalColor = mix(warmColor, coolColor, 0.3 + sin(i * 0.1 + iTime * 0.1) * 0.2);
+            // Distance from meteor
+            vec2 diff = p - meteorPos;
+            float dist = length(diff);
 
-            vec4 auroraColors = vec4(finalColor, 1.0);
-            vec4 currentContribution = auroraColors * exp(sin(i * i + iTime * 0.4)) / length(max(v, vec2(v.x * f * 0.015, v.y * 1.5)));
-            float thinnessFactor = smoothstep(0.0, 1.0, i / 30.0) * 0.5;
-            o += currentContribution * (1.0 + tailNoise * 0.6) * thinnessFactor;
+            // Meteor tail direction
+            vec2 tailDir = normalize(vec2(
+              sin(t * 0.3 + i),
+              cos(t * 0.4 + i * 0.9)
+            ));
+
+            // Create elongated tail
+            float tailDot = dot(normalize(diff), tailDir);
+            float tailFactor = smoothstep(-0.3, 0.9, tailDot);
+
+            // Meteor intensity
+            float intensity = 0.015 / (dist + 0.05);
+            intensity *= tailFactor * 0.5 + 0.5;
+
+            // Dynamic color shifting based on time and position
+            float colorPhase = fract(t * 0.2 + i * 0.15);
+            vec3 meteorColor;
+
+            if (colorPhase < 0.33) {
+              // Orange to Gold transition
+              float mix1 = colorPhase / 0.33;
+              meteorColor = mix(
+                vec3(1.0, 0.42, 0.21),  // nebula-orange
+                vec3(1.0, 0.65, 0.17),  // solar-gold
+                mix1
+              );
+            } else if (colorPhase < 0.66) {
+              // Gold to Cyan transition
+              float mix2 = (colorPhase - 0.33) / 0.33;
+              meteorColor = mix(
+                vec3(1.0, 0.65, 0.17),  // solar-gold
+                vec3(0.0, 0.83, 1.0),   // nebula-cyan
+                mix2
+              );
+            } else {
+              // Cyan to Orange transition (completing the cycle)
+              float mix3 = (colorPhase - 0.66) / 0.34;
+              meteorColor = mix(
+                vec3(0.0, 0.83, 1.0),   // nebula-cyan
+                vec3(1.0, 0.42, 0.21),  // nebula-orange
+                mix3
+              );
+            }
+
+            // Add some variation with noise
+            float noiseVal = fbm(p * 2.0 + vec2(iTime * 0.1, i));
+            meteorColor = mix(meteorColor, vec3(1.0, 1.0, 0.78), noiseVal * 0.3);
+
+            // Accumulate color
+            color.rgb += meteorColor * intensity;
           }
 
-          o = tanh(pow(o / 80.0, vec4(1.8)));
+          // Add subtle background nebula
+          vec2 nebulaUV = p * 0.8 + vec2(iTime * 0.02, 0.0);
+          float nebula = fbm(nebulaUV) * 0.15;
+          vec3 nebulaColor = mix(
+            vec3(1.0, 0.42, 0.21),  // nebula-orange
+            vec3(0.0, 1.0, 0.78),   // nebula-teal
+            fbm(nebulaUV * 1.5 + vec2(iTime * 0.05, 0.0))
+          );
+          color.rgb += nebulaColor * nebula;
 
-          // Reduce overall intensity for background effect
-          gl_FragColor = o * 0.35;
+          // Apply tone mapping for better color
+          color.rgb = pow(color.rgb, vec3(0.9));
+          color.a = 1.0;
+
+          gl_FragColor = color;
         }
       `
     });
@@ -141,7 +186,7 @@ const AnimatedBackground = () => {
     <div
       ref={containerRef}
       className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.85 }}
     />
   );
 };

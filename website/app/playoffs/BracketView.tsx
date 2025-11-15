@@ -33,7 +33,7 @@ export default function BracketView({ bracket }: BracketViewProps) {
             {round.series.map((series, seriesIdx) => (
               <div
                 key={seriesIdx}
-                className="glass-card p-0 overflow-hidden hover:border-nebula-orange/50"
+                className="glass-card p-0 overflow-hidden hover:border-nebula-orange/50 hover:scale-[1.02] hover:rotate-1 transition-all duration-300"
               >
                 {/* Series Header */}
                 <div className="bg-space-blue/30 backdrop-blur-sm px-4 py-2 border-b border-cosmic-border">

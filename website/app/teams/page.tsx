@@ -14,8 +14,17 @@ export default async function TeamsPage() {
   ]);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold mb-8">Team Statistics</h1>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
+          Team Statistics
+        </h1>
+        <p className="text-star-gray font-mono">
+          Comprehensive team performance metrics
+        </p>
+      </div>
+
       <TeamStatsView
         regularTeamData={regularTeamData}
         regularStandings={regularStandings}

@@ -8,5 +8,19 @@ export default async function SchedulePage() {
   const schedule = await getSchedule();
   const teams = getActiveTeams();
 
-  return <ScheduleView schedule={schedule} teams={teams} />;
+  return (
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">
+          Game Schedule
+        </h1>
+        <p className="text-star-gray font-mono">
+          Regular season matchups and results
+        </p>
+      </div>
+
+      <ScheduleView schedule={schedule} teams={teams} />
+    </div>
+  );
 }

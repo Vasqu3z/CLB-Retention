@@ -36,20 +36,18 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <h1 className="text-4xl font-bold">Season Schedule</h1>
-
-        {/* Team Filter */}
+    <div className="space-y-6">
+      {/* Team Filter */}
+      <div className="glass-card p-4">
         <div className="flex items-center gap-3">
-          <label htmlFor="team-filter" className="text-sm font-medium text-gray-700">
+          <label htmlFor="team-filter" className="text-sm font-display font-semibold text-star-white">
             Filter by Team:
           </label>
           <select
             id="team-filter"
             value={selectedTeam}
             onChange={(e) => setSelectedTeam(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="px-4 py-2 rounded-lg bg-space-black/50 border border-star-gray/30 text-star-white font-mono focus:outline-none focus:ring-2 focus:ring-nebula-cyan transition-all"
           >
             <option value="all">All Teams</option>
             {teams.map((team) => (
@@ -68,14 +66,16 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
           if (weekGames.length === 0) return null;
 
           return (
-            <div key={weekKey} className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div key={weekKey} className="glass-card p-6">
               {/* Week Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                <h2 className="text-2xl font-bold text-white">{weekKey}</h2>
+              <div className="mb-6 pb-3 border-b border-star-gray/20">
+                <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">
+                  {weekKey}
+                </h2>
               </div>
 
               {/* Game Cards */}
-              <div className="p-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {weekGames.map((game, idx) => (
                   <GameCard key={`${weekKey}-${idx}`} game={game} />
                 ))}
@@ -86,10 +86,12 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
       </div>
 
       {/* Legend */}
-      <div className="mt-6 bg-gray-50 rounded-lg p-6 text-sm text-gray-600">
-        <p className="font-semibold text-gray-700 mb-2">How to Read the Schedule</p>
-        <ul className="space-y-1">
-          <li>• Green highlight indicates the winning team</li>
+      <div className="glass-card p-6">
+        <p className="font-display font-semibold text-nebula-orange mb-3 text-sm uppercase tracking-wider">
+          How to Read the Schedule
+        </p>
+        <ul className="space-y-1.5 text-sm font-mono text-star-gray">
+          <li>• Cyan highlight indicates the winning team</li>
           <li>• Click a game card to view the full box score</li>
           <li>• Italic text shows upcoming games</li>
         </ul>
@@ -102,17 +104,17 @@ function GameCard({ game }: { game: ScheduleGame }) {
   if (!game.played) {
     // Upcoming game
     return (
-      <div className="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors">
-        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-          <span className="text-sm font-semibold text-gray-700">Upcoming Game</span>
+      <div className="bg-space-black/30 border border-star-gray/30 rounded-lg overflow-hidden hover:border-nebula-cyan/50 transition-all">
+        <div className="bg-space-black/50 px-4 py-2 border-b border-star-gray/20">
+          <span className="text-xs font-display font-semibold text-star-gray uppercase tracking-wider">Upcoming Game</span>
         </div>
-        <div className="p-4 space-y-3">
-          <div className="flex items-center justify-between p-3 rounded bg-gray-50">
-            <span className="font-semibold text-gray-500 italic">{game.awayTeam}</span>
-            <span className="text-sm text-gray-400">@</span>
+        <div className="p-4 space-y-2">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-space-black/20">
+            <span className="font-semibold text-star-gray italic font-mono text-sm">{game.awayTeam}</span>
+            <span className="text-xs text-star-gray/50">@</span>
           </div>
-          <div className="flex items-center justify-between p-3 rounded bg-gray-50">
-            <span className="font-semibold text-gray-500 italic">{game.homeTeam}</span>
+          <div className="flex items-center justify-between p-3 rounded-lg bg-space-black/20">
+            <span className="font-semibold text-star-gray italic font-mono text-sm">{game.homeTeam}</span>
           </div>
         </div>
       </div>
@@ -124,34 +126,34 @@ function GameCard({ game }: { game: ScheduleGame }) {
   const awayWon = game.winner === game.awayTeam;
 
   const content = (
-    <div className="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-blue-400 transition-colors">
-      <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+    <div className="bg-space-black/30 border border-star-gray/30 rounded-lg overflow-hidden hover:border-nebula-cyan/50 transition-all group">
+      <div className="bg-space-black/50 px-4 py-2 border-b border-star-gray/20">
         <div className="flex justify-between items-center">
-          <span className="text-sm font-semibold text-gray-700">Final</span>
+          <span className="text-xs font-display font-semibold text-solar-gold uppercase tracking-wider">Final</span>
           {game.boxScoreUrl && (
-            <span className="text-xs text-blue-600">
+            <span className="text-xs text-nebula-cyan group-hover:text-nebula-teal transition-colors">
               View Box Score →
             </span>
           )}
         </div>
       </div>
 
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-2">
         {/* Away Team */}
         <div
-          className={`flex items-center justify-between p-3 rounded ${
+          className={`flex items-center justify-between p-3 rounded-lg ${
             awayWon
-              ? 'bg-green-50 border-2 border-green-400'
-              : 'bg-gray-50'
+              ? 'bg-nebula-cyan/20 border-2 border-nebula-cyan/50'
+              : 'bg-space-black/20 border border-star-gray/10'
           }`}
         >
-          <span className={`font-semibold ${
-            awayWon ? 'text-green-700' : 'text-gray-900'
+          <span className={`font-semibold font-mono text-sm ${
+            awayWon ? 'text-nebula-cyan' : 'text-star-white'
           }`}>
             {game.awayTeam}
           </span>
-          <span className={`text-xl font-bold ${
-            awayWon ? 'text-green-700' : 'text-gray-700'
+          <span className={`text-xl font-bold font-mono ${
+            awayWon ? 'text-nebula-cyan' : 'text-star-gray'
           }`}>
             {game.awayScore}
           </span>
@@ -159,19 +161,19 @@ function GameCard({ game }: { game: ScheduleGame }) {
 
         {/* Home Team */}
         <div
-          className={`flex items-center justify-between p-3 rounded ${
+          className={`flex items-center justify-between p-3 rounded-lg ${
             homeWon
-              ? 'bg-green-50 border-2 border-green-400'
-              : 'bg-gray-50'
+              ? 'bg-nebula-cyan/20 border-2 border-nebula-cyan/50'
+              : 'bg-space-black/20 border border-star-gray/10'
           }`}
         >
-          <span className={`font-semibold ${
-            homeWon ? 'text-green-700' : 'text-gray-900'
+          <span className={`font-semibold font-mono text-sm ${
+            homeWon ? 'text-nebula-cyan' : 'text-star-white'
           }`}>
             {game.homeTeam}
           </span>
-          <span className={`text-xl font-bold ${
-            homeWon ? 'text-green-700' : 'text-gray-700'
+          <span className={`text-xl font-bold font-mono ${
+            homeWon ? 'text-nebula-cyan' : 'text-star-gray'
           }`}>
             {game.homeScore}
           </span>
@@ -179,33 +181,33 @@ function GameCard({ game }: { game: ScheduleGame }) {
 
         {/* Game Details */}
         {(game.mvp || game.winningPitcher || game.losingPitcher || game.savePitcher) && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">
+          <div className="mt-3 pt-3 border-t border-star-gray/20">
+            <p className="text-xs font-display font-semibold text-star-gray uppercase tracking-wider mb-2">
               Game Details
             </p>
-            <div className="space-y-1 text-sm text-gray-600">
+            <div className="space-y-1.5 text-sm font-mono">
               {game.mvp && (
                 <div className="flex justify-between">
-                  <span className="font-semibold">MVP:</span>
-                  <span>{game.mvp}</span>
+                  <span className="text-nebula-orange font-bold">MVP:</span>
+                  <span className="text-star-white">{game.mvp}</span>
                 </div>
               )}
               {game.winningPitcher && (
                 <div className="flex justify-between">
-                  <span className="font-semibold">W:</span>
-                  <span>{game.winningPitcher}</span>
+                  <span className="text-nebula-teal font-bold">W:</span>
+                  <span className="text-star-white">{game.winningPitcher}</span>
                 </div>
               )}
               {game.losingPitcher && (
                 <div className="flex justify-between">
-                  <span className="font-semibold">L:</span>
-                  <span>{game.losingPitcher}</span>
+                  <span className="text-nebula-coral font-bold">L:</span>
+                  <span className="text-star-white">{game.losingPitcher}</span>
                 </div>
               )}
               {game.savePitcher && (
                 <div className="flex justify-between">
-                  <span className="font-semibold">SV:</span>
-                  <span>{game.savePitcher}</span>
+                  <span className="text-solar-gold font-bold">SV:</span>
+                  <span className="text-star-white">{game.savePitcher}</span>
                 </div>
               )}
             </div>

@@ -153,8 +153,8 @@ export default function DataTable<T>({
                     key={getRowKey(row)}
                     className={`
                       border-b border-cosmic-border/30 transition-all
-                      ${idx % 2 === 0 ? 'bg-space-navy/20' : 'bg-space-navy/40'}
-                      ${isHighlighted ? 'bg-nebula-orange/10 border-l-4 border-l-nebula-orange' : 'hover:bg-space-blue/30'}
+                      ${idx % 2 === 0 ? 'bg-space-navy/5' : 'bg-space-navy/15'}
+                      ${isHighlighted ? 'bg-nebula-orange/10 border-l-4 border-l-nebula-orange' : 'hover:bg-space-blue/20'}
                       ${customClassName || ''}
                     `}
                   >

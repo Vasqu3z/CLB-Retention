@@ -34,7 +34,7 @@
   --warning: #FFD23F;
 
   /* Glass-morphism */
-  --glass-bg: rgba(30, 36, 66, 0.92);
+  --glass-bg: rgba(30, 36, 66, 0.45);
   --glass-border: rgba(255, 255, 255, 0.1);
 }
 

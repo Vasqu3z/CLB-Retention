@@ -118,7 +118,7 @@ export default function Home() {
                 className={`
                   group relative p-6 rounded-xl border ${card.borderColor}
                   bg-gradient-to-br ${card.gradient}
-                  hover:scale-[1.02] hover:rotate-1 transition-all duration-300
+                  transition-all
                   backdrop-blur-sm
                   hover:shadow-[0_8px_30px_rgba(255,107,53,0.3)]
                 `}

@@ -104,7 +104,7 @@ function GameCard({ game }: { game: ScheduleGame }) {
   if (!game.played) {
     // Upcoming game
     return (
-      <div className="glass-card p-0 overflow-hidden hover:border-nebula-cyan/50 hover:scale-[1.02] hover:rotate-1 transition-all duration-300">
+      <div className="glass-card p-0 overflow-hidden hover:border-nebula-cyan/50 transition-all">
         <div className="bg-space-blue/30 backdrop-blur-sm px-4 py-2 border-b border-cosmic-border">
           <span className="text-xs font-display font-semibold text-star-gray uppercase tracking-wider">Upcoming Game</span>
         </div>

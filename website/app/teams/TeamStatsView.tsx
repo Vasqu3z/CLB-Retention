@@ -22,7 +22,7 @@ function SortableHeader({ field, sortField, sortDirection, onSort, children }: S
 
   return (
     <th
-      className="px-4 py-3 text-left font-display font-semibold text-star-white cursor-pointer hover:bg-space-black/40 transition"
+      className="px-4 py-3 text-left font-display font-semibold text-star-white cursor-pointer hover:bg-space-blue/30 transition"
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-2">
@@ -295,7 +295,7 @@ export default function TeamStatsView({
             </thead>
             <tbody>
               {sortedHittingTeams.map((team, idx) => (
-                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
                   <td className="px-4 py-3 font-semibold">
                     <Link href={`/teams/${team.slug}`} className="hover:underline transition-colors" style={{ color: team.color }}>
                       {team.teamName}
@@ -364,7 +364,7 @@ export default function TeamStatsView({
             </thead>
             <tbody>
               {sortedPitchingTeams.map((team, idx) => (
-                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
                   <td className="px-4 py-3 font-semibold">
                     <Link href={`/teams/${team.slug}`} className="hover:underline transition-colors" style={{ color: team.color }}>
                       {team.teamName}
@@ -422,7 +422,7 @@ export default function TeamStatsView({
             </thead>
             <tbody>
               {sortedFieldingTeams.map((team, idx) => (
-                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
                   <td className="px-4 py-3 font-semibold">
                     <Link href={`/teams/${team.slug}`} className="hover:underline transition-colors" style={{ color: team.color }}>
                       {team.teamName}

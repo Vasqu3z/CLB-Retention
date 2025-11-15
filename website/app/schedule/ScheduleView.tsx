@@ -47,7 +47,7 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
             id="team-filter"
             value={selectedTeam}
             onChange={(e) => setSelectedTeam(e.target.value)}
-            className="px-4 py-2 rounded-lg bg-space-black/50 border border-star-gray/30 text-star-white font-mono focus:outline-none focus:ring-2 focus:ring-nebula-cyan transition-all"
+            className="px-4 py-2 font-mono"
           >
             <option value="all">All Teams</option>
             {teams.map((team) => (
@@ -104,16 +104,16 @@ function GameCard({ game }: { game: ScheduleGame }) {
   if (!game.played) {
     // Upcoming game
     return (
-      <div className="bg-space-black/30 border border-star-gray/30 rounded-lg overflow-hidden hover:border-nebula-cyan/50 transition-all">
-        <div className="bg-space-black/50 px-4 py-2 border-b border-star-gray/20">
+      <div className="glass-card p-0 overflow-hidden hover:border-nebula-cyan/50">
+        <div className="bg-space-blue/30 backdrop-blur-sm px-4 py-2 border-b border-cosmic-border">
           <span className="text-xs font-display font-semibold text-star-gray uppercase tracking-wider">Upcoming Game</span>
         </div>
         <div className="p-4 space-y-2">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-space-black/20">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-space-blue/20 backdrop-blur-sm">
             <span className="font-semibold text-star-gray italic font-mono text-sm">{game.awayTeam}</span>
             <span className="text-xs text-star-gray/50">@</span>
           </div>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-space-black/20">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-space-blue/20 backdrop-blur-sm">
             <span className="font-semibold text-star-gray italic font-mono text-sm">{game.homeTeam}</span>
           </div>
         </div>
@@ -144,7 +144,7 @@ function GameCard({ game }: { game: ScheduleGame }) {
           className={`flex items-center justify-between p-3 rounded-lg ${
             awayWon
               ? 'bg-nebula-cyan/20 border-2 border-nebula-cyan/50'
-              : 'bg-space-black/20 border border-star-gray/10'
+              : 'bg-space-blue/20 backdrop-blur-sm border border-cosmic-border'
           }`}
         >
           <span className={`font-semibold font-mono text-sm ${
@@ -164,7 +164,7 @@ function GameCard({ game }: { game: ScheduleGame }) {
           className={`flex items-center justify-between p-3 rounded-lg ${
             homeWon
               ? 'bg-nebula-cyan/20 border-2 border-nebula-cyan/50'
-              : 'bg-space-black/20 border border-star-gray/10'
+              : 'bg-space-blue/20 backdrop-blur-sm border border-cosmic-border'
           }`}
         >
           <span className={`font-semibold font-mono text-sm ${

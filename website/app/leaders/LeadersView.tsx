@@ -132,7 +132,7 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
           return (
             <div
               key={idx}
-              className="py-2.5 px-3 rounded-lg bg-space-black/20 hover:bg-space-black/40 transition-colors border border-star-gray/10"
+              className="py-2.5 px-3 rounded-lg bg-space-black/20 hover:bg-space-blue/30 transition-colors border border-star-gray/10"
             >
               <div className="flex justify-between items-center gap-2">
                 <div className="flex-1 min-w-0">

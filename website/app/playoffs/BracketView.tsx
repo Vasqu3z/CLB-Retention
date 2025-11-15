@@ -33,10 +33,10 @@ export default function BracketView({ bracket }: BracketViewProps) {
             {round.series.map((series, seriesIdx) => (
               <div
                 key={seriesIdx}
-                className="bg-space-black/30 border border-star-gray/30 rounded-lg overflow-hidden hover:border-nebula-orange/50 transition-all"
+                className="glass-card p-0 overflow-hidden hover:border-nebula-orange/50"
               >
                 {/* Series Header */}
-                <div className="bg-space-black/50 px-4 py-2 border-b border-star-gray/20">
+                <div className="bg-space-blue/30 backdrop-blur-sm px-4 py-2 border-b border-cosmic-border">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-display font-semibold text-star-white uppercase tracking-wider">
                       Series {series.seriesId}
@@ -56,7 +56,7 @@ export default function BracketView({ bracket }: BracketViewProps) {
                     className={`flex items-center justify-between p-3 rounded-lg ${
                       series.winner === series.teamA
                         ? 'bg-nebula-orange/20 border-2 border-nebula-orange/50'
-                        : 'bg-space-black/20 border border-star-gray/10'
+                        : 'bg-space-blue/20 backdrop-blur-sm border border-cosmic-border'
                     }`}
                   >
                     <span className={`font-semibold font-mono text-sm ${
@@ -76,7 +76,7 @@ export default function BracketView({ bracket }: BracketViewProps) {
                     className={`flex items-center justify-between p-3 rounded-lg ${
                       series.winner === series.teamB
                         ? 'bg-nebula-orange/20 border-2 border-nebula-orange/50'
-                        : 'bg-space-black/20 border border-star-gray/10'
+                        : 'bg-space-blue/20 backdrop-blur-sm border border-cosmic-border'
                     }`}
                   >
                     <span className={`font-semibold font-mono text-sm ${

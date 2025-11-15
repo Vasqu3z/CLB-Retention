@@ -21,7 +21,7 @@ function SortableHeader({ field, sortField, sortDirection, onSort, children }: S
 
   return (
     <th
-      className="px-4 py-3 text-left font-display font-semibold text-star-white cursor-pointer hover:bg-space-black/40 transition"
+      className="px-4 py-3 text-left font-display font-semibold text-star-white cursor-pointer hover:bg-space-blue/30 transition"
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-2">
@@ -258,7 +258,7 @@ export default function PlayersView({
             </thead>
             <tbody>
               {sortedHitters.map((player, idx) => (
-                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
                     {player.team}
@@ -328,7 +328,7 @@ export default function PlayersView({
             </thead>
             <tbody>
               {sortedPitchers.map((player, idx) => (
-                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
                     {player.team}
@@ -385,7 +385,7 @@ export default function PlayersView({
             </thead>
             <tbody>
               {sortedFielders.map((player, idx) => (
-                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
                     {player.team}

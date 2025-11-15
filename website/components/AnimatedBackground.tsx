@@ -65,10 +65,10 @@ const AnimatedBackground = () => {
           vec2 uv = gl_FragCoord.xy / iResolution.xy;
           vec2 p = (gl_FragCoord.xy - iResolution.xy * 0.5) / iResolution.y;
 
-          vec4 color = vec4(0.0);
+          vec4 color = vec4(0.0, 0.0, 0.0, 1.0);  // Start with black background
 
-          // Multiple meteor streams
-          for (float i = 0.0; i < 50.0; i++) {
+          // Fewer, more focused meteors
+          for (float i = 0.0; i < 15.0; i++) {
             float t = iTime * 0.3 + i * 0.8;
 
             // Meteor trajectory - diagonal movement
@@ -81,56 +81,59 @@ const AnimatedBackground = () => {
             vec2 diff = p - meteorPos;
             float dist = length(diff);
 
-            // Meteor tail direction
-            vec2 tailDir = normalize(vec2(
-              sin(t * 0.3 + i),
-              cos(t * 0.4 + i * 0.9)
-            ));
+            // Only render if close enough (prevents glow across entire screen)
+            if (dist < 0.4) {
+              // Meteor tail direction
+              vec2 tailDir = normalize(vec2(
+                sin(t * 0.3 + i),
+                cos(t * 0.4 + i * 0.9)
+              ));
 
-            // Create elongated tail
-            float tailDot = dot(normalize(diff), tailDir);
-            float tailFactor = smoothstep(-0.3, 0.9, tailDot);
+              // Create elongated tail
+              float tailDot = dot(normalize(diff), tailDir);
+              float tailFactor = smoothstep(-0.3, 0.9, tailDot);
 
-            // Meteor intensity - MUCH BRIGHTER
-            float intensity = 0.04 / (dist + 0.03);  // Increased from 0.015 to 0.04
-            intensity *= tailFactor * 0.7 + 0.3;
+              // Meteor intensity - bright but more focused
+              float intensity = 0.08 / (dist + 0.08);  // Steeper falloff for more focused glow
+              intensity *= tailFactor * 0.7 + 0.3;
 
-            // Dynamic color shifting based on time and position
-            float colorPhase = fract(t * 0.2 + i * 0.15);
-            vec3 meteorColor;
+              // Dynamic color shifting based on time and position
+              float colorPhase = fract(t * 0.2 + i * 0.15);
+              vec3 meteorColor;
 
-            if (colorPhase < 0.33) {
-              // Orange to Gold transition
-              float mix1 = colorPhase / 0.33;
-              meteorColor = mix(
-                vec3(1.0, 0.42, 0.21),  // nebula-orange
-                vec3(1.0, 0.65, 0.17),  // solar-gold
-                mix1
-              );
-            } else if (colorPhase < 0.66) {
-              // Gold to Cyan transition
-              float mix2 = (colorPhase - 0.33) / 0.33;
-              meteorColor = mix(
-                vec3(1.0, 0.65, 0.17),  // solar-gold
-                vec3(0.0, 0.83, 1.0),   // nebula-cyan
-                mix2
-              );
-            } else {
-              // Cyan to Orange transition (completing the cycle)
-              float mix3 = (colorPhase - 0.66) / 0.34;
-              meteorColor = mix(
-                vec3(0.0, 0.83, 1.0),   // nebula-cyan
-                vec3(1.0, 0.42, 0.21),  // nebula-orange
-                mix3
-              );
+              if (colorPhase < 0.33) {
+                // Orange to Gold transition
+                float mix1 = colorPhase / 0.33;
+                meteorColor = mix(
+                  vec3(1.0, 0.42, 0.21),  // nebula-orange
+                  vec3(1.0, 0.65, 0.17),  // solar-gold
+                  mix1
+                );
+              } else if (colorPhase < 0.66) {
+                // Gold to Cyan transition
+                float mix2 = (colorPhase - 0.33) / 0.33;
+                meteorColor = mix(
+                  vec3(1.0, 0.65, 0.17),  // solar-gold
+                  vec3(0.0, 0.83, 1.0),   // nebula-cyan
+                  mix2
+                );
+              } else {
+                // Cyan to Orange transition (completing the cycle)
+                float mix3 = (colorPhase - 0.66) / 0.34;
+                meteorColor = mix(
+                  vec3(0.0, 0.83, 1.0),   // nebula-cyan
+                  vec3(1.0, 0.42, 0.21),  // nebula-orange
+                  mix3
+                );
+              }
+
+              // Add bright highlights with noise
+              float noiseVal = fbm(p * 2.0 + vec2(iTime * 0.1, i));
+              meteorColor = mix(meteorColor, vec3(1.2, 1.2, 1.0), noiseVal * 0.4);  // Brighter highlights
+
+              // Accumulate color
+              color.rgb += meteorColor * intensity;
             }
-
-            // Add bright highlights with noise
-            float noiseVal = fbm(p * 2.0 + vec2(iTime * 0.1, i));
-            meteorColor = mix(meteorColor, vec3(1.2, 1.2, 1.0), noiseVal * 0.4);  // Brighter highlights
-
-            // Accumulate color
-            color.rgb += meteorColor * intensity;
           }
 
           // Add subtle background nebula - DARKER
@@ -186,7 +189,7 @@ const AnimatedBackground = () => {
     <div
       ref={containerRef}
       className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none"
-      style={{ opacity: 0.5 }}
+      style={{ opacity: 0.7 }}
     />
   );
 };

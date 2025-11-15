@@ -99,35 +99,43 @@ const AnimatedBackground = () => {
             float colorPhase = fract(t * 0.2 + i * 0.15);
             vec3 meteorColor;
 
-            if (colorPhase < 0.33) {
-              // Orange to Gold transition
-              float mix1 = colorPhase / 0.33;
+            if (colorPhase < 0.25) {
+              // Deep Blue to Bright Blue transition
+              float mix1 = colorPhase / 0.25;
               meteorColor = mix(
-                vec3(1.0, 0.42, 0.21),  // nebula-orange
-                vec3(1.0, 0.65, 0.17),  // solar-gold
+                vec3(0.2, 0.3, 0.8),    // Deep blue
+                vec3(0.3, 0.5, 1.0),    // Bright blue
                 mix1
               );
-            } else if (colorPhase < 0.66) {
-              // Gold to Cyan transition
-              float mix2 = (colorPhase - 0.33) / 0.33;
+            } else if (colorPhase < 0.5) {
+              // Bright Blue to Cyan transition
+              float mix2 = (colorPhase - 0.25) / 0.25;
               meteorColor = mix(
-                vec3(1.0, 0.65, 0.17),  // solar-gold
-                vec3(0.0, 0.83, 1.0),   // nebula-cyan
+                vec3(0.3, 0.5, 1.0),    // Bright blue
+                vec3(0.0, 0.83, 1.0),   // Cyan
                 mix2
               );
-            } else {
-              // Cyan to Orange transition (completing the cycle)
-              float mix3 = (colorPhase - 0.66) / 0.34;
+            } else if (colorPhase < 0.75) {
+              // Cyan to Teal transition
+              float mix3 = (colorPhase - 0.5) / 0.25;
               meteorColor = mix(
-                vec3(0.0, 0.83, 1.0),   // nebula-cyan
-                vec3(1.0, 0.42, 0.21),  // nebula-orange
+                vec3(0.0, 0.83, 1.0),   // Cyan
+                vec3(0.0, 0.9, 0.7),    // Teal/green
                 mix3
+              );
+            } else {
+              // Teal back to Deep Blue (completing the cycle)
+              float mix4 = (colorPhase - 0.75) / 0.25;
+              meteorColor = mix(
+                vec3(0.0, 0.9, 0.7),    // Teal/green
+                vec3(0.2, 0.3, 0.8),    // Deep blue
+                mix4
               );
             }
 
-            // Add some variation with noise
+            // Add subtle variation with noise (cooler tones)
             float noiseVal = fbm(p * 2.0 + vec2(iTime * 0.1, i));
-            meteorColor = mix(meteorColor, vec3(1.0, 1.0, 0.78), noiseVal * 0.3);
+            meteorColor = mix(meteorColor, vec3(0.6, 0.8, 1.0), noiseVal * 0.2);
 
             // Accumulate color
             color.rgb += meteorColor * intensity;
@@ -135,10 +143,10 @@ const AnimatedBackground = () => {
 
           // Add subtle background nebula
           vec2 nebulaUV = p * 0.8 + vec2(iTime * 0.02, 0.0);
-          float nebula = fbm(nebulaUV) * 0.15;
+          float nebula = fbm(nebulaUV) * 0.12;
           vec3 nebulaColor = mix(
-            vec3(1.0, 0.42, 0.21),  // nebula-orange
-            vec3(0.0, 1.0, 0.78),   // nebula-teal
+            vec3(0.1, 0.2, 0.6),    // Deep blue
+            vec3(0.0, 0.7, 0.8),    // Cyan-teal
             fbm(nebulaUV * 1.5 + vec2(iTime * 0.05, 0.0))
           );
           color.rgb += nebulaColor * nebula;

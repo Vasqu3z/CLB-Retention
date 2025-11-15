@@ -17,15 +17,17 @@ interface SortableHeaderProps {
 }
 
 function SortableHeader({ field, sortField, sortDirection, onSort, children }: SortableHeaderProps) {
+  const isActive = sortField === field;
+
   return (
     <th
-      className="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-200 transition"
+      className="px-4 py-3 text-left font-display font-semibold text-star-white cursor-pointer hover:bg-space-black/40 transition"
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-2">
         {children}
-        {sortField === field && (
-          <span className="text-xs">{sortDirection === 'asc' ? '▲' : '▼'}</span>
+        {isActive && (
+          <span className="text-nebula-orange text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
         )}
       </div>
     </th>
@@ -208,10 +210,10 @@ export default function PlayersView({
 
       {/* Hitting Statistics */}
       <section>
-        <h2 className="text-2xl font-bold mb-4">Hitting Statistics</h2>
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100">
+        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full font-mono text-sm">
+            <thead className="bg-space-black/30 border-b border-star-gray/20 sticky top-0">
               <tr>
                 <SortableHeader field="name" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   Player
@@ -256,22 +258,22 @@ export default function PlayersView({
             </thead>
             <tbody>
               {sortedHitters.map((player, idx) => (
-                <tr key={`${player.name}-${player.team}`} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
-                  <td className="px-4 py-3 font-medium">{player.name}</td>
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
                     {player.team}
                   </td>
-                  <td className="px-4 py-3 text-center">{player.gp}</td>
-                  <td className="px-4 py-3 text-center">{player.ab}</td>
-                  <td className="px-4 py-3 text-center">{player.h}</td>
-                  <td className="px-4 py-3 text-center">{player.hr}</td>
-                  <td className="px-4 py-3 text-center">{player.rbi}</td>
-                  <td className="px-4 py-3 text-center">{player.dp}</td>
-                  <td className="px-4 py-3 text-center">{player.rob}</td>
-                  <td className="px-4 py-3 text-center">{player.avg}</td>
-                  <td className="px-4 py-3 text-center">{player.obp}</td>
-                  <td className="px-4 py-3 text-center">{player.slg}</td>
-                  <td className="px-4 py-3 text-center">{player.ops}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.ab}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.h}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hr}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.rbi}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.dp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.rob}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.avg}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.obp}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.slg}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.ops}</td>
                 </tr>
               ))}
             </tbody>
@@ -281,10 +283,10 @@ export default function PlayersView({
 
       {/* Pitching Statistics */}
       <section>
-        <h2 className="text-2xl font-bold mb-4">Pitching Statistics</h2>
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100">
+        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full font-mono text-sm">
+            <thead className="bg-space-black/30 border-b border-star-gray/20 sticky top-0">
               <tr>
                 <SortableHeader field="name" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   Player
@@ -326,21 +328,21 @@ export default function PlayersView({
             </thead>
             <tbody>
               {sortedPitchers.map((player, idx) => (
-                <tr key={`${player.name}-${player.team}`} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
-                  <td className="px-4 py-3 font-medium">{player.name}</td>
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
                     {player.team}
                   </td>
-                  <td className="px-4 py-3 text-center">{player.gp}</td>
-                  <td className="px-4 py-3 text-center">{player.ip?.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-center">{player.w}</td>
-                  <td className="px-4 py-3 text-center">{player.l}</td>
-                  <td className="px-4 py-3 text-center">{player.sv}</td>
-                  <td className="px-4 py-3 text-center">{player.hAllowed}</td>
-                  <td className="px-4 py-3 text-center">{player.hrAllowed}</td>
-                  <td className="px-4 py-3 text-center">{player.era}</td>
-                  <td className="px-4 py-3 text-center">{player.whip}</td>
-                  <td className="px-4 py-3 text-center">{player.baa}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.ip?.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.w}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.l}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.sv}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hAllowed}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hrAllowed}</td>
+                  <td className="px-4 py-3 text-center text-nebula-teal">{player.era}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.whip}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.baa}</td>
                 </tr>
               ))}
             </tbody>
@@ -350,10 +352,10 @@ export default function PlayersView({
 
       {/* Fielding Statistics */}
       <section>
-        <h2 className="text-2xl font-bold mb-4">Fielding & Baserunning Statistics</h2>
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100">
+        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full font-mono text-sm">
+            <thead className="bg-space-black/30 border-b border-star-gray/20 sticky top-0">
               <tr>
                 <SortableHeader field="name" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   Player
@@ -383,17 +385,17 @@ export default function PlayersView({
             </thead>
             <tbody>
               {sortedFielders.map((player, idx) => (
-                <tr key={`${player.name}-${player.team}`} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
-                  <td className="px-4 py-3 font-medium">{player.name}</td>
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-black/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
                     {player.team}
                   </td>
-                  <td className="px-4 py-3 text-center">{player.gp}</td>
-                  <td className="px-4 py-3 text-center">{player.np}</td>
-                  <td className="px-4 py-3 text-center">{player.e}</td>
-                  <td className="px-4 py-3 text-center">{player.oaa && player.oaa > 0 ? '+' : ''}{player.oaa}</td>
-                  <td className="px-4 py-3 text-center">{player.sb}</td>
-                  <td className="px-4 py-3 text-center">{player.cs}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.np}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.e}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.oaa && player.oaa > 0 ? '+' : ''}{player.oaa}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.sb}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.cs}</td>
                 </tr>
               ))}
             </tbody>

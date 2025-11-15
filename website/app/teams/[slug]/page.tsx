@@ -3,8 +3,10 @@ import { getTeamRoster, getSchedule, getStandings, getTeamData, getPlayoffSchedu
 import { notFound } from 'next/navigation';
 import TeamPageView from './TeamPageView';
 
-export const revalidate = 60; // Revalidate every 60 seconds
-export const dynamic = 'force-dynamic'; // Prevent static generation to avoid API quota during build
+// Use Incremental Static Regeneration with 60-second revalidation
+// Pages are generated on-demand (first request) to avoid API quota during build
+export const revalidate = 60;
+export const dynamicParams = true; // Allow dynamic params without pre-generation
 
 export default async function TeamPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -22,13 +22,25 @@ export default async function LeadersPage() {
   ]);
 
   return (
-    <LeadersView
-      initialBattingLeaders={battingLeaders}
-      initialPitchingLeaders={pitchingLeaders}
-      initialFieldingLeaders={fieldingLeaders}
-      playoffBattingLeaders={playoffBattingLeaders}
-      playoffPitchingLeaders={playoffPitchingLeaders}
-      playoffFieldingLeaders={playoffFieldingLeaders}
-    />
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-comet-yellow to-solar-gold bg-clip-text text-transparent">
+          League Leaders
+        </h1>
+        <p className="text-star-gray font-mono">
+          Top performers in batting, pitching, and fielding
+        </p>
+      </div>
+
+      <LeadersView
+        initialBattingLeaders={battingLeaders}
+        initialPitchingLeaders={pitchingLeaders}
+        initialFieldingLeaders={fieldingLeaders}
+        playoffBattingLeaders={playoffBattingLeaders}
+        playoffPitchingLeaders={playoffPitchingLeaders}
+        playoffFieldingLeaders={playoffFieldingLeaders}
+      />
+    </div>
   );
 }

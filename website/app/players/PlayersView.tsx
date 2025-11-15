@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TeamData, StandingsRow } from '@/lib/sheets';
-import Link from 'next/link';
+import { PlayerStats } from '@/lib/sheets';
 import { getActiveTeams } from '@/config/league';
 import SeasonToggle from '@/components/SeasonToggle';
 
@@ -35,29 +34,25 @@ function SortableHeader({ field, sortField, sortDirection, onSort, children }: S
   );
 }
 
-interface TeamStatsViewProps {
-  regularTeamData: TeamData[];
-  regularStandings: StandingsRow[];
-  playoffTeamData: TeamData[];
-  playoffStandings: StandingsRow[];
+interface PlayersViewProps {
+  regularPlayers: PlayerStats[];
+  playoffPlayers: PlayerStats[];
 }
 
-export default function TeamStatsView({
-  regularTeamData,
-  regularStandings,
-  playoffTeamData,
-  playoffStandings
-}: TeamStatsViewProps) {
+export default function PlayersView({
+  regularPlayers,
+  playoffPlayers
+}: PlayersViewProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
 
   // Use appropriate data based on toggle
-  const teamData = isPlayoffs ? playoffTeamData : regularTeamData;
-  const standings = isPlayoffs ? playoffStandings : regularStandings;
-  const [hittingSortField, setHittingSortField] = useState<SortField>('rGame');
+  const players = isPlayoffs ? playoffPlayers : regularPlayers;
+
+  const [hittingSortField, setHittingSortField] = useState<SortField>('avg');
   const [hittingSortDirection, setHittingSortDirection] = useState<SortDirection>('desc');
   const [pitchingSortField, setPitchingSortField] = useState<SortField>('era');
   const [pitchingSortDirection, setPitchingSortDirection] = useState<SortDirection>('asc');
-  const [fieldingSortField, setFieldingSortField] = useState<SortField>('der');
+  const [fieldingSortField, setFieldingSortField] = useState<SortField>('np');
   const [fieldingSortDirection, setFieldingSortDirection] = useState<SortDirection>('desc');
 
   const teams = getActiveTeams();
@@ -67,58 +62,6 @@ export default function TeamStatsView({
     const team = teams.find(t => t.name === teamName);
     return team?.primaryColor || '#000000';
   };
-
-  // Helper to get team slug
-  const getTeamSlug = (teamName: string) => {
-    const team = teams.find(t => t.name === teamName);
-    return team?.slug || '';
-  };
-
-  // Calculate derived stats and prepare data (filter to active teams only)
-  const activeTeamNames = teams.map(t => t.name);
-  const enhancedTeamData = teamData
-    .filter(team => activeTeamNames.includes(team.teamName))
-    .map(team => {
-      // Get runs scored from standings
-      const standingsEntry = standings.find(s => s.team === team.teamName);
-      const runsScored = standingsEntry?.runsScored || 0;
-
-    // Calculate rate stats
-    const avg = team.hitting.ab > 0 ? (team.hitting.h / team.hitting.ab).toFixed(3).substring(1) : '.000';
-    const obp = (team.hitting.ab + team.hitting.bb) > 0
-      ? ((team.hitting.h + team.hitting.bb) / (team.hitting.ab + team.hitting.bb)).toFixed(3).substring(1)
-      : '.000';
-    const slg = team.hitting.ab > 0 ? (team.hitting.tb / team.hitting.ab).toFixed(3).substring(1) : '.000';
-    const ops = team.hitting.ab > 0 && (team.hitting.ab + team.hitting.bb) > 0
-      ? ((team.hitting.h + team.hitting.bb) / (team.hitting.ab + team.hitting.bb) +
-         team.hitting.tb / team.hitting.ab).toFixed(3)
-      : '0.000';
-
-    const era = team.pitching.ip > 0 ? ((team.pitching.r * 9) / team.pitching.ip).toFixed(2) : '0.00';
-    const whip = team.pitching.ip > 0 ? ((team.pitching.h + team.pitching.bb) / team.pitching.ip).toFixed(2) : '0.00';
-    const baa = team.pitching.bf > 0 ? (team.pitching.h / team.pitching.bf).toFixed(3).substring(1) : '.000';
-
-    // New derived stats
-    const rGame = team.gp > 0 ? (runsScored / team.gp).toFixed(2) : '0.00'; // Runs scored per game
-    const oaa = team.fielding.np - team.fielding.e; // Outs Above Average
-    const der = team.gp > 0 ? (oaa / team.gp).toFixed(2) : '0.00'; // Defensive Efficiency Rating (OAA/Game)
-
-    return {
-      ...team,
-      avg,
-      obp,
-      slg,
-      ops,
-      era,
-      whip,
-      baa,
-      rGame,
-      oaa,
-      der,
-      color: getTeamColor(team.teamName),
-      slug: getTeamSlug(team.teamName),
-    };
-  });
 
   // Sorting logic for hitting
   const handleHittingSort = (field: SortField) => {
@@ -131,26 +74,35 @@ export default function TeamStatsView({
     }
   };
 
-  const sortedHittingTeams = [...enhancedTeamData].sort((a, b) => {
+  // Filter players who have hitting stats
+  const hitters = players.filter(p => p.ab && p.ab > 0);
+
+  const sortedHitters = [...hitters].sort((a, b) => {
     let aVal: number | string = 0;
     let bVal: number | string = 0;
 
     switch (hittingSortField) {
-      case 'teamName': return hittingSortDirection === 'asc'
-        ? a.teamName.localeCompare(b.teamName)
-        : b.teamName.localeCompare(a.teamName);
+      case 'name': return hittingSortDirection === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+      case 'team': return hittingSortDirection === 'asc'
+        ? a.team.localeCompare(b.team)
+        : b.team.localeCompare(a.team);
       case 'gp': aVal = a.gp; bVal = b.gp; break;
-      case 'ab': aVal = a.hitting.ab; bVal = b.hitting.ab; break;
-      case 'h': aVal = a.hitting.h; bVal = b.hitting.h; break;
-      case 'hr': aVal = a.hitting.hr; bVal = b.hitting.hr; break;
-      case 'rbi': aVal = a.hitting.rbi; bVal = b.hitting.rbi; break;
-      case 'rob': aVal = a.hitting.rob; bVal = b.hitting.rob; break;
-      case 'dp': aVal = a.hitting.dp; bVal = b.hitting.dp; break;
-      case 'avg': aVal = parseFloat(a.avg); bVal = parseFloat(b.avg); break;
-      case 'obp': aVal = parseFloat(a.obp); bVal = parseFloat(b.obp); break;
-      case 'slg': aVal = parseFloat(a.slg); bVal = parseFloat(b.slg); break;
-      case 'ops': aVal = parseFloat(a.ops); bVal = parseFloat(b.ops); break;
-      case 'rGame': aVal = parseFloat(a.rGame); bVal = parseFloat(b.rGame); break;
+      case 'ab': aVal = a.ab || 0; bVal = b.ab || 0; break;
+      case 'h': aVal = a.h || 0; bVal = b.h || 0; break;
+      case 'hr': aVal = a.hr || 0; bVal = b.hr || 0; break;
+      case 'rbi': aVal = a.rbi || 0; bVal = b.rbi || 0; break;
+      case 'rob': aVal = a.rob || 0; bVal = b.rob || 0; break;
+      case 'dp': aVal = a.dp || 0; bVal = b.dp || 0; break;
+      case 'avg': aVal = parseFloat('0' + (a.avg || '.000')); bVal = parseFloat('0' + (b.avg || '.000')); break;
+      case 'obp': aVal = parseFloat('0' + (a.obp || '.000')); bVal = parseFloat('0' + (b.obp || '.000')); break;
+      case 'slg':
+        // Handle SLG >= 1.000
+        aVal = (a.slg || '.000').startsWith('.') ? parseFloat('0' + a.slg!) : parseFloat(a.slg!);
+        bVal = (b.slg || '.000').startsWith('.') ? parseFloat('0' + b.slg!) : parseFloat(b.slg!);
+        break;
+      case 'ops': aVal = parseFloat(a.ops || '0.000'); bVal = parseFloat(b.ops || '0.000'); break;
       default: return 0;
     }
 
@@ -167,30 +119,36 @@ export default function TeamStatsView({
       setPitchingSortDirection(pitchingSortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setPitchingSortField(field);
-      // Lower is better for ERA, WHIP, BAA, H, HR; higher is better for W, SV, etc.
-      const lowerIsBetter = ['era', 'whip', 'baa', 'h', 'hr'].includes(field);
+      // Lower is better for ERA, WHIP, BAA
+      const lowerIsBetter = ['era', 'whip', 'baa'].includes(field);
       setPitchingSortDirection(lowerIsBetter ? 'asc' : 'desc');
     }
   };
 
-  const sortedPitchingTeams = [...enhancedTeamData].sort((a, b) => {
+  // Filter players who have pitching stats
+  const pitchers = players.filter(p => p.ip && p.ip > 0);
+
+  const sortedPitchers = [...pitchers].sort((a, b) => {
     let aVal: number | string = 0;
     let bVal: number | string = 0;
 
     switch (pitchingSortField) {
-      case 'teamName': return pitchingSortDirection === 'asc'
-        ? a.teamName.localeCompare(b.teamName)
-        : b.teamName.localeCompare(a.teamName);
+      case 'name': return pitchingSortDirection === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+      case 'team': return pitchingSortDirection === 'asc'
+        ? a.team.localeCompare(b.team)
+        : b.team.localeCompare(a.team);
       case 'gp': aVal = a.gp; bVal = b.gp; break;
-      case 'ip': aVal = a.pitching.ip; bVal = b.pitching.ip; break;
-      case 'w': aVal = a.wins; bVal = b.wins; break;
-      case 'l': aVal = a.losses; bVal = b.losses; break;
-      case 'sv': aVal = a.pitching.sv; bVal = b.pitching.sv; break;
-      case 'h': aVal = a.pitching.h; bVal = b.pitching.h; break;
-      case 'hr': aVal = a.pitching.hr; bVal = b.pitching.hr; break;
-      case 'era': aVal = parseFloat(a.era); bVal = parseFloat(b.era); break;
-      case 'whip': aVal = parseFloat(a.whip); bVal = parseFloat(b.whip); break;
-      case 'baa': aVal = parseFloat(a.baa); bVal = parseFloat(b.baa); break;
+      case 'ip': aVal = a.ip || 0; bVal = b.ip || 0; break;
+      case 'w': aVal = a.w || 0; bVal = b.w || 0; break;
+      case 'l': aVal = a.l || 0; bVal = b.l || 0; break;
+      case 'sv': aVal = a.sv || 0; bVal = b.sv || 0; break;
+      case 'hAllowed': aVal = a.hAllowed || 0; bVal = b.hAllowed || 0; break;
+      case 'hrAllowed': aVal = a.hrAllowed || 0; bVal = b.hrAllowed || 0; break;
+      case 'era': aVal = parseFloat(a.era || '0.00'); bVal = parseFloat(b.era || '0.00'); break;
+      case 'whip': aVal = parseFloat(a.whip || '0.00'); bVal = parseFloat(b.whip || '0.00'); break;
+      case 'baa': aVal = parseFloat('0' + (a.baa || '.000')); bVal = parseFloat('0' + (b.baa || '.000')); break;
       default: return 0;
     }
 
@@ -207,27 +165,32 @@ export default function TeamStatsView({
       setFieldingSortDirection(fieldingSortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setFieldingSortField(field);
-      // Higher is better for NP, OAA, DER, CS; lower is better for E, SB
-      const lowerIsBetter = ['e', 'sb'].includes(field);
+      // Higher is better for NP, OAA; lower is better for E
+      const lowerIsBetter = ['e'].includes(field);
       setFieldingSortDirection(lowerIsBetter ? 'asc' : 'desc');
     }
   };
 
-  const sortedFieldingTeams = [...enhancedTeamData].sort((a, b) => {
+  // Filter players who have fielding stats
+  const fielders = players.filter(p => p.np && p.np > 0);
+
+  const sortedFielders = [...fielders].sort((a, b) => {
     let aVal: number | string = 0;
     let bVal: number | string = 0;
 
     switch (fieldingSortField) {
-      case 'teamName': return fieldingSortDirection === 'asc'
-        ? a.teamName.localeCompare(b.teamName)
-        : b.teamName.localeCompare(a.teamName);
+      case 'name': return fieldingSortDirection === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+      case 'team': return fieldingSortDirection === 'asc'
+        ? a.team.localeCompare(b.team)
+        : b.team.localeCompare(a.team);
       case 'gp': aVal = a.gp; bVal = b.gp; break;
-      case 'np': aVal = a.fielding.np; bVal = b.fielding.np; break;
-      case 'e': aVal = a.fielding.e; bVal = b.fielding.e; break;
-      case 'sb': aVal = a.fielding.sb; bVal = b.fielding.sb; break;
-      case 'cs': aVal = a.fielding.cs; bVal = b.fielding.cs; break;
-      case 'oaa': aVal = a.oaa; bVal = b.oaa; break;
-      case 'der': aVal = parseFloat(a.der); bVal = parseFloat(b.der); break;
+      case 'np': aVal = a.np || 0; bVal = b.np || 0; break;
+      case 'e': aVal = a.e || 0; bVal = b.e || 0; break;
+      case 'sb': aVal = a.sb || 0; bVal = b.sb || 0; break;
+      case 'cs': aVal = a.cs || 0; bVal = b.cs || 0; break;
+      case 'oaa': aVal = a.oaa || 0; bVal = b.oaa || 0; break;
       default: return 0;
     }
 
@@ -252,14 +215,14 @@ export default function TeamStatsView({
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
-                <SortableHeader field="teamName" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
+                <SortableHeader field="name" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
+                  Player
+                </SortableHeader>
+                <SortableHeader field="team" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   Team
                 </SortableHeader>
                 <SortableHeader field="gp" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   GP
-                </SortableHeader>
-                <SortableHeader field="rGame" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
-                  R/G
                 </SortableHeader>
                 <SortableHeader field="ab" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   AB
@@ -294,25 +257,23 @@ export default function TeamStatsView({
               </tr>
             </thead>
             <tbody>
-              {sortedHittingTeams.map((team, idx) => (
-                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
-                  <td className="px-4 py-3 font-semibold">
-                    <Link href={`/teams/${team.slug}`} className="hover:underline transition-colors" style={{ color: team.color }}>
-                      {team.teamName}
-                    </Link>
+              {sortedHitters.map((player, idx) => (
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
+                    {player.team}
                   </td>
-                  <td className="px-4 py-3 text-center text-star-gray">{team.gp}</td>
-                  <td className="px-4 py-3 text-center font-bold text-nebula-orange">{team.rGame}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.hitting.ab}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.hitting.h}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.hitting.hr}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.hitting.rbi}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.hitting.dp}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.hitting.rob}</td>
-                  <td className="px-4 py-3 text-center text-nebula-cyan">{team.avg}</td>
-                  <td className="px-4 py-3 text-center text-nebula-cyan">{team.obp}</td>
-                  <td className="px-4 py-3 text-center text-nebula-cyan">{team.slg}</td>
-                  <td className="px-4 py-3 text-center text-nebula-cyan">{team.ops}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.ab}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.h}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hr}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.rbi}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.dp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.rob}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.avg}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.obp}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.slg}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.ops}</td>
                 </tr>
               ))}
             </tbody>
@@ -327,14 +288,14 @@ export default function TeamStatsView({
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
-                <SortableHeader field="teamName" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                <SortableHeader field="name" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                  Player
+                </SortableHeader>
+                <SortableHeader field="team" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   Team
                 </SortableHeader>
                 <SortableHeader field="gp" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   GP
-                </SortableHeader>
-                <SortableHeader field="era" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
-                  ERA
                 </SortableHeader>
                 <SortableHeader field="ip" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   IP
@@ -348,11 +309,14 @@ export default function TeamStatsView({
                 <SortableHeader field="sv" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   SV
                 </SortableHeader>
-                <SortableHeader field="h" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                <SortableHeader field="hAllowed" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   H
                 </SortableHeader>
-                <SortableHeader field="hr" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                <SortableHeader field="hrAllowed" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   HR
+                </SortableHeader>
+                <SortableHeader field="era" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
+                  ERA
                 </SortableHeader>
                 <SortableHeader field="whip" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   WHIP
@@ -363,23 +327,22 @@ export default function TeamStatsView({
               </tr>
             </thead>
             <tbody>
-              {sortedPitchingTeams.map((team, idx) => (
-                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
-                  <td className="px-4 py-3 font-semibold">
-                    <Link href={`/teams/${team.slug}`} className="hover:underline transition-colors" style={{ color: team.color }}>
-                      {team.teamName}
-                    </Link>
+              {sortedPitchers.map((player, idx) => (
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
+                    {player.team}
                   </td>
-                  <td className="px-4 py-3 text-center text-star-gray">{team.gp}</td>
-                  <td className="px-4 py-3 text-center font-bold text-nebula-teal">{team.era}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.pitching.ip.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.wins}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.losses}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.pitching.sv}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.pitching.h}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.pitching.hr}</td>
-                  <td className="px-4 py-3 text-center text-nebula-cyan">{team.whip}</td>
-                  <td className="px-4 py-3 text-center text-nebula-cyan">{team.baa}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.ip?.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.w}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.l}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.sv}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hAllowed}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hrAllowed}</td>
+                  <td className="px-4 py-3 text-center text-nebula-teal">{player.era}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.whip}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.baa}</td>
                 </tr>
               ))}
             </tbody>
@@ -394,14 +357,14 @@ export default function TeamStatsView({
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
-                <SortableHeader field="teamName" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
+                <SortableHeader field="name" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
+                  Player
+                </SortableHeader>
+                <SortableHeader field="team" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   Team
                 </SortableHeader>
                 <SortableHeader field="gp" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   GP
-                </SortableHeader>
-                <SortableHeader field="der" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
-                  DER
                 </SortableHeader>
                 <SortableHeader field="np" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   NP
@@ -421,20 +384,18 @@ export default function TeamStatsView({
               </tr>
             </thead>
             <tbody>
-              {sortedFieldingTeams.map((team, idx) => (
-                <tr key={team.teamName} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
-                  <td className="px-4 py-3 font-semibold">
-                    <Link href={`/teams/${team.slug}`} className="hover:underline transition-colors" style={{ color: team.color }}>
-                      {team.teamName}
-                    </Link>
+              {sortedFielders.map((player, idx) => (
+                <tr key={`${player.name}-${player.team}`} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3" style={{ color: getTeamColor(player.team) }}>
+                    {player.team}
                   </td>
-                  <td className="px-4 py-3 text-center text-star-gray">{team.gp}</td>
-                  <td className="px-4 py-3 text-center font-bold text-solar-gold">{parseFloat(team.der) > 0 ? '+' : ''}{team.der}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.fielding.np}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.fielding.e}</td>
-                  <td className="px-4 py-3 text-center text-nebula-cyan">{team.oaa > 0 ? '+' : ''}{team.oaa}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.fielding.sb}</td>
-                  <td className="px-4 py-3 text-center text-star-white">{team.fielding.cs}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.np}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.e}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.oaa && player.oaa > 0 ? '+' : ''}{player.oaa}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.sb}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.cs}</td>
                 </tr>
               ))}
             </tbody>

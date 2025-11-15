@@ -2,6 +2,7 @@
 // This module reads data from the Google Sheets spreadsheet
 
 import { google } from 'googleapis';
+import { unstable_cache } from 'next/cache';
 import {
   STANDINGS_SHEET,
   PLAYER_STATS_SHEET,
@@ -28,8 +29,8 @@ async function getAuthClient() {
   return await auth.getClient();
 }
 
-// Generic function to read data from a sheet range
-export async function getSheetData(range: string, spreadsheetId?: string): Promise<any[][]> {
+// Generic function to read data from a sheet range (uncached)
+async function getSheetDataUncached(range: string, spreadsheetId?: string): Promise<any[][]> {
   try {
     const auth = await getAuthClient();
     const sheetId = spreadsheetId || process.env.SHEETS_SPREADSHEET_ID;
@@ -50,6 +51,18 @@ export async function getSheetData(range: string, spreadsheetId?: string): Promi
     throw error;
   }
 }
+
+// Cached version with 60-second revalidation
+export const getSheetData = unstable_cache(
+  async (range: string, spreadsheetId?: string) => {
+    return getSheetDataUncached(range, spreadsheetId);
+  },
+  ['sheet-data'],
+  {
+    revalidate: 60, // Cache for 60 seconds
+    tags: ['sheets'],
+  }
+);
 
 // ===== STANDINGS =====
 export interface StandingsRow {
@@ -711,7 +724,7 @@ export interface LeaderEntry {
  * @param isPlayoffs - If true, reads from playoff sheet; otherwise regular season
  * @returns Array of all PlayerStats objects with calculated rate stats
  */
-async function getAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]> {
+export async function getAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]> {
   try {
     // Read all players from player stats sheet (not filtered by team)
     const sheetName = isPlayoffs ? PLAYER_STATS_SHEET.PLAYOFFS : PLAYER_STATS_SHEET.REGULAR_SEASON;

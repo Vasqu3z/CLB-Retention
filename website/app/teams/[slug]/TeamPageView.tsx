@@ -117,14 +117,11 @@ export default function TeamPageView({
   const teamOAA = teamData ? teamData.fielding.np - teamData.fielding.e : 0;
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="space-y-8">
       {/* Team Header */}
-      <div
-        className="mb-8 p-6 rounded-lg"
-        style={{ backgroundColor: `${team.primaryColor}20`, borderLeft: `4px solid ${team.primaryColor}` }}
-      >
+      <div className="glass-card p-6" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-          <h1 className="text-4xl font-bold" style={{ color: team.primaryColor }}>
+          <h1 className="text-4xl font-display font-bold" style={{ color: team.primaryColor }}>
             {team.name}
           </h1>
           <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
@@ -134,32 +131,32 @@ export default function TeamPageView({
         {standing && (
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
             <div>
-              <div className="text-sm text-gray-600">Record</div>
-              <div className="text-xl font-bold text-gray-900">
+              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Record</div>
+              <div className="text-xl font-bold font-mono text-star-white">
                 {standing.wins}-{standing.losses}
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Win %</div>
-              <div className="text-xl font-bold text-gray-900">{standing.winPct}</div>
+              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Win %</div>
+              <div className="text-xl font-bold font-mono text-nebula-cyan">{standing.winPct}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Runs Scored</div>
-              <div className="text-xl font-bold text-gray-900">{standing.runsScored}</div>
+              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Scored</div>
+              <div className="text-xl font-bold font-mono text-nebula-orange">{standing.runsScored}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Runs Allowed</div>
-              <div className="text-xl font-bold text-gray-900">{standing.runsAllowed}</div>
+              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Allowed</div>
+              <div className="text-xl font-bold font-mono text-nebula-coral">{standing.runsAllowed}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Run Diff</div>
+              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Run Diff</div>
               <div
-                className={`text-xl font-bold ${
+                className={`text-xl font-bold font-mono ${
                   standing.runDiff > 0
-                    ? 'text-green-600'
+                    ? 'text-nebula-teal'
                     : standing.runDiff < 0
-                    ? 'text-red-600'
-                    : 'text-gray-900'
+                    ? 'text-nebula-coral'
+                    : 'text-star-white'
                 }`}
               >
                 {standing.runDiff > 0 ? '+' : ''}
@@ -167,41 +164,41 @@ export default function TeamPageView({
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-600">Rank</div>
-              <div className="text-xl font-bold text-gray-900">{standing.rank}</div>
+              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Rank</div>
+              <div className="text-xl font-bold font-mono text-solar-gold">{standing.rank}</div>
             </div>
           </div>
         )}
 
-        <p className="text-gray-600 text-sm">
+        <p className="text-star-gray text-sm font-mono">
           {team.mascot} • {roster.length} Players
         </p>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-200 mb-8">
-        <nav className="-mb-px flex space-x-8">
-          <a href="#hitting" className="border-b-2 border-blue-500 py-4 px-1 text-blue-600 font-medium">
+      <div className="glass-card p-2">
+        <nav className="flex space-x-2 overflow-x-auto">
+          <a href="#hitting" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg transition-all text-center">
             Hitting
           </a>
-          <a href="#pitching" className="border-transparent py-4 px-1 hover:border-gray-300 hover:text-gray-700">
+          <a href="#pitching" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
             Pitching
           </a>
-          <a href="#fielding" className="border-transparent py-4 px-1 hover:border-gray-300 hover:text-gray-700">
+          <a href="#fielding" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
             Fielding
           </a>
-          <a href="#schedule" className="border-transparent py-4 px-1 hover:border-gray-300 hover:text-gray-700">
+          <a href="#schedule" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
             Schedule
           </a>
         </nav>
       </div>
 
       {/* Hitting Stats */}
-      <section id="hitting" className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Hitting Statistics</h2>
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100">
+      <section id="hitting">
+        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full font-mono text-sm">
+            <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
                 <SortableHeader field="name" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   Player
@@ -243,36 +240,36 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedHitters.map((player, idx) => (
-                <tr key={player.name} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
-                  <td className="px-4 py-3 font-medium text-gray-900">{player.name}</td>
-                  <td className="px-4 py-3 text-center">{player.gp}</td>
-                  <td className="px-4 py-3 text-center">{player.ab}</td>
-                  <td className="px-4 py-3 text-center">{player.h}</td>
-                  <td className="px-4 py-3 text-center">{player.hr}</td>
-                  <td className="px-4 py-3 text-center">{player.rbi}</td>
-                  <td className="px-4 py-3 text-center">{player.dp || 0}</td>
-                  <td className="px-4 py-3 text-center">{player.rob || 0}</td>
-                  <td className="px-4 py-3 text-center">{player.avg}</td>
-                  <td className="px-4 py-3 text-center">{player.obp}</td>
-                  <td className="px-4 py-3 text-center">{player.slg}</td>
-                  <td className="px-4 py-3 text-center">{player.ops}</td>
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.ab}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.h}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hr}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.rbi}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.dp || 0}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.rob || 0}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.avg}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.obp}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.slg}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.ops}</td>
                 </tr>
               ))}
               {/* Team Totals Row */}
               {teamData && (
-                <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
-                  <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                  <td className="px-4 py-3 text-center">{teamData.gp}</td>
-                  <td className="px-4 py-3 text-center">{teamData.hitting.ab}</td>
-                  <td className="px-4 py-3 text-center">{teamData.hitting.h}</td>
-                  <td className="px-4 py-3 text-center">{teamData.hitting.hr}</td>
-                  <td className="px-4 py-3 text-center">{teamData.hitting.rbi}</td>
-                  <td className="px-4 py-3 text-center">{teamData.hitting.dp}</td>
-                  <td className="px-4 py-3 text-center">{teamData.hitting.rob}</td>
-                  <td className="px-4 py-3 text-center">{teamAvg}</td>
-                  <td className="px-4 py-3 text-center">{teamOBP}</td>
-                  <td className="px-4 py-3 text-center">{teamSLG}</td>
-                  <td className="px-4 py-3 text-center">{teamOPS}</td>
+                <tr className="border-t-2 border-nebula-orange/50 bg-space-black/40 font-bold">
+                  <td className="px-4 py-3 text-nebula-orange">Team Totals</td>
+                  <td className="px-4 py-3 text-center text-solar-gold">{teamData.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.hitting.ab}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.hitting.h}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.hitting.hr}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.hitting.rbi}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.hitting.dp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.hitting.rob}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{teamAvg}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{teamOBP}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{teamSLG}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{teamOPS}</td>
                 </tr>
               )}
             </tbody>
@@ -281,11 +278,11 @@ export default function TeamPageView({
       </section>
 
       {/* Pitching Stats */}
-      <section id="pitching" className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Pitching Statistics</h2>
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100">
+      <section id="pitching">
+        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full font-mono text-sm">
+            <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
                 <SortableHeader field="name" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   Player
@@ -324,34 +321,34 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedPitchers.map((player, idx) => (
-                <tr key={player.name} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
-                  <td className="px-4 py-3 font-medium text-gray-900">{player.name}</td>
-                  <td className="px-4 py-3 text-center">{player.gp}</td>
-                  <td className="px-4 py-3 text-center">{player.ip?.toFixed(2) || '0.00'}</td>
-                  <td className="px-4 py-3 text-center">{player.w}</td>
-                  <td className="px-4 py-3 text-center">{player.l}</td>
-                  <td className="px-4 py-3 text-center">{player.sv}</td>
-                  <td className="px-4 py-3 text-center">{player.era}</td>
-                  <td className="px-4 py-3 text-center">{player.hAllowed || 0}</td>
-                  <td className="px-4 py-3 text-center">{player.hrAllowed || 0}</td>
-                  <td className="px-4 py-3 text-center">{player.whip}</td>
-                  <td className="px-4 py-3 text-center">{player.baa || '—'}</td>
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.ip?.toFixed(2) || '0.00'}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.w}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.l}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.sv}</td>
+                  <td className="px-4 py-3 text-center text-nebula-teal">{player.era}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hAllowed || 0}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.hrAllowed || 0}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.whip}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{player.baa || '—'}</td>
                 </tr>
               ))}
               {/* Team Totals Row */}
               {teamData && (
-                <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
-                  <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                  <td className="px-4 py-3 text-center">{teamData.gp}</td>
-                  <td className="px-4 py-3 text-center">{teamData.pitching.ip.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-center">{teamData.wins}</td>
-                  <td className="px-4 py-3 text-center">{teamData.losses}</td>
-                  <td className="px-4 py-3 text-center">{teamData.pitching.sv}</td>
-                  <td className="px-4 py-3 text-center">{teamERA}</td>
-                  <td className="px-4 py-3 text-center">{teamData.pitching.h}</td>
-                  <td className="px-4 py-3 text-center">{teamData.pitching.hr}</td>
-                  <td className="px-4 py-3 text-center">{teamWHIP}</td>
-                  <td className="px-4 py-3 text-center">{teamBAA}</td>
+                <tr className="border-t-2 border-nebula-teal/50 bg-space-black/40 font-bold">
+                  <td className="px-4 py-3 text-nebula-teal">Team Totals</td>
+                  <td className="px-4 py-3 text-center text-solar-gold">{teamData.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.pitching.ip.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.wins}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.losses}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.pitching.sv}</td>
+                  <td className="px-4 py-3 text-center text-nebula-teal">{teamERA}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.pitching.h}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.pitching.hr}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{teamWHIP}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{teamBAA}</td>
                 </tr>
               )}
             </tbody>
@@ -360,11 +357,11 @@ export default function TeamPageView({
       </section>
 
       {/* Fielding Stats */}
-      <section id="fielding" className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Fielding & Baserunning Statistics</h2>
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100">
+      <section id="fielding">
+        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
+        <div className="glass-card overflow-x-auto">
+          <table className="w-full font-mono text-sm">
+            <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
                 <SortableHeader field="name" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   Player
@@ -391,28 +388,28 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedFielders.map((player, idx) => (
-                <tr key={player.name} className={`border-b ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
-                  <td className="px-4 py-3 font-medium text-gray-900">{player.name}</td>
-                  <td className="px-4 py-3 text-center">{player.gp}</td>
-                  <td className="px-4 py-3 text-center">{player.np || 0}</td>
-                  <td className="px-4 py-3 text-center">{player.e || 0}</td>
-                  <td className="px-4 py-3 text-center">
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.np || 0}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.e || 0}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">
                     {player.oaa !== undefined && player.oaa > 0 ? '+' : ''}{player.oaa || 0}
                   </td>
-                  <td className="px-4 py-3 text-center">{player.sb || 0}</td>
-                  <td className="px-4 py-3 text-center">{player.cs || 0}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.sb || 0}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{player.cs || 0}</td>
                 </tr>
               ))}
               {/* Team Totals Row */}
               {teamData && (
-                <tr className="border-t-2 border-gray-300 bg-gray-100 font-bold">
-                  <td className="px-4 py-3 text-gray-900">Team Totals</td>
-                  <td className="px-4 py-3 text-center">{teamData.gp}</td>
-                  <td className="px-4 py-3 text-center">{teamData.fielding.np}</td>
-                  <td className="px-4 py-3 text-center">{teamData.fielding.e}</td>
-                  <td className="px-4 py-3 text-center">{teamOAA > 0 ? '+' : ''}{teamOAA}</td>
-                  <td className="px-4 py-3 text-center">{teamData.fielding.sb}</td>
-                  <td className="px-4 py-3 text-center">{teamData.fielding.cs}</td>
+                <tr className="border-t-2 border-solar-gold/50 bg-space-black/40 font-bold">
+                  <td className="px-4 py-3 text-solar-gold">Team Totals</td>
+                  <td className="px-4 py-3 text-center text-solar-gold">{teamData.gp}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.fielding.np}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.fielding.e}</td>
+                  <td className="px-4 py-3 text-center text-nebula-cyan">{teamOAA > 0 ? '+' : ''}{teamOAA}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.fielding.sb}</td>
+                  <td className="px-4 py-3 text-center text-star-white">{teamData.fielding.cs}</td>
                 </tr>
               )}
             </tbody>
@@ -421,10 +418,10 @@ export default function TeamPageView({
       </section>
 
       {/* Team Schedule */}
-      <section id="schedule" className="mb-12">
-        <h2 className="text-2xl font-bold mb-4">Team Schedule</h2>
-        <div className="bg-white rounded-lg shadow">
-          <div className="divide-y divide-gray-200">
+      <section id="schedule">
+        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">Team Schedule</h2>
+        <div className="glass-card">
+          <div className="divide-y divide-star-gray/10">
             {schedule.map((game, idx) => (
               <TeamGameRow key={idx} game={game} teamName={team.name} />
             ))}
@@ -433,8 +430,8 @@ export default function TeamPageView({
       </section>
 
       {/* Back Link */}
-      <div className="mt-8">
-        <Link href="/standings" className="text-blue-600 hover:underline">
+      <div className="flex justify-start">
+        <Link href="/standings" className="text-nebula-cyan hover:text-nebula-teal transition-colors font-mono text-sm">
           ← Back to Standings
         </Link>
       </div>
@@ -460,13 +457,13 @@ function SortableHeader({
 
   return (
     <th
-      className="px-4 py-3 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200 transition"
+      className="px-4 py-3 text-left text-sm font-display font-semibold text-star-white cursor-pointer hover:bg-space-blue/30 transition"
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-1">
         {children}
         {isActive && (
-          <span className="text-blue-600">
+          <span className="text-nebula-orange">
             {sortDirection === 'asc' ? '↑' : '↓'}
           </span>
         )}
@@ -486,7 +483,7 @@ function TeamGameRow({ game, teamName }: { game: ScheduleGame | PlayoffGame; tea
   if (!game.played) {
     return (
       <div className="px-6 py-4">
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-star-gray font-mono">
           {gameIdentifier} • vs {opponent} {isHome ? '(Home)' : '(Away)'}
         </div>
       </div>
@@ -498,11 +495,11 @@ function TeamGameRow({ game, teamName }: { game: ScheduleGame | PlayoffGame; tea
   const won = game.winner === teamName;
 
   const content = (
-    <div className="px-6 py-4">
+    <div className="px-6 py-4 hover:bg-space-blue/20 transition-colors">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm text-gray-500 mb-1">{gameIdentifier}</div>
-          <div className="font-medium" style={{ color: won ? '#059669' : '#DC2626' }}>
+          <div className="text-sm text-star-gray font-mono mb-1">{gameIdentifier}</div>
+          <div className="font-semibold font-mono" style={{ color: won ? '#00B8B8' : '#FF6B6B' }}>
             {won ? 'W' : 'L'} {teamScore}-{oppScore} vs {opponent} {isHome ? '(Home)' : '(Away)'}
           </div>
         </div>
@@ -511,7 +508,7 @@ function TeamGameRow({ game, teamName }: { game: ScheduleGame | PlayoffGame; tea
             href={game.boxScoreUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-blue-600 hover:underline"
+            className="text-xs text-nebula-cyan hover:text-nebula-teal transition-colors font-mono"
             onClick={(e) => e.stopPropagation()}
           >
             Box Score →

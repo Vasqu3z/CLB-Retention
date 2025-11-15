@@ -34,7 +34,7 @@
   --warning: #FFD23F;
 
   /* Glass-morphism */
-  --glass-bg: rgba(30, 36, 66, 0.85);
+  --glass-bg: rgba(30, 36, 66, 0.92);
   --glass-border: rgba(255, 255, 255, 0.1);
 }
 
@@ -71,15 +71,15 @@ body::before {
     radial-gradient(2px 2px at 110px 130px, white, transparent);
   background-size: 200px 200px;
   background-repeat: repeat;
-  opacity: 0.08;
+  opacity: 0.18;
   pointer-events: none;
   z-index: 0;
-  animation: twinkle 200s linear infinite;
+  animation: twinkle 8s ease-in-out infinite;
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.08; }
-  50% { opacity: 0.12; }
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 0.28; }
 }
 
 /* Nebula Glow Background */
@@ -129,17 +129,28 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Chakra Petch', sans-serif;
   font-weight: 600;
   letter-spacing: 0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* Large numbers and stats use Orbitron */
 .stat-number {
   font-family: 'Orbitron', sans-serif;
   font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* Data tables use JetBrains Mono */
 table {
   font-family: 'JetBrains Mono', monospace;
+}
+
+/* Text shadow utility for better readability */
+.text-shadow {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.text-shadow-strong {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
 }
 
 /* Scrollbar styling */
@@ -177,15 +188,16 @@ table {
 /* Glass-morphism card */
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 107, 53, 0.4);
-  box-shadow: 0 8px 32px rgba(255, 107, 53, 0.2);
+  border-color: rgba(255, 107, 53, 0.5);
+  box-shadow: 0 8px 32px rgba(255, 107, 53, 0.25), 0 4px 16px rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
 }
 

@@ -91,6 +91,12 @@ function getGameSheets(boxScoreSS) {
   return gameSheets;
 }
 
+/**
+ * Gets all playoff game sheets from the box score spreadsheet
+ * Filters by CONFIG.PLAYOFF_GAME_PREFIX (e.g., "*") and caches results
+ * @param {Spreadsheet} boxScoreSS - Box score spreadsheet object
+ * @returns {Array<Sheet>} Array of playoff game sheet objects
+ */
 function getPlayoffGameSheets(boxScoreSS) {
   if (_spreadsheetCache.playoffGameSheets) {
     return _spreadsheetCache.playoffGameSheets;
@@ -98,27 +104,16 @@ function getPlayoffGameSheets(boxScoreSS) {
 
   var sheets = boxScoreSS.getSheets();
   var playoffGameSheets = [];
-  var skippedSheets = [];
 
-  for (var i = 0; i < sheets.length; i++) {
-    var sheetName = sheets[i].getName();
-    // Include only playoff game sheets (starting with #P)
+  for (var sheetIndex = 0; sheetIndex < sheets.length; sheetIndex++) {
+    var sheetName = sheets[sheetIndex].getName();
     if (sheetName.startsWith(CONFIG.PLAYOFF_GAME_PREFIX)) {
-      if (validateGameSheet(sheets[i])) {
-        playoffGameSheets.push(sheets[i]);
-      } else {
-        skippedSheets.push(sheetName);
-        logWarning("Playoff Game Sheets", "Skipped invalid sheet", sheetName);
-      }
+      playoffGameSheets.push(sheets[sheetIndex]);
     }
   }
 
-  if (skippedSheets.length > 0) {
-    logWarning("Playoff Game Sheets", "Skipped " + skippedSheets.length + " invalid sheet(s)", skippedSheets.join(", "));
-  }
-
   _spreadsheetCache.playoffGameSheets = playoffGameSheets;
-  logInfo("Cache", "Loaded " + playoffGameSheets.length + " valid playoff game sheets into cache");
+  logInfo("Cache", "Loaded " + playoffGameSheets.length + " playoff game sheets into cache");
   return playoffGameSheets;
 }
 
@@ -127,6 +122,51 @@ function clearCache() {
   _spreadsheetCache.gameSheets = null;
   _spreadsheetCache.playoffGameSheets = null;
   logInfo("Cache", "Cleared spreadsheet cache");
+}
+
+/**
+ * Read playoff seeds from the already-calculated standings sheet
+ * This avoids reprocessing 50+ regular season games just for seeding
+ * @returns {object} Object with seed numbers as keys (1-8) and team names as values
+ */
+function getPlayoffSeedsFromStandings() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var standingsSheet = ss.getSheetByName(CONFIG.STANDINGS_SHEET);
+
+  if (!standingsSheet) {
+    logWarning("Get Playoff Seeds", "Standings sheet not found", CONFIG.STANDINGS_SHEET);
+    return {};
+  }
+
+  var layout = CONFIG.SHEET_STRUCTURE.LEAGUE_HUB;
+  var dataStartRow = layout.STANDINGS_START_ROW; // Row 4 in config
+  var lastRow = standingsSheet.getLastRow();
+
+  // Check if we have enough teams (need at least 4 for playoffs)
+  var numDataRows = lastRow - dataStartRow + 1;
+  if (numDataRows < 4) {
+    logWarning("Get Playoff Seeds", "Not enough teams in standings", "Only " + numDataRows + " teams found");
+    return {};
+  }
+
+  // Standings format per config: Column A = Rank, Column B = Team
+  // Read first 8 teams (for potential 8-team bracket)
+  var numTeams = Math.min(8, numDataRows);
+  var teamCol = layout.STANDINGS.START_COL + 2; // START_COL is 0 (A), +2 = column B (Team column)
+
+  // Read team names from standings (already in ranked order)
+  var teamData = standingsSheet.getRange(dataStartRow, teamCol, numTeams, 1).getValues();
+
+  var seeds = {};
+  for (var teamIndex = 0; teamIndex < teamData.length; teamIndex++) {
+    var teamName = String(teamData[teamIndex][0]).trim();
+    if (teamName && teamName !== "") {
+      seeds[teamIndex + 1] = teamName;
+    }
+  }
+
+  logInfo("Get Playoff Seeds", "Read " + Object.keys(seeds).length + " playoff seeds from standings sheet");
+  return seeds;
 }
 
 // ===== GAME SHEET VALIDATION =====

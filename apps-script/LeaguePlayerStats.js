@@ -49,15 +49,15 @@ function updateAllPlayerStatsFromCache(playerStats) {
     }
   }
 
-  for (var i = 0; i < playerOrder.length; i++) {
-    if (playerStats[playerOrder[i]]) {
-      validatePlayerStats(playerOrder[i], playerStats[playerOrder[i]], null);
+  for (var playerIndex = 0; playerIndex < playerOrder.length; playerIndex++) {
+    if (playerStats[playerOrder[playerIndex]]) {
+      validatePlayerStats(playerOrder[playerIndex], playerStats[playerOrder[playerIndex]], null);
     }
   }
 
   var allPlayerData = [];
-  for (var i = 0; i < playerOrder.length; i++) {
-    var stats = playerStats[playerOrder[i]];
+  for (var playerIndex = 0; playerIndex < playerOrder.length; playerIndex++) {
+    var stats = playerStats[playerOrder[playerIndex]];
     if (!stats) {
       var emptyRow = [0, 0,0,0,0,0,0,0,0,0, 0,0,0, 0,0,0,0,0,0,0, 0,0,0];
       allPlayerData.push(emptyRow);
@@ -147,15 +147,15 @@ function updateAllPlayoffPlayerStatsFromCache(playerStats) {
     }
   }
 
-  for (var i = 0; i < playerOrder.length; i++) {
-    if (playerStats[playerOrder[i]]) {
-      validatePlayerStats(playerOrder[i], playerStats[playerOrder[i]], null);
+  for (var playerIndex = 0; playerIndex < playerOrder.length; playerIndex++) {
+    if (playerStats[playerOrder[playerIndex]]) {
+      validatePlayerStats(playerOrder[playerIndex], playerStats[playerOrder[playerIndex]], null);
     }
   }
 
   var allPlayerData = [];
-  for (var i = 0; i < playerOrder.length; i++) {
-    var stats = playerStats[playerOrder[i]];
+  for (var playerIndex = 0; playerIndex < playerOrder.length; playerIndex++) {
+    var stats = playerStats[playerOrder[playerIndex]];
     if (!stats) {
       var emptyRow = [0, 0,0,0,0,0,0,0,0,0, 0,0,0, 0,0,0,0,0,0,0, 0,0,0];
       allPlayerData.push(emptyRow);

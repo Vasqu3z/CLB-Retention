@@ -477,10 +477,6 @@ function rebuildRetentionSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(CONFIG.RETENTION_SHEET);
 
-  if (sheet) {
-    sheet.getRange(RETENTION_CONFIG.OUTPUT.HEADER_ROW, 1).clearContent();
-  }
-
   calculateRetentionGrades();
 
   ui.alert('Sheet rebuilt successfully with v2 layout!');

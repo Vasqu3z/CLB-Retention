@@ -55,11 +55,11 @@ var CONFIG = {
   MAX_HR_PER_GAME: 6,
 
   // Playoff configuration
-  PLAYOFF_TEAMS: 8,
-  ENABLE_WILDCARD_ROUND: false,    // Set to true for 5-team playoffs (1,2,3 + 4v5), false for 4-team playoffs (1v4, 2v3)
-  QUARTERFINALS_WINS_REQUIRED: 2,  // Best of 3
-  SEMIFINALS_WINS_REQUIRED: 3,     // Best of 5
-  FINALS_WINS_REQUIRED: 4,         // Best of 7
+  PLAYOFF_TEAMS: 4,
+  ENABLE_WILDCARD_ROUND: false,    // True = 5-team playoffs (1,2,3 + 4v5) // False = 4-team playoffs (1v4, 2v3)
+  QUARTERFINALS_WINS_REQUIRED: 2,  // Default: 2 (Best of 3)
+  SEMIFINALS_WINS_REQUIRED: 2,     // Default: 3 (Best of 5)
+  FINALS_WINS_REQUIRED: 2,         // Default: 4 (Best of 7)
 
   // Playoff round prefixes (used in game sheet names and schedule)
   WILDCARD_ROUND_PREFIX: "WC",      // Quarterfinals/Wildcard (*Q1, *Q2)
@@ -230,7 +230,10 @@ var CONFIG = {
       PLAYER_NAME_COL: 0,         // Column A (1)
       TEAM_NAME_COL: 1,           // Column B (2)
       DATA_START_COL: 2,          // Column C (3) - First stat (GP)
-      TOTAL_STAT_COLUMNS: 23      // GP (1) + Hitting (9) + WLS (3) + Pitching (7) + Fielding (3)
+      TOTAL_STAT_COLUMNS: 23,     // GP (1) + Hitting (9) + WLS (3) + Pitching (7) + Fielding (3)
+      HITTING_STATS_COUNT: 9,     // AB, H, HR, RBI, BB, K, ROB, DP, TB
+      PITCHING_STATS_COUNT: 7,    // IP, BF, H, HR, R, BB, K (no SV in array)
+      FIELDING_STATS_COUNT: 3     // NP, E, SB
     },
 
     // Team Sheets layout
@@ -243,6 +246,16 @@ var CONFIG = {
       STANDINGS_NUM_COLS: 7,
       SCHEDULE_START_COL: 16,     // Column Q (17)
       SCHEDULE_NUM_COLS: 7
+    },
+
+    // Playoff Schedule sheet layout
+    PLAYOFF_SCHEDULE: {
+      HEADER_ROW: 1,
+      DATA_START_ROW: 2,
+      GAME_CODE_COL: 0,           // Column A - Game code (WC1, CS1-A, KC1, etc.)
+      AWAY_TEAM_COL: 1,           // Column B - Away team name
+      HOME_TEAM_COL: 2,           // Column C - Home team name
+      NUM_BASIC_COLS: 3           // Number of columns in basic structure (Code, Away, Home)
     },
 
     // Player Comparison sheet layout
@@ -272,4 +285,5 @@ var _spreadsheetCache = {
   playoffGameSheets: null,
   gameData: null
 };
+
 

@@ -58,8 +58,8 @@ function updateAllTeamStatsFromCache(teamStats) {
   var allPitching = [];
   var allFielding = [];
 
-  for (var i = 0; i < teamOrder.length; i++) {
-    var stats = teamStats[teamOrder[i]];
+  for (var teamIndex = 0; teamIndex < teamOrder.length; teamIndex++) {
+    var stats = teamStats[teamOrder[teamIndex]];
 
     if (!stats) {
       allGPWL.push([0, 0, 0]);
@@ -155,8 +155,8 @@ function updateAllPlayoffTeamStatsFromCache(teamStats) {
   var allPitching = [];
   var allFielding = [];
 
-  for (var i = 0; i < teamOrder.length; i++) {
-    var stats = teamStats[teamOrder[i]];
+  for (var teamIndex = 0; teamIndex < teamOrder.length; teamIndex++) {
+    var stats = teamStats[teamOrder[teamIndex]];
 
     if (!stats) {
       allGPWL.push([0, 0, 0]);

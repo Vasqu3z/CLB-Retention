@@ -150,15 +150,10 @@ function updateAllPlayoffs() {
     SpreadsheetApp.getActiveSpreadsheet().toast("Step 3 of 3: Updating playoff schedule...", "Update Postseason", -1);
     var step3Start = new Date();
 
-    // Get regular season standings for seeding
-    var regularSeasonGameData = _spreadsheetCache.gameData;
-    if (!regularSeasonGameData) {
-      // If not cached, process regular season quickly to get standings
-      regularSeasonGameData = processAllGameSheetsOnce();
-    }
-
-    // Generate/update playoff schedule structure with seeds and placeholders
-    updatePlayoffScheduleStructure(regularSeasonGameData.teamStatsWithH2H, playoffGameData.scheduleData);
+    // Always update playoff schedule structure to propagate series winners
+    // This function handles both initial seeding AND advancing winners to next rounds
+    // Note: Seeds are read from standings sheet (fast) or preserved from existing schedule
+    updatePlayoffScheduleStructure(playoffGameData.scheduleData);
 
     // Write completed game results to the schedule
     writeGameResultsToPlayoffSchedule(playoffGameData.scheduleData);

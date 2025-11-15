@@ -73,8 +73,8 @@ function updateLeagueHubFromCache(gameData) {
   
   var currentRank = 1;
   
-  for (var i = 0; i < teamOrder.length; i++) {
-    var teamName = teamOrder[i];
+  for (var teamIndex = 0; teamIndex < teamOrder.length; teamIndex++) {
+    var teamName = teamOrder[teamIndex];
     var stats = teamStatsWithH2H[teamName];
     if (stats.gamesPlayed === 0) continue;
     
@@ -148,10 +148,10 @@ function updateLeagueHubFromCache(gameData) {
     var rowFw = [];
     var rowAlign = [];
     
-    for (var c = 0; c < 8; c++) {
-      rowBg.push(i % 2 === 1 ? "#f3f3f3" : "#ffffff");
-      rowFw.push(c === 1 ? "bold" : "normal");
-      rowAlign.push(c < 2 ? "left" : "right");
+    for (var columnIndex = 0; columnIndex < 8; columnIndex++) {
+      rowBg.push(teamIndex % 2 === 1 ? "#f3f3f3" : "#ffffff");
+      rowFw.push(columnIndex === 1 ? "bold" : "normal");
+      rowAlign.push(columnIndex < 2 ? "left" : "right");
     }
     
     standingsBackgrounds.push(rowBg);
@@ -169,8 +169,8 @@ function updateLeagueHubFromCache(gameData) {
     standingsRange.setVerticalAlignment("middle");
 
     // Add tooltips
-    for (var i = 0; i < standingsTooltips.length; i++) {
-      standingsSheet.getRange(standingsStartRow + i, layout.STANDINGS.START_COL + 2).setNote(standingsTooltips[i]);
+    for (var tooltipIndex = 0; tooltipIndex < standingsTooltips.length; tooltipIndex++) {
+      standingsSheet.getRange(standingsStartRow + tooltipIndex, layout.STANDINGS.START_COL + 2).setNote(standingsTooltips[tooltipIndex]);
     }
   }
 

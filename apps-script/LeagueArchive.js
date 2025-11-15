@@ -42,23 +42,23 @@ function archiveCurrentSeason() {
   
   try {
     // Archive each sheet
-    for (var i = 0; i < CONFIG.ARCHIVE_SHEETS.length; i++) {
-      var sheetName = CONFIG.ARCHIVE_SHEETS[i];
+    for (var sheetIndex = 0; sheetIndex < CONFIG.ARCHIVE_SHEETS.length; sheetIndex++) {
+      var sheetName = CONFIG.ARCHIVE_SHEETS[sheetIndex];
       var sheet = ss.getSheetByName(sheetName);
-      
+
       if (!sheet) {
         logWarning("Archive Season", "Sheet not found, skipping", sheetName);
         continue;
       }
-      
+
       // Create archived copy
       var archivedName = seasonName + " - " + sheetName;
       var archivedSheet = sheet.copyTo(ss);
       archivedSheet.setName(archivedName);
-      
+
       // Move archived sheet to end
       ss.moveActiveSheet(ss.getNumSheets());
-      
+
       logInfo("Archive Season", "Archived sheet: " + sheetName + " → " + archivedName);
     }
     
@@ -132,8 +132,8 @@ function clearTeamStats() {
   
   // Delete individual team sheets
   var teamNames = teamSheet.getRange(2, 1, lastRow - 1, 1).getValues();
-  for (var i = 0; i < teamNames.length; i++) {
-    var teamName = String(teamNames[i][0]).trim();
+  for (var teamIndex = 0; teamIndex < teamNames.length; teamIndex++) {
+    var teamName = String(teamNames[teamIndex][0]).trim();
     if (teamName) {
       var teamSheetObj = ss.getSheetByName(teamName);
       if (teamSheetObj) {

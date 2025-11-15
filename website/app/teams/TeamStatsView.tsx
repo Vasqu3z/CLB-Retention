@@ -250,7 +250,7 @@ export default function TeamStatsView({
         <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
-            <thead className="bg-space-black/30 border-b border-star-gray/20 sticky top-0">
+            <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
                 <SortableHeader field="teamName" sortField={hittingSortField} sortDirection={hittingSortDirection} onSort={handleHittingSort}>
                   Team
@@ -325,7 +325,7 @@ export default function TeamStatsView({
         <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
-            <thead className="bg-space-black/30 border-b border-star-gray/20 sticky top-0">
+            <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
                 <SortableHeader field="teamName" sortField={pitchingSortField} sortDirection={pitchingSortDirection} onSort={handlePitchingSort}>
                   Team
@@ -392,7 +392,7 @@ export default function TeamStatsView({
         <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
-            <thead className="bg-space-black/30 border-b border-star-gray/20 sticky top-0">
+            <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
                 <SortableHeader field="teamName" sortField={fieldingSortField} sortDirection={fieldingSortDirection} onSort={handleFieldingSort}>
                   Team

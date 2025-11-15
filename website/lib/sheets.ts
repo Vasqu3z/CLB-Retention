@@ -711,7 +711,7 @@ export interface LeaderEntry {
  * @param isPlayoffs - If true, reads from playoff sheet; otherwise regular season
  * @returns Array of all PlayerStats objects with calculated rate stats
  */
-async function getAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]> {
+export async function getAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]> {
   try {
     // Read all players from player stats sheet (not filtered by team)
     const sheetName = isPlayoffs ? PLAYER_STATS_SHEET.PLAYOFFS : PLAYER_STATS_SHEET.REGULAR_SEASON;

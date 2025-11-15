@@ -41,6 +41,12 @@ export default function Header() {
             >
               Teams
             </Link>
+            <Link
+              href="/players"
+              className="hover:text-gray-200 transition"
+            >
+              Players
+            </Link>
           </nav>
 
           {/* Mobile menu button - TODO: Add mobile menu */}

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
 import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
 import { Trophy, TrendingUp, Calendar, Users, Target, BarChart3 } from "lucide-react";
+import FadeIn from "@/components/animations/FadeIn";
 
 const navCards = [
   {
@@ -87,7 +88,10 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="text-6xl lg:text-7xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange via-solar-gold to-comet-yellow bg-clip-text text-transparent">
+          <h1
+            className="text-6xl lg:text-7xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange via-solar-gold to-comet-yellow bg-clip-text text-transparent glitch"
+            data-text={LEAGUE_CONFIG.name}
+          >
             {LEAGUE_CONFIG.name}
           </h1>
 
@@ -103,82 +107,93 @@ export default function Home() {
       </section>
 
       {/* Navigation Cards */}
-      <section>
-        <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2">
-          <span className="text-nebula-orange">›</span> Quick Access
-        </h2>
+      <FadeIn>
+        <section>
+          <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2">
+            <span className="text-nebula-orange">›</span> Quick Access
+          </h2>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {navCards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <Link
-                key={card.href}
-                href={card.href}
-                className={`
-                  group relative p-6 rounded-xl border ${card.borderColor}
-                  bg-gradient-to-br ${card.gradient}
-                  hover:scale-[1.02] transition-all duration-300
-                  backdrop-blur-sm
-                `}
-              >
-                {/* Hover glow effect */}
-                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {navCards.map((card, index) => {
+              const Icon = card.icon;
+              return (
+                <FadeIn key={card.href} delay={index * 0.1} direction="up">
+                  <Link
+                    href={card.href}
+                    className={`
+                      group relative p-6 rounded-xl border ${card.borderColor}
+                      bg-gradient-to-br ${card.gradient}
+                      hover:scale-[1.02] hover:rotate-1 transition-all duration-300
+                      backdrop-blur-sm block
+                      hover:shadow-[0_8px_30px_rgba(255,107,53,0.3)]
+                    `}
+                    style={{
+                      transformStyle: 'preserve-3d',
+                      perspective: '1000px',
+                    }}
+                  >
+                    {/* Hover glow effect */}
+                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
 
-                <div className="relative z-10">
-                  <Icon className={`w-8 h-8 ${card.iconColor} mb-3 group-hover:scale-110 transition-transform`} />
-                  <h3 className="text-xl font-display font-semibold mb-2 text-star-white">
-                    {card.title}
-                  </h3>
-                  <p className="text-sm text-star-gray">
-                    {card.description}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+                    <div className="relative z-10">
+                      <Icon className={`w-8 h-8 ${card.iconColor} mb-3 group-hover:scale-110 transition-transform`} />
+                      <h3 className="text-xl font-display font-semibold mb-2 text-star-white">
+                        {card.title}
+                      </h3>
+                      <p className="text-sm text-star-gray">
+                        {card.description}
+                      </p>
+                    </div>
+                  </Link>
+                </FadeIn>
+              );
+            })}
+          </div>
+        </section>
+      </FadeIn>
 
       {/* Team Constellation */}
-      <section>
-        <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2">
-          <span className="text-solar-gold">›</span> Team Constellation
-        </h2>
+      <FadeIn delay={0.2}>
+        <section>
+          <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2">
+            <span className="text-solar-gold">›</span> Team Constellation
+          </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4">
-          {teams.map((team) => {
-            const logos = getTeamLogoPaths(team.name);
-            return (
-              <Link
-                key={team.slug}
-                href={`/teams/${team.slug}`}
-                className="group p-4 rounded-xl bg-space-blue/30 border border-cosmic-border hover:border-nebula-orange/50 transition-all hover:scale-105"
-              >
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-16 h-16 relative">
-                    <Image
-                      src={logos.emblem}
-                      alt={team.name}
-                      width={64}
-                      height={64}
-                      className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.6)] transition-all"
-                    />
-                  </div>
-                  <div className="text-center">
-                    <div
-                      className="text-sm font-semibold group-hover:text-nebula-orange transition-colors"
-                      style={{ color: team.primaryColor }}
-                    >
-                      {team.shortName}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4">
+            {teams.map((team, index) => {
+              const logos = getTeamLogoPaths(team.name);
+              return (
+                <FadeIn key={team.slug} delay={0.3 + index * 0.05} direction="up">
+                  <Link
+                    href={`/teams/${team.slug}`}
+                    className="group p-4 rounded-xl bg-space-blue/30 border border-cosmic-border hover:border-nebula-orange/50 transition-all hover:scale-105 hover:rotate-1 block"
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 relative">
+                        <Image
+                          src={logos.emblem}
+                          alt={team.name}
+                          width={64}
+                          height={64}
+                          className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.6)] transition-all"
+                        />
+                      </div>
+                      <div className="text-center">
+                        <div
+                          className="text-sm font-semibold group-hover:text-nebula-orange transition-colors"
+                          style={{ color: team.primaryColor }}
+                        >
+                          {team.shortName}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+                  </Link>
+                </FadeIn>
+              );
+            })}
+          </div>
+        </section>
+      </FadeIn>
 
       {/* Status Footer */}
       <section className="text-center py-8 border-t border-cosmic-border">

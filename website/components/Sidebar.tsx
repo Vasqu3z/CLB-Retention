@@ -54,21 +54,22 @@ export default async function Sidebar() {
 
   // Helper function to parse playoff round info from code
   const parsePlayoffCode = (code: string) => {
-    const roundPrefix = code.charAt(0);
+    // Extract prefix (first 2 characters for CS/WC/KC)
+    const prefix = code.substring(0, 2);
     const seriesMatch = code.match(/-([A-Z])$/);
     const series = seriesMatch ? seriesMatch[1] : null;
 
     let roundName = '';
     let roundOrder = 0;
 
-    if (roundPrefix === 'F') {
+    if (prefix === 'KC') {
       roundName = 'Kingdom Cup';
       roundOrder = 3;
-    } else if (roundPrefix === 'S') {
+    } else if (prefix === 'CS') {
       roundName = series ? `Castle Series ${series}` : 'Castle Series';
       roundOrder = 2;
-    } else if (roundPrefix === 'Q') {
-      roundName = series ? `Quarterfinals ${series}` : 'Quarterfinals';
+    } else if (prefix === 'WC') {
+      roundName = 'Wildcard Games';
       roundOrder = 1;
     }
 

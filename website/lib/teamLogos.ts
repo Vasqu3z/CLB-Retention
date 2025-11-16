@@ -11,53 +11,53 @@ export interface TeamLogoPaths {
  */
 const TEAM_LOGO_MAP: Record<string, { full: string; emblem: string }> = {
   "Birdo Bows": {
-    full: "BirdoBows-MSS.png",
-    emblem: "MSS-Emblem-Birdo_Bows.png"
+    full: "BirdoBows-MSS.webp",
+    emblem: "MSS-Emblem-Birdo_Bows.webp"
   },
   "Bowser Monsters": {
-    full: "BowserMonsters-MSS.png",
-    emblem: "MSS-Emblem-Bowser_Monsters.png"
+    full: "BowserMonsters-MSS.webp",
+    emblem: "MSS-Emblem-Bowser_Monsters.webp"
   },
   "Daisy Flowers": {
-    full: "DaisyFlowers-MSS.png",
-    emblem: "MSS-Emblem-Daisy_Flowers.png"
+    full: "DaisyFlowers-MSS.webp",
+    emblem: "MSS-Emblem-Daisy_Flowers.webp"
   },
   "Diddy Kong Monkeys": {
-    full: "DiddyMonkeys-MSS.png",
-    emblem: "MSS-Emblem-Diddy_Kong_Monkeys.png"
+    full: "DiddyMonkeys-MSS.webp",
+    emblem: "MSS-Emblem-Diddy_Kong_Monkeys.webp"
   },
   "DK Wilds": {
-    full: "DKWilds-MSS.png",
-    emblem: "MSS-Emblem-DK_Wilds.png"
+    full: "DKWilds-MSS.webp",
+    emblem: "MSS-Emblem-DK_Wilds.webp"
   },
   "Mario Fireballs": {
-    full: "MarioFireballs-MSS.png",
-    emblem: "MSS-Emblem-Mario_Fireballs.png"
+    full: "MarioFireballs-MSS.webp",
+    emblem: "MSS-Emblem-Mario_Fireballs.webp"
   },
   "Peach Monarchs": {
-    full: "PeachMonarchs-MSS.png",
-    emblem: "MSS-Emblem-Peach_Monarchs.png"
+    full: "PeachMonarchs-MSS.webp",
+    emblem: "MSS-Emblem-Peach_Monarchs.webp"
   },
   "Wario Muscles": {
-    full: "WarioMuscles-MSS.png",
-    emblem: "MSS-Emblem-Wario_Muscles.png"
+    full: "WarioMuscles-MSS.webp",
+    emblem: "MSS-Emblem-Wario_Muscles.webp"
   },
   // Inactive teams
   "Bowser Jr. Rookies": {
-    full: "BowserJrRookies-MSS.png",
-    emblem: "MSS-Emblem-Bowser_Jr_Rookies.png"
+    full: "BowserJrRookies-MSS.webp",
+    emblem: "MSS-Emblem-Bowser_Jr_Rookies.webp"
   },
   "Luigi Knights": {
-    full: "LuigiKnights-MSS.png",
-    emblem: "MSS-Emblem-Luigi_Knights.png"
+    full: "LuigiKnights-MSS.webp",
+    emblem: "MSS-Emblem-Luigi_Knights.webp"
   },
   "Waluigi Spitballs": {
-    full: "WaluigiSpitballs-MSS.png",
-    emblem: "MSS-Emblem-Waluigi_Spitballs.png"
+    full: "WaluigiSpitballs-MSS.webp",
+    emblem: "MSS-Emblem-Waluigi_Spitballs.webp"
   },
   "Yoshi Eggs": {
-    full: "YoshiEggs-MSS.png",
-    emblem: "MSS-Emblem-Yoshi_Eggs.png"
+    full: "YoshiEggs-MSS.webp",
+    emblem: "MSS-Emblem-Yoshi_Eggs.webp"
   },
 };
 

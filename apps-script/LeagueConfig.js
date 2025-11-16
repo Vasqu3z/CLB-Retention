@@ -285,5 +285,3 @@ var _spreadsheetCache = {
   playoffGameSheets: null,
   gameData: null
 };
-
-

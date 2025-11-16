@@ -72,7 +72,7 @@ export default async function StandingsPage() {
             label="League Leader"
             value={`${topTeam?.wins}-${topTeam?.losses}`}
             icon={Trophy}
-            sublabel={`Win%: ${topTeam?.winPct}`}
+            sublabel={`Win %: ${topTeam?.winPct}`}
             color="orange"
           >
             {topTeam?.fullLogoPath && (

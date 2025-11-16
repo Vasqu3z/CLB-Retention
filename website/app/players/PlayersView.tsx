@@ -214,27 +214,24 @@ export default function PlayersView({
       </div>
 
       {/* Search Bar */}
-      <div className="glass-card p-4">
-        <div className="flex items-center gap-3">
-          <label htmlFor="player-search" className="text-sm font-display font-semibold text-star-white whitespace-nowrap">
-            Search:
-          </label>
+      <div className="glass-card p-3">
+        <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-star-gray" />
+              <Search className="h-4 w-4 text-star-gray/60" />
             </div>
             <input
               id="player-search"
               type="text"
-              placeholder="Filter by player name or team..."
+              placeholder="Search players or teams..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-20 py-2.5 bg-space-blue/40 border border-cosmic-border rounded-lg font-mono text-sm text-star-white placeholder-star-gray/50 focus:outline-none focus:ring-2 focus:ring-nebula-orange/50 focus:border-nebula-orange/50 transition-all backdrop-blur-sm"
+              className="w-full pl-10 pr-16 py-2 bg-space-black/20 border border-star-gray/10 rounded-lg font-mono text-sm text-star-white placeholder-star-gray/40 focus:outline-none focus:ring-1 focus:ring-nebula-orange/30 focus:border-nebula-orange/30 transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-star-gray hover:text-nebula-orange transition-colors font-mono text-xs font-semibold"
+                className="absolute inset-y-0 right-0 pr-2 flex items-center text-star-gray/60 hover:text-nebula-orange/80 transition-colors font-mono text-xs"
               >
                 Clear
               </button>

@@ -197,20 +197,20 @@ export default async function Sidebar() {
         </section>
 
         {/* Recent Games */}
-        {(sortedPlayoffRounds.length > 0 || currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
+        {(playoffGames.length > 0 || currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
           <section>
             <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
               Recent Games
             </h3>
 
-            {/* Playoff Rounds (most recent first) */}
-            {sortedPlayoffRounds.map(([roundName, games], roundIdx) => (
-              <div key={roundName} className={roundIdx < sortedPlayoffRounds.length - 1 || currentWeekGames.length > 0 || previousWeekGames.length > 0 ? 'mb-4' : ''}>
+            {/* Playoff Games (all rounds combined) */}
+            {playoffGames.length > 0 && (
+              <div className={currentWeekGames.length > 0 || previousWeekGames.length > 0 ? 'mb-4' : ''}>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
-                  {roundName}
+                  Playoff Games
                 </h4>
                 <div className="space-y-2">
-                  {games.map((game, idx) => {
+                  {playoffGames.reverse().map((game, idx) => {
                     const homeTeam = getTeamByName(game.homeTeam);
                     const awayTeam = getTeamByName(game.awayTeam);
                     const homeWon = game.homeScore > game.awayScore;
@@ -263,13 +263,13 @@ export default async function Sidebar() {
                   })}
                 </div>
               </div>
-            ))}
+            )}
 
             {/* Current Week Regular Season Games */}
             {currentWeekGames.length > 0 && (
               <div className={previousWeekGames.length > 0 ? 'mb-4' : ''}>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
-                  Week {currentWeek}
+                  Current Week
                 </h4>
                 <div className="space-y-2">
                   {currentWeekGames.map((game, idx) => {
@@ -331,7 +331,7 @@ export default async function Sidebar() {
             {previousWeekGames.length > 0 && (
               <div>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
-                  Week {currentWeek - 1}
+                  Previous Week
                 </h4>
                 <div className="space-y-2">
                   {previousWeekGames.map((game, idx) => {

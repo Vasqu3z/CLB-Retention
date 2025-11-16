@@ -1,7 +1,9 @@
 'use client';
 
 import { ScheduleGame } from '@/lib/sheets';
-import { Team } from '@/config/league';
+import { Team, getTeamByName } from '@/config/league';
+import { getTeamLogoPaths } from '@/lib/teamLogos';
+import Image from 'next/image';
 
 interface ScheduleViewProps {
   schedule: ScheduleGame[];
@@ -68,6 +70,11 @@ export default function ScheduleView({ schedule }: ScheduleViewProps) {
 }
 
 function GameCard({ game }: { game: ScheduleGame }) {
+  const homeTeamConfig = getTeamByName(game.homeTeam);
+  const awayTeamConfig = getTeamByName(game.awayTeam);
+  const homeLogos = homeTeamConfig ? getTeamLogoPaths(homeTeamConfig.name) : null;
+  const awayLogos = awayTeamConfig ? getTeamLogoPaths(awayTeamConfig.name) : null;
+
   if (!game.played) {
     // Upcoming game
     return (
@@ -77,11 +84,37 @@ function GameCard({ game }: { game: ScheduleGame }) {
         </div>
         <div className="p-4 space-y-2">
           <div className="flex items-center justify-between p-3 rounded-lg bg-space-blue/20 backdrop-blur-sm">
-            <span className="font-semibold text-star-gray italic font-mono text-sm">{game.awayTeam}</span>
+            <div className="flex items-center gap-2">
+              {awayLogos && (
+                <div className="w-5 h-5 relative flex-shrink-0">
+                  <Image
+                    src={awayLogos.emblem}
+                    alt={game.awayTeam}
+                    width={20}
+                    height={20}
+                    className="object-contain"
+                  />
+                </div>
+              )}
+              <span className="font-semibold text-star-gray italic font-mono text-sm">{game.awayTeam}</span>
+            </div>
             <span className="text-xs text-star-gray/50">@</span>
           </div>
           <div className="flex items-center justify-between p-3 rounded-lg bg-space-blue/20 backdrop-blur-sm">
-            <span className="font-semibold text-star-gray italic font-mono text-sm">{game.homeTeam}</span>
+            <div className="flex items-center gap-2">
+              {homeLogos && (
+                <div className="w-5 h-5 relative flex-shrink-0">
+                  <Image
+                    src={homeLogos.emblem}
+                    alt={game.homeTeam}
+                    width={20}
+                    height={20}
+                    className="object-contain"
+                  />
+                </div>
+              )}
+              <span className="font-semibold text-star-gray italic font-mono text-sm">{game.homeTeam}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -114,11 +147,27 @@ function GameCard({ game }: { game: ScheduleGame }) {
               : 'bg-space-blue/20 backdrop-blur-sm border border-cosmic-border'
           }`}
         >
-          <span className={`font-semibold font-mono text-sm ${
-            awayWon ? 'text-nebula-cyan' : 'text-star-white'
-          }`}>
-            {game.awayTeam}
-          </span>
+          <div className="flex items-center gap-2">
+            {awayLogos && (
+              <div className="w-5 h-5 relative flex-shrink-0">
+                <Image
+                  src={awayLogos.emblem}
+                  alt={game.awayTeam}
+                  width={20}
+                  height={20}
+                  className="object-contain"
+                />
+              </div>
+            )}
+            <span
+              className={`font-semibold font-mono text-sm ${
+                awayWon ? 'font-bold' : ''
+              }`}
+              style={awayWon && awayTeamConfig ? { color: awayTeamConfig.primaryColor } : undefined}
+            >
+              {game.awayTeam}
+            </span>
+          </div>
           <span className={`text-xl font-bold font-mono ${
             awayWon ? 'text-nebula-cyan' : 'text-star-gray'
           }`}>
@@ -134,11 +183,27 @@ function GameCard({ game }: { game: ScheduleGame }) {
               : 'bg-space-blue/20 backdrop-blur-sm border border-cosmic-border'
           }`}
         >
-          <span className={`font-semibold font-mono text-sm ${
-            homeWon ? 'text-nebula-cyan' : 'text-star-white'
-          }`}>
-            {game.homeTeam}
-          </span>
+          <div className="flex items-center gap-2">
+            {homeLogos && (
+              <div className="w-5 h-5 relative flex-shrink-0">
+                <Image
+                  src={homeLogos.emblem}
+                  alt={game.homeTeam}
+                  width={20}
+                  height={20}
+                  className="object-contain"
+                />
+              </div>
+            )}
+            <span
+              className={`font-semibold font-mono text-sm ${
+                homeWon ? 'font-bold' : ''
+              }`}
+              style={homeWon && homeTeamConfig ? { color: homeTeamConfig.primaryColor } : undefined}
+            >
+              {game.homeTeam}
+            </span>
+          </div>
           <span className={`text-xl font-bold font-mono ${
             homeWon ? 'text-nebula-cyan' : 'text-star-gray'
           }`}>
@@ -147,7 +212,7 @@ function GameCard({ game }: { game: ScheduleGame }) {
         </div>
 
         {/* Game Details */}
-        {(game.mvp || game.winningPitcher || game.losingPitcher || game.savePitcher) && (
+        {(game.mvp || game.winningPitcher || game.losingPitcher) && (
           <div className="mt-3 pt-3 border-t border-star-gray/20">
             <p className="text-xs font-display font-semibold text-star-gray uppercase tracking-wider mb-2">
               Game Details
@@ -171,12 +236,12 @@ function GameCard({ game }: { game: ScheduleGame }) {
                   <span className="text-star-white">{game.losingPitcher}</span>
                 </div>
               )}
-              {game.savePitcher && (
-                <div className="flex justify-between">
-                  <span className="text-solar-gold font-bold">SV:</span>
-                  <span className="text-star-white">{game.savePitcher}</span>
-                </div>
-              )}
+              <div className="flex justify-between">
+                <span className="text-solar-gold font-bold">SV:</span>
+                <span className={game.savePitcher ? "text-star-white" : "text-star-gray/50 italic"}>
+                  {game.savePitcher || "None"}
+                </span>
+              </div>
             </div>
           </div>
         )}

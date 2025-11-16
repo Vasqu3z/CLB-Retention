@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
-import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
+import { LEAGUE_CONFIG } from "@/config/league";
+import { getLeagueLogo } from "@/lib/teamLogos";
 import { Trophy, TrendingUp, Calendar, Users, Target, BarChart3 } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import Tilt from "@/components/animations/Tilt";
@@ -64,8 +64,6 @@ const navCards = [
 ];
 
 export default function Home() {
-  const teams = getActiveTeams();
-
   return (
     <div className="space-y-12">
       {/* Hero Section */}
@@ -145,49 +143,6 @@ export default function Home() {
                     </div>
                   </Link>
                 </Tilt>
-              </FadeIn>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Teams */}
-      <section>
-        <FadeIn delay={1.0} direction="up">
-          <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2 text-shadow">
-            <span className="text-solar-gold">›</span> Teams
-          </h2>
-        </FadeIn>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4">
-          {teams.map((team, idx) => {
-            const logos = getTeamLogoPaths(team.name);
-            return (
-              <FadeIn key={team.slug} delay={1.1 + idx * 0.08} direction="up" duration={0.5} useViewport={false}>
-                <Link
-                  href={`/teams/${team.slug}`}
-                  className="group p-4 rounded-xl bg-space-blue/30 border border-cosmic-border hover:border-nebula-orange/50 hover:scale-105 hover:rotate-1 transition-all duration-300 block"
-                >
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-16 h-16 relative">
-                      <Image
-                        src={logos.emblem}
-                        alt={team.name}
-                        width={64}
-                        height={64}
-                        className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.6)] transition-all duration-300"
-                      />
-                    </div>
-                    <div className="text-center">
-                      <div
-                        className="text-sm font-semibold group-hover:text-nebula-orange transition-colors duration-300"
-                        style={{ color: team.primaryColor }}
-                      >
-                        {team.shortName}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
               </FadeIn>
             );
           })}

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LEAGUE_CONFIG } from "@/config/league";
-import { getLeagueLogo } from "@/lib/teamLogos";
+import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
+import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
 import MobileNav from "./MobileNav";
 
 const navItems = [
@@ -18,6 +18,7 @@ const navItems = [
 
 export default function Header() {
   const pathname = usePathname();
+  const teams = getActiveTeams();
 
   return (
     <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30" role="banner">
@@ -54,6 +55,31 @@ export default function Header() {
               </span>
             </div>
           </Link>
+
+          {/* Team Emblems */}
+          <div className="hidden lg:flex items-center gap-2 mx-4">
+            {teams.map((team) => {
+              const logos = getTeamLogoPaths(team.name);
+              return (
+                <Link
+                  key={team.slug}
+                  href={`/teams/${team.slug}`}
+                  className="group focus:outline-none rounded-lg"
+                  aria-label={team.name}
+                >
+                  <div className="w-8 h-8 relative flex items-center justify-center">
+                    <Image
+                      src={logos.emblem}
+                      alt={team.name}
+                      width={32}
+                      height={32}
+                      className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
+                    />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1" role="navigation" aria-label="Main navigation">

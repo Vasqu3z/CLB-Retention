@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { Team } from '@/config/league';
 import { PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
+import { getTeamLogoPaths } from '@/lib/teamLogos';
 import Link from 'next/link';
+import Image from 'next/image';
 import SeasonToggle from '@/components/SeasonToggle';
 import FadeIn from '@/components/animations/FadeIn';
 
@@ -120,16 +122,39 @@ export default function TeamPageView({
   // Calculate team OAA (Outs Above Average)
   const teamOAA = teamData ? teamData.fielding.np - teamData.fielding.e : 0;
 
+  const logos = getTeamLogoPaths(team.name);
+  const hasPlayoffGames = playoffSchedule.length > 0;
+
   return (
     <div className="space-y-8">
       {/* Team Header */}
       <FadeIn delay={0} direction="down">
-        <div className="glass-card p-6" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
+        <div className="glass-card p-6 relative" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-            <h1 className="text-4xl font-display font-bold" style={{ color: team.primaryColor }}>
-              {team.name}
-            </h1>
-            <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+            <div className="w-64 h-24 relative">
+              <Image
+                src={logos.full}
+                alt={team.name}
+                width={256}
+                height={96}
+                className="object-contain"
+                priority
+              />
+            </div>
+            {hasPlayoffGames && (
+              <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+            )}
+          </div>
+
+          {/* Emblem in bottom right */}
+          <div className="absolute bottom-4 right-4 w-16 h-16 opacity-20">
+            <Image
+              src={logos.emblem}
+              alt={team.name}
+              width={64}
+              height={64}
+              className="object-contain"
+            />
           </div>
 
         {/* Team Stats Summary */}

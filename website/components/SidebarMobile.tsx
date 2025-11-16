@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, Menu } from 'lucide-react';
+import SidebarScrollWrapper from './SidebarScrollWrapper';
 
 interface SidebarMobileProps {
   children: React.ReactNode;
@@ -37,7 +38,7 @@ export default function SidebarMobile({ children }: SidebarMobileProps) {
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className="relative h-full">
+        <div className="relative h-full w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border overflow-y-auto">
           {/* Close Button */}
           <button
             onClick={() => setIsOpen(false)}
@@ -54,7 +55,9 @@ export default function SidebarMobile({ children }: SidebarMobileProps) {
 
       {/* Desktop Sidebar - Always Visible */}
       <div className="hidden lg:block">
-        {children}
+        <SidebarScrollWrapper className="w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border h-screen sticky top-0">
+          {children}
+        </SidebarScrollWrapper>
       </div>
     </>
   );

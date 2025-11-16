@@ -25,12 +25,12 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-14 h-14 relative flex-shrink-0">
+            <div className="w-12 h-12 relative flex items-center justify-center flex-shrink-0">
               <Image
                 src={getLeagueLogo()}
                 alt="CLB Logo"
-                width={56}
-                height={56}
+                width={48}
+                height={48}
                 className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
               />
             </div>

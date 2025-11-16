@@ -49,8 +49,7 @@ export default async function Sidebar() {
     .slice(0, 3);
 
   return (
-    <aside className="w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border h-screen sidebar-scroll-hover sticky top-0">
-      <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6">
         {/* Mini Standings */}
         <section>
           <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
@@ -243,6 +242,5 @@ export default async function Sidebar() {
           </div>
         </section>
       </div>
-    </aside>
   );
 }

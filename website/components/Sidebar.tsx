@@ -171,8 +171,8 @@ export default async function Sidebar() {
         {/* Kingdom Cup Champions */}
         {kingdomCupChampion && championLogos && (
           <section>
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-solar-gold/20 via-comet-yellow/10 to-transparent border-2 border-solar-gold/40 p-4">
-              <h3 className="text-xs font-display font-bold text-solar-gold mb-3 uppercase tracking-wider text-center flex items-center justify-center gap-2">
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-solar-gold/20 via-comet-yellow/10 to-transparent border-2 border-solar-gold/40 p-3">
+              <h3 className="text-xs font-display font-bold text-solar-gold mb-2 uppercase tracking-wider text-center flex items-center justify-center gap-2">
                 <span>👑</span>
                 <span>Kingdom Cup Champions</span>
                 <span>👑</span>
@@ -182,7 +182,7 @@ export default async function Sidebar() {
                 href={`/teams/${kingdomCupChampion.slug}`}
                 className="block group"
               >
-                <div className="flex items-center justify-center py-3">
+                <div className="flex items-center justify-center py-2">
                   <div className="w-32 h-16 relative transition-transform group-hover:scale-105">
                     <Image
                       src={championLogos.full}
@@ -194,7 +194,7 @@ export default async function Sidebar() {
                   </div>
                 </div>
 
-                <p className="text-center text-xs font-mono text-star-gray mt-3">
+                <p className="text-center text-xs font-mono text-star-gray mt-2">
                   Season 1
                 </p>
               </Link>

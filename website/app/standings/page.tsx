@@ -76,13 +76,13 @@ export default async function StandingsPage() {
             color="orange"
           >
             {topTeam?.fullLogoPath && (
-              <div className="flex items-center justify-center -mt-2">
-                <div className="w-32 h-16 relative">
+              <div className="flex items-center justify-center pt-2">
+                <div className="w-40 h-20 relative">
                   <Image
                     src={topTeam.fullLogoPath}
                     alt={topTeam.team}
-                    width={128}
-                    height={64}
+                    width={160}
+                    height={80}
                     className="object-contain"
                   />
                 </div>
@@ -99,20 +99,20 @@ export default async function StandingsPage() {
           />
 
           <StatCard
-            label="Highest Runs/Game"
+            label="Highest Scoring"
             value={highestRunsPerGameTeam.runsPerGame.toFixed(2)}
             icon={TrendingUp}
-            sublabel=""
+            sublabel="Runs scored per game"
             color="cyan"
           >
             {highestRunsPerGameTeam?.fullLogoPath && (
-              <div className="flex items-center justify-center -mt-2">
-                <div className="w-32 h-16 relative">
+              <div className="flex items-center justify-center pt-2">
+                <div className="w-40 h-20 relative">
                   <Image
                     src={highestRunsPerGameTeam.fullLogoPath}
                     alt={highestRunsPerGameTeam.team}
-                    width={128}
-                    height={64}
+                    width={160}
+                    height={80}
                     className="object-contain"
                   />
                 </div>
@@ -128,13 +128,13 @@ export default async function StandingsPage() {
             color="teal"
           >
             {lowestERATeam?.fullLogoPath && (
-              <div className="flex items-center justify-center -mt-2">
-                <div className="w-32 h-16 relative">
+              <div className="flex items-center justify-center pt-2">
+                <div className="w-40 h-20 relative">
                   <Image
                     src={lowestERATeam.fullLogoPath}
                     alt={lowestERATeam.team}
-                    width={128}
-                    height={64}
+                    width={160}
+                    height={80}
                     className="object-contain"
                   />
                 </div>

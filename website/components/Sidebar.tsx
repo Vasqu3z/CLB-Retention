@@ -52,14 +52,59 @@ export default async function Sidebar() {
     ? Math.max(...schedule.map(g => g.week))
     : 0;
 
-  // Separate games by current week and previous week
-  const currentWeekGames = allCompletedGames.filter(g =>
-    typeof g.week === 'string' || g.week === currentWeek
-  ).reverse();
+  // Helper function to parse playoff round info from code
+  const parsePlayoffCode = (code: string) => {
+    const roundPrefix = code.charAt(0);
+    const seriesMatch = code.match(/-([A-Z])$/);
+    const series = seriesMatch ? seriesMatch[1] : null;
 
-  const previousWeekGames = allCompletedGames.filter(g =>
-    typeof g.week === 'number' && g.week === currentWeek - 1
-  ).reverse();
+    let roundName = '';
+    let roundOrder = 0;
+
+    if (roundPrefix === 'F') {
+      roundName = 'Kingdom Cup';
+      roundOrder = 3;
+    } else if (roundPrefix === 'S') {
+      roundName = series ? `Castle Series ${series}` : 'Castle Series';
+      roundOrder = 2;
+    } else if (roundPrefix === 'Q') {
+      roundName = series ? `Quarterfinals ${series}` : 'Quarterfinals';
+      roundOrder = 1;
+    }
+
+    return { roundName, roundOrder, series };
+  };
+
+  // Separate regular season and playoff games
+  const regularSeasonGames = allCompletedGames.filter(g => typeof g.week === 'number');
+  const playoffGames = allCompletedGames.filter(g => typeof g.week === 'string');
+
+  // Group playoff games by round and series
+  const playoffGamesByRound: { [key: string]: RecentGame[] } = {};
+  playoffGames.forEach(game => {
+    const { roundName } = parsePlayoffCode(game.week as string);
+    if (!playoffGamesByRound[roundName]) {
+      playoffGamesByRound[roundName] = [];
+    }
+    playoffGamesByRound[roundName].push(game);
+  });
+
+  // Sort playoff rounds by order (Kingdom Cup, then Castle Series, etc.)
+  const sortedPlayoffRounds = Object.entries(playoffGamesByRound)
+    .sort(([nameA], [nameB]) => {
+      const orderA = parsePlayoffCode(playoffGamesByRound[nameA][0].week as string).roundOrder;
+      const orderB = parsePlayoffCode(playoffGamesByRound[nameB][0].week as string).roundOrder;
+      return orderB - orderA; // Descending (most recent first)
+    });
+
+  // Get current week and previous week regular season games
+  const currentWeekGames = regularSeasonGames
+    .filter(g => g.week === currentWeek)
+    .reverse();
+
+  const previousWeekGames = regularSeasonGames
+    .filter(g => g.week === currentWeek - 1)
+    .reverse();
 
   // Calculate league leaders
   const hitters = players.filter(p => p.ab && p.ab > 0);
@@ -151,17 +196,79 @@ export default async function Sidebar() {
         </section>
 
         {/* Recent Games */}
-        {(currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
+        {(sortedPlayoffRounds.length > 0 || currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
           <section>
             <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
               Recent Games
             </h3>
 
-            {/* Current Week Games */}
-            {currentWeekGames.length > 0 && (
-              <div className="mb-4">
+            {/* Playoff Rounds (most recent first) */}
+            {sortedPlayoffRounds.map(([roundName, games], roundIdx) => (
+              <div key={roundName} className={roundIdx < sortedPlayoffRounds.length - 1 || currentWeekGames.length > 0 || previousWeekGames.length > 0 ? 'mb-4' : ''}>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
-                  {typeof currentWeekGames[0].week === 'string' ? 'Playoffs' : `Week ${currentWeek}`}
+                  {roundName}
+                </h4>
+                <div className="space-y-2">
+                  {games.map((game, idx) => {
+                    const homeTeam = getTeamByName(game.homeTeam);
+                    const awayTeam = getTeamByName(game.awayTeam);
+                    const homeWon = game.homeScore > game.awayScore;
+
+                    const gameContent = (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={homeWon ? 'font-bold' : 'text-star-gray'}
+                            style={{ color: homeWon ? homeTeam?.primaryColor : undefined }}
+                          >
+                            {homeTeam?.shortName || game.homeTeam}
+                          </span>
+                          <span className="font-mono font-bold text-star-white">
+                            {game.homeScore}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span
+                            className={!homeWon ? 'font-bold' : 'text-star-gray'}
+                            style={{ color: !homeWon ? awayTeam?.primaryColor : undefined }}
+                          >
+                            {awayTeam?.shortName || game.awayTeam}
+                          </span>
+                          <span className="font-mono font-bold text-star-white">
+                            {game.awayScore}
+                          </span>
+                        </div>
+                      </>
+                    );
+
+                    return game.boxScoreUrl ? (
+                      <Link
+                        key={idx}
+                        href={game.boxScoreUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block hover:border-nebula-orange/50 hover:bg-space-blue/50 hover:scale-105 cursor-pointer"
+                      >
+                        {gameContent}
+                      </Link>
+                    ) : (
+                      <div
+                        key={idx}
+                        className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block"
+                      >
+                        {gameContent}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {/* Current Week Regular Season Games */}
+            {currentWeekGames.length > 0 && (
+              <div className={previousWeekGames.length > 0 ? 'mb-4' : ''}>
+                <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
+                  Week {currentWeek}
                 </h4>
                 <div className="space-y-2">
                   {currentWeekGames.map((game, idx) => {
@@ -219,7 +326,7 @@ export default async function Sidebar() {
               </div>
             )}
 
-            {/* Previous Week Games */}
+            {/* Previous Week Regular Season Games */}
             {previousWeekGames.length > 0 && (
               <div>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">

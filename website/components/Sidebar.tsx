@@ -162,11 +162,11 @@ export default async function Sidebar() {
             <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Batting Average</h4>
             <div className="space-y-1">
               {baLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <span className="text-star-white truncate flex-1">
-                    {player.name.split(' ')[0]}
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
                   </span>
-                  <span className="font-mono font-bold text-solar-gold">
+                  <span className="font-mono font-bold text-solar-gold flex-shrink-0">
                     {player.avg}
                   </span>
                 </div>
@@ -179,11 +179,11 @@ export default async function Sidebar() {
             <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Home Runs</h4>
             <div className="space-y-1">
               {hrLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <span className="text-star-white truncate flex-1">
-                    {player.name.split(' ')[0]}
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
                   </span>
-                  <span className="font-mono font-bold text-nebula-orange">
+                  <span className="font-mono font-bold text-nebula-orange flex-shrink-0">
                     {player.hr}
                   </span>
                 </div>
@@ -196,11 +196,11 @@ export default async function Sidebar() {
             <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">RBI</h4>
             <div className="space-y-1">
               {rbiLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <span className="text-star-white truncate flex-1">
-                    {player.name.split(' ')[0]}
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
                   </span>
-                  <span className="font-mono font-bold text-nebula-coral">
+                  <span className="font-mono font-bold text-nebula-coral flex-shrink-0">
                     {player.rbi}
                   </span>
                 </div>
@@ -213,11 +213,11 @@ export default async function Sidebar() {
             <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">ERA</h4>
             <div className="space-y-1">
               {eraLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <span className="text-star-white truncate flex-1">
-                    {player.name.split(' ')[0]}
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
                   </span>
-                  <span className="font-mono font-bold text-nebula-cyan">
+                  <span className="font-mono font-bold text-nebula-cyan flex-shrink-0">
                     {player.era}
                   </span>
                 </div>
@@ -230,11 +230,11 @@ export default async function Sidebar() {
             <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Nice Plays</h4>
             <div className="space-y-1">
               {npLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <span className="text-star-white truncate flex-1">
-                    {player.name.split(' ')[0]}
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
                   </span>
-                  <span className="font-mono font-bold text-nebula-teal">
+                  <span className="font-mono font-bold text-nebula-teal flex-shrink-0">
                     {player.np}
                   </span>
                 </div>

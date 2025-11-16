@@ -55,7 +55,7 @@ export default function SidebarMobile({ children }: SidebarMobileProps) {
 
       {/* Desktop Sidebar - Always Visible */}
       <div className="hidden lg:block">
-        <SidebarScrollWrapper className="w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border h-screen sticky top-0">
+        <SidebarScrollWrapper className="fixed left-0 top-16 w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border z-20" style={{ height: 'calc(100vh - 4rem)' }}>
           {children}
         </SidebarScrollWrapper>
       </div>

@@ -20,11 +20,22 @@ export default function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30">
+    <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30" role="banner">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-nebula-orange focus:text-white focus:rounded-lg focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
+      >
+        Skip to main content
+      </a>
       <div className="container mx-auto px-4 lg:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link
+            href="/"
+            className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy rounded-lg"
+            aria-label="Comets League Baseball Home"
+          >
             <div className="w-12 h-12 relative flex items-center justify-center flex-shrink-0">
               <Image
                 src={getLeagueLogo()}
@@ -45,15 +56,17 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1" role="navigation" aria-label="Main navigation">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`
-                    px-4 py-2 rounded-lg font-medium text-sm transition-all border-b-2
+                    px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 border-b-2
+                    focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
                     ${isActive
                       ? 'bg-nebula-orange/20 text-nebula-orange border-nebula-orange'
                       : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 border-transparent'

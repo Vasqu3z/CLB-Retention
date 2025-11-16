@@ -94,7 +94,8 @@ export default function DataTable<T>({
           {enableCondensed && (
             <button
               onClick={() => setIsCondensed(!isCondensed)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-space-blue/50 border border-cosmic-border hover:border-nebula-orange/50 transition-all duration-300 text-sm text-star-gray hover:text-star-white"
+              aria-label={isCondensed ? 'Expand table to show all columns' : 'Condense table to show fewer columns'}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-space-blue/50 border border-cosmic-border hover:border-nebula-orange/50 transition-all duration-300 text-sm text-star-gray hover:text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
             >
               {isCondensed ? (
                 <>
@@ -130,10 +131,25 @@ export default function DataTable<T>({
                       key={column.key}
                       className={`
                         px-4 py-3 text-${column.align || 'left'} font-semibold text-star-gray uppercase text-xs tracking-wider
-                        ${column.sortable !== false ? 'cursor-pointer hover:text-star-white transition-colors' : ''}
+                        ${column.sortable !== false ? 'cursor-pointer hover:text-star-white transition-colors focus:outline-none focus:text-star-white' : ''}
                         ${column.headerClassName || ''}
                       `}
                       onClick={() => column.sortable !== false && handleSort(column.key)}
+                      onKeyDown={(e) => {
+                        if (column.sortable !== false && (e.key === 'Enter' || e.key === ' ')) {
+                          e.preventDefault();
+                          handleSort(column.key);
+                        }
+                      }}
+                      tabIndex={column.sortable !== false ? 0 : undefined}
+                      role={column.sortable !== false ? 'button' : undefined}
+                      aria-sort={
+                        column.sortable !== false && sortKey === column.key
+                          ? sortDirection === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : undefined
+                      }
                     >
                       <div className={`flex items-center gap-2 ${column.align === 'center' ? 'justify-center' : column.align === 'right' ? 'justify-end' : ''}`}>
                         <span>{column.label}</span>

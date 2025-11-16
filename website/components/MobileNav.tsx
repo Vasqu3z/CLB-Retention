@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
@@ -22,13 +22,35 @@ export default function MobileNav() {
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
+  // Handle escape key to close menu
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        closeMenu();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   return (
     <>
       {/* Hamburger Button */}
       <button
         onClick={toggleMenu}
-        className="md:hidden p-2 rounded-lg border border-cosmic-border bg-space-blue/30 hover:bg-space-blue/50 hover:border-nebula-orange/50 transition-all duration-300"
-        aria-label="Toggle menu"
+        className="md:hidden p-2 rounded-lg border border-cosmic-border bg-space-blue/30 hover:bg-space-blue/50 hover:border-nebula-orange/50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
+        aria-label={isOpen ? 'Close menu' : 'Open menu'}
+        aria-expanded={isOpen}
+        aria-controls="mobile-menu"
       >
         {isOpen ? (
           <X className="w-6 h-6 text-star-white" />
@@ -55,11 +77,15 @@ export default function MobileNav() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="mobile-menu"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed top-0 right-0 h-full w-80 bg-space-navy/95 backdrop-blur-xl border-l border-cosmic-border z-50 md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation menu"
           >
             {/* Menu Header */}
             <div className="flex items-center justify-between p-6 border-b border-cosmic-border">
@@ -68,7 +94,7 @@ export default function MobileNav() {
               </h2>
               <button
                 onClick={closeMenu}
-                className="p-2 rounded-lg hover:bg-space-blue/50 transition-all duration-300"
+                className="p-2 rounded-lg hover:bg-space-blue/50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-nebula-orange"
                 aria-label="Close menu"
               >
                 <X className="w-6 h-6 text-star-white" />
@@ -76,7 +102,7 @@ export default function MobileNav() {
             </div>
 
             {/* Navigation Links */}
-            <nav className="p-6">
+            <nav className="p-6" role="navigation" aria-label="Mobile navigation">
               <ul className="space-y-2">
                 {navItems.map((item, idx) => {
                   const isActive = pathname === item.href;
@@ -90,8 +116,10 @@ export default function MobileNav() {
                       <Link
                         href={item.href}
                         onClick={closeMenu}
+                        aria-current={isActive ? 'page' : undefined}
                         className={`
                           block px-4 py-3 rounded-lg font-display font-semibold text-lg transition-all duration-300
+                          focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
                           ${isActive
                             ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
                             : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 hover:translate-x-1'

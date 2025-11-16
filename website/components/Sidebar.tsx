@@ -68,7 +68,7 @@ export default async function Sidebar() {
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-space-blue/50 transition-all group"
                 >
                   {/* Rank */}
-                  <span className="text-xs font-mono text-star-dim w-6">
+                  <span className="text-sm font-mono text-star-dim w-6">
                     {team.rank}
                   </span>
 
@@ -87,19 +87,19 @@ export default async function Sidebar() {
 
                   {/* Team Name (abbreviated on small screens) */}
                   <span
-                    className="text-xs font-medium flex-1 truncate group-hover:text-nebula-orange transition-colors"
+                    className="text-sm font-medium flex-1 truncate group-hover:text-nebula-orange transition-colors"
                     style={{ color: teamConfig?.primaryColor || 'var(--star-white)' }}
                   >
                     {teamConfig?.shortName || team.team}
                   </span>
 
                   {/* Record */}
-                  <span className="text-xs font-mono text-star-gray">
+                  <span className="text-sm font-mono text-star-gray">
                     {team.wins}-{team.losses}
                   </span>
 
                   {/* Win % */}
-                  <span className="text-xs font-mono text-star-white font-semibold w-12 text-right">
+                  <span className="text-sm font-mono text-star-white font-semibold w-12 text-right">
                     {team.winPct}
                   </span>
                 </Link>
@@ -121,7 +121,7 @@ export default async function Sidebar() {
                 const homeWon = game.homeScore! > game.awayScore!;
 
                 return (
-                  <div key={idx} className="text-xs p-2 rounded-lg bg-space-blue/30 border border-cosmic-border">
+                  <div key={idx} className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border">
                     <div className="flex items-center justify-between">
                       <span
                         className={homeWon ? 'font-bold' : 'text-star-gray'}
@@ -159,10 +159,10 @@ export default async function Sidebar() {
 
           {/* BA Leaders */}
           <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2">Batting Average</h4>
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Batting Average</h4>
             <div className="space-y-1">
               {baLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs">
+                <div key={idx} className="flex items-center justify-between text-sm">
                   <span className="text-star-white truncate flex-1">
                     {player.name.split(' ')[0]}
                   </span>
@@ -176,10 +176,10 @@ export default async function Sidebar() {
 
           {/* HR Leaders */}
           <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2">Home Runs</h4>
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Home Runs</h4>
             <div className="space-y-1">
               {hrLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs">
+                <div key={idx} className="flex items-center justify-between text-sm">
                   <span className="text-star-white truncate flex-1">
                     {player.name.split(' ')[0]}
                   </span>
@@ -193,10 +193,10 @@ export default async function Sidebar() {
 
           {/* RBI Leaders */}
           <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2">RBI</h4>
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">RBI</h4>
             <div className="space-y-1">
               {rbiLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs">
+                <div key={idx} className="flex items-center justify-between text-sm">
                   <span className="text-star-white truncate flex-1">
                     {player.name.split(' ')[0]}
                   </span>
@@ -210,10 +210,10 @@ export default async function Sidebar() {
 
           {/* ERA Leaders */}
           <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2">ERA</h4>
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">ERA</h4>
             <div className="space-y-1">
               {eraLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs">
+                <div key={idx} className="flex items-center justify-between text-sm">
                   <span className="text-star-white truncate flex-1">
                     {player.name.split(' ')[0]}
                   </span>
@@ -227,10 +227,10 @@ export default async function Sidebar() {
 
           {/* NP Leaders */}
           <div>
-            <h4 className="text-xs font-mono text-star-gray mb-2">Nice Plays</h4>
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Nice Plays</h4>
             <div className="space-y-1">
               {npLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs">
+                <div key={idx} className="flex items-center justify-between text-sm">
                   <span className="text-star-white truncate flex-1">
                     {player.name.split(' ')[0]}
                   </span>

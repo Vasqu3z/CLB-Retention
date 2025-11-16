@@ -24,7 +24,7 @@
 
   /* Atmosphere/Text */
   --star-white: #E8EDF5;
-  --star-gray: #8B92A8;
+  --star-gray: #9BA5C0;
   --star-dim: #4A5270;
   --cosmic-border: #2D3348;
 
@@ -34,7 +34,8 @@
   --warning: #FFD23F;
 
   /* Glass-morphism */
-  --glass-bg: rgba(11, 13, 30, 0.45);
+  --glass-bg: rgba(11, 13, 30, 0.75);
+  --glass-bg-light: rgba(11, 13, 30, 0.55);
   --glass-border: rgba(255, 255, 255, 0.1);
 }
 
@@ -148,13 +149,25 @@ table {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Text shadow utility for better readability */
+/* Text shadow utilities for better readability */
 .text-shadow {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .text-shadow-strong {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+}
+
+.text-shadow-glow {
+  text-shadow:
+    0 0 20px rgba(0, 0, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.text-shadow-glow-orange {
+  text-shadow:
+    0 0 30px rgba(255, 107, 53, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 /* Scrollbar styling */

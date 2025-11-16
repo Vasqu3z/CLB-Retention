@@ -52,10 +52,10 @@ export default function Header() {
                   key={item.href}
                   href={item.href}
                   className={`
-                    px-4 py-2 rounded-lg font-medium text-sm transition-all
+                    px-4 py-2 rounded-lg font-medium text-sm transition-all border-b-2
                     ${isActive
-                      ? 'bg-nebula-orange/20 text-nebula-orange border-b-2 border-nebula-orange'
-                      : 'text-star-gray hover:text-star-white hover:bg-space-blue/50'
+                      ? 'bg-nebula-orange/20 text-nebula-orange border-nebula-orange'
+                      : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 border-transparent'
                     }
                   `}
                 >

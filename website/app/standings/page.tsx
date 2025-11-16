@@ -33,10 +33,10 @@ export default async function StandingsPage() {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
           League Standings
         </h1>
-        <p className="text-star-gray font-mono">
+        <p className="text-star-gray font-mono text-shadow">
           Regular Season • Updated in real-time
         </p>
       </div>

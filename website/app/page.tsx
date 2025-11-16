@@ -87,11 +87,11 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="text-6xl lg:text-7xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange via-solar-gold to-comet-yellow bg-clip-text text-transparent">
+          <h1 className="text-6xl lg:text-7xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange via-solar-gold to-comet-yellow bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
             {LEAGUE_CONFIG.name}
           </h1>
 
-          <p className="text-xl text-star-gray font-mono mb-2">
+          <p className="text-xl text-star-gray font-mono mb-2 text-shadow">
             Mission Control • Season {LEAGUE_CONFIG.currentSeason}
           </p>
 
@@ -104,7 +104,7 @@ export default function Home() {
 
       {/* Navigation Cards */}
       <section>
-        <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2">
+        <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2 text-shadow">
           <span className="text-nebula-orange">›</span> Quick Access
         </h2>
 
@@ -147,7 +147,7 @@ export default function Home() {
 
       {/* Team Constellation */}
       <section>
-        <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2">
+        <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2 text-shadow">
           <span className="text-solar-gold">›</span> Team Constellation
         </h2>
 

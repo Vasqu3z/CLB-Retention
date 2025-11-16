@@ -33,7 +33,7 @@ export default function Header() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy rounded-lg"
+            className="flex items-center gap-3 group focus:outline-none rounded-lg"
             aria-label="Comets League Baseball Home"
           >
             <div className="w-12 h-12 relative flex items-center justify-center flex-shrink-0">
@@ -42,7 +42,7 @@ export default function Header() {
                 alt="CLB Logo"
                 width={48}
                 height={48}
-                className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
+                className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
               />
             </div>
             <div className="flex flex-col justify-center">

@@ -168,17 +168,9 @@ export default async function Sidebar() {
                     const homeTeam = getTeamByName(game.homeTeam);
                     const awayTeam = getTeamByName(game.awayTeam);
                     const homeWon = game.homeScore > game.awayScore;
-                    const GameWrapper = game.boxScoreUrl ? Link : 'div';
-                    const wrapperProps = game.boxScoreUrl ? { href: game.boxScoreUrl, target: '_blank', rel: 'noopener noreferrer' } : {};
 
-                    return (
-                      <GameWrapper
-                        key={idx}
-                        {...wrapperProps}
-                        className={`text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block ${
-                          game.boxScoreUrl ? 'hover:border-nebula-orange/50 hover:bg-space-blue/50 hover:scale-105 cursor-pointer' : ''
-                        }`}
-                      >
+                    const gameContent = (
+                      <>
                         <div className="flex items-center justify-between">
                           <span
                             className={homeWon ? 'font-bold' : 'text-star-gray'}
@@ -201,7 +193,26 @@ export default async function Sidebar() {
                             {game.awayScore}
                           </span>
                         </div>
-                      </GameWrapper>
+                      </>
+                    );
+
+                    return game.boxScoreUrl ? (
+                      <Link
+                        key={idx}
+                        href={game.boxScoreUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block hover:border-nebula-orange/50 hover:bg-space-blue/50 hover:scale-105 cursor-pointer"
+                      >
+                        {gameContent}
+                      </Link>
+                    ) : (
+                      <div
+                        key={idx}
+                        className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block"
+                      >
+                        {gameContent}
+                      </div>
                     );
                   })}
                 </div>
@@ -219,17 +230,9 @@ export default async function Sidebar() {
                     const homeTeam = getTeamByName(game.homeTeam);
                     const awayTeam = getTeamByName(game.awayTeam);
                     const homeWon = game.homeScore > game.awayScore;
-                    const GameWrapper = game.boxScoreUrl ? Link : 'div';
-                    const wrapperProps = game.boxScoreUrl ? { href: game.boxScoreUrl, target: '_blank', rel: 'noopener noreferrer' } : {};
 
-                    return (
-                      <GameWrapper
-                        key={idx}
-                        {...wrapperProps}
-                        className={`text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block ${
-                          game.boxScoreUrl ? 'hover:border-nebula-orange/50 hover:bg-space-blue/50 hover:scale-105 cursor-pointer' : ''
-                        }`}
-                      >
+                    const gameContent = (
+                      <>
                         <div className="flex items-center justify-between">
                           <span
                             className={homeWon ? 'font-bold' : 'text-star-gray'}
@@ -252,7 +255,26 @@ export default async function Sidebar() {
                             {game.awayScore}
                           </span>
                         </div>
-                      </GameWrapper>
+                      </>
+                    );
+
+                    return game.boxScoreUrl ? (
+                      <Link
+                        key={idx}
+                        href={game.boxScoreUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block hover:border-nebula-orange/50 hover:bg-space-blue/50 hover:scale-105 cursor-pointer"
+                      >
+                        {gameContent}
+                      </Link>
+                    ) : (
+                      <div
+                        key={idx}
+                        className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block"
+                      >
+                        {gameContent}
+                      </div>
                     );
                   })}
                 </div>

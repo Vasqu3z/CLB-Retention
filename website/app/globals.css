@@ -195,6 +195,17 @@ table {
   background: var(--nebula-orange);
 }
 
+/* Override browser autofill styles to maintain dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgba(30, 36, 66, 0.3) inset !important;
+  -webkit-text-fill-color: var(--star-white) !important;
+  caret-color: var(--star-white) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Glow effect utility */
 .glow-orange {
   box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);

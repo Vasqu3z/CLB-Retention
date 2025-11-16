@@ -5,9 +5,10 @@ import { useEffect, useRef, ReactNode } from 'react';
 interface SidebarScrollWrapperProps {
   children: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export default function SidebarScrollWrapper({ children, className = '' }: SidebarScrollWrapperProps) {
+export default function SidebarScrollWrapper({ children, className = '', style = {} }: SidebarScrollWrapperProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isHoveringRef = useRef(false);
 
@@ -35,7 +36,7 @@ export default function SidebarScrollWrapper({ children, className = '' }: Sideb
   }, []);
 
   return (
-    <div ref={sidebarRef} className={className} style={{ overflowY: 'hidden' }}>
+    <div ref={sidebarRef} className={className} style={{ ...style, overflowY: 'hidden' }}>
       {children}
     </div>
   );

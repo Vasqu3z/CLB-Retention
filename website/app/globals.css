@@ -176,6 +176,16 @@ table {
   line-height: 1.1;
 }
 
+/* Sidebar scroll behavior - only scroll when hovering */
+.sidebar-scroll-hover {
+  overflow-y: hidden;
+  overscroll-behavior: contain;
+}
+
+.sidebar-scroll-hover:hover {
+  overflow-y: auto;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 10px;

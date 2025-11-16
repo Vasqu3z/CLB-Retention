@@ -95,19 +95,24 @@ export default function DataTable<T>({
             <button
               onClick={() => setIsCondensed(!isCondensed)}
               aria-label={isCondensed ? 'Expand table to show all columns' : 'Condense table to show fewer columns'}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-space-blue/50 border border-cosmic-border hover:border-nebula-orange/50 transition-all duration-300 text-sm text-star-gray hover:text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
+              className="relative flex items-center gap-2 px-3 py-2 rounded-lg bg-space-blue/50 border border-cosmic-border hover:border-nebula-orange/50 hover:shadow-[0_0_12px_rgba(255,107,53,0.3)] transition-all duration-300 text-sm text-star-gray hover:text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
             >
-              {isCondensed ? (
-                <>
-                  <Maximize2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Expand</span>
-                </>
-              ) : (
-                <>
-                  <Minimize2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Condense</span>
-                </>
-              )}
+              {/* Subtle glow effect */}
+              <div className="absolute inset-0 rounded-lg opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-br from-nebula-orange/10 to-transparent pointer-events-none" />
+
+              <div className="relative z-10 flex items-center gap-2">
+                {isCondensed ? (
+                  <>
+                    <Maximize2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Expand</span>
+                  </>
+                ) : (
+                  <>
+                    <Minimize2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">Condense</span>
+                  </>
+                )}
+              </div>
             </button>
           )}
         </div>

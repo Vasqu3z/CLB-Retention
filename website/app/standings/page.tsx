@@ -5,6 +5,7 @@ import StatCard from "@/components/StatCard";
 import StandingsTable from "./StandingsTable";
 import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
+import Image from "next/image";
 
 export const revalidate = 60;
 
@@ -18,17 +19,34 @@ export default async function StandingsPage() {
 
     return {
       ...team,
+      teamConfig,
       teamColor: teamConfig?.primaryColor,
       teamSlug: teamConfig?.slug,
       emblemPath: logos?.emblem,
+      fullLogoPath: logos?.full,
     };
   });
 
   // Calculate stats for stat cards
   const topTeam = enhancedStandings[0];
-  const totalGames = enhancedStandings.reduce((sum, t) => sum + t.wins + t.losses, 0);
-  const avgRunsScored = enhancedStandings.reduce((sum, t) => sum + t.runsScored, 0) / enhancedStandings.length;
-  const bestRunDiff = Math.max(...enhancedStandings.map(t => t.runDiff));
+  const totalGames = enhancedStandings.reduce((sum, t) => sum + t.wins + t.losses, 0) / 2; // Divide by 2 since each game involves 2 teams
+
+  // Highest Runs/Game team
+  const teamsWithGames = enhancedStandings.map(t => ({
+    ...t,
+    gamesPlayed: t.wins + t.losses,
+    runsPerGame: t.gamesPlayed > 0 ? t.runsScored / (t.wins + t.losses) : 0,
+  }));
+  const highestRunsPerGameTeam = teamsWithGames.reduce((max, t) =>
+    t.runsPerGame > max.runsPerGame ? t : max
+  );
+
+  // Lowest ERA team (Runs Allowed / Games)
+  const lowestERATeam = teamsWithGames.reduce((min, t) => {
+    const era = t.gamesPlayed > 0 ? t.runsAllowed / t.gamesPlayed : 999;
+    const minEra = min.gamesPlayed > 0 ? min.runsAllowed / min.gamesPlayed : 999;
+    return era < minEra ? t : min;
+  });
 
   return (
     <div className="space-y-8">
@@ -49,35 +67,77 @@ export default async function StandingsPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="League Leader"
-            value={topTeam?.team || '-'}
+            value=""
             icon={Trophy}
             sublabel={`${topTeam?.wins}-${topTeam?.losses} (${topTeam?.winPct})`}
             color="orange"
-          />
+          >
+            {topTeam?.fullLogoPath && (
+              <div className="flex items-center justify-center -mt-2">
+                <div className="w-32 h-16 relative">
+                  <Image
+                    src={topTeam.fullLogoPath}
+                    alt={topTeam.team}
+                    width={128}
+                    height={64}
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            )}
+          </StatCard>
 
           <StatCard
             label="Games Played"
             value={totalGames}
             icon={Award}
-            sublabel="Total across all teams"
+            sublabel="Total games this season"
             color="gold"
           />
 
           <StatCard
-            label="Avg Runs/Team"
-            value={avgRunsScored.toFixed(1)}
+            label="Highest Runs/Game"
+            value={highestRunsPerGameTeam.runsPerGame.toFixed(2)}
             icon={TrendingUp}
-            sublabel="League average"
+            sublabel=""
             color="cyan"
-          />
+          >
+            {highestRunsPerGameTeam?.fullLogoPath && (
+              <div className="flex items-center justify-center -mt-2">
+                <div className="w-32 h-16 relative">
+                  <Image
+                    src={highestRunsPerGameTeam.fullLogoPath}
+                    alt={highestRunsPerGameTeam.team}
+                    width={128}
+                    height={64}
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            )}
+          </StatCard>
 
           <StatCard
-            label="Best Run Diff"
-            value={`+${bestRunDiff}`}
+            label="Lowest ERA"
+            value={(lowestERATeam.gamesPlayed > 0 ? lowestERATeam.runsAllowed / lowestERATeam.gamesPlayed : 0).toFixed(2)}
             icon={TrendingDown}
-            sublabel={enhancedStandings.find(t => t.runDiff === bestRunDiff)?.team}
+            sublabel="Runs allowed per game"
             color="teal"
-          />
+          >
+            {lowestERATeam?.fullLogoPath && (
+              <div className="flex items-center justify-center -mt-2">
+                <div className="w-32 h-16 relative">
+                  <Image
+                    src={lowestERATeam.fullLogoPath}
+                    alt={lowestERATeam.team}
+                    width={128}
+                    height={64}
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            )}
+          </StatCard>
         </div>
       </FadeIn>
 

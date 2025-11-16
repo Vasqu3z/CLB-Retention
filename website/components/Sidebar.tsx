@@ -171,34 +171,30 @@ export default async function Sidebar() {
         {/* Kingdom Cup Champions */}
         {kingdomCupChampion && championLogos && (
           <section>
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-solar-gold/20 via-comet-yellow/10 to-transparent border-2 border-solar-gold/40 p-3">
-              <Link
-                href={`/teams/${kingdomCupChampion.slug}`}
-                className="block group"
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <h3 className="text-xs font-display font-bold text-solar-gold uppercase tracking-wider text-center flex items-center justify-center gap-2">
-                    <span>👑</span>
-                    <span>Kingdom Cup Champions</span>
-                    <span>👑</span>
-                  </h3>
+            <Link
+              href={`/teams/${kingdomCupChampion.slug}`}
+              className="flex flex-col items-center text-center gap-3 group"
+            >
+              <h3 className="text-xs font-display font-bold text-solar-gold uppercase tracking-wider flex items-center justify-center gap-2">
+                <span>👑</span>
+                <span>Kingdom Cup Champions</span>
+                <span>👑</span>
+              </h3>
 
-                  <div className="w-32 h-16 relative transition-transform group-hover:scale-105">
-                    <Image
-                      src={championLogos.full}
-                      alt={`${kingdomCupChampion.name} - Kingdom Cup Champions`}
-                      width={128}
-                      height={64}
-                      className="object-contain drop-shadow-[0_0_16px_rgba(255,215,0,0.5)] group-hover:drop-shadow-[0_0_24px_rgba(255,215,0,0.8)] transition-all"
-                    />
-                  </div>
+              <div className="w-32 h-16 relative flex items-center justify-center transition-transform group-hover:scale-105">
+                <Image
+                  src={championLogos.full}
+                  alt={`${kingdomCupChampion.name} - Kingdom Cup Champions`}
+                  width={128}
+                  height={64}
+                  className="object-contain drop-shadow-[0_0_16px_rgba(255,215,0,0.5)] group-hover:drop-shadow-[0_0_24px_rgba(255,215,0,0.8)] transition-all"
+                />
+              </div>
 
-                  <p className="text-center text-xs font-mono text-star-gray">
-                    Season 1
-                  </p>
-                </div>
-              </Link>
-            </div>
+              <p className="text-xs font-mono text-star-gray">
+                Season 1
+              </p>
+            </Link>
           </section>
         )}
 

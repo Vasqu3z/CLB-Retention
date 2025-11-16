@@ -4,6 +4,7 @@ import { getTeamLogoPaths } from "@/lib/teamLogos";
 import StatCard from "@/components/StatCard";
 import StandingsTable from "./StandingsTable";
 import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
+import FadeIn from "@/components/animations/FadeIn";
 
 export const revalidate = 60;
 
@@ -32,85 +33,93 @@ export default async function StandingsPage() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-          League Standings
-        </h1>
-        <p className="text-star-gray font-mono text-shadow">
-          Regular Season • Updated in real-time
-        </p>
-      </div>
+      <FadeIn delay={0} direction="down">
+        <div>
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            League Standings
+          </h1>
+          <p className="text-star-gray font-mono text-shadow">
+            Regular Season • Updated in real-time
+          </p>
+        </div>
+      </FadeIn>
 
       {/* Stat Cards */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label="League Leader"
-          value={topTeam?.team || '-'}
-          icon={Trophy}
-          sublabel={`${topTeam?.wins}-${topTeam?.losses} (${topTeam?.winPct})`}
-          color="orange"
-        />
+      <FadeIn delay={0.15} direction="up">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            label="League Leader"
+            value={topTeam?.team || '-'}
+            icon={Trophy}
+            sublabel={`${topTeam?.wins}-${topTeam?.losses} (${topTeam?.winPct})`}
+            color="orange"
+          />
 
-        <StatCard
-          label="Games Played"
-          value={totalGames}
-          icon={Award}
-          sublabel="Total across all teams"
-          color="gold"
-        />
+          <StatCard
+            label="Games Played"
+            value={totalGames}
+            icon={Award}
+            sublabel="Total across all teams"
+            color="gold"
+          />
 
-        <StatCard
-          label="Avg Runs/Team"
-          value={avgRunsScored.toFixed(1)}
-          icon={TrendingUp}
-          sublabel="League average"
-          color="cyan"
-        />
+          <StatCard
+            label="Avg Runs/Team"
+            value={avgRunsScored.toFixed(1)}
+            icon={TrendingUp}
+            sublabel="League average"
+            color="cyan"
+          />
 
-        <StatCard
-          label="Best Run Diff"
-          value={`+${bestRunDiff}`}
-          icon={TrendingDown}
-          sublabel={enhancedStandings.find(t => t.runDiff === bestRunDiff)?.team}
-          color="teal"
-        />
-      </div>
+          <StatCard
+            label="Best Run Diff"
+            value={`+${bestRunDiff}`}
+            icon={TrendingDown}
+            sublabel={enhancedStandings.find(t => t.runDiff === bestRunDiff)?.team}
+            color="teal"
+          />
+        </div>
+      </FadeIn>
 
       {/* Standings Table */}
-      <StandingsTable standings={standings} />
+      <FadeIn delay={0.3} direction="up">
+        <StandingsTable standings={standings} />
+      </FadeIn>
 
       {/* Legend */}
-      <div className="glass-card p-6">
-        <h3 className="text-sm font-display font-semibold text-nebula-orange mb-4 uppercase tracking-wider">
-          Legend
-        </h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm font-mono">
-          <div>
-            <span className="text-star-gray">W</span>
-            <span className="text-star-white ml-2">Wins</span>
-          </div>
-          <div>
-            <span className="text-star-gray">L</span>
-            <span className="text-star-white ml-2">Losses</span>
-          </div>
-          <div>
-            <span className="text-star-gray">Win %</span>
-            <span className="text-star-white ml-2">Winning Percentage</span>
-          </div>
-          <div>
-            <span className="text-star-gray">Diff</span>
-            <span className="text-star-white ml-2">Run Differential</span>
-          </div>
-          <div>
-            <span className="text-star-gray">RS</span>
-            <span className="text-star-white ml-2">Runs Scored</span>
-          </div>
-          <div>
-            <span className="text-star-gray">RA</span>
-            <span className="text-star-white ml-2">Runs Allowed</span>
+      <FadeIn delay={0.45} direction="up">
+        <div className="glass-card p-6">
+          <h3 className="text-sm font-display font-semibold text-nebula-orange mb-4 uppercase tracking-wider">
+            Legend
+          </h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm font-mono">
+            <div>
+              <span className="text-star-gray">W</span>
+              <span className="text-star-white ml-2">Wins</span>
+            </div>
+            <div>
+              <span className="text-star-gray">L</span>
+              <span className="text-star-white ml-2">Losses</span>
+            </div>
+            <div>
+              <span className="text-star-gray">Win %</span>
+              <span className="text-star-white ml-2">Winning Percentage</span>
+            </div>
+            <div>
+              <span className="text-star-gray">Diff</span>
+              <span className="text-star-white ml-2">Run Differential</span>
+            </div>
+            <div>
+              <span className="text-star-gray">RS</span>
+              <span className="text-star-white ml-2">Runs Scored</span>
+            </div>
+            <div>
+              <span className="text-star-gray">RA</span>
+              <span className="text-star-white ml-2">Runs Allowed</span>
+            </div>
           </div>
         </div>
-      </div>
+      </FadeIn>
     </div>
   );
 }

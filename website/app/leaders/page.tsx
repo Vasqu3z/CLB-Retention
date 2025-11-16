@@ -1,5 +1,6 @@
 import { getCalculatedBattingLeaders, getCalculatedPitchingLeaders, getCalculatedFieldingLeaders } from "@/lib/sheets";
 import LeadersView from "./LeadersView";
+import FadeIn from "@/components/animations/FadeIn";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
@@ -24,23 +25,27 @@ export default async function LeadersPage() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-comet-yellow to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-          League Leaders
-        </h1>
-        <p className="text-star-gray font-mono text-shadow">
-          Top performers in batting, pitching, and fielding
-        </p>
-      </div>
+      <FadeIn delay={0} direction="down">
+        <div>
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-comet-yellow to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            League Leaders
+          </h1>
+          <p className="text-star-gray font-mono text-shadow">
+            Top performers in batting, pitching, and fielding
+          </p>
+        </div>
+      </FadeIn>
 
-      <LeadersView
-        initialBattingLeaders={battingLeaders}
-        initialPitchingLeaders={pitchingLeaders}
-        initialFieldingLeaders={fieldingLeaders}
-        playoffBattingLeaders={playoffBattingLeaders}
-        playoffPitchingLeaders={playoffPitchingLeaders}
-        playoffFieldingLeaders={playoffFieldingLeaders}
-      />
+      <FadeIn delay={0.15} direction="up">
+        <LeadersView
+          initialBattingLeaders={battingLeaders}
+          initialPitchingLeaders={pitchingLeaders}
+          initialFieldingLeaders={fieldingLeaders}
+          playoffBattingLeaders={playoffBattingLeaders}
+          playoffPitchingLeaders={playoffPitchingLeaders}
+          playoffFieldingLeaders={playoffFieldingLeaders}
+        />
+      </FadeIn>
     </div>
   );
 }

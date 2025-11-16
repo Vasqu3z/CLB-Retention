@@ -113,7 +113,7 @@ export default function LeadersView({
 
 function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; leaders: LeaderEntry[] }) {
   return (
-    <div className="glass-card p-6 hover:scale-[1.02] transition-transform">
+    <div className="glass-card p-6 hover:scale-[1.02] transition-all duration-300">
       <div className="flex items-baseline justify-between mb-4 pb-3 border-b border-star-gray/20">
         <h3 className="text-lg font-display font-semibold text-star-white">
           {title}
@@ -132,7 +132,7 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
           return (
             <div
               key={idx}
-              className="py-2.5 px-3 rounded-lg bg-space-black/20 hover:bg-space-blue/30 transition-colors border border-star-gray/10"
+              className="py-2.5 px-3 rounded-lg bg-space-black/20 hover:bg-space-blue/30 transition-all duration-300 border border-star-gray/10 hover:border-nebula-orange/30"
             >
               <div className="flex justify-between items-center gap-2">
                 <div className="flex-1 min-w-0">
@@ -145,7 +145,7 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
                       {teamConfig && (
                         <Link
                           href={`/teams/${teamConfig.slug}`}
-                          className="ml-2 text-xs font-mono hover:underline transition-colors"
+                          className="ml-2 text-xs font-mono hover:underline transition-all duration-300"
                           style={{ color: teamConfig.primaryColor }}
                         >
                           {leader.team}

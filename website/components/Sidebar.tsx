@@ -172,17 +172,17 @@ export default async function Sidebar() {
         {kingdomCupChampion && championLogos && (
           <section>
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-solar-gold/20 via-comet-yellow/10 to-transparent border-2 border-solar-gold/40 p-3">
-              <h3 className="text-xs font-display font-bold text-solar-gold mb-2 uppercase tracking-wider text-center flex items-center justify-center gap-2">
-                <span>👑</span>
-                <span>Kingdom Cup Champions</span>
-                <span>👑</span>
-              </h3>
-
               <Link
                 href={`/teams/${kingdomCupChampion.slug}`}
                 className="block group"
               >
-                <div className="flex items-center justify-center py-2">
+                <div className="flex flex-col items-center gap-2">
+                  <h3 className="text-xs font-display font-bold text-solar-gold uppercase tracking-wider text-center flex items-center justify-center gap-2">
+                    <span>👑</span>
+                    <span>Kingdom Cup Champions</span>
+                    <span>👑</span>
+                  </h3>
+
                   <div className="w-32 h-16 relative transition-transform group-hover:scale-105">
                     <Image
                       src={championLogos.full}
@@ -192,11 +192,11 @@ export default async function Sidebar() {
                       className="object-contain drop-shadow-[0_0_16px_rgba(255,215,0,0.5)] group-hover:drop-shadow-[0_0_24px_rgba(255,215,0,0.8)] transition-all"
                     />
                   </div>
-                </div>
 
-                <p className="text-center text-xs font-mono text-star-gray mt-2">
-                  Season 1
-                </p>
+                  <p className="text-center text-xs font-mono text-star-gray">
+                    Season 1
+                  </p>
+                </div>
               </Link>
             </div>
           </section>

@@ -12,7 +12,7 @@ export default function SeasonToggle({ isPlayoffs, onChange }: SeasonToggleProps
     <div className="inline-flex items-center rounded-lg border border-star-gray/30 bg-space-black/30 backdrop-blur-sm p-1">
       <button
         onClick={() => onChange(false)}
-        className={`px-4 py-2 rounded-md text-sm font-display font-semibold transition-all ${
+        className={`px-4 py-2 rounded-md text-sm font-display font-semibold transition-all duration-300 ${
           !isPlayoffs
             ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
             : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
@@ -22,7 +22,7 @@ export default function SeasonToggle({ isPlayoffs, onChange }: SeasonToggleProps
       </button>
       <button
         onClick={() => onChange(true)}
-        className={`px-4 py-2 rounded-md text-sm font-display font-semibold transition-all ${
+        className={`px-4 py-2 rounded-md text-sm font-display font-semibold transition-all duration-300 ${
           isPlayoffs
             ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
             : 'text-star-gray hover:text-star-white hover:bg-space-black/30'

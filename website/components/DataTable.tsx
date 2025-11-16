@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from 'react';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 export interface Column<T> {
   key: string;
@@ -111,79 +112,89 @@ export default function DataTable<T>({
         </div>
       )}
 
-      {/* Table */}
-      <div className="glass-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full font-mono text-sm">
-            <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
-              <tr>
-                {visibleColumns.map((column) => (
-                  <th
-                    key={column.key}
-                    className={`
-                      px-4 py-3 text-${column.align || 'left'} font-semibold text-star-gray uppercase text-xs tracking-wider
-                      ${column.sortable !== false ? 'cursor-pointer hover:text-star-white transition-colors' : ''}
-                      ${column.headerClassName || ''}
-                    `}
-                    onClick={() => column.sortable !== false && handleSort(column.key)}
-                  >
-                    <div className={`flex items-center gap-2 ${column.align === 'center' ? 'justify-center' : column.align === 'right' ? 'justify-end' : ''}`}>
-                      <span>{column.label}</span>
-                      {column.sortable !== false && sortKey === column.key && (
-                        <span className="text-nebula-orange">
-                          {sortDirection === 'asc' ? (
-                            <ChevronUp className="w-3 h-3" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3" />
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedData.map((row, idx) => {
-                const isHighlighted = highlightRow?.(row);
-                const customClassName = rowClassName?.(row);
+      {/* Table or Empty State */}
+      {sortedData.length === 0 ? (
+        <EmptyState
+          icon="database"
+          title="No Data Available"
+          message="There are currently no entries to display. Check back later or try adjusting your filters."
+        />
+      ) : (
+        <div className="glass-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full font-mono text-sm">
+              <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
+                <tr>
+                  {visibleColumns.map((column) => (
+                    <th
+                      key={column.key}
+                      className={`
+                        px-4 py-3 text-${column.align || 'left'} font-semibold text-star-gray uppercase text-xs tracking-wider
+                        ${column.sortable !== false ? 'cursor-pointer hover:text-star-white transition-colors' : ''}
+                        ${column.headerClassName || ''}
+                      `}
+                      onClick={() => column.sortable !== false && handleSort(column.key)}
+                    >
+                      <div className={`flex items-center gap-2 ${column.align === 'center' ? 'justify-center' : column.align === 'right' ? 'justify-end' : ''}`}>
+                        <span>{column.label}</span>
+                        {column.sortable !== false && sortKey === column.key && (
+                          <span className="text-nebula-orange">
+                            {sortDirection === 'asc' ? (
+                              <ChevronUp className="w-3 h-3" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3" />
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedData.map((row, idx) => {
+                  const isHighlighted = highlightRow?.(row);
+                  const customClassName = rowClassName?.(row);
 
-                return (
-                  <tr
-                    key={getRowKey(row)}
-                    className={`
-                      border-b border-cosmic-border/30 transition-all duration-300
-                      ${idx % 2 === 0 ? 'bg-space-navy/5' : 'bg-space-navy/15'}
-                      ${isHighlighted ? 'bg-nebula-orange/10 border-l-4 border-l-nebula-orange' : 'hover:bg-space-blue/30 hover:border-l-2 hover:border-l-nebula-orange/50'}
-                      ${customClassName || ''}
-                    `}
-                  >
-                    {visibleColumns.map((column) => (
-                      <td
-                        key={column.key}
-                        className={`
-                          px-4 py-3 text-${column.align || 'left'} text-star-white
-                          ${column.className || ''}
-                        `}
-                      >
-                        {column.render ? column.render(row) : String((row as any)[column.key] || '-')}
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  return (
+                    <tr
+                      key={getRowKey(row)}
+                      className={`
+                        border-b border-cosmic-border/30 transition-all duration-300
+                        ${idx % 2 === 0 ? 'bg-space-navy/5' : 'bg-space-navy/15'}
+                        ${isHighlighted ? 'bg-nebula-orange/10 border-l-4 border-l-nebula-orange' : 'hover:bg-space-blue/30 hover:border-l-2 hover:border-l-nebula-orange/50'}
+                        ${customClassName || ''}
+                      `}
+                    >
+                      {visibleColumns.map((column) => (
+                        <td
+                          key={column.key}
+                          className={`
+                            px-4 py-3 text-${column.align || 'left'} text-star-white
+                            ${column.className || ''}
+                          `}
+                        >
+                          {column.render ? column.render(row) : String((row as any)[column.key] || '-')}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Row count */}
-      <div className="text-xs text-star-dim font-mono text-right">
-        Showing {sortedData.length} {sortedData.length === 1 ? 'entry' : 'entries'}
-        {isCondensed && enableCondensed && (
-          <span className="ml-2 text-star-gray">• Condensed view</span>
-        )}
-      </div>
+      {sortedData.length > 0 && (
+        <div className="text-xs text-star-dim font-mono text-right">
+          Showing {sortedData.length} {sortedData.length === 1 ? 'entry' : 'entries'}
+          {isCondensed && enableCondensed && (
+            <span className="ml-2 text-star-gray">• Condensed view</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -146,7 +146,7 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
                   ) : (
                     <>
                       <span className="font-semibold text-star-white text-sm">{leader.player}</span>
-                      {logos && (
+                      {logos && teamConfig && (
                         <Link
                           href={`/teams/${teamConfig.slug}`}
                           className="ml-1 flex-shrink-0 hover:opacity-80 transition-opacity"

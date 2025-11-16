@@ -1,5 +1,6 @@
 import { getTeamData, getStandings } from '@/lib/sheets';
 import TeamStatsView from './TeamStatsView';
+import FadeIn from "@/components/animations/FadeIn";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -16,21 +17,25 @@ export default async function TeamsPage() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-          Team Statistics
-        </h1>
-        <p className="text-star-gray font-mono">
-          Comprehensive team performance metrics
-        </p>
-      </div>
+      <FadeIn delay={0} direction="down">
+        <div>
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            Team Statistics
+          </h1>
+          <p className="text-star-gray font-mono text-shadow">
+            Team Stats • Updated in real-time
+          </p>
+        </div>
+      </FadeIn>
 
-      <TeamStatsView
-        regularTeamData={regularTeamData}
-        regularStandings={regularStandings}
-        playoffTeamData={playoffTeamData}
-        playoffStandings={playoffStandings}
-      />
+      <FadeIn delay={0.15} direction="up">
+        <TeamStatsView
+          regularTeamData={regularTeamData}
+          regularStandings={regularStandings}
+          playoffTeamData={playoffTeamData}
+          playoffStandings={playoffStandings}
+        />
+      </FadeIn>
     </div>
   );
 }

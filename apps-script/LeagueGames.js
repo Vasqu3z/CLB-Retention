@@ -813,6 +813,26 @@ function updatePlayoffScheduleDataFromGame(scheduleData, sheet, team1, team2, ru
 }
 
 /**
+ * Helper function to get the seed number for a team
+ * @param {Object} seeds - Object mapping seed numbers to team names (e.g., {1: "Muscles", 2: "Comets"})
+ * @param {string} teamName - Team name to look up
+ * @returns {number|null} Seed number if found, null otherwise
+ */
+function getSeedNumber(seeds, teamName) {
+  if (!teamName || !seeds) return null;
+
+  var trimmedName = String(teamName).trim();
+  for (var seedNum in seeds) {
+    if (seeds.hasOwnProperty(seedNum)) {
+      if (String(seeds[seedNum]).trim() === trimmedName) {
+        return parseInt(seedNum);
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * Auto-generates playoff schedule structure with team seeds and winner propagation
  * Called before writing game results to ensure all games are present
  * Only generates games needed based on series status (doesn't create unnecessary games)
@@ -931,13 +951,44 @@ function updatePlayoffScheduleStructure(scheduleData) {
     kcGamesNeeded = Math.min(kcGamesNeeded, (kcWinsNeeded * 2) - 1);
   }
 
-  var kc1Away = cs2Winner || "Winner of CS-B";
-  var kc1Home = cs1Winner || "Winner of CS-A";
+  // Determine KC home/away based on seed ranking (higher seed = home court advantage)
+  var kc1Away, kc1Home;
+  if (cs1Winner && cs2Winner) {
+    // Both series complete - determine home/away by seed
+    var cs1Seed = getSeedNumber(seeds, cs1Winner);
+    var cs2Seed = getSeedNumber(seeds, cs2Winner);
+
+    // Lower seed number = higher seed = home court advantage
+    if (cs1Seed && cs2Seed) {
+      if (cs1Seed < cs2Seed) {
+        kc1Home = cs1Winner;
+        kc1Away = cs2Winner;
+      } else {
+        kc1Home = cs2Winner;
+        kc1Away = cs1Winner;
+      }
+    } else {
+      // Fallback if seeds not found
+      kc1Home = cs1Winner;
+      kc1Away = cs2Winner;
+    }
+  } else {
+    // Series not complete yet - use placeholders
+    kc1Away = cs2Winner || "Winner of CS-B";
+    kc1Home = cs1Winner || "Winner of CS-A";
+  }
 
   for (var kcGameNum = 1; kcGameNum <= kcGamesNeeded; kcGameNum++) {
     var kcGameHome = (kcGameNum % 2 === 1) ? kc1Home : kc1Away;
     var kcGameAway = (kcGameNum % 2 === 1) ? kc1Away : kc1Home;
     schedule.push(["KC" + kcGameNum, kcGameAway, kcGameHome]);
+  }
+
+  // Access playoff schedule config with defensive check
+  if (!CONFIG || !CONFIG.SHEET_STRUCTURE || !CONFIG.SHEET_STRUCTURE.PLAYOFF_SCHEDULE) {
+    logError("Update Playoff Schedule", "CONFIG.SHEET_STRUCTURE.PLAYOFF_SCHEDULE is not defined",
+             "Please ensure LeagueConfig.js is loaded");
+    return;
   }
 
   var scheduleConfig = CONFIG.SHEET_STRUCTURE.PLAYOFF_SCHEDULE;

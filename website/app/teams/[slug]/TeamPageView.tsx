@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import { Team } from '@/config/league';
 import { PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
+import { getTeamLogoPaths } from '@/lib/teamLogos';
 import Link from 'next/link';
+import Image from 'next/image';
 import SeasonToggle from '@/components/SeasonToggle';
+import FadeIn from '@/components/animations/FadeIn';
 
 interface TeamPageViewProps {
   team: Team;
@@ -21,6 +24,8 @@ interface TeamPageViewProps {
 type SortField = keyof PlayerStats | 'none';
 type SortDirection = 'asc' | 'desc';
 
+type Tab = 'hitting' | 'pitching' | 'fielding' | 'schedule';
+
 export default function TeamPageView({
   team,
   regularRoster,
@@ -33,6 +38,7 @@ export default function TeamPageView({
   playoffTeamData,
 }: TeamPageViewProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('hitting');
 
   // Use appropriate data based on toggle
   const roster = isPlayoffs ? playoffRoster : regularRoster;
@@ -116,86 +122,150 @@ export default function TeamPageView({
   // Calculate team OAA (Outs Above Average)
   const teamOAA = teamData ? teamData.fielding.np - teamData.fielding.e : 0;
 
+  const logos = getTeamLogoPaths(team.name);
+  const hasPlayoffGames = playoffSchedule.length > 0;
+
   return (
     <div className="space-y-8">
       {/* Team Header */}
-      <div className="glass-card p-6" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-          <h1 className="text-4xl font-display font-bold" style={{ color: team.primaryColor }}>
-            {team.name}
-          </h1>
-          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-        </div>
+      <FadeIn delay={0} direction="down">
+        <div className="glass-card p-6 relative" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <div className="w-64 h-24 relative">
+              <Image
+                src={logos.full}
+                alt={team.name}
+                width={256}
+                height={96}
+                className="object-contain"
+                priority
+              />
+            </div>
+            {hasPlayoffGames && (
+              <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+            )}
+          </div>
+
+          {/* Emblem in bottom right */}
+          <div className="absolute bottom-4 right-4 w-16 h-16 opacity-20">
+            <Image
+              src={logos.emblem}
+              alt={team.name}
+              width={64}
+              height={64}
+              className="object-contain"
+            />
+          </div>
 
         {/* Team Stats Summary */}
-        {standing && (
+        {(standing || regularStanding) && (
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Record</div>
-              <div className="text-xl font-bold font-mono text-star-white">
-                {standing.wins}-{standing.losses}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Win %</div>
-              <div className="text-xl font-bold font-mono text-nebula-cyan">{standing.winPct}</div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Scored</div>
-              <div className="text-xl font-bold font-mono text-nebula-orange">{standing.runsScored}</div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Allowed</div>
-              <div className="text-xl font-bold font-mono text-nebula-coral">{standing.runsAllowed}</div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Run Diff</div>
-              <div
-                className={`text-xl font-bold font-mono ${
-                  standing.runDiff > 0
-                    ? 'text-nebula-teal'
-                    : standing.runDiff < 0
-                    ? 'text-nebula-coral'
-                    : 'text-star-white'
-                }`}
-              >
-                {standing.runDiff > 0 ? '+' : ''}
-                {standing.runDiff}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Rank</div>
-              <div className="text-xl font-bold font-mono text-solar-gold">{standing.rank}</div>
-            </div>
+            {(() => {
+              const displayStanding = standing || regularStanding!;
+              return (
+                <>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Record</div>
+                    <div className="text-xl font-bold font-mono text-star-white">
+                      {displayStanding.wins}-{displayStanding.losses}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Win %</div>
+                    <div className="text-xl font-bold font-mono text-nebula-cyan">{displayStanding.winPct}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Scored</div>
+                    <div className="text-xl font-bold font-mono text-nebula-orange">{displayStanding.runsScored}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Allowed</div>
+                    <div className="text-xl font-bold font-mono text-nebula-coral">{displayStanding.runsAllowed}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Run Diff</div>
+                    <div
+                      className={`text-xl font-bold font-mono ${
+                        displayStanding.runDiff > 0
+                          ? 'text-nebula-teal'
+                          : displayStanding.runDiff < 0
+                          ? 'text-nebula-coral'
+                          : 'text-star-white'
+                      }`}
+                    >
+                      {displayStanding.runDiff > 0 ? '+' : ''}
+                      {displayStanding.runDiff}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Rank</div>
+                    <div className="text-xl font-bold font-mono text-solar-gold">{displayStanding.rank}</div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 
         <p className="text-star-gray text-sm font-mono">
           {team.mascot} • {roster.length} Players
         </p>
-      </div>
+        </div>
+      </FadeIn>
 
       {/* Navigation Tabs */}
-      <div className="glass-card p-2">
-        <nav className="flex space-x-2 overflow-x-auto">
-          <a href="#hitting" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg transition-all text-center">
-            Hitting
-          </a>
-          <a href="#pitching" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
-            Pitching
-          </a>
-          <a href="#fielding" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
-            Fielding
-          </a>
-          <a href="#schedule" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
-            Schedule
-          </a>
-        </nav>
-      </div>
+      <FadeIn delay={0.15} direction="up">
+        <div className="glass-card p-2">
+          <nav className="flex space-x-2 overflow-x-auto" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('hitting')}
+              className={`flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold transition-all text-center ${
+                activeTab === 'hitting'
+                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+              }`}
+            >
+              Hitting
+            </button>
+            <button
+              onClick={() => setActiveTab('pitching')}
+              className={`flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold transition-all text-center ${
+                activeTab === 'pitching'
+                  ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+              }`}
+            >
+              Pitching
+            </button>
+            <button
+              onClick={() => setActiveTab('fielding')}
+              className={`flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold transition-all text-center ${
+                activeTab === 'fielding'
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+              }`}
+            >
+              Fielding
+            </button>
+            <button
+              onClick={() => setActiveTab('schedule')}
+              className={`flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold transition-all text-center ${
+                activeTab === 'schedule'
+                  ? 'bg-gradient-to-r from-nebula-cyan to-nebula-teal text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+              }`}
+            >
+              Schedule
+            </button>
+          </nav>
+        </div>
+      </FadeIn>
 
       {/* Hitting Stats */}
-      <section id="hitting">
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
+      {activeTab === 'hitting' && (
+        <FadeIn delay={0.25} direction="up">
+          <section id="hitting">
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -240,7 +310,7 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedHitters.map((player, idx) => (
-                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.ab}</td>
@@ -275,11 +345,15 @@ export default function TeamPageView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
+      )}
 
       {/* Pitching Stats */}
-      <section id="pitching">
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
+      {activeTab === 'pitching' && (
+        <FadeIn delay={0.25} direction="up">
+          <section id="pitching">
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -321,7 +395,7 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedPitchers.map((player, idx) => (
-                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.ip?.toFixed(2) || '0.00'}</td>
@@ -354,11 +428,15 @@ export default function TeamPageView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
+      )}
 
       {/* Fielding Stats */}
-      <section id="fielding">
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
+      {activeTab === 'fielding' && (
+        <FadeIn delay={0.25} direction="up">
+          <section id="fielding">
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -388,7 +466,7 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedFielders.map((player, idx) => (
-                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.np || 0}</td>
@@ -415,11 +493,15 @@ export default function TeamPageView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
+      )}
 
       {/* Team Schedule */}
-      <section id="schedule">
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">Team Schedule</h2>
+      {activeTab === 'schedule' && (
+        <FadeIn delay={0.25} direction="up">
+          <section id="schedule">
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">Team Schedule</h2>
         <div className="glass-card">
           <div className="divide-y divide-star-gray/10">
             {schedule.map((game, idx) => (
@@ -427,14 +509,18 @@ export default function TeamPageView({
             ))}
           </div>
         </div>
-      </section>
+        </section>
+      </FadeIn>
+      )}
 
       {/* Back Link */}
-      <div className="flex justify-start">
-        <Link href="/standings" className="text-nebula-cyan hover:text-nebula-teal transition-colors font-mono text-sm">
-          ← Back to Standings
-        </Link>
-      </div>
+      <FadeIn delay={0.65} direction="up">
+        <div className="flex justify-start">
+          <Link href="/standings" className="text-nebula-cyan hover:text-nebula-teal transition-colors font-mono text-sm">
+            ← Back to Standings
+          </Link>
+        </div>
+      </FadeIn>
     </div>
   );
 }
@@ -457,7 +543,7 @@ function SortableHeader({
 
   return (
     <th
-      className="px-4 py-3 text-left text-sm font-display font-semibold text-star-white cursor-pointer hover:bg-space-blue/30 transition"
+      className="px-4 py-3 text-left text-sm font-display font-semibold text-star-white cursor-pointer hover:bg-space-blue/30 transition-colors duration-300"
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-1">
@@ -495,7 +581,7 @@ function TeamGameRow({ game, teamName }: { game: ScheduleGame | PlayoffGame; tea
   const won = game.winner === teamName;
 
   const content = (
-    <div className="px-6 py-4 hover:bg-space-blue/20 transition-colors">
+    <div className="px-6 py-4 hover:bg-space-blue/30 transition-colors duration-300">
       <div className="flex items-center justify-between">
         <div>
           <div className="text-sm text-star-gray font-mono mb-1">{gameIdentifier}</div>

@@ -9,6 +9,8 @@ interface FadeInProps {
   duration?: number;
   direction?: 'up' | 'down' | 'left' | 'right' | 'none';
   className?: string;
+  useViewport?: boolean;
+  viewportMargin?: string;
 }
 
 export default function FadeIn({
@@ -17,6 +19,8 @@ export default function FadeIn({
   duration = 0.6,
   direction = 'up',
   className = '',
+  useViewport = true,
+  viewportMargin = '-100px',
 }: FadeInProps) {
   const directions = {
     up: { y: 40, x: 0 },
@@ -26,6 +30,12 @@ export default function FadeIn({
     none: { y: 0, x: 0 },
   };
 
+  const animateProps = {
+    opacity: 1,
+    y: 0,
+    x: 0,
+  };
+
   return (
     <motion.div
       className={className}
@@ -33,12 +43,10 @@ export default function FadeIn({
         opacity: 0,
         ...directions[direction],
       }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-        x: 0,
-      }}
-      viewport={{ once: true, margin: '-100px' }}
+      {...(useViewport
+        ? { whileInView: animateProps, viewport: { once: true, margin: viewportMargin } }
+        : { animate: animateProps }
+      )}
       transition={{
         duration,
         delay,

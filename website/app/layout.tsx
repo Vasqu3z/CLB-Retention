@@ -34,7 +34,7 @@ export default function RootLayout({
           </SidebarMobile>
 
           {/* Main Content */}
-          <main className="flex-1 px-4 lg:px-8 py-6 lg:py-8 overflow-x-hidden">
+          <main id="main-content" className="flex-1 px-4 lg:px-8 py-6 lg:py-8 overflow-x-hidden lg:ml-80" role="main">
             <div className="max-w-7xl mx-auto">
               {children}
             </div>

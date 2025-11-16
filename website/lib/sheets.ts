@@ -850,14 +850,14 @@ export async function getCalculatedBattingLeaders(isPlayoffs: boolean = false) {
   // Rate stats require qualification
   const qualifiedHitters = players.filter(p => p.ab && p.ab >= qualifyingAB);
 
-  const obp = formatLeaders(
+  const avg = formatLeaders(
     qualifiedHitters
-      .filter(p => p.obp)
+      .filter(p => p.avg)
       .map(p => ({
         player: p.name,
         team: p.team,
-        value: parseFloat('0' + p.obp!),
-        formatted: p.obp!,
+        value: parseFloat('0' + p.avg!),
+        formatted: p.avg!,
       }))
   );
 
@@ -921,7 +921,7 @@ export async function getCalculatedBattingLeaders(isPlayoffs: boolean = false) {
       }))
   );
 
-  return { obp, hits, hr, rbi, slg, ops };
+  return { avg, hits, hr, rbi, slg, ops };
 }
 
 /**

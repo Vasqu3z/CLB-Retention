@@ -3,59 +3,99 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LEAGUE_CONFIG } from "@/config/league";
-import { getLeagueLogo } from "@/lib/teamLogos";
+import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
+import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
+import MobileNav from "./MobileNav";
 
 const navItems = [
-  { href: "/standings", label: "Standings" },
-  { href: "/leaders", label: "Leaders" },
-  { href: "/schedule", label: "Schedule" },
-  { href: "/playoffs", label: "Playoffs" },
   { href: "/teams", label: "Teams" },
   { href: "/players", label: "Players" },
+  { href: "/leaders", label: "Leaders" },
+  { href: "/schedule", label: "Schedule" },
+  { href: "/standings", label: "Standings" },
+  { href: "/playoffs", label: "Playoffs" },
 ];
 
 export default function Header() {
   const pathname = usePathname();
+  const teams = getActiveTeams();
 
   return (
-    <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30">
+    <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30" role="banner">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-nebula-orange focus:text-white focus:rounded-lg focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
+      >
+        Skip to main content
+      </a>
       <div className="container mx-auto px-4 lg:px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 relative">
+          <Link
+            href="/"
+            className="flex items-center gap-3 group focus:outline-none rounded-lg"
+            aria-label="Comets League Baseball Home"
+          >
+            <div className="w-12 h-12 relative flex items-center justify-center flex-shrink-0">
               <Image
                 src={getLeagueLogo()}
                 alt="CLB Logo"
-                width={40}
-                height={40}
-                className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
+                width={48}
+                height={48}
+                className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
               />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-display font-bold text-star-white">
+            <div className="flex flex-col justify-center">
+              <span className="text-xl font-display font-bold text-star-white leading-tight">
                 {LEAGUE_CONFIG.shortName}
               </span>
-              <span className="text-xs text-star-gray font-mono">
+              <span className="text-xs text-star-gray font-mono leading-tight">
                 Season {LEAGUE_CONFIG.currentSeason}
               </span>
             </div>
           </Link>
 
+          {/* Team Emblems */}
+          <div className="hidden lg:flex items-center gap-4 mx-4">
+            {teams.map((team) => {
+              const logos = getTeamLogoPaths(team.name);
+              return (
+                <Link
+                  key={team.slug}
+                  href={`/teams/${team.slug}`}
+                  className="group focus:outline-none rounded-lg"
+                  aria-label={team.name}
+                >
+                  <div className="w-8 h-8 relative flex items-center justify-center">
+                    <Image
+                      src={logos.emblem}
+                      alt={team.name}
+                      width={32}
+                      height={32}
+                      className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
+                    />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1" role="navigation" aria-label="Main navigation">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`
-                    px-4 py-2 rounded-lg font-medium text-sm transition-all
+                    px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 border-b-2
+                    focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
                     ${isActive
-                      ? 'bg-nebula-orange/20 text-nebula-orange border-b-2 border-nebula-orange'
-                      : 'text-star-gray hover:text-star-white hover:bg-space-blue/50'
+                      ? 'bg-nebula-orange/20 text-nebula-orange border-nebula-orange'
+                      : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 border-transparent'
                     }
                   `}
                 >
@@ -65,10 +105,8 @@ export default function Header() {
             })}
           </nav>
 
-          {/* Mobile Navigation - Placeholder for now */}
-          <div className="md:hidden">
-            {/* Mobile nav will be handled by sidebar on mobile */}
-          </div>
+          {/* Mobile Navigation */}
+          <MobileNav />
         </div>
       </div>
     </header>

@@ -140,7 +140,7 @@ export default function MobileNav() {
                 Comets League Baseball
               </p>
               <p className="text-xs text-star-dim font-mono text-center mt-1">
-                Season 2025
+                Season 1
               </p>
             </div>
           </motion.div>

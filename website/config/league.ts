@@ -22,7 +22,7 @@ export const LEAGUE_CONFIG: LeagueConfig = {
   name: "Comets League Baseball",
   shortName: "CLB",
   sport: "Baseball",
-  currentSeason: "2025",
+  currentSeason: "1",
   teams: [
     // ACTIVE TEAMS
     {

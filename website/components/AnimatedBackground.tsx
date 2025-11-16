@@ -70,28 +70,31 @@ const AnimatedBackground = () => {
 
           float f = 2.0 + fbm(p + vec2(iTime * 2.5, 0.0)) * 0.5;
 
-          // Cosmic nebula with warm colors (orange/gold) and cool accents (cyan/teal)
+          // Dynamic meteors shifting between blue/violet and orange
           for (float i = 0.0; i < 30.0; i++) {
             v = p + cos(i * i + (iTime + p.x * 0.08) * 0.02 + i * vec2(13.0, 11.0)) * 3.5 + vec2(sin(iTime * 1.5 + i) * 0.002, cos(iTime * 1.75 - i) * 0.002);
             float tailNoise = fbm(v + vec2(iTime * 0.3, i)) * 0.25 * (1.0 - (i / 30.0));
 
-            // Cosmic baseball color palette
-            // Warm nebula (orange #FF6B35, gold #FFA62B, coral #FF8C61)
-            // Cool accents (cyan #00D4FF, teal #00FFC6)
-            float warmMix = sin(i * 0.15 + iTime * 0.2) * 0.5 + 0.5;
-            vec3 warmColor = mix(
+            // Alternating meteor colors: blue/violet and orange
+            // Use time + index to create shifting colors for each meteor
+            float colorShift = sin(i * 0.8 + iTime * 0.3) * 0.5 + 0.5;
+
+            // Orange spectrum (orange #FF6B35, coral #FF8C61)
+            vec3 orangeColor = mix(
               vec3(1.0, 0.42, 0.21),  // nebula-orange
-              vec3(1.0, 0.65, 0.17),  // solar-gold
-              warmMix
-            );
-            vec3 coolColor = mix(
-              vec3(0.0, 0.83, 1.0),   // nebula-cyan
-              vec3(0.0, 1.0, 0.78),   // nebula-teal
+              vec3(1.0, 0.55, 0.38),  // coral
               sin(i * 0.2 + iTime * 0.15) * 0.5 + 0.5
             );
 
-            // Mix warm and cool with slight bias toward warm for cosmic feel
-            vec3 finalColor = mix(warmColor, coolColor, 0.3 + sin(i * 0.1 + iTime * 0.1) * 0.2);
+            // Blue/Violet spectrum (violet #8B5CF6, blue #3B82F6)
+            vec3 blueVioletColor = mix(
+              vec3(0.545, 0.361, 0.965),  // violet
+              vec3(0.231, 0.510, 0.965),  // blue
+              sin(i * 0.25 + iTime * 0.2) * 0.5 + 0.5
+            );
+
+            // Each meteor shifts between orange and blue/violet
+            vec3 finalColor = mix(orangeColor, blueVioletColor, colorShift);
 
             vec4 auroraColors = vec4(finalColor, 1.0);
             vec4 currentContribution = auroraColors * exp(sin(i * i + iTime * 0.4)) / length(max(v, vec2(v.x * f * 0.015, v.y * 1.5)));

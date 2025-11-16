@@ -984,6 +984,13 @@ function updatePlayoffScheduleStructure(scheduleData) {
     schedule.push(["KC" + kcGameNum, kcGameAway, kcGameHome]);
   }
 
+  // Access playoff schedule config with defensive check
+  if (!CONFIG || !CONFIG.SHEET_STRUCTURE || !CONFIG.SHEET_STRUCTURE.PLAYOFF_SCHEDULE) {
+    logError("Update Playoff Schedule", "CONFIG.SHEET_STRUCTURE.PLAYOFF_SCHEDULE is not defined",
+             "Please ensure LeagueConfig.js is loaded");
+    return;
+  }
+
   var scheduleConfig = CONFIG.SHEET_STRUCTURE.PLAYOFF_SCHEDULE;
   var headerRow = scheduleConfig.HEADER_ROW;
   var dataStartRow = scheduleConfig.DATA_START_ROW;

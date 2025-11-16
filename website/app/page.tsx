@@ -163,7 +163,7 @@ export default function Home() {
           {teams.map((team, idx) => {
             const logos = getTeamLogoPaths(team.name);
             return (
-              <FadeIn key={team.slug} delay={1.1 + idx * 0.08} direction="up" duration={0.5}>
+              <FadeIn key={team.slug} delay={1.1 + idx * 0.08} direction="up" duration={0.5} useViewport={false}>
                 <Link
                   href={`/teams/${team.slug}`}
                   className="group p-4 rounded-xl bg-space-blue/30 border border-cosmic-border hover:border-nebula-orange/50 transition-all duration-300 hover:scale-105 hover:rotate-1 block"

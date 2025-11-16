@@ -49,7 +49,7 @@ export default async function Sidebar() {
     .slice(0, 3);
 
   return (
-    <aside className="w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border h-screen overflow-y-auto sticky top-0">
+    <aside className="w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border h-screen overflow-y-auto overscroll-contain sticky top-0">
       <div className="p-4 space-y-6">
         {/* Mini Standings */}
         <section>

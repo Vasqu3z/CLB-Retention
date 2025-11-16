@@ -7,12 +7,12 @@ import { LEAGUE_CONFIG } from "@/config/league";
 import { getLeagueLogo } from "@/lib/teamLogos";
 
 const navItems = [
-  { href: "/standings", label: "Standings" },
-  { href: "/leaders", label: "Leaders" },
-  { href: "/schedule", label: "Schedule" },
-  { href: "/playoffs", label: "Playoffs" },
   { href: "/teams", label: "Teams" },
   { href: "/players", label: "Players" },
+  { href: "/leaders", label: "Leaders" },
+  { href: "/schedule", label: "Schedule" },
+  { href: "/standings", label: "Standings" },
+  { href: "/playoffs", label: "Playoffs" },
 ];
 
 export default function Header() {
@@ -24,20 +24,20 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 relative">
+            <div className="w-14 h-14 relative flex-shrink-0">
               <Image
                 src={getLeagueLogo()}
                 alt="CLB Logo"
-                width={40}
-                height={40}
+                width={56}
+                height={56}
                 className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
               />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-display font-bold text-star-white">
+            <div className="flex flex-col justify-center">
+              <span className="text-xl font-display font-bold text-star-white leading-tight">
                 {LEAGUE_CONFIG.shortName}
               </span>
-              <span className="text-xs text-star-gray font-mono">
+              <span className="text-xs text-star-gray font-mono leading-tight">
                 Season {LEAGUE_CONFIG.currentSeason}
               </span>
             </div>

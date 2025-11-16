@@ -1,5 +1,6 @@
 import { getAllPlayers } from '@/lib/sheets';
 import PlayersView from './PlayersView';
+import FadeIn from "@/components/animations/FadeIn";
 
 // Use Incremental Static Regeneration with 60-second revalidation
 export const revalidate = 60;
@@ -14,19 +15,23 @@ export default async function PlayersPage() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">
-          Player Statistics
-        </h1>
-        <p className="text-star-gray font-mono">
-          Individual player performance across all teams
-        </p>
-      </div>
+      <FadeIn delay={0} direction="down">
+        <div>
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            Player Statistics
+          </h1>
+          <p className="text-star-gray font-mono text-shadow">
+            Individual player performance across all teams
+          </p>
+        </div>
+      </FadeIn>
 
-      <PlayersView
-        regularPlayers={regularPlayers}
-        playoffPlayers={playoffPlayers}
-      />
+      <FadeIn delay={0.15} direction="up">
+        <PlayersView
+          regularPlayers={regularPlayers}
+          playoffPlayers={playoffPlayers}
+        />
+      </FadeIn>
     </div>
   );
 }

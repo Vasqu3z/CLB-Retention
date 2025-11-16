@@ -170,6 +170,11 @@ table {
     0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
+/* Fix gradient text cutoff - adds padding to prevent clipping descenders */
+.bg-clip-text {
+  padding-bottom: 0.125rem;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 10px;

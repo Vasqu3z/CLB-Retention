@@ -18,7 +18,7 @@ export default async function SchedulePage() {
             Game Schedule
           </h1>
           <p className="text-star-gray font-mono text-shadow">
-            Regular season matchups and results
+            League Schedule • Regular Season
           </p>
         </div>
       </FadeIn>

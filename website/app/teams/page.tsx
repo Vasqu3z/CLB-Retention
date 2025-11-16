@@ -23,7 +23,7 @@ export default async function TeamsPage() {
             Team Statistics
           </h1>
           <p className="text-star-gray font-mono text-shadow">
-            Comprehensive team performance metrics
+            Team Stats • Updated in real-time
           </p>
         </div>
       </FadeIn>

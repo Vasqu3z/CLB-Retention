@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { ScheduleGame } from '@/lib/sheets';
 import { Team } from '@/config/league';
 
@@ -9,9 +8,7 @@ interface ScheduleViewProps {
   teams: Team[];
 }
 
-export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
-  const [selectedTeam, setSelectedTeam] = useState<string>('all');
-
+export default function ScheduleView({ schedule }: ScheduleViewProps) {
   // Group games by week
   const gamesByWeek = schedule.reduce((acc, game) => {
     const weekKey = `Week ${game.week}`;
@@ -29,41 +26,11 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
     return weekA - weekB;
   });
 
-  // Filter games by selected team
-  const filterGame = (game: ScheduleGame): boolean => {
-    if (selectedTeam === 'all') return true;
-    return game.homeTeam === selectedTeam || game.awayTeam === selectedTeam;
-  };
-
   return (
     <div className="space-y-6">
-      {/* Team Filter */}
-      <div className="glass-card p-4">
-        <div className="flex items-center gap-3">
-          <label htmlFor="team-filter" className="text-sm font-display font-semibold text-star-white">
-            Filter by Team:
-          </label>
-          <select
-            id="team-filter"
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
-            className="px-4 py-2 font-mono"
-          >
-            <option value="all">All Teams</option>
-            {teams.map((team) => (
-              <option key={team.slug} value={team.name}>
-                {team.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
       <div className="space-y-12">
         {weekKeys.map((weekKey) => {
-          const weekGames = gamesByWeek[weekKey].filter(filterGame);
-
-          if (weekGames.length === 0) return null;
+          const weekGames = gamesByWeek[weekKey];
 
           return (
             <div key={weekKey} className="glass-card p-6">
@@ -74,8 +41,8 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
                 </h2>
               </div>
 
-              {/* Game Cards */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {/* Game Cards - 4 per row on large screens */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {weekGames.map((game, idx) => (
                   <GameCard key={`${weekKey}-${idx}`} game={game} />
                 ))}

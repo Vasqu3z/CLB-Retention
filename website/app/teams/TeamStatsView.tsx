@@ -119,12 +119,12 @@ export default function TeamStatsView({
     },
     { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
     { key: 'rGame', label: 'R/G', align: 'center', className: 'font-bold text-nebula-orange' },
-    { key: 'hitting.ab', label: 'AB', align: 'center', condensed: true },
-    { key: 'hitting.h', label: 'H', align: 'center', condensed: true },
-    { key: 'hitting.hr', label: 'HR', align: 'center' },
-    { key: 'hitting.rbi', label: 'RBI', align: 'center' },
-    { key: 'hitting.dp', label: 'DP', align: 'center', condensed: true },
-    { key: 'hitting.rob', label: 'ROB', align: 'center', condensed: true },
+    { key: 'hitting.ab', label: 'AB', align: 'center', condensed: true, render: (team) => team.hitting.ab },
+    { key: 'hitting.h', label: 'H', align: 'center', condensed: true, render: (team) => team.hitting.h },
+    { key: 'hitting.hr', label: 'HR', align: 'center', render: (team) => team.hitting.hr },
+    { key: 'hitting.rbi', label: 'RBI', align: 'center', render: (team) => team.hitting.rbi },
+    { key: 'hitting.dp', label: 'DP', align: 'center', condensed: true, render: (team) => team.hitting.dp },
+    { key: 'hitting.rob', label: 'ROB', align: 'center', condensed: true, render: (team) => team.hitting.rob },
     { key: 'avg', label: 'AVG', align: 'center', className: 'text-nebula-cyan' },
     { key: 'obp', label: 'OBP', align: 'center', className: 'text-nebula-cyan', condensed: true },
     { key: 'slg', label: 'SLG', align: 'center', className: 'text-nebula-cyan' },
@@ -149,9 +149,9 @@ export default function TeamStatsView({
     { key: 'pitching.ip', label: 'IP', align: 'center', render: (team) => team.pitching.ip.toFixed(2) },
     { key: 'wins', label: 'W', align: 'center', condensed: true },
     { key: 'losses', label: 'L', align: 'center', condensed: true },
-    { key: 'pitching.sv', label: 'SV', align: 'center', condensed: true },
-    { key: 'pitching.h', label: 'H', align: 'center' },
-    { key: 'pitching.hr', label: 'HR', align: 'center' },
+    { key: 'pitching.sv', label: 'SV', align: 'center', condensed: true, render: (team) => team.pitching.sv },
+    { key: 'pitching.h', label: 'H', align: 'center', render: (team) => team.pitching.h },
+    { key: 'pitching.hr', label: 'HR', align: 'center', render: (team) => team.pitching.hr },
     { key: 'whip', label: 'WHIP', align: 'center', className: 'text-nebula-cyan' },
     { key: 'baa', label: 'BAA', align: 'center', className: 'text-nebula-cyan' },
   ];
@@ -177,8 +177,8 @@ export default function TeamStatsView({
       className: 'font-bold text-solar-gold',
       render: (team) => `${parseFloat(team.der) > 0 ? '+' : ''}${team.der}`
     },
-    { key: 'fielding.np', label: 'NP', align: 'center' },
-    { key: 'fielding.e', label: 'E', align: 'center' },
+    { key: 'fielding.np', label: 'NP', align: 'center', render: (team) => team.fielding.np },
+    { key: 'fielding.e', label: 'E', align: 'center', render: (team) => team.fielding.e },
     {
       key: 'oaa',
       label: 'OAA',
@@ -186,8 +186,8 @@ export default function TeamStatsView({
       className: 'text-nebula-cyan',
       render: (team) => `${team.oaa > 0 ? '+' : ''}${team.oaa}`
     },
-    { key: 'fielding.sb', label: 'SB', align: 'center' },
-    { key: 'fielding.cs', label: 'CS', align: 'center' },
+    { key: 'fielding.sb', label: 'SB', align: 'center', render: (team) => team.fielding.sb },
+    { key: 'fielding.cs', label: 'CS', align: 'center', render: (team) => team.fielding.cs },
   ];
 
   return (

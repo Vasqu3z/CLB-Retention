@@ -22,6 +22,8 @@ interface TeamPageViewProps {
 type SortField = keyof PlayerStats | 'none';
 type SortDirection = 'asc' | 'desc';
 
+type Tab = 'hitting' | 'pitching' | 'fielding' | 'schedule';
+
 export default function TeamPageView({
   team,
   regularRoster,
@@ -34,6 +36,7 @@ export default function TeamPageView({
   playoffTeamData,
 }: TeamPageViewProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('hitting');
 
   // Use appropriate data based on toggle
   const roster = isPlayoffs ? playoffRoster : regularRoster;
@@ -181,26 +184,55 @@ export default function TeamPageView({
       {/* Navigation Tabs */}
       <FadeIn delay={0.15} direction="up">
         <div className="glass-card p-2">
-          <nav className="flex space-x-2 overflow-x-auto">
-          <a href="#hitting" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg transition-all text-center">
-            Hitting
-          </a>
-          <a href="#pitching" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
-            Pitching
-          </a>
-          <a href="#fielding" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
-            Fielding
-          </a>
-          <a href="#schedule" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold text-star-gray hover:text-star-white hover:bg-space-black/30 transition-all text-center">
-            Schedule
-          </a>
-        </nav>
+          <nav className="flex space-x-2 overflow-x-auto" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('hitting')}
+              className={`flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold transition-all text-center ${
+                activeTab === 'hitting'
+                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+              }`}
+            >
+              Hitting
+            </button>
+            <button
+              onClick={() => setActiveTab('pitching')}
+              className={`flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold transition-all text-center ${
+                activeTab === 'pitching'
+                  ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+              }`}
+            >
+              Pitching
+            </button>
+            <button
+              onClick={() => setActiveTab('fielding')}
+              className={`flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold transition-all text-center ${
+                activeTab === 'fielding'
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+              }`}
+            >
+              Fielding
+            </button>
+            <button
+              onClick={() => setActiveTab('schedule')}
+              className={`flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold transition-all text-center ${
+                activeTab === 'schedule'
+                  ? 'bg-gradient-to-r from-nebula-cyan to-nebula-teal text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+              }`}
+            >
+              Schedule
+            </button>
+          </nav>
         </div>
       </FadeIn>
 
       {/* Hitting Stats */}
-      <FadeIn delay={0.25} direction="up">
-        <section id="hitting">
+      {activeTab === 'hitting' && (
+        <FadeIn delay={0.25} direction="up">
+          <section id="hitting">
           <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
@@ -283,10 +315,12 @@ export default function TeamPageView({
         </div>
         </section>
       </FadeIn>
+      )}
 
       {/* Pitching Stats */}
-      <FadeIn delay={0.35} direction="up">
-        <section id="pitching">
+      {activeTab === 'pitching' && (
+        <FadeIn delay={0.25} direction="up">
+          <section id="pitching">
           <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
@@ -364,10 +398,12 @@ export default function TeamPageView({
         </div>
         </section>
       </FadeIn>
+      )}
 
       {/* Fielding Stats */}
-      <FadeIn delay={0.45} direction="up">
-        <section id="fielding">
+      {activeTab === 'fielding' && (
+        <FadeIn delay={0.25} direction="up">
+          <section id="fielding">
           <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
@@ -427,10 +463,12 @@ export default function TeamPageView({
         </div>
         </section>
       </FadeIn>
+      )}
 
       {/* Team Schedule */}
-      <FadeIn delay={0.55} direction="up">
-        <section id="schedule">
+      {activeTab === 'schedule' && (
+        <FadeIn delay={0.25} direction="up">
+          <section id="schedule">
           <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">Team Schedule</h2>
         <div className="glass-card">
           <div className="divide-y divide-star-gray/10">
@@ -441,6 +479,7 @@ export default function TeamPageView({
         </div>
         </section>
       </FadeIn>
+      )}
 
       {/* Back Link */}
       <FadeIn delay={0.65} direction="up">

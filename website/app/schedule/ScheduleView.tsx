@@ -238,7 +238,7 @@ function GameCard({ game }: { game: ScheduleGame }) {
               )}
               <div className="flex justify-between">
                 <span className="text-solar-gold font-bold">SV:</span>
-                <span className={game.savePitcher ? "text-star-white" : "text-star-gray/50 italic"}>
+                <span className={game.savePitcher ? "text-star-white" : "text-star-gray italic"}>
                   {game.savePitcher || "None"}
                 </span>
               </div>

@@ -158,45 +158,52 @@ export default function TeamPageView({
           </div>
 
         {/* Team Stats Summary */}
-        {standing && (
+        {(standing || regularStanding) && (
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Record</div>
-              <div className="text-xl font-bold font-mono text-star-white">
-                {standing.wins}-{standing.losses}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Win %</div>
-              <div className="text-xl font-bold font-mono text-nebula-cyan">{standing.winPct}</div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Scored</div>
-              <div className="text-xl font-bold font-mono text-nebula-orange">{standing.runsScored}</div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Allowed</div>
-              <div className="text-xl font-bold font-mono text-nebula-coral">{standing.runsAllowed}</div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Run Diff</div>
-              <div
-                className={`text-xl font-bold font-mono ${
-                  standing.runDiff > 0
-                    ? 'text-nebula-teal'
-                    : standing.runDiff < 0
-                    ? 'text-nebula-coral'
-                    : 'text-star-white'
-                }`}
-              >
-                {standing.runDiff > 0 ? '+' : ''}
-                {standing.runDiff}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-display text-star-gray uppercase tracking-wider">Rank</div>
-              <div className="text-xl font-bold font-mono text-solar-gold">{standing.rank}</div>
-            </div>
+            {(() => {
+              const displayStanding = standing || regularStanding!;
+              return (
+                <>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Record</div>
+                    <div className="text-xl font-bold font-mono text-star-white">
+                      {displayStanding.wins}-{displayStanding.losses}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Win %</div>
+                    <div className="text-xl font-bold font-mono text-nebula-cyan">{displayStanding.winPct}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Scored</div>
+                    <div className="text-xl font-bold font-mono text-nebula-orange">{displayStanding.runsScored}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Runs Allowed</div>
+                    <div className="text-xl font-bold font-mono text-nebula-coral">{displayStanding.runsAllowed}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Run Diff</div>
+                    <div
+                      className={`text-xl font-bold font-mono ${
+                        displayStanding.runDiff > 0
+                          ? 'text-nebula-teal'
+                          : displayStanding.runDiff < 0
+                          ? 'text-nebula-coral'
+                          : 'text-star-white'
+                      }`}
+                    >
+                      {displayStanding.runDiff > 0 ? '+' : ''}
+                      {displayStanding.runDiff}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-display text-star-gray uppercase tracking-wider">Rank</div>
+                    <div className="text-xl font-bold font-mono text-solar-gold">{displayStanding.rank}</div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 

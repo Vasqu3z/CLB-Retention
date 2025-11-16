@@ -9,7 +9,7 @@ interface SeasonToggleProps {
 
 export default function SeasonToggle({ isPlayoffs, onChange }: SeasonToggleProps) {
   return (
-    <div className="inline-flex items-center rounded-lg border border-star-gray/15 bg-space-black/30 backdrop-blur-sm p-1">
+    <div className="inline-flex items-center rounded-lg border border-cosmic-border bg-space-black/30 backdrop-blur-sm p-1">
       <button
         onClick={() => onChange(false)}
         className={`px-4 py-2 rounded-md text-sm font-display font-semibold transition-all duration-300 ${

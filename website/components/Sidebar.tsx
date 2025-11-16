@@ -98,14 +98,19 @@ export default async function Sidebar() {
       return orderB - orderA; // Descending (most recent first)
     });
 
-  // Get current week and previous week regular season games
-  const currentWeekGames = regularSeasonGames
-    .filter(g => g.week === currentWeek)
-    .reverse();
+  // Implement 2-week rule: Show only 2 most recent "weeks" (playoff rounds count as weeks)
+  const recentPlayoffRounds = sortedPlayoffRounds.slice(0, 2); // Take up to 2 most recent playoff rounds
+  const numPlayoffWeeks = recentPlayoffRounds.length;
+  const numRegularWeeksToShow = Math.max(0, 2 - numPlayoffWeeks); // Fill remaining slots with regular season weeks
 
-  const previousWeekGames = regularSeasonGames
+  // Get current week and previous week regular season games (only if needed)
+  const currentWeekGames = numRegularWeeksToShow >= 1 ? regularSeasonGames
+    .filter(g => g.week === currentWeek)
+    .reverse() : [];
+
+  const previousWeekGames = numRegularWeeksToShow >= 2 ? regularSeasonGames
     .filter(g => g.week === currentWeek - 1)
-    .reverse();
+    .reverse() : [];
 
   // Calculate league leaders
   const hitters = players.filter(p => p.ab && p.ab > 0);
@@ -197,20 +202,20 @@ export default async function Sidebar() {
         </section>
 
         {/* Recent Games */}
-        {(playoffGames.length > 0 || currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
+        {(recentPlayoffRounds.length > 0 || currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
           <section>
             <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
               Recent Games
             </h3>
 
-            {/* Playoff Games (all rounds combined) */}
-            {playoffGames.length > 0 && (
-              <div className={currentWeekGames.length > 0 || previousWeekGames.length > 0 ? 'mb-4' : ''}>
+            {/* Playoff Rounds (most recent first, max 2) */}
+            {recentPlayoffRounds.map(([roundName, games], roundIdx) => (
+              <div key={roundName} className={roundIdx < recentPlayoffRounds.length - 1 || currentWeekGames.length > 0 || previousWeekGames.length > 0 ? 'mb-4' : ''}>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
-                  Playoff Games
+                  {roundName}
                 </h4>
                 <div className="space-y-2">
-                  {playoffGames.reverse().map((game, idx) => {
+                  {games.map((game, idx) => {
                     const homeTeam = getTeamByName(game.homeTeam);
                     const awayTeam = getTeamByName(game.awayTeam);
                     const homeWon = game.homeScore > game.awayScore;
@@ -263,13 +268,13 @@ export default async function Sidebar() {
                   })}
                 </div>
               </div>
-            )}
+            ))}
 
             {/* Current Week Regular Season Games */}
             {currentWeekGames.length > 0 && (
               <div className={previousWeekGames.length > 0 ? 'mb-4' : ''}>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
-                  Current Week
+                  Week {currentWeek}
                 </h4>
                 <div className="space-y-2">
                   {currentWeekGames.map((game, idx) => {
@@ -331,7 +336,7 @@ export default async function Sidebar() {
             {previousWeekGames.length > 0 && (
               <div>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
-                  Previous Week
+                  Week {currentWeek - 1}
                 </h4>
                 <div className="space-y-2">
                   {previousWeekGames.map((game, idx) => {

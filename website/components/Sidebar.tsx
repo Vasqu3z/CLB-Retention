@@ -1,6 +1,7 @@
-import { getStandings, getSchedule, getAllPlayers, getPlayoffSchedule, ScheduleGame, PlayoffGame } from '@/lib/sheets';
+import { getStandings, getSchedule, getAllPlayers, getPlayoffSchedule, getAverageTeamGP, ScheduleGame, PlayoffGame, groupGamesBySeries } from '@/lib/sheets';
 import { getTeamByName } from '@/config/league';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
+import { QUALIFICATION_THRESHOLDS } from '@/config/sheets';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -16,11 +17,12 @@ type RecentGame = {
 
 export default async function Sidebar() {
   // Fetch data in parallel
-  const [standings, schedule, playoffSchedule, players] = await Promise.all([
+  const [standings, schedule, playoffSchedule, players, avgTeamGP] = await Promise.all([
     getStandings(),
     getSchedule(),
     getPlayoffSchedule(),
     getAllPlayers(),
+    getAverageTeamGP(),
   ]);
 
   // Combine regular season and playoff games
@@ -120,38 +122,86 @@ export default async function Sidebar() {
     .filter(g => g.week === currentWeek - 1)
     .reverse() : [];
 
-  // Calculate league leaders
-  const hitters = players.filter(p => p.ab && p.ab > 0);
-  const pitchers = players.filter(p => p.ip && p.ip > 0);
+  // Calculate qualification thresholds (same as Leaders page)
+  const qualifyingAB = avgTeamGP * QUALIFICATION_THRESHOLDS.BATTING.AB_MULTIPLIER;
+  const qualifyingIP = avgTeamGP * QUALIFICATION_THRESHOLDS.PITCHING.IP_MULTIPLIER;
 
-  // BA (Batting Average) leaders
-  const baLeaders = [...hitters]
+  // Calculate league leaders with qualification
+  const hitters = players.filter(p => p.ab && p.ab > 0);
+  const qualifiedHitters = players.filter(p => p.ab && p.ab >= qualifyingAB);
+  const pitchers = players.filter(p => p.ip && p.ip > 0);
+  const qualifiedPitchers = players.filter(p => p.ip && p.ip >= qualifyingIP);
+
+  // BA (Batting Average) leaders - requires qualification
+  const baLeaders = [...qualifiedHitters]
     .sort((a, b) => parseFloat('0' + (b.avg || '.000')) - parseFloat('0' + (a.avg || '.000')))
     .slice(0, 3);
 
-  // HR leaders
+  // HR leaders - no qualification
   const hrLeaders = [...hitters]
     .sort((a, b) => (b.hr || 0) - (a.hr || 0))
     .slice(0, 3);
 
-  // RBI leaders
+  // RBI leaders - no qualification
   const rbiLeaders = [...hitters]
     .sort((a, b) => (b.rbi || 0) - (a.rbi || 0))
     .slice(0, 3);
 
-  // ERA leaders (lower is better)
-  const eraLeaders = [...pitchers]
+  // ERA leaders (lower is better) - requires qualification
+  const eraLeaders = [...qualifiedPitchers]
     .sort((a, b) => parseFloat(a.era || '999') - parseFloat(b.era || '999'))
     .slice(0, 3);
 
-  // NP (Nice Plays) leaders
+  // NP (Nice Plays) leaders - no qualification
   const npLeaders = [...players]
     .filter(p => p.np && p.np > 0)
     .sort((a, b) => (b.np || 0) - (a.np || 0))
     .slice(0, 3);
 
+  // Determine Kingdom Cup Champion
+  const seriesMap = groupGamesBySeries(playoffSchedule);
+  const kcSeries = Array.from(seriesMap.values()).find(series =>
+    series.games.some(game => game.code.startsWith('KC'))
+  );
+  const kingdomCupChampion = kcSeries?.winner ? getTeamByName(kcSeries.winner) : null;
+  const championLogos = kingdomCupChampion ? getTeamLogoPaths(kingdomCupChampion.name) : null;
+
   return (
     <div className="p-4 space-y-6">
+        {/* Kingdom Cup Champions */}
+        {kingdomCupChampion && championLogos && (
+          <section>
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-solar-gold/20 via-comet-yellow/10 to-transparent border-2 border-solar-gold/40 p-3">
+              <h3 className="text-xs font-display font-bold text-solar-gold mb-2 uppercase tracking-wider text-center flex items-center justify-center gap-2">
+                <span>👑</span>
+                <span>Kingdom Cup Champions</span>
+                <span>👑</span>
+              </h3>
+
+              <Link
+                href={`/teams/${kingdomCupChampion.slug}`}
+                className="block group"
+              >
+                <div className="flex items-center justify-center py-2">
+                  <div className="w-32 h-16 relative transition-transform group-hover:scale-105">
+                    <Image
+                      src={championLogos.full}
+                      alt={`${kingdomCupChampion.name} - Kingdom Cup Champions`}
+                      width={128}
+                      height={64}
+                      className="object-contain drop-shadow-[0_0_16px_rgba(255,215,0,0.5)] group-hover:drop-shadow-[0_0_24px_rgba(255,215,0,0.8)] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-center text-xs font-mono text-star-gray mt-2">
+                  Season 1
+                </p>
+              </Link>
+            </div>
+          </section>
+        )}
+
         {/* Mini Standings */}
         <section>
           <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
@@ -206,6 +256,98 @@ export default async function Sidebar() {
                 </Link>
               );
             })}
+          </div>
+        </section>
+
+        {/* League Leaders */}
+        <section>
+          <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
+            League Leaders
+          </h3>
+
+          {/* BA Leaders */}
+          <div className="mb-4">
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Batting Average</h4>
+            <div className="space-y-1">
+              {baLeaders.map((player, idx) => (
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
+                  </span>
+                  <span className="font-mono font-bold text-solar-gold flex-shrink-0">
+                    {player.avg}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* HR Leaders */}
+          <div className="mb-4">
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Home Runs</h4>
+            <div className="space-y-1">
+              {hrLeaders.map((player, idx) => (
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
+                  </span>
+                  <span className="font-mono font-bold text-nebula-orange flex-shrink-0">
+                    {player.hr}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* RBI Leaders */}
+          <div className="mb-4">
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">RBI</h4>
+            <div className="space-y-1">
+              {rbiLeaders.map((player, idx) => (
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
+                  </span>
+                  <span className="font-mono font-bold text-nebula-coral flex-shrink-0">
+                    {player.rbi}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ERA Leaders */}
+          <div className="mb-4">
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">ERA</h4>
+            <div className="space-y-1">
+              {eraLeaders.map((player, idx) => (
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
+                  </span>
+                  <span className="font-mono font-bold text-nebula-cyan flex-shrink-0">
+                    {player.era}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* NP Leaders */}
+          <div>
+            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Nice Plays</h4>
+            <div className="space-y-1">
+              {npLeaders.map((player, idx) => (
+                <div key={idx} className="flex items-center justify-between text-sm gap-2">
+                  <span className="text-star-white truncate flex-1 min-w-0">
+                    {player.name}
+                  </span>
+                  <span className="font-mono font-bold text-nebula-teal flex-shrink-0">
+                    {player.np}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -424,98 +566,6 @@ export default async function Sidebar() {
             )}
           </section>
         )}
-
-        {/* League Leaders */}
-        <section>
-          <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
-            League Leaders
-          </h3>
-
-          {/* BA Leaders */}
-          <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Batting Average</h4>
-            <div className="space-y-1">
-              {baLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm gap-2">
-                  <span className="text-star-white truncate flex-1 min-w-0">
-                    {player.name}
-                  </span>
-                  <span className="font-mono font-bold text-solar-gold flex-shrink-0">
-                    {player.avg}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* HR Leaders */}
-          <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Home Runs</h4>
-            <div className="space-y-1">
-              {hrLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm gap-2">
-                  <span className="text-star-white truncate flex-1 min-w-0">
-                    {player.name}
-                  </span>
-                  <span className="font-mono font-bold text-nebula-orange flex-shrink-0">
-                    {player.hr}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* RBI Leaders */}
-          <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">RBI</h4>
-            <div className="space-y-1">
-              {rbiLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm gap-2">
-                  <span className="text-star-white truncate flex-1 min-w-0">
-                    {player.name}
-                  </span>
-                  <span className="font-mono font-bold text-nebula-coral flex-shrink-0">
-                    {player.rbi}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ERA Leaders */}
-          <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">ERA</h4>
-            <div className="space-y-1">
-              {eraLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm gap-2">
-                  <span className="text-star-white truncate flex-1 min-w-0">
-                    {player.name}
-                  </span>
-                  <span className="font-mono font-bold text-nebula-cyan flex-shrink-0">
-                    {player.era}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* NP Leaders */}
-          <div>
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Nice Plays</h4>
-            <div className="space-y-1">
-              {npLeaders.map((player, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm gap-2">
-                  <span className="text-star-white truncate flex-1 min-w-0">
-                    {player.name}
-                  </span>
-                  <span className="font-mono font-bold text-nebula-teal flex-shrink-0">
-                    {player.np}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
       </div>
   );
 }

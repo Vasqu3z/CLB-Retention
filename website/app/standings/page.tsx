@@ -1,6 +1,6 @@
 import { getStandings } from "@/lib/sheets";
 import { getTeamByName } from "@/config/league";
-import { getTeamLogoPaths } from "@/lib/teamLogos";
+import { getTeamLogoPaths, getLeagueLogo } from "@/lib/teamLogos";
 import StatCard from "@/components/StatCard";
 import StandingsTable from "./StandingsTable";
 import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
@@ -96,7 +96,19 @@ export default async function StandingsPage() {
             icon={Award}
             sublabel="Total games this season"
             color="gold"
-          />
+          >
+            <div className="flex items-center justify-center pt-2">
+              <div className="w-30 h-20 relative">
+                <Image
+                  src={getLeagueLogo()}
+                  alt="CLB Logo"
+                  width={120}
+                  height={80}
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          </StatCard>
 
           <StatCard
             label="Highest Scoring"

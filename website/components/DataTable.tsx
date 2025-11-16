@@ -92,11 +92,16 @@ export default function DataTable<T>({
     }
   };
 
+  // Helper function to get nested property value
+  const getNestedValue = (obj: any, path: string) => {
+    return path.split('.').reduce((current, key) => current?.[key], obj);
+  };
+
   // Sort data
   const sortedData = sortKey
     ? [...data].sort((a, b) => {
-        const aVal = (a as any)[sortKey];
-        const bVal = (b as any)[sortKey];
+        const aVal = getNestedValue(a, sortKey);
+        const bVal = getNestedValue(b, sortKey);
 
         // Handle numbers
         if (typeof aVal === 'number' && typeof bVal === 'number') {
@@ -108,9 +113,9 @@ export default function DataTable<T>({
         const bStr = String(bVal || '');
 
         if (sortDirection === 'asc') {
-          return aStr.localeCompare(bStr);
+          return aStr.localeCompare(bStr, undefined, { numeric: true });
         } else {
-          return bStr.localeCompare(aStr);
+          return bStr.localeCompare(aStr, undefined, { numeric: true });
         }
       })
     : data;

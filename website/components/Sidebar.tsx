@@ -171,7 +171,7 @@ export default async function Sidebar() {
         {/* Kingdom Cup Champions */}
         {kingdomCupChampion && championLogos && (
           <section>
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-solar-gold/20 via-comet-yellow/10 to-transparent border-2 border-solar-gold/40 p-3">
+            <div className="relative overflow-hidden rounded-xl p-3">
               <h3 className="text-xs font-display font-bold text-solar-gold mb-2 uppercase tracking-wider text-center flex items-center justify-center gap-2">
                 <span>👑</span>
                 <span>Kingdom Cup Champions</span>

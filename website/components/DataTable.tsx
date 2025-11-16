@@ -93,7 +93,7 @@ export default function DataTable<T>({
           {enableCondensed && (
             <button
               onClick={() => setIsCondensed(!isCondensed)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-space-blue/50 border border-cosmic-border hover:border-nebula-orange/50 transition-all text-sm text-star-gray hover:text-star-white"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-space-blue/50 border border-cosmic-border hover:border-nebula-orange/50 transition-all duration-300 text-sm text-star-gray hover:text-star-white"
             >
               {isCondensed ? (
                 <>
@@ -152,9 +152,9 @@ export default function DataTable<T>({
                   <tr
                     key={getRowKey(row)}
                     className={`
-                      border-b border-cosmic-border/30 transition-all
+                      border-b border-cosmic-border/30 transition-all duration-300
                       ${idx % 2 === 0 ? 'bg-space-navy/5' : 'bg-space-navy/15'}
-                      ${isHighlighted ? 'bg-nebula-orange/10 border-l-4 border-l-nebula-orange' : 'hover:bg-space-blue/20'}
+                      ${isHighlighted ? 'bg-nebula-orange/10 border-l-4 border-l-nebula-orange' : 'hover:bg-space-blue/30 hover:border-l-2 hover:border-l-nebula-orange/50'}
                       ${customClassName || ''}
                     `}
                   >

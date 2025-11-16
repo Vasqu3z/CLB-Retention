@@ -240,7 +240,7 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedHitters.map((player, idx) => (
-                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.ab}</td>
@@ -321,7 +321,7 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedPitchers.map((player, idx) => (
-                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.ip?.toFixed(2) || '0.00'}</td>
@@ -388,7 +388,7 @@ export default function TeamPageView({
             </thead>
             <tbody>
               {sortedFielders.map((player, idx) => (
-                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/20 transition-colors">
+                <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
                   <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.np || 0}</td>
@@ -457,7 +457,7 @@ function SortableHeader({
 
   return (
     <th
-      className="px-4 py-3 text-left text-sm font-display font-semibold text-star-white cursor-pointer hover:bg-space-blue/30 transition"
+      className="px-4 py-3 text-left text-sm font-display font-semibold text-star-white cursor-pointer hover:bg-space-blue/30 transition-colors duration-300"
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-1">
@@ -495,7 +495,7 @@ function TeamGameRow({ game, teamName }: { game: ScheduleGame | PlayoffGame; tea
   const won = game.winner === teamName;
 
   const content = (
-    <div className="px-6 py-4 hover:bg-space-blue/20 transition-colors">
+    <div className="px-6 py-4 hover:bg-space-blue/30 transition-colors duration-300">
       <div className="flex items-center justify-between">
         <div>
           <div className="text-sm text-star-gray font-mono mb-1">{gameIdentifier}</div>

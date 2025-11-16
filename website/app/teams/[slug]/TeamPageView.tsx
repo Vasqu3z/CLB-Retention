@@ -5,6 +5,7 @@ import { Team } from '@/config/league';
 import { PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
 import Link from 'next/link';
 import SeasonToggle from '@/components/SeasonToggle';
+import FadeIn from '@/components/animations/FadeIn';
 
 interface TeamPageViewProps {
   team: Team;
@@ -119,13 +120,14 @@ export default function TeamPageView({
   return (
     <div className="space-y-8">
       {/* Team Header */}
-      <div className="glass-card p-6" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-          <h1 className="text-4xl font-display font-bold" style={{ color: team.primaryColor }}>
-            {team.name}
-          </h1>
-          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-        </div>
+      <FadeIn delay={0} direction="down">
+        <div className="glass-card p-6" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <h1 className="text-4xl font-display font-bold" style={{ color: team.primaryColor }}>
+              {team.name}
+            </h1>
+            <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+          </div>
 
         {/* Team Stats Summary */}
         {standing && (
@@ -173,11 +175,13 @@ export default function TeamPageView({
         <p className="text-star-gray text-sm font-mono">
           {team.mascot} • {roster.length} Players
         </p>
-      </div>
+        </div>
+      </FadeIn>
 
       {/* Navigation Tabs */}
-      <div className="glass-card p-2">
-        <nav className="flex space-x-2 overflow-x-auto">
+      <FadeIn delay={0.15} direction="up">
+        <div className="glass-card p-2">
+          <nav className="flex space-x-2 overflow-x-auto">
           <a href="#hitting" className="flex-1 min-w-fit py-3 px-4 rounded-lg font-display font-semibold bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg transition-all text-center">
             Hitting
           </a>
@@ -191,11 +195,13 @@ export default function TeamPageView({
             Schedule
           </a>
         </nav>
-      </div>
+        </div>
+      </FadeIn>
 
       {/* Hitting Stats */}
-      <section id="hitting">
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
+      <FadeIn delay={0.25} direction="up">
+        <section id="hitting">
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -275,11 +281,13 @@ export default function TeamPageView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
 
       {/* Pitching Stats */}
-      <section id="pitching">
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
+      <FadeIn delay={0.35} direction="up">
+        <section id="pitching">
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -354,11 +362,13 @@ export default function TeamPageView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
 
       {/* Fielding Stats */}
-      <section id="fielding">
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
+      <FadeIn delay={0.45} direction="up">
+        <section id="fielding">
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -415,11 +425,13 @@ export default function TeamPageView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
 
       {/* Team Schedule */}
-      <section id="schedule">
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">Team Schedule</h2>
+      <FadeIn delay={0.55} direction="up">
+        <section id="schedule">
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">Team Schedule</h2>
         <div className="glass-card">
           <div className="divide-y divide-star-gray/10">
             {schedule.map((game, idx) => (
@@ -427,14 +439,17 @@ export default function TeamPageView({
             ))}
           </div>
         </div>
-      </section>
+        </section>
+      </FadeIn>
 
       {/* Back Link */}
-      <div className="flex justify-start">
-        <Link href="/standings" className="text-nebula-cyan hover:text-nebula-teal transition-colors font-mono text-sm">
-          ← Back to Standings
-        </Link>
-      </div>
+      <FadeIn delay={0.65} direction="up">
+        <div className="flex justify-start">
+          <Link href="/standings" className="text-nebula-cyan hover:text-nebula-teal transition-colors font-mono text-sm">
+            ← Back to Standings
+          </Link>
+        </div>
+      </FadeIn>
     </div>
   );
 }

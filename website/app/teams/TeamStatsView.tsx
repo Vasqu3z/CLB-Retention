@@ -5,6 +5,7 @@ import { TeamData, StandingsRow } from '@/lib/sheets';
 import Link from 'next/link';
 import { getActiveTeams } from '@/config/league';
 import SeasonToggle from '@/components/SeasonToggle';
+import FadeIn from '@/components/animations/FadeIn';
 
 type SortField = string;
 type SortDirection = 'asc' | 'desc';
@@ -241,13 +242,16 @@ export default function TeamStatsView({
   return (
     <div className="space-y-8">
       {/* Season Toggle */}
-      <div className="flex justify-end">
-        <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-      </div>
+      <FadeIn delay={0} direction="down">
+        <div className="flex justify-end">
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+        </div>
+      </FadeIn>
 
       {/* Hitting Statistics */}
-      <section>
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
+      <FadeIn delay={0.15} direction="up">
+        <section>
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -318,11 +322,13 @@ export default function TeamStatsView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
 
       {/* Pitching Statistics */}
-      <section>
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
+      <FadeIn delay={0.3} direction="up">
+        <section>
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -385,11 +391,13 @@ export default function TeamStatsView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
 
       {/* Fielding Statistics */}
-      <section>
-        <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
+      <FadeIn delay={0.45} direction="up">
+        <section>
+          <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
         <div className="glass-card overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
@@ -440,7 +448,8 @@ export default function TeamStatsView({
             </tbody>
           </table>
         </div>
-      </section>
+        </section>
+      </FadeIn>
     </div>
   );
 }

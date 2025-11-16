@@ -127,14 +127,15 @@ export default function DataTable<T>({
         />
       ) : (
         <div className="glass-card rounded-xl">
-          <div className="overflow-x-auto">
+          <div className="relative max-h-[70vh] overflow-y-auto overflow-x-auto">
             <table className="w-full font-mono text-sm">
-              <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
+              <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border">
                 <tr>
                   {visibleColumns.map((column) => (
                     <th
                       key={column.key}
                       className={`
+                        sticky top-0 z-10 bg-space-blue/60 backdrop-blur-md
                         px-4 py-3 text-${column.align || 'left'} font-semibold text-star-gray uppercase text-xs tracking-wider
                         ${column.sortable !== false ? 'cursor-pointer hover:text-star-white transition-colors focus:outline-none focus:text-star-white' : ''}
                         ${column.headerClassName || ''}

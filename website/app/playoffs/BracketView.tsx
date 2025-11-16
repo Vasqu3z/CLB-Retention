@@ -1,13 +1,26 @@
 'use client';
 
-import { BracketRound } from "@/lib/sheets";
+import { BracketRound, StandingsRow } from "@/lib/sheets";
 import Link from "next/link";
 
 interface BracketViewProps {
   bracket: BracketRound[];
+  standings: StandingsRow[];
 }
 
-export default function BracketView({ bracket }: BracketViewProps) {
+export default function BracketView({ bracket, standings }: BracketViewProps) {
+  // Helper function to get team seed from standings
+  const getTeamSeed = (teamName: string): string => {
+    const team = standings.find(s => s.team === teamName);
+    return team ? `#${team.rank}` : '';
+  };
+
+  // Helper function to get short team name
+  const getShortName = (teamName: string): string => {
+    // Extract last word (usually the team name)
+    const parts = teamName.split(' ');
+    return parts[parts.length - 1];
+  };
   if (bracket.length === 0) {
     return (
       <div className="glass-card p-8 text-center">
@@ -39,7 +52,7 @@ export default function BracketView({ bracket }: BracketViewProps) {
                 <div className="bg-space-blue/30 backdrop-blur-sm px-4 py-2 border-b border-cosmic-border">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-display font-semibold text-star-white uppercase tracking-wider">
-                      Series {series.seriesId}
+                      {getTeamSeed(series.teamA)} {getShortName(series.teamA)} vs. {getTeamSeed(series.teamB)} {getShortName(series.teamB)}
                     </span>
                     {series.winner && (
                       <span className="text-xs font-display font-bold text-nebula-teal bg-nebula-teal/20 px-2 py-1 rounded border border-nebula-teal/30">
@@ -109,7 +122,7 @@ export default function BracketView({ bracket }: BracketViewProps) {
                             {game.played ? (
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-star-white text-xs">
-                                  {game.homeTeam} {game.homeScore}, {game.awayTeam} {game.awayScore}
+                                  {game.awayTeam} {game.awayScore}, {game.homeTeam} {game.homeScore}
                                 </span>
                                 {game.boxScoreUrl && (
                                   <a

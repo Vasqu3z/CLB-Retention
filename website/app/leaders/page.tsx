@@ -31,7 +31,7 @@ export default async function LeadersPage() {
             League Leaders
           </h1>
           <p className="text-star-gray font-mono text-shadow">
-            Top performers in batting, pitching, and fielding
+            Stats Leaders • Updated in real-time
           </p>
         </div>
       </FadeIn>

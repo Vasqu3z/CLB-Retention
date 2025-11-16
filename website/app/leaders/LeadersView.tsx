@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { LeaderEntry } from "@/lib/sheets";
 import { getTeamByName } from "@/config/league";
+import { getTeamLogoPaths } from "@/lib/teamLogos";
 import Link from "next/link";
+import Image from "next/image";
 import SeasonToggle from "@/components/SeasonToggle";
 
 interface LeadersViewProps {
@@ -35,6 +37,7 @@ export default function LeadersView({
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex-1" /> {/* Spacer */}
         <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
       </div>
 
@@ -55,7 +58,7 @@ export default function LeadersView({
             onClick={() => setActiveTab('pitching')}
             className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
               activeTab === 'pitching'
-                ? 'bg-gradient-to-r from-nebula-cyan to-nebula-teal text-white shadow-lg'
+                ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
                 : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
             }`}
           >
@@ -65,7 +68,7 @@ export default function LeadersView({
             onClick={() => setActiveTab('fielding')}
             className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
               activeTab === 'fielding'
-                ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
+                ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
                 : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
             }`}
           >
@@ -77,7 +80,7 @@ export default function LeadersView({
       {/* Batting Leaders */}
       {activeTab === 'batting' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <LeaderCard title="On-Base Percentage" abbr="OBP" leaders={battingLeaders.obp} />
+          <LeaderCard title="Batting Average" abbr="AVG" leaders={battingLeaders.avg} />
           <LeaderCard title="Hits" abbr="H" leaders={battingLeaders.hits} />
           <LeaderCard title="Home Runs" abbr="HR" leaders={battingLeaders.hr} />
           <LeaderCard title="Runs Batted In" abbr="RBI" leaders={battingLeaders.rbi} />
@@ -128,6 +131,7 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
         )}
         {leaders.map((leader, idx) => {
           const teamConfig = leader.team ? getTeamByName(leader.team) : null;
+          const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
 
           return (
             <div
@@ -135,26 +139,29 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
               className="py-2.5 px-3 rounded-lg bg-space-black/20 hover:bg-space-blue/30 transition-all duration-300 border border-star-gray/10 hover:border-nebula-orange/30"
             >
               <div className="flex justify-between items-center gap-2">
-                <div className="flex-1 min-w-0">
-                  <span className="text-solar-gold font-bold mr-2 font-mono text-sm">{leader.rank}.</span>
+                <div className="flex-1 min-w-0 flex items-center gap-2">
+                  <span className="text-solar-gold font-bold font-mono text-sm">{leader.rank}.</span>
                   {leader.isTieSummary ? (
                     <span className="font-medium italic text-star-gray font-mono text-sm">{leader.player}</span>
                   ) : (
                     <>
                       <span className="font-semibold text-star-white text-sm">{leader.player}</span>
-                      {teamConfig && (
+                      {logos && (
                         <Link
                           href={`/teams/${teamConfig.slug}`}
-                          className="ml-2 text-xs font-mono hover:underline transition-all duration-300"
-                          style={{ color: teamConfig.primaryColor }}
+                          className="ml-1 flex-shrink-0 hover:opacity-80 transition-opacity"
+                          title={leader.team}
                         >
-                          {leader.team}
+                          <div className="w-5 h-5 relative">
+                            <Image
+                              src={logos.emblem}
+                              alt={leader.team}
+                              width={20}
+                              height={20}
+                              className="object-contain"
+                            />
+                          </div>
                         </Link>
-                      )}
-                      {!teamConfig && leader.team && (
-                        <span className="ml-2 text-xs text-star-gray font-mono">
-                          {leader.team}
-                        </span>
                       )}
                     </>
                   )}

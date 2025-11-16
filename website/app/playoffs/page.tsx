@@ -1,11 +1,15 @@
-import { getPlayoffSchedule, groupGamesBySeries, buildBracket } from "@/lib/sheets";
+import { getPlayoffSchedule, groupGamesBySeries, buildBracket, getStandings } from "@/lib/sheets";
 import BracketView from "./BracketView";
 import FadeIn from "@/components/animations/FadeIn";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function PlayoffsPage() {
-  const playoffGames = await getPlayoffSchedule();
+  const [playoffGames, standings] = await Promise.all([
+    getPlayoffSchedule(),
+    getStandings(),
+  ]);
+
   const seriesMap = groupGamesBySeries(playoffGames);
   const bracket = buildBracket(seriesMap);
 
@@ -18,13 +22,13 @@ export default async function PlayoffsPage() {
             Playoff Bracket
           </h1>
           <p className="text-star-gray font-mono text-shadow">
-            Postseason series and championship path
+            League Schedule • Postseason
           </p>
         </div>
       </FadeIn>
 
       <FadeIn delay={0.15} direction="up">
-        <BracketView bracket={bracket} />
+        <BracketView bracket={bracket} standings={standings} />
       </FadeIn>
     </div>
   );

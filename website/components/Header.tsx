@@ -57,7 +57,7 @@ export default function Header() {
           </Link>
 
           {/* Team Emblems */}
-          <div className="hidden lg:flex items-center gap-2 mx-4">
+          <div className="hidden lg:flex items-center gap-4 mx-4">
             {teams.map((team) => {
               const logos = getTeamLogoPaths(team.name);
               return (

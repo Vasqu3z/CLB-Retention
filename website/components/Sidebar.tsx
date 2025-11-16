@@ -80,27 +80,35 @@ export default async function Sidebar() {
   const regularSeasonGames = allCompletedGames.filter(g => typeof g.week === 'number');
   const playoffGames = allCompletedGames.filter(g => typeof g.week === 'string');
 
-  // Group playoff games by round and series
-  const playoffGamesByRound: { [key: string]: RecentGame[] } = {};
+  // Group playoff games by round TYPE (not individual series)
+  // KC = 1 week, all CS (A+B) = 1 week, all WC = 1 week
+  const playoffWeeks: { roundName: string; roundOrder: number; series: { [key: string]: RecentGame[] } }[] = [];
+
   playoffGames.forEach(game => {
-    const { roundName } = parsePlayoffCode(game.week as string);
-    if (!playoffGamesByRound[roundName]) {
-      playoffGamesByRound[roundName] = [];
+    const { roundName, roundOrder, series } = parsePlayoffCode(game.week as string);
+    const prefix = (game.week as string).substring(0, 2);
+
+    // Find or create the week for this round type
+    let week = playoffWeeks.find(w => w.roundOrder === roundOrder);
+    if (!week) {
+      week = { roundName: prefix === 'CS' ? 'Castle Series' : roundName, roundOrder, series: {} };
+      playoffWeeks.push(week);
     }
-    playoffGamesByRound[roundName].push(game);
+
+    // Group games by series within the week
+    const seriesKey = series ? roundName : 'main';
+    if (!week.series[seriesKey]) {
+      week.series[seriesKey] = [];
+    }
+    week.series[seriesKey].push(game);
   });
 
-  // Sort playoff rounds by order (Kingdom Cup, then Castle Series, etc.)
-  const sortedPlayoffRounds = Object.entries(playoffGamesByRound)
-    .sort(([nameA], [nameB]) => {
-      const orderA = parsePlayoffCode(playoffGamesByRound[nameA][0].week as string).roundOrder;
-      const orderB = parsePlayoffCode(playoffGamesByRound[nameB][0].week as string).roundOrder;
-      return orderB - orderA; // Descending (most recent first)
-    });
+  // Sort weeks by order (most recent first)
+  playoffWeeks.sort((a, b) => b.roundOrder - a.roundOrder);
 
-  // Implement 2-week rule: Show only 2 most recent "weeks" (playoff rounds count as weeks)
-  const recentPlayoffRounds = sortedPlayoffRounds.slice(0, 2); // Take up to 2 most recent playoff rounds
-  const numPlayoffWeeks = recentPlayoffRounds.length;
+  // Implement 2-week rule: Show only 2 most recent "weeks"
+  const recentPlayoffWeeks = playoffWeeks.slice(0, 2); // Take up to 2 most recent playoff weeks
+  const numPlayoffWeeks = recentPlayoffWeeks.length;
   const numRegularWeeksToShow = Math.max(0, 2 - numPlayoffWeeks); // Fill remaining slots with regular season weeks
 
   // Get current week and previous week regular season games (only if needed)
@@ -202,70 +210,74 @@ export default async function Sidebar() {
         </section>
 
         {/* Recent Games */}
-        {(recentPlayoffRounds.length > 0 || currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
+        {(recentPlayoffWeeks.length > 0 || currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
           <section>
             <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
               Recent Games
             </h3>
 
-            {/* Playoff Rounds (most recent first, max 2) */}
-            {recentPlayoffRounds.map(([roundName, games], roundIdx) => (
-              <div key={roundName} className={roundIdx < recentPlayoffRounds.length - 1 || currentWeekGames.length > 0 || previousWeekGames.length > 0 ? 'mb-4' : ''}>
+            {/* Playoff Weeks (most recent first, max 2) */}
+            {recentPlayoffWeeks.map((week, weekIdx) => (
+              <div key={week.roundOrder} className={weekIdx < recentPlayoffWeeks.length - 1 || currentWeekGames.length > 0 || previousWeekGames.length > 0 ? 'mb-4' : ''}>
                 <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
-                  {roundName}
+                  {week.roundName}
                 </h4>
                 <div className="space-y-2">
-                  {games.map((game, idx) => {
-                    const homeTeam = getTeamByName(game.homeTeam);
-                    const awayTeam = getTeamByName(game.awayTeam);
-                    const homeWon = game.homeScore > game.awayScore;
+                  {Object.entries(week.series).map(([seriesName, games]) => (
+                    <div key={seriesName}>
+                      {games.map((game, idx) => {
+                        const homeTeam = getTeamByName(game.homeTeam);
+                        const awayTeam = getTeamByName(game.awayTeam);
+                        const homeWon = game.homeScore > game.awayScore;
 
-                    const gameContent = (
-                      <>
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={homeWon ? 'font-bold' : 'text-star-gray'}
-                            style={{ color: homeWon ? homeTeam?.primaryColor : undefined }}
-                          >
-                            {homeTeam?.shortName || game.homeTeam}
-                          </span>
-                          <span className="font-mono font-bold text-star-white">
-                            {game.homeScore}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span
-                            className={!homeWon ? 'font-bold' : 'text-star-gray'}
-                            style={{ color: !homeWon ? awayTeam?.primaryColor : undefined }}
-                          >
-                            {awayTeam?.shortName || game.awayTeam}
-                          </span>
-                          <span className="font-mono font-bold text-star-white">
-                            {game.awayScore}
-                          </span>
-                        </div>
-                      </>
-                    );
+                        const gameContent = (
+                          <>
+                            <div className="flex items-center justify-between">
+                              <span
+                                className={homeWon ? 'font-bold' : 'text-star-gray'}
+                                style={{ color: homeWon ? homeTeam?.primaryColor : undefined }}
+                              >
+                                {homeTeam?.shortName || game.homeTeam}
+                              </span>
+                              <span className="font-mono font-bold text-star-white">
+                                {game.homeScore}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between mt-1">
+                              <span
+                                className={!homeWon ? 'font-bold' : 'text-star-gray'}
+                                style={{ color: !homeWon ? awayTeam?.primaryColor : undefined }}
+                              >
+                                {awayTeam?.shortName || game.awayTeam}
+                              </span>
+                              <span className="font-mono font-bold text-star-white">
+                                {game.awayScore}
+                              </span>
+                            </div>
+                          </>
+                        );
 
-                    return game.boxScoreUrl ? (
-                      <Link
-                        key={idx}
-                        href={game.boxScoreUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block hover:border-nebula-orange/50 hover:bg-space-blue/50 hover:scale-105 cursor-pointer"
-                      >
-                        {gameContent}
-                      </Link>
-                    ) : (
-                      <div
-                        key={idx}
-                        className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block"
-                      >
-                        {gameContent}
-                      </div>
-                    );
-                  })}
+                        return game.boxScoreUrl ? (
+                          <Link
+                            key={`${seriesName}-${idx}`}
+                            href={game.boxScoreUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block hover:border-nebula-orange/50 hover:bg-space-blue/50 hover:scale-105 cursor-pointer"
+                          >
+                            {gameContent}
+                          </Link>
+                        ) : (
+                          <div
+                            key={`${seriesName}-${idx}`}
+                            className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block"
+                          >
+                            {gameContent}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

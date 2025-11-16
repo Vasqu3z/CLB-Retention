@@ -126,7 +126,7 @@ export default function DataTable<T>({
           message="There are currently no entries to display. Check back later or try adjusting your filters."
         />
       ) : (
-        <div className="glass-card overflow-hidden">
+        <div className="glass-card rounded-xl">
           <div className="overflow-x-auto">
             <table className="w-full font-mono text-sm">
               <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">

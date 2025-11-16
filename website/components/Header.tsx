@@ -31,30 +31,40 @@ export default function Header() {
       </a>
       <div className="container mx-auto px-4 lg:px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-3 group focus:outline-none rounded-lg"
-            aria-label="Comets League Baseball Home"
-          >
-            <div className="w-12 h-12 relative flex items-center justify-center flex-shrink-0">
-              <Image
-                src={getLeagueLogo()}
-                alt="CLB Logo"
-                width={48}
-                height={48}
-                className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
-              />
+          {/* Logo - Centered over sidebar on desktop */}
+          <div className="lg:w-80 lg:flex lg:justify-center lg:pr-6">
+            <Link
+              href="/"
+              className="flex items-center gap-3 group focus:outline-none rounded-lg"
+              aria-label="Comets League Baseball Home"
+            >
+              <div className="w-12 h-12 relative flex items-center justify-center flex-shrink-0">
+                <Image
+                  src={getLeagueLogo()}
+                  alt="CLB Logo"
+                  width={48}
+                  height={48}
+                  className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
+                />
+              </div>
+              <div className="flex flex-col justify-center">
+                <span className="text-xl font-display font-bold text-star-white leading-tight">
+                  {LEAGUE_CONFIG.shortName}
+                </span>
+                <span className="text-xs text-star-gray font-mono leading-tight">
+                  Season {LEAGUE_CONFIG.currentSeason}
+                </span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Kingdom Cup Champions - Placeholder */}
+          <div className="hidden lg:flex items-center gap-3 px-6 py-2 rounded-lg bg-gradient-to-r from-solar-gold/10 to-comet-yellow/10 border border-solar-gold/30">
+            <div className="flex flex-col items-center">
+              <span className="text-xs font-mono text-star-gray uppercase tracking-wider">Kingdom Cup Champions</span>
+              <span className="text-sm font-display font-bold text-solar-gold">Season 1</span>
             </div>
-            <div className="flex flex-col justify-center">
-              <span className="text-xl font-display font-bold text-star-white leading-tight">
-                {LEAGUE_CONFIG.shortName}
-              </span>
-              <span className="text-xs text-star-gray font-mono leading-tight">
-                Season {LEAGUE_CONFIG.currentSeason}
-              </span>
-            </div>
-          </Link>
+          </div>
 
           {/* Team Emblems */}
           <div className="hidden lg:flex items-center gap-4 mx-4">

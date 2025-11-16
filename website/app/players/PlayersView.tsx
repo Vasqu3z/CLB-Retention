@@ -226,7 +226,7 @@ export default function PlayersView({
               placeholder="Search players or teams..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-16 py-2 bg-space-blue/30 border border-cosmic-border rounded-lg font-mono text-sm text-star-white placeholder-star-gray/50 focus:outline-none focus:ring-2 focus:ring-nebula-orange/50 focus:border-nebula-orange/50 transition-all"
+              className="w-full pl-10 pr-16 py-2 bg-space-black/60 border border-cosmic-border rounded-lg font-mono text-sm text-star-white placeholder-star-gray/50 focus:outline-none focus:ring-2 focus:ring-nebula-orange/50 focus:border-nebula-orange/50 transition-all"
             />
             {searchQuery && (
               <button

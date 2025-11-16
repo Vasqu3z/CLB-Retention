@@ -27,10 +27,14 @@ export default function SidebarScrollWrapper({ children, className = '', style =
     };
 
     const handleWheel = (e: WheelEvent) => {
+      // Always stop propagation to prevent main page from scrolling
+      e.stopPropagation();
+
       if (!isHoveringRef.current) {
+        // Only prevent sidebar scrolling when not hovering
         e.preventDefault();
-        e.stopPropagation();
       }
+      // When hovering, sidebar scrolls naturally (no preventDefault)
     };
 
     sidebar.addEventListener('mouseenter', handleMouseEnter);

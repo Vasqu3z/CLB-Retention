@@ -1,4 +1,4 @@
-import { getStandings, getSchedule, getAllPlayers, getPlayoffSchedule, getAverageTeamGP, ScheduleGame, PlayoffGame } from '@/lib/sheets';
+import { getStandings, getSchedule, getAllPlayers, getPlayoffSchedule, getAverageTeamGP, ScheduleGame, PlayoffGame, groupGamesBySeries } from '@/lib/sheets';
 import { getTeamByName } from '@/config/league';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import { QUALIFICATION_THRESHOLDS } from '@/config/sheets';
@@ -158,8 +158,59 @@ export default async function Sidebar() {
     .sort((a, b) => (b.np || 0) - (a.np || 0))
     .slice(0, 3);
 
+  // Determine Kingdom Cup Champion
+  const seriesMap = groupGamesBySeries(playoffSchedule);
+  const kcSeries = Array.from(seriesMap.values()).find(series =>
+    series.games.some(game => game.code.startsWith('KC'))
+  );
+  const kingdomCupChampion = kcSeries?.winner ? getTeamByName(kcSeries.winner) : null;
+  const championLogos = kingdomCupChampion ? getTeamLogoPaths(kingdomCupChampion.name) : null;
+
   return (
     <div className="p-4 space-y-6">
+        {/* Kingdom Cup Champions */}
+        {kingdomCupChampion && championLogos && (
+          <section>
+            <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-solar-gold/20 via-comet-yellow/10 to-transparent border-2 border-solar-gold/40 p-4">
+              {/* Trophy Icon Background */}
+              <div className="absolute top-2 right-2 opacity-10">
+                <svg className="w-16 h-16 text-solar-gold" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a.5.5 0 00-.5.5v2a5 5 0 01-10 0v-2a.5.5 0 00-.5-.5H2a1 1 0 01-1-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5a1.5 1.5 0 013 0V4h1v-.5z"/>
+                </svg>
+              </div>
+
+              <div className="relative">
+                <h3 className="text-xs font-display font-bold text-solar-gold mb-2 uppercase tracking-wider text-center flex items-center justify-center gap-2">
+                  <span>👑</span>
+                  <span>Kingdom Cup Champions</span>
+                  <span>👑</span>
+                </h3>
+
+                <Link
+                  href={`/teams/${kingdomCupChampion.slug}`}
+                  className="block group"
+                >
+                  <div className="flex items-center justify-center py-2">
+                    <div className="w-40 h-20 relative transition-transform group-hover:scale-105">
+                      <Image
+                        src={championLogos.full}
+                        alt={`${kingdomCupChampion.name} - Kingdom Cup Champions`}
+                        width={160}
+                        height={80}
+                        className="object-contain drop-shadow-[0_0_16px_rgba(255,215,0,0.5)] group-hover:drop-shadow-[0_0_24px_rgba(255,215,0,0.8)] transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-center text-xs font-mono text-star-gray mt-1">
+                    Season 1 Champions
+                  </p>
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Mini Standings */}
         <section>
           <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">

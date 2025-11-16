@@ -164,11 +164,10 @@ export default function Home() {
             const logos = getTeamLogoPaths(team.name);
             return (
               <FadeIn key={team.slug} delay={1.1 + idx * 0.08} direction="up" duration={0.5} useViewport={false}>
-                <Tilt>
-                  <Link
-                    href={`/teams/${team.slug}`}
-                    className="group p-4 rounded-xl bg-space-blue/30 border border-cosmic-border hover:border-nebula-orange/50 transition-all duration-300 block"
-                  >
+                <Link
+                  href={`/teams/${team.slug}`}
+                  className="group p-4 rounded-xl bg-space-blue/30 border border-cosmic-border hover:border-nebula-orange/50 hover:scale-105 hover:rotate-1 transition-all duration-300 block"
+                >
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-16 h-16 relative">
                       <Image
@@ -189,7 +188,6 @@ export default function Home() {
                     </div>
                   </div>
                 </Link>
-                </Tilt>
               </FadeIn>
             );
           })}

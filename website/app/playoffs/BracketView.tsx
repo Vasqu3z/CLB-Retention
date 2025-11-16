@@ -183,7 +183,7 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
                                       className="font-medium text-xs"
                                       style={homeWon && homeTeamConfig ? { color: homeTeamConfig.primaryColor, fontWeight: 'bold' } : { color: 'var(--star-white)' }}
                                     >
-                                      {game.homeTeam}
+                                      {homeTeamConfig?.shortName || game.homeTeam}
                                     </span>
                                     <span className="text-star-white font-bold text-xs">{game.homeScore}</span>
                                   </div>
@@ -204,7 +204,7 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
                                       className="font-medium text-xs"
                                       style={awayWon && awayTeamConfig ? { color: awayTeamConfig.primaryColor, fontWeight: 'bold' } : { color: 'var(--star-white)' }}
                                     >
-                                      {game.awayTeam}
+                                      {awayTeamConfig?.shortName || game.awayTeam}
                                     </span>
                                     <span className="text-star-white font-bold text-xs">{game.awayScore}</span>
                                   </div>

@@ -129,7 +129,7 @@ export default function DataTable<T>({
         <div className="glass-card rounded-xl">
           <div className="overflow-x-auto">
             <table className="w-full font-mono text-sm">
-              <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-16 z-10">
+              <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
                 <tr>
                   {visibleColumns.map((column) => (
                     <th

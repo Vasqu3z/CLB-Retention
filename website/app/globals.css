@@ -515,3 +515,22 @@ select option:checked {
   background-color: rgba(30, 36, 66, 0.98);
   color: var(--nebula-orange);
 }
+
+/* Input styling - Force dark theme */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"] {
+  background-color: rgba(30, 36, 66, 0.3) !important;
+  color: var(--star-white) !important;
+  border: 1px solid var(--cosmic-border);
+  transition: all 0.3s ease;
+}
+
+input[type="text"]::placeholder,
+input[type="search"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder {
+  color: var(--star-gray);
+  opacity: 0.5;
+}

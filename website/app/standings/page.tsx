@@ -70,9 +70,9 @@ export default async function StandingsPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="League Leader"
-            value=""
+            value={`${topTeam?.wins}-${topTeam?.losses}`}
             icon={Trophy}
-            sublabel={`${topTeam?.wins}-${topTeam?.losses} (${topTeam?.winPct})`}
+            sublabel={`Win%: ${topTeam?.winPct}`}
             color="orange"
           >
             {topTeam?.fullLogoPath && (

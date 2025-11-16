@@ -98,11 +98,11 @@ export default async function StandingsPage() {
             color="gold"
           >
             <div className="flex items-center justify-center pt-2">
-              <div className="w-40 h-20 relative">
+              <div className="w-30 h-20 relative">
                 <Image
                   src={getLeagueLogo()}
                   alt="CLB Logo"
-                  width={160}
+                  width={120}
                   height={80}
                   className="object-contain"
                 />

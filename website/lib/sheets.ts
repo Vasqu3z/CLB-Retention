@@ -750,7 +750,7 @@ export async function getAllPlayers(isPlayoffs: boolean = false): Promise<Player
  * @param isPlayoffs - If true, reads playoff team data; otherwise regular season
  * @returns Average games played per team, or 0 if no team data
  */
-async function getAverageTeamGP(isPlayoffs: boolean = false): Promise<number> {
+export async function getAverageTeamGP(isPlayoffs: boolean = false): Promise<number> {
   const teamData = await getTeamData(undefined, isPlayoffs);
   if (teamData.length === 0) return 0;
   const totalGP = teamData.reduce((sum, team) => sum + team.gp, 0);

@@ -23,20 +23,29 @@ export default function SidebarScrollWrapper({ children, className = '', style =
 
     const handleMouseLeave = () => {
       isHoveringRef.current = false;
-      sidebar.style.overflowY = 'hidden';
+      sidebar.style.overflowY = 'auto'; // Keep auto to allow scrollbar
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!isHoveringRef.current) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     };
 
     sidebar.addEventListener('mouseenter', handleMouseEnter);
     sidebar.addEventListener('mouseleave', handleMouseLeave);
+    sidebar.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
       sidebar.removeEventListener('mouseenter', handleMouseEnter);
       sidebar.removeEventListener('mouseleave', handleMouseLeave);
+      sidebar.removeEventListener('wheel', handleWheel);
     };
   }, []);
 
   return (
-    <div ref={sidebarRef} className={className} style={{ ...style, overflowY: 'hidden' }}>
+    <div ref={sidebarRef} className={className} style={{ ...style, overflowY: 'auto' }}>
       {children}
     </div>
   );

@@ -122,7 +122,7 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
                             {game.played ? (
                               <div className="flex items-center gap-2">
                                 <span className="font-medium text-star-white text-xs">
-                                  {game.awayTeam} {game.awayScore}, {game.homeTeam} {game.homeScore}
+                                  {game.homeTeam} {game.homeScore}, {game.awayTeam} {game.awayScore}
                                 </span>
                                 {game.boxScoreUrl && (
                                   <a

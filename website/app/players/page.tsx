@@ -21,7 +21,7 @@ export default async function PlayersPage() {
             Player Statistics
           </h1>
           <p className="text-star-gray font-mono text-shadow">
-            Individual player performance across all teams
+            Player Stats • Updated in real-time
           </p>
         </div>
       </FadeIn>

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import EmptyState from './EmptyState';
 
@@ -41,6 +41,41 @@ export default function DataTable<T>({
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(defaultSortDirection);
   const [isCondensed, setIsCondensed] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isHoveringRef = useRef(false);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      isHoveringRef.current = true;
+    };
+
+    const handleMouseLeave = () => {
+      isHoveringRef.current = false;
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      // Prevent the main page from scrolling when the table is hovered
+      event.stopPropagation();
+
+      // When not actively hovering, block the wheel so the main Lenis scroll handles it
+      if (!isHoveringRef.current) {
+        event.preventDefault();
+      }
+    };
+
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
 
   // Filter columns based on condensed mode
   const visibleColumns = isCondensed
@@ -127,7 +162,11 @@ export default function DataTable<T>({
         />
       ) : (
         <div className="glass-card rounded-xl">
-          <div className="overflow-x-auto">
+          <div
+            ref={scrollContainerRef}
+            className="relative overflow-x-auto overflow-y-auto max-h-[70vh]"
+            data-lenis-prevent
+          >
             <table className="w-full font-mono text-sm">
               <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
                 <tr>

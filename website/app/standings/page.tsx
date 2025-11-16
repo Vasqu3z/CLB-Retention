@@ -32,11 +32,14 @@ export default async function StandingsPage() {
   const totalGames = enhancedStandings.reduce((sum, t) => sum + t.wins + t.losses, 0) / 2; // Divide by 2 since each game involves 2 teams
 
   // Highest Runs/Game team
-  const teamsWithGames = enhancedStandings.map(t => ({
-    ...t,
-    gamesPlayed: t.wins + t.losses,
-    runsPerGame: t.gamesPlayed > 0 ? t.runsScored / (t.wins + t.losses) : 0,
-  }));
+  const teamsWithGames = enhancedStandings.map(t => {
+    const gamesPlayed = t.wins + t.losses;
+    return {
+      ...t,
+      gamesPlayed,
+      runsPerGame: gamesPlayed > 0 ? t.runsScored / gamesPlayed : 0,
+    };
+  });
   const highestRunsPerGameTeam = teamsWithGames.reduce((max, t) =>
     t.runsPerGame > max.runsPerGame ? t : max
   );

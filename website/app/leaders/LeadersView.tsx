@@ -145,11 +145,10 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
                     <span className="font-medium italic text-star-gray font-mono text-sm">{leader.player}</span>
                   ) : (
                     <>
-                      <span className="font-semibold text-star-white text-sm">{leader.player}</span>
                       {logos && teamConfig && (
                         <Link
                           href={`/teams/${teamConfig.slug}`}
-                          className="ml-1 flex-shrink-0 hover:opacity-80 transition-opacity"
+                          className="flex-shrink-0 hover:opacity-80 transition-opacity"
                           title={leader.team}
                         >
                           <div className="w-5 h-5 relative">
@@ -163,6 +162,7 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
                           </div>
                         </Link>
                       )}
+                      <span className="font-semibold text-star-white text-sm">{leader.player}</span>
                     </>
                   )}
                 </div>

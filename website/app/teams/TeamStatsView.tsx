@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { TeamData, StandingsRow } from '@/lib/sheets';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getActiveTeams } from '@/config/league';
+import { getTeamLogoPaths } from '@/lib/teamLogos';
 import SeasonToggle from '@/components/SeasonToggle';
 import DataTable, { Column } from '@/components/DataTable';
 
@@ -29,6 +31,7 @@ interface EnhancedTeam extends TeamData {
   der: string;
   color: string;
   slug: string;
+  emblemPath?: string;
 }
 
 export default function TeamStatsView({
@@ -87,6 +90,9 @@ export default function TeamStatsView({
     const oaa = team.fielding.np - team.fielding.e; // Outs Above Average
     const der = team.gp > 0 ? (oaa / team.gp).toFixed(2) : '0.00'; // Defensive Efficiency Rating (OAA/Game)
 
+    const teamConfig = teams.find(t => t.name === team.teamName);
+    const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
+
     return {
       ...team,
       avg,
@@ -101,6 +107,7 @@ export default function TeamStatsView({
       der,
       color: getTeamColor(team.teamName),
       slug: getTeamSlug(team.teamName),
+      emblemPath: logos?.emblem,
     };
   });
 
@@ -112,7 +119,18 @@ export default function TeamStatsView({
       sortable: true,
       align: 'left',
       render: (team) => (
-        <Link href={`/teams/${team.slug}`} className="hover:underline font-semibold transition-colors" style={{ color: team.color }}>
+        <Link href={`/teams/${team.slug}`} className="hover:underline font-semibold transition-colors flex items-center gap-2" style={{ color: team.color }}>
+          {team.emblemPath && (
+            <div className="w-5 h-5 relative flex-shrink-0">
+              <Image
+                src={team.emblemPath}
+                alt={team.teamName}
+                width={20}
+                height={20}
+                className="object-contain"
+              />
+            </div>
+          )}
           {team.teamName}
         </Link>
       ),
@@ -139,7 +157,18 @@ export default function TeamStatsView({
       sortable: true,
       align: 'left',
       render: (team) => (
-        <Link href={`/teams/${team.slug}`} className="hover:underline font-semibold transition-colors" style={{ color: team.color }}>
+        <Link href={`/teams/${team.slug}`} className="hover:underline font-semibold transition-colors flex items-center gap-2" style={{ color: team.color }}>
+          {team.emblemPath && (
+            <div className="w-5 h-5 relative flex-shrink-0">
+              <Image
+                src={team.emblemPath}
+                alt={team.teamName}
+                width={20}
+                height={20}
+                className="object-contain"
+              />
+            </div>
+          )}
           {team.teamName}
         </Link>
       ),
@@ -164,7 +193,18 @@ export default function TeamStatsView({
       sortable: true,
       align: 'left',
       render: (team) => (
-        <Link href={`/teams/${team.slug}`} className="hover:underline font-semibold transition-colors" style={{ color: team.color }}>
+        <Link href={`/teams/${team.slug}`} className="hover:underline font-semibold transition-colors flex items-center gap-2" style={{ color: team.color }}>
+          {team.emblemPath && (
+            <div className="w-5 h-5 relative flex-shrink-0">
+              <Image
+                src={team.emblemPath}
+                alt={team.teamName}
+                width={20}
+                height={20}
+                className="object-contain"
+              />
+            </div>
+          )}
           {team.teamName}
         </Link>
       ),

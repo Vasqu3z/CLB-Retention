@@ -33,11 +33,11 @@ export default function PlayerProfileView({
     <div className="space-y-6">
       {/* Player Header */}
       <FadeIn delay={0} direction="down">
-        <div className="bg-gradient-to-r from-deep-space/40 via-deep-space/60 to-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6">
+        <div className="glass-card p-6">
           <div className="flex items-start gap-6">
             {/* Player Image */}
             {registryEntry?.imageUrl && (
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-nebula-cyan/50 flex-shrink-0">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-nebula-orange/50 flex-shrink-0 hover:border-nebula-orange transition-all duration-300 hover:drop-shadow-[0_0_16px_rgba(255,107,53,0.6)]">
                 <img
                   src={registryEntry.imageUrl}
                   alt={playerName}
@@ -48,18 +48,18 @@ export default function PlayerProfileView({
 
             {/* Player Info */}
             <div className="flex-1">
-              <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+              <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent text-shadow-glow-orange">
                 {playerName}
               </h1>
               <div className="flex flex-wrap gap-4 text-star-gray font-mono">
                 {registryEntry?.team && (
-                  <span>Team: <span className="text-nebula-cyan">{registryEntry.team}</span></span>
+                  <span>Team: <span className="text-nebula-orange font-semibold">{registryEntry.team}</span></span>
                 )}
                 {attributes?.characterClass && (
-                  <span>Class: <span className="text-nebula-teal">{attributes.characterClass}</span></span>
+                  <span>Class: <span className="text-nebula-coral font-semibold">{attributes.characterClass}</span></span>
                 )}
                 {attributes?.captain && (
-                  <span>Captain: <span className="text-nebula-purple">{attributes.captain}</span></span>
+                  <span>Captain: <span className="text-solar-gold font-semibold">{attributes.captain}</span></span>
                 )}
               </div>
             </div>
@@ -69,13 +69,13 @@ export default function PlayerProfileView({
 
       {/* Tab Navigation */}
       <FadeIn delay={0.1} direction="up">
-        <div className="flex gap-2 border-b border-nebula-purple/30">
+        <div className="flex gap-2 border-b border-cosmic-border">
           <button
             onClick={() => setActiveTab('stats')}
-            className={`px-6 py-3 font-mono font-semibold transition-colors ${
+            className={`px-6 py-3 font-display font-semibold transition-all duration-300 ${
               activeTab === 'stats'
-                ? 'text-nebula-cyan border-b-2 border-nebula-cyan'
-                : 'text-star-gray hover:text-nebula-cyan/70'
+                ? 'text-nebula-orange border-b-2 border-nebula-orange'
+                : 'text-star-gray hover:text-star-white hover:border-b-2 hover:border-star-dim'
             }`}
           >
             Stats
@@ -83,10 +83,10 @@ export default function PlayerProfileView({
           {attributes && (
             <button
               onClick={() => setActiveTab('attributes')}
-              className={`px-6 py-3 font-mono font-semibold transition-colors ${
+              className={`px-6 py-3 font-display font-semibold transition-all duration-300 ${
                 activeTab === 'attributes'
-                  ? 'text-nebula-cyan border-b-2 border-nebula-cyan'
-                  : 'text-star-gray hover:text-nebula-cyan/70'
+                  ? 'text-nebula-orange border-b-2 border-nebula-orange'
+                  : 'text-star-gray hover:text-star-white hover:border-b-2 hover:border-star-dim'
               }`}
             >
               Attributes
@@ -95,10 +95,10 @@ export default function PlayerProfileView({
           {chemistry && (
             <button
               onClick={() => setActiveTab('chemistry')}
-              className={`px-6 py-3 font-mono font-semibold transition-colors ${
+              className={`px-6 py-3 font-display font-semibold transition-all duration-300 ${
                 activeTab === 'chemistry'
-                  ? 'text-nebula-cyan border-b-2 border-nebula-cyan'
-                  : 'text-star-gray hover:text-nebula-cyan/70'
+                  ? 'text-nebula-orange border-b-2 border-nebula-orange'
+                  : 'text-star-gray hover:text-star-white hover:border-b-2 hover:border-star-dim'
               }`}
             >
               Chemistry
@@ -116,20 +116,20 @@ export default function PlayerProfileView({
               <div className="flex gap-2">
                 <button
                   onClick={() => setSeason('regular')}
-                  className={`px-4 py-2 font-mono text-sm rounded transition-colors ${
+                  className={`px-4 py-2 font-display font-semibold text-sm rounded-lg transition-all duration-300 ${
                     season === 'regular'
-                      ? 'bg-nebula-cyan text-deep-space'
-                      : 'bg-deep-space/40 text-star-gray hover:text-nebula-cyan'
+                      ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
+                      : 'bg-space-navy/50 text-star-gray hover:text-star-white hover:bg-space-blue/50 border border-cosmic-border'
                   }`}
                 >
                   Regular Season
                 </button>
                 <button
                   onClick={() => setSeason('playoffs')}
-                  className={`px-4 py-2 font-mono text-sm rounded transition-colors ${
+                  className={`px-4 py-2 font-display font-semibold text-sm rounded-lg transition-all duration-300 ${
                     season === 'playoffs'
-                      ? 'bg-nebula-cyan text-deep-space'
-                      : 'bg-deep-space/40 text-star-gray hover:text-nebula-cyan'
+                      ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
+                      : 'bg-space-navy/50 text-star-gray hover:text-star-white hover:bg-space-blue/50 border border-cosmic-border'
                   }`}
                 >
                   Playoffs
@@ -140,8 +140,8 @@ export default function PlayerProfileView({
             {currentStats ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Hitting Stats */}
-                <div className="bg-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6">
-                  <h3 className="text-xl font-display font-bold text-nebula-cyan mb-4">Hitting</h3>
+                <div className="glass-card p-6 hover:border-nebula-orange/50">
+                  <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <StatRow label="GP" value={currentStats.gp} />
                     <StatRow label="AB" value={currentStats.ab} />
@@ -158,8 +158,8 @@ export default function PlayerProfileView({
                 </div>
 
                 {/* Pitching Stats */}
-                <div className="bg-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6">
-                  <h3 className="text-xl font-display font-bold text-nebula-teal mb-4">Pitching</h3>
+                <div className="glass-card p-6 hover:border-solar-gold/50">
+                  <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <StatRow label="IP" value={currentStats.ip?.toFixed(2)} />
                     <StatRow label="W" value={currentStats.w} />
@@ -174,8 +174,8 @@ export default function PlayerProfileView({
                 </div>
 
                 {/* Fielding Stats */}
-                <div className="bg-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6">
-                  <h3 className="text-xl font-display font-bold text-nebula-purple mb-4">Fielding</h3>
+                <div className="glass-card p-6 hover:border-nebula-coral/50">
+                  <h3 className="text-xl font-display font-bold text-nebula-coral mb-4 text-shadow">Fielding</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <StatRow label="NP" value={currentStats.np} />
                     <StatRow label="E" value={currentStats.e} />
@@ -186,8 +186,10 @@ export default function PlayerProfileView({
                 </div>
               </div>
             ) : (
-              <div className="text-center py-12 text-star-gray font-mono">
-                No {season === 'playoffs' ? 'playoff' : 'regular season'} stats available for this player.
+              <div className="glass-card p-12 text-center">
+                <p className="text-star-gray font-mono">
+                  No {season === 'playoffs' ? 'playoff' : 'regular season'} stats available for this player.
+                </p>
               </div>
             )}
           </div>
@@ -199,8 +201,8 @@ export default function PlayerProfileView({
         <FadeIn delay={0.15} direction="up">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Overall Ratings */}
-            <div className="bg-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6">
-              <h3 className="text-xl font-display font-bold text-nebula-cyan mb-4">Overall Ratings</h3>
+            <div className="glass-card p-6 hover:border-nebula-orange/50">
+              <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Overall Ratings</h3>
               <div className="space-y-2 font-mono text-sm">
                 <StatRow label="Pitching" value={attributes.pitchingOverall} highlight />
                 <StatRow label="Batting" value={attributes.battingOverall} highlight />
@@ -210,8 +212,8 @@ export default function PlayerProfileView({
             </div>
 
             {/* Character Info */}
-            <div className="bg-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6">
-              <h3 className="text-xl font-display font-bold text-nebula-teal mb-4">Character Info</h3>
+            <div className="glass-card p-6 hover:border-solar-gold/50">
+              <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Character Info</h3>
               <div className="space-y-2 font-mono text-sm">
                 <StatRow label="Weight" value={attributes.weight} />
                 <StatRow label="Ability" value={attributes.ability} />
@@ -224,8 +226,8 @@ export default function PlayerProfileView({
             </div>
 
             {/* Pitching Attributes */}
-            <div className="bg-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6">
-              <h3 className="text-xl font-display font-bold text-nebula-cyan mb-4">Pitching</h3>
+            <div className="glass-card p-6 hover:border-nebula-orange/50">
+              <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Pitching</h3>
               <div className="space-y-2 font-mono text-sm">
                 <StatRow label="Star Pitch" value={attributes.starPitch} />
                 <StatRow label="Fastball Speed" value={attributes.fastballSpeed} />
@@ -237,8 +239,8 @@ export default function PlayerProfileView({
             </div>
 
             {/* Hitting Attributes */}
-            <div className="bg-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6">
-              <h3 className="text-xl font-display font-bold text-nebula-teal mb-4">Hitting</h3>
+            <div className="glass-card p-6 hover:border-nebula-coral/50">
+              <h3 className="text-xl font-display font-bold text-nebula-coral mb-4 text-shadow">Hitting</h3>
               <div className="space-y-2 font-mono text-sm">
                 <StatRow label="Star Swing" value={attributes.starSwing} />
                 <StatRow label="Hit Trajectory" value={attributes.hittingTrajectory} />
@@ -253,8 +255,8 @@ export default function PlayerProfileView({
             </div>
 
             {/* Fielding & Speed Attributes */}
-            <div className="bg-deep-space/40 backdrop-blur-sm border border-nebula-purple/30 rounded-lg p-6 lg:col-span-2">
-              <h3 className="text-xl font-display font-bold text-nebula-purple mb-4">Fielding & Speed</h3>
+            <div className="glass-card p-6 lg:col-span-2 hover:border-comet-yellow/50">
+              <h3 className="text-xl font-display font-bold text-comet-yellow mb-4 text-shadow">Fielding & Speed</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 font-mono text-sm">
                   <StatRow label="Fielding" value={attributes.fielding} />
@@ -276,14 +278,17 @@ export default function PlayerProfileView({
         <FadeIn delay={0.15} direction="up">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Positive Chemistry */}
-            <div className="bg-deep-space/40 backdrop-blur-sm border border-green-500/30 rounded-lg p-6">
-              <h3 className="text-xl font-display font-bold text-green-400 mb-4">
+            <div className="glass-card p-6 border-green-400/30 hover:border-green-400/50">
+              <h3 className="text-xl font-display font-bold text-green-400 mb-4 text-shadow">
                 Positive Chemistry ({chemistry.posCount})
               </h3>
               {chemistry.positive.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2 font-mono text-sm">
+                <div className="max-h-96 overflow-y-auto pr-2 space-y-1">
                   {chemistry.positive.map((player, idx) => (
-                    <div key={idx} className="text-star-gray hover:text-green-400 transition-colors">
+                    <div
+                      key={idx}
+                      className="text-star-gray hover:text-green-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-green-400/10 cursor-default"
+                    >
                       {player}
                     </div>
                   ))}
@@ -294,14 +299,17 @@ export default function PlayerProfileView({
             </div>
 
             {/* Negative Chemistry */}
-            <div className="bg-deep-space/40 backdrop-blur-sm border border-red-500/30 rounded-lg p-6">
-              <h3 className="text-xl font-display font-bold text-red-400 mb-4">
+            <div className="glass-card p-6 border-red-400/30 hover:border-red-400/50">
+              <h3 className="text-xl font-display font-bold text-red-400 mb-4 text-shadow">
                 Negative Chemistry ({chemistry.negCount})
               </h3>
               {chemistry.negative.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2 font-mono text-sm">
+                <div className="max-h-96 overflow-y-auto pr-2 space-y-1">
                   {chemistry.negative.map((player, idx) => (
-                    <div key={idx} className="text-star-gray hover:text-red-400 transition-colors">
+                    <div
+                      key={idx}
+                      className="text-star-gray hover:text-red-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-red-400/10 cursor-default"
+                    >
                       {player}
                     </div>
                   ))}
@@ -322,9 +330,9 @@ function StatRow({ label, value, highlight = false }: { label: string; value: an
   const displayValue = value === undefined || value === null ? '-' : value;
 
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex justify-between items-center py-1 hover:bg-space-blue/20 transition-colors duration-200 px-2 rounded">
       <span className="text-star-gray">{label}</span>
-      <span className={highlight ? 'text-nebula-cyan font-semibold' : 'text-white'}>
+      <span className={highlight ? 'text-nebula-orange font-semibold' : 'text-star-white'}>
         {displayValue}
       </span>
     </div>

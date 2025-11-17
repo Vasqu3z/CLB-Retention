@@ -292,13 +292,13 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-blue-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen py-8">
+      <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent text-shadow-glow-orange">
             🏟️ Lineup Builder
           </h1>
-          <p className="text-gray-600">
+          <p className="text-star-gray font-mono text-lg">
             Drag and drop players to build your optimal lineup with chemistry visualization
           </p>
         </div>
@@ -306,47 +306,47 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Baseball Field */}
           <div className="xl:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="glass-card p-6">
               {/* Chemistry Score */}
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-display font-bold text-star-white">
                     Team Chemistry:
                     <span className={`ml-2 ${
-                      totalChemistry > 0 ? 'text-green-600' : totalChemistry < 0 ? 'text-red-600' : 'text-gray-600'
+                      totalChemistry > 0 ? 'text-green-400' : totalChemistry < 0 ? 'text-red-400' : 'text-star-gray'
                     }`}>
                       {totalChemistry > 0 ? '+' : ''}{totalChemistry}
                     </span>
                   </h2>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-star-gray font-mono">
                     {lineup.filter(p => p !== null).length}/9 field positions filled
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={handleExport}
                     disabled={lineup.filter(p => p !== null).length === 0}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                    className="px-4 py-2 bg-green-500/20 text-green-400 border border-green-400/50 rounded-lg hover:bg-green-500/30 disabled:bg-space-blue/20 disabled:text-star-dim disabled:border-cosmic-border disabled:cursor-not-allowed font-display font-semibold transition-all duration-300"
                   >
                     📋 Export
                   </button>
                   <button
                     onClick={() => setShowImportDialog(true)}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium"
+                    className="px-4 py-2 bg-nebula-cyan/20 text-nebula-cyan border border-nebula-cyan/50 rounded-lg hover:bg-nebula-cyan/30 font-display font-semibold transition-all duration-300"
                   >
                     📥 Import
                   </button>
                   <button
                     onClick={() => setShowSaveDialog(true)}
                     disabled={lineup.filter(p => p !== null).length === 0}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                    className="px-4 py-2 bg-nebula-orange/20 text-nebula-orange border border-nebula-orange/50 rounded-lg hover:bg-nebula-orange/30 disabled:bg-space-blue/20 disabled:text-star-dim disabled:border-cosmic-border disabled:cursor-not-allowed font-display font-semibold transition-all duration-300"
                   >
                     💾 Save
                   </button>
                   <button
                     onClick={handleClearLineup}
                     disabled={lineup.filter(p => p !== null).length === 0 && battingOrder.filter(p => p !== null).length === 0}
-                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                    className="px-4 py-2 bg-red-500/20 text-red-400 border border-red-400/50 rounded-lg hover:bg-red-500/30 disabled:bg-space-blue/20 disabled:text-star-dim disabled:border-cosmic-border disabled:cursor-not-allowed font-display font-semibold transition-all duration-300"
                   >
                     🗑️ Clear
                   </button>
@@ -354,13 +354,13 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
               </div>
 
               {/* Baseball Field */}
-              <div className="relative aspect-square bg-gradient-to-br from-green-600 to-green-700 rounded-lg p-8">
+              <div className="relative aspect-square bg-gradient-to-br from-green-700 via-green-800 to-green-900 rounded-lg p-8 border border-green-600/30">
                 {/* Chemistry Lines (SVG) */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>
                   {chemistryConnections.map((conn, idx) => {
                     const pos1 = POSITIONS[conn.pos1];
                     const pos2 = POSITIONS[conn.pos2];
-                    const color = conn.type === 'positive' ? '#22c55e' : '#ef4444';
+                    const color = conn.type === 'positive' ? '#4ade80' : '#ef4444';
                     const opacity = Math.min(Math.abs(conn.value) / 500, 0.8);
 
                     return (
@@ -399,28 +399,28 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                           draggable
                           onDragStart={() => handleDragStart(player, position.id)}
                           className={`
-                            relative bg-white rounded-lg shadow-lg px-3 py-2 cursor-move
+                            relative bg-space-navy/90 backdrop-blur-md rounded-lg shadow-lg px-3 py-2 cursor-move
                             border-2 transition-all hover:scale-105
-                            ${hasChemistry ? 'border-yellow-400 shadow-yellow-400/50' : 'border-gray-300'}
+                            ${hasChemistry ? 'border-comet-yellow shadow-[0_0_16px_rgba(255,210,63,0.6)]' : 'border-cosmic-border'}
                           `}
                         >
-                          <div className="text-xs font-bold text-gray-500 text-center mb-1">
+                          <div className="text-xs font-bold text-nebula-orange text-center mb-1 font-display">
                             {position.label}
                           </div>
-                          <div className="text-sm font-bold text-gray-900 text-center whitespace-nowrap">
+                          <div className="text-sm font-bold text-star-white text-center whitespace-nowrap font-mono">
                             {player}
                           </div>
                           <button
                             onClick={() => handleRemoveFromPosition(position.id)}
-                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center"
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center shadow-lg"
                           >
                             ×
                           </button>
                         </div>
                       ) : (
-                        <div className="bg-white/30 backdrop-blur-sm rounded-lg border-2 border-dashed border-white/50 px-4 py-3 text-center">
-                          <div className="text-xs font-bold text-white">{position.label}</div>
-                          <div className="text-xs text-white/70 mt-1">{position.name}</div>
+                        <div className="bg-space-navy/30 backdrop-blur-sm rounded-lg border-2 border-dashed border-star-gray/30 px-4 py-3 text-center hover:border-star-gray/50 transition-colors duration-200">
+                          <div className="text-xs font-bold text-star-white font-display">{position.label}</div>
+                          <div className="text-xs text-star-gray mt-1 font-mono">{position.name}</div>
                         </div>
                       )}
                     </div>
@@ -430,8 +430,8 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
             </div>
 
             {/* Batting Order */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">⚾ Batting Order</h3>
+            <div className="glass-card p-6">
+              <h3 className="text-xl font-display font-bold text-star-white mb-4">⚾ Batting Order</h3>
               <div className="grid grid-cols-3 gap-3">
                 {battingOrder.map((player, idx) => (
                   <div
@@ -444,21 +444,21 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                       <div
                         draggable
                         onDragStart={() => handleDragStart(player, undefined, idx)}
-                        className="bg-blue-50 border-2 border-blue-300 rounded-lg px-3 py-2 cursor-move hover:bg-blue-100"
+                        className="bg-nebula-orange/10 border-2 border-nebula-orange/50 rounded-lg px-3 py-2 cursor-move hover:bg-nebula-orange/20 transition-all duration-200"
                       >
-                        <div className="text-xs font-bold text-blue-600">#{idx + 1}</div>
-                        <div className="text-sm font-semibold text-gray-900">{player}</div>
+                        <div className="text-xs font-bold text-nebula-orange font-display">#{idx + 1}</div>
+                        <div className="text-sm font-semibold text-star-white font-mono">{player}</div>
                         <button
                           onClick={() => handleRemoveFromBattingOrder(idx)}
-                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center"
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center shadow-lg"
                         >
                           ×
                         </button>
                       </div>
                     ) : (
-                      <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg px-3 py-2 text-center">
-                        <div className="text-xs font-bold text-gray-400">#{idx + 1}</div>
-                        <div className="text-xs text-gray-400">Drop here</div>
+                      <div className="bg-space-blue/20 border-2 border-dashed border-cosmic-border rounded-lg px-3 py-2 text-center hover:border-star-gray/50 transition-colors duration-200">
+                        <div className="text-xs font-bold text-star-gray font-display">#{idx + 1}</div>
+                        <div className="text-xs text-star-dim font-mono">Drop here</div>
                       </div>
                     )}
                   </div>
@@ -470,51 +470,51 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Available Players */}
-            <div className="bg-white rounded-lg shadow p-4">
-              <h3 className="font-bold text-lg text-gray-900 mb-3">
-                Available Players ({availablePlayers.length})
+            <div className="glass-card p-4">
+              <h3 className="font-display font-bold text-lg text-star-white mb-3">
+                Available Players <span className="text-nebula-orange">({availablePlayers.length})</span>
               </h3>
               {availablePlayers.length > 0 ? (
-                <div className="space-y-1 max-h-96 overflow-y-auto">
+                <div className="space-y-1 max-h-96 overflow-y-auto pr-2">
                   {availablePlayers.map(player => (
                     <div
                       key={player}
                       draggable
                       onDragStart={() => handleDragStart(player)}
-                      className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded cursor-move text-sm font-medium text-gray-900 transition-colors"
+                      className="bg-space-blue/50 hover:bg-space-blue/70 border border-cosmic-border hover:border-nebula-orange/50 px-3 py-2 rounded cursor-move text-sm font-mono text-star-white transition-all duration-200"
                     >
                       {player}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm italic">
+                <p className="text-star-gray text-sm italic font-mono">
                   All players assigned to field or batting order
                 </p>
               )}
             </div>
 
             {/* Saved Lineups */}
-            <div className="bg-white rounded-lg shadow p-4">
-              <h3 className="font-bold text-lg text-gray-900 mb-3">
-                Saved Lineups ({savedLineups.length})
+            <div className="glass-card p-4">
+              <h3 className="font-display font-bold text-lg text-star-white mb-3">
+                Saved Lineups <span className="text-nebula-orange">({savedLineups.length})</span>
               </h3>
               {savedLineups.length > 0 ? (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                   {savedLineups.map((saved, idx) => (
                     <div
                       key={idx}
-                      className="bg-gray-50 border border-gray-200 rounded p-3"
+                      className="bg-space-blue/30 border border-cosmic-border rounded p-3 hover:border-nebula-orange/50 transition-colors duration-200"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <div className="font-semibold text-gray-900">{saved.name}</div>
-                          <div className="text-xs text-gray-500">
+                          <div className="font-display font-semibold text-star-white">{saved.name}</div>
+                          <div className="text-xs text-star-gray font-mono">
                             {new Date(saved.timestamp).toLocaleDateString()}
                           </div>
                         </div>
-                        <div className={`text-sm font-bold ${
-                          saved.chemistry > 0 ? 'text-green-600' : saved.chemistry < 0 ? 'text-red-600' : 'text-gray-600'
+                        <div className={`text-sm font-bold font-mono ${
+                          saved.chemistry > 0 ? 'text-green-400' : saved.chemistry < 0 ? 'text-red-400' : 'text-star-gray'
                         }`}>
                           {saved.chemistry > 0 ? '+' : ''}{saved.chemistry}
                         </div>
@@ -522,13 +522,13 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleLoadLineup(saved)}
-                          className="flex-1 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                          className="flex-1 px-3 py-1 bg-nebula-orange/20 text-nebula-orange border border-nebula-orange/50 text-sm rounded hover:bg-nebula-orange/30 font-display font-semibold transition-all duration-200"
                         >
                           Load
                         </button>
                         <button
                           onClick={() => handleDeleteLineup(idx)}
-                          className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                          className="px-3 py-1 bg-red-500/20 text-red-400 border border-red-400/50 text-sm rounded hover:bg-red-500/30 font-display font-semibold transition-all duration-200"
                         >
                           Delete
                         </button>
@@ -537,7 +537,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm italic">No saved lineups yet</p>
+                <p className="text-star-gray text-sm italic font-mono">No saved lineups yet</p>
               )}
             </div>
           </div>
@@ -545,15 +545,15 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
 
         {/* Save Dialog */}
         {showSaveDialog && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Save Lineup</h3>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="glass-card p-6 max-w-md w-full">
+              <h3 className="text-xl font-display font-bold text-star-white mb-4">Save Lineup</h3>
               <input
                 type="text"
                 value={saveLineupName}
                 onChange={e => setSaveLineupName(e.target.value)}
                 placeholder="Enter lineup name..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                className="w-full px-4 py-2 bg-space-blue/30 border border-cosmic-border rounded-lg text-star-white placeholder-star-gray focus:outline-none focus:ring-2 focus:ring-nebula-orange mb-4 font-mono"
                 onKeyDown={e => e.key === 'Enter' && handleSaveLineup()}
                 autoFocus
               />
@@ -561,7 +561,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                 <button
                   onClick={handleSaveLineup}
                   disabled={!saveLineupName.trim()}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                  className="flex-1 px-4 py-2 bg-nebula-orange/20 text-nebula-orange border border-nebula-orange/50 rounded-lg hover:bg-nebula-orange/30 disabled:bg-space-blue/20 disabled:text-star-dim disabled:border-cosmic-border disabled:cursor-not-allowed font-display font-semibold transition-all duration-300"
                 >
                   Save
                 </button>
@@ -570,7 +570,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                     setShowSaveDialog(false);
                     setSaveLineupName('');
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 font-medium"
+                  className="flex-1 px-4 py-2 bg-space-blue/50 text-star-gray border border-cosmic-border rounded-lg hover:bg-space-blue/70 hover:text-star-white font-display font-semibold transition-all duration-300"
                 >
                   Cancel
                 </button>
@@ -581,21 +581,21 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
 
         {/* Import Dialog */}
         {showImportDialog && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Import Lineup</h3>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="glass-card p-6 max-w-md w-full">
+              <h3 className="text-xl font-display font-bold text-star-white mb-4">Import Lineup</h3>
               <textarea
                 value={importText}
                 onChange={e => setImportText(e.target.value)}
                 placeholder="Paste lineup JSON here..."
-                className="w-full h-48 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 font-mono text-sm"
+                className="w-full h-48 px-4 py-2 bg-space-blue/30 border border-cosmic-border rounded-lg text-star-white placeholder-star-gray focus:outline-none focus:ring-2 focus:ring-nebula-cyan mb-4 font-mono text-sm"
                 autoFocus
               />
               <div className="flex gap-3">
                 <button
                   onClick={handleImport}
                   disabled={!importText.trim()}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                  className="flex-1 px-4 py-2 bg-nebula-cyan/20 text-nebula-cyan border border-nebula-cyan/50 rounded-lg hover:bg-nebula-cyan/30 disabled:bg-space-blue/20 disabled:text-star-dim disabled:border-cosmic-border disabled:cursor-not-allowed font-display font-semibold transition-all duration-300"
                 >
                   Import
                 </button>
@@ -604,7 +604,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                     setShowImportDialog(false);
                     setImportText('');
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 font-medium"
+                  className="flex-1 px-4 py-2 bg-space-blue/50 text-star-gray border border-cosmic-border rounded-lg hover:bg-space-blue/70 hover:text-star-white font-display font-semibold transition-all duration-300"
                 >
                   Cancel
                 </button>

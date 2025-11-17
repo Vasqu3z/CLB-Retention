@@ -27,27 +27,27 @@ export default function AttributeComparisonView({ players }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen py-8">
+      <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent text-shadow-glow-orange">
             ⚾ Player Attribute Comparison
           </h1>
-          <p className="text-gray-600">
+          <p className="text-star-gray font-mono text-lg">
             Compare 2-5 players side-by-side across all 30 attributes
           </p>
         </div>
 
         {/* Player Selection */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="glass-card p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Select Players ({selectedPlayerNames.length}/5)
+            <h2 className="text-xl font-display font-bold text-star-white">
+              Select Players <span className="text-nebula-orange">({selectedPlayerNames.length}/5)</span>
             </h2>
             {selectedPlayerNames.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="text-sm text-red-600 hover:text-red-800 font-medium"
+                className="text-sm text-red-400 hover:text-red-300 font-display font-semibold transition-colors duration-200"
               >
                 Clear All
               </button>
@@ -65,12 +65,12 @@ export default function AttributeComparisonView({ players }: Props) {
                   onClick={() => handlePlayerToggle(player.name)}
                   disabled={isDisabled}
                   className={`
-                    px-3 py-2 rounded-md text-sm font-medium transition-colors
+                    px-3 py-2 rounded-lg text-sm font-display font-semibold transition-all duration-300
                     ${isSelected
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg hover:shadow-xl hover:scale-105'
                       : isDisabled
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      ? 'bg-space-blue/20 text-star-dim cursor-not-allowed border border-cosmic-border'
+                      : 'bg-space-blue/50 text-star-gray hover:text-star-white hover:bg-space-blue/70 hover:border-nebula-orange/50 border border-cosmic-border'
                     }
                   `}
                 >
@@ -83,27 +83,27 @@ export default function AttributeComparisonView({ players }: Props) {
 
         {/* Comparison Table */}
         {selectedPlayers.length >= 2 ? (
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <div className="glass-card overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-100 border-b border-gray-200">
-                  <th className="px-4 py-3 text-left font-semibold text-gray-900 sticky left-0 bg-gray-100 z-10">
+                <tr className="bg-space-blue/30 border-b border-cosmic-border">
+                  <th className="px-4 py-3 text-left font-display font-bold text-nebula-orange sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
                     Attribute
                   </th>
                   {selectedPlayers.map(player => (
                     <th
                       key={player.name}
-                      className="px-4 py-3 text-center font-semibold text-gray-900 min-w-[120px]"
+                      className="px-4 py-3 text-center font-display font-bold text-star-white min-w-[120px]"
                     >
                       {player.name}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="font-mono">
                 {/* Character Info Section */}
-                <tr className="bg-blue-50">
-                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-bold text-gray-900">
+                <tr className="bg-gradient-to-r from-nebula-orange/20 to-nebula-coral/20">
+                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-nebula-orange text-shadow">
                     Character Info
                   </td>
                 </tr>
@@ -117,8 +117,8 @@ export default function AttributeComparisonView({ players }: Props) {
                 <AttributeRow label="Ability" players={selectedPlayers} getValue={p => p.ability} />
 
                 {/* Overall Stats Section */}
-                <tr className="bg-purple-50">
-                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-bold text-gray-900">
+                <tr className="bg-gradient-to-r from-solar-gold/20 to-comet-yellow/20">
+                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-solar-gold text-shadow">
                     Overall Stats
                   </td>
                 </tr>
@@ -128,8 +128,8 @@ export default function AttributeComparisonView({ players }: Props) {
                 <AttributeRow label="Speed Overall" players={selectedPlayers} getValue={p => p.speedOverall} numeric />
 
                 {/* Pitching Attributes Section */}
-                <tr className="bg-green-50">
-                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-bold text-gray-900">
+                <tr className="bg-gradient-to-r from-green-500/20 to-green-400/20">
+                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-green-400 text-shadow">
                     Pitching Attributes
                   </td>
                 </tr>
@@ -141,8 +141,8 @@ export default function AttributeComparisonView({ players }: Props) {
                 <AttributeRow label="Pitching Average" players={selectedPlayers} getValue={p => p.pitchingAverage} numeric highlight />
 
                 {/* Hitting Attributes Section */}
-                <tr className="bg-orange-50">
-                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-bold text-gray-900">
+                <tr className="bg-gradient-to-r from-nebula-coral/20 to-star-pink/20">
+                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-nebula-coral text-shadow">
                     Hitting Attributes
                   </td>
                 </tr>
@@ -157,8 +157,8 @@ export default function AttributeComparisonView({ players }: Props) {
                 <AttributeRow label="Batting Average" players={selectedPlayers} getValue={p => p.battingAverage} numeric highlight />
 
                 {/* Fielding & Running Section */}
-                <tr className="bg-yellow-50">
-                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-bold text-gray-900">
+                <tr className="bg-gradient-to-r from-comet-yellow/20 to-nebula-orange/20">
+                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-comet-yellow text-shadow">
                     Fielding & Running
                   </td>
                 </tr>
@@ -171,14 +171,14 @@ export default function AttributeComparisonView({ players }: Props) {
             </table>
           </div>
         ) : selectedPlayers.length === 1 ? (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
-            <p className="text-blue-800 text-lg">
+          <div className="glass-card p-8 text-center border-nebula-orange/30">
+            <p className="text-nebula-orange text-lg font-display font-semibold">
               Please select at least one more player to compare
             </p>
           </div>
         ) : (
-          <div className="bg-gray-100 border border-gray-300 rounded-lg p-8 text-center">
-            <p className="text-gray-600 text-lg">
+          <div className="glass-card p-8 text-center">
+            <p className="text-star-gray text-lg font-mono">
               Select 2-5 players above to start comparing attributes
             </p>
           </div>
@@ -203,8 +203,8 @@ function AttributeRow({ label, players, getValue, numeric = false, highlight = f
   const maxValue = numeric ? Math.max(...values.map(v => typeof v === 'number' ? v : 0)) : null;
 
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50">
-      <td className={`px-4 py-2 font-medium text-gray-700 sticky left-0 bg-white ${highlight ? 'font-bold' : ''}`}>
+    <tr className="border-b border-cosmic-border hover:bg-space-blue/20 transition-colors duration-200">
+      <td className={`px-4 py-2 font-medium text-star-gray sticky left-0 bg-space-navy/90 backdrop-blur-md border-r border-cosmic-border ${highlight ? 'font-bold text-star-white' : ''}`}>
         {label}
       </td>
       {players.map((player, idx) => {
@@ -215,8 +215,8 @@ function AttributeRow({ label, players, getValue, numeric = false, highlight = f
           <td
             key={player.name}
             className={`px-4 py-2 text-center ${
-              isMax ? 'bg-green-100 font-bold text-green-900' : 'text-gray-900'
-            } ${highlight ? 'font-semibold' : ''}`}
+              isMax ? 'bg-green-400/20 font-bold text-green-400' : 'text-star-white'
+            } ${highlight ? 'font-semibold text-nebula-orange' : ''}`}
           >
             {value || '-'}
           </td>

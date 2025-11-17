@@ -164,27 +164,27 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
   }, [selectedPlayerNames, chemistryMatrix]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen py-8">
+      <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent text-shadow-glow-orange">
             ⚡ Player Chemistry Tool
           </h1>
-          <p className="text-gray-600">
+          <p className="text-star-gray font-mono text-lg">
             Analyze chemistry relationships and team compatibility for up to 5 players
           </p>
         </div>
 
         {/* Player Selection */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="glass-card p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Select Players ({selectedPlayerNames.length}/5)
+            <h2 className="text-xl font-display font-bold text-star-white">
+              Select Players <span className="text-nebula-orange">({selectedPlayerNames.length}/5)</span>
             </h2>
             {selectedPlayerNames.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="text-sm text-red-600 hover:text-red-800 font-medium"
+                className="text-sm text-red-400 hover:text-red-300 font-display font-semibold transition-colors duration-200"
               >
                 Clear All
               </button>
@@ -202,12 +202,12 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                   onClick={() => handlePlayerToggle(playerName)}
                   disabled={isDisabled}
                   className={`
-                    px-3 py-2 rounded-md text-sm font-medium transition-colors
+                    px-3 py-2 rounded-lg text-sm font-display font-semibold transition-all duration-300
                     ${isSelected
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg hover:shadow-xl hover:scale-105'
                       : isDisabled
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      ? 'bg-space-blue/20 text-star-dim cursor-not-allowed border border-cosmic-border'
+                      : 'bg-space-blue/50 text-star-gray hover:text-star-white hover:bg-space-blue/70 hover:border-nebula-orange/50 border border-cosmic-border'
                     }
                   `}
                 >
@@ -224,10 +224,10 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
             {/* Individual Player Chemistry */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {selectedPlayersData.map(player => (
-                <div key={player.name} className="bg-white rounded-lg shadow">
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-t-lg">
-                    <h3 className="font-bold text-lg">{player.name}</h3>
-                    <p className="text-sm text-blue-100">
+                <div key={player.name} className="glass-card overflow-hidden hover:border-nebula-orange/50 transition-all duration-300">
+                  <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
+                    <h3 className="font-display font-bold text-lg text-star-white">{player.name}</h3>
+                    <p className="text-sm text-star-gray font-mono">
                       {player.posCount} positive • {player.negCount} negative
                     </p>
                   </div>
@@ -236,18 +236,18 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                     {/* Positive Chemistry */}
                     {player.positive.length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
+                        <h4 className="font-display font-semibold text-green-400 mb-2 flex items-center gap-2">
                           <span className="text-lg">✅</span>
                           Positive Chemistry ({player.positive.length})
                         </h4>
-                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                        <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
                           {player.positive.map(rel => (
                             <div
                               key={rel.player}
-                              className="flex justify-between items-center text-sm bg-green-50 px-2 py-1 rounded"
+                              className="flex justify-between items-center text-sm bg-green-400/10 hover:bg-green-400/20 px-2 py-1 rounded font-mono transition-colors duration-200"
                             >
-                              <span className="text-gray-900">{rel.player}</span>
-                              <span className="font-semibold text-green-700">+{rel.value}</span>
+                              <span className="text-star-white">{rel.player}</span>
+                              <span className="font-semibold text-green-400">+{rel.value}</span>
                             </div>
                           ))}
                         </div>
@@ -257,18 +257,18 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                     {/* Negative Chemistry */}
                     {player.negative.length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
+                        <h4 className="font-display font-semibold text-red-400 mb-2 flex items-center gap-2">
                           <span className="text-lg">❌</span>
                           Negative Chemistry ({player.negative.length})
                         </h4>
-                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                        <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
                           {player.negative.map(rel => (
                             <div
                               key={rel.player}
-                              className="flex justify-between items-center text-sm bg-red-50 px-2 py-1 rounded"
+                              className="flex justify-between items-center text-sm bg-red-400/10 hover:bg-red-400/20 px-2 py-1 rounded font-mono transition-colors duration-200"
                             >
-                              <span className="text-gray-900">{rel.player}</span>
-                              <span className="font-semibold text-red-700">{rel.value}</span>
+                              <span className="text-star-white">{rel.player}</span>
+                              <span className="font-semibold text-red-400">{rel.value}</span>
                             </div>
                           ))}
                         </div>
@@ -276,7 +276,7 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                     )}
 
                     {player.positive.length === 0 && player.negative.length === 0 && (
-                      <p className="text-gray-500 text-sm italic">No chemistry relationships</p>
+                      <p className="text-star-gray text-sm italic font-mono">No chemistry relationships</p>
                     )}
                   </div>
                 </div>
@@ -285,99 +285,99 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
 
             {/* Team Analysis (only show if 2+ players selected) */}
             {selectedPlayerNames.length >= 2 && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <div className="glass-card p-6">
+                <h2 className="text-2xl font-display font-bold text-star-white mb-4">
                   📊 Team Chemistry Analysis
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Internal Positive */}
                   <div>
-                    <h3 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
+                    <h3 className="font-display font-semibold text-green-400 mb-2 flex items-center gap-2">
                       <span>✨</span>
                       Internal Positive Connections ({teamAnalysis.internalPositive.length})
                     </h3>
                     {teamAnalysis.internalPositive.length > 0 ? (
                       <div className="space-y-1">
                         {teamAnalysis.internalPositive.map((conn, idx) => (
-                          <div key={idx} className="bg-green-50 px-3 py-2 rounded text-sm">
-                            <span className="font-medium">{conn.player1}</span>
-                            {' ↔ '}
-                            <span className="font-medium">{conn.player2}</span>
-                            <span className="ml-2 text-green-700 font-bold">+{conn.value}</span>
+                          <div key={idx} className="bg-green-400/10 px-3 py-2 rounded text-sm font-mono hover:bg-green-400/20 transition-colors duration-200">
+                            <span className="font-medium text-star-white">{conn.player1}</span>
+                            <span className="text-star-gray"> ↔ </span>
+                            <span className="font-medium text-star-white">{conn.player2}</span>
+                            <span className="ml-2 text-green-400 font-bold">+{conn.value}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-sm italic">No internal positive chemistry</p>
+                      <p className="text-star-gray text-sm italic font-mono">No internal positive chemistry</p>
                     )}
                   </div>
 
                   {/* Internal Negative */}
                   <div>
-                    <h3 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
+                    <h3 className="font-display font-semibold text-red-400 mb-2 flex items-center gap-2">
                       <span>⚠️</span>
                       Internal Negative Connections ({teamAnalysis.internalNegative.length})
                     </h3>
                     {teamAnalysis.internalNegative.length > 0 ? (
                       <div className="space-y-1">
                         {teamAnalysis.internalNegative.map((conn, idx) => (
-                          <div key={idx} className="bg-red-50 px-3 py-2 rounded text-sm">
-                            <span className="font-medium">{conn.player1}</span>
-                            {' ↔ '}
-                            <span className="font-medium">{conn.player2}</span>
-                            <span className="ml-2 text-red-700 font-bold">{conn.value}</span>
+                          <div key={idx} className="bg-red-400/10 px-3 py-2 rounded text-sm font-mono hover:bg-red-400/20 transition-colors duration-200">
+                            <span className="font-medium text-star-white">{conn.player1}</span>
+                            <span className="text-star-gray"> ↔ </span>
+                            <span className="font-medium text-star-white">{conn.player2}</span>
+                            <span className="ml-2 text-red-400 font-bold">{conn.value}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-sm italic">No internal conflicts</p>
+                      <p className="text-star-gray text-sm italic font-mono">No internal conflicts</p>
                     )}
                   </div>
 
                   {/* Shared Positive Chemistry */}
                   <div>
-                    <h3 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                    <h3 className="font-display font-semibold text-nebula-cyan mb-2 flex items-center gap-2">
                       <span>🤝</span>
                       Shared Positive Chemistry ({Object.keys(teamAnalysis.sharedPositive).length})
                     </h3>
                     {Object.keys(teamAnalysis.sharedPositive).length > 0 ? (
-                      <div className="space-y-1 max-h-64 overflow-y-auto">
+                      <div className="space-y-1 max-h-64 overflow-y-auto pr-2">
                         {Object.entries(teamAnalysis.sharedPositive).map(([character, players]) => (
-                          <div key={character} className="bg-blue-50 px-3 py-2 rounded text-sm">
-                            <div className="font-medium text-blue-900">{character}</div>
-                            <div className="text-gray-700 text-xs mt-1">
+                          <div key={character} className="bg-nebula-cyan/10 px-3 py-2 rounded text-sm hover:bg-nebula-cyan/20 transition-colors duration-200">
+                            <div className="font-medium text-nebula-cyan font-display">{character}</div>
+                            <div className="text-star-gray text-xs mt-1 font-mono">
                               {players.join(', ')}
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-sm italic">No shared positive chemistry</p>
+                      <p className="text-star-gray text-sm italic font-mono">No shared positive chemistry</p>
                     )}
                   </div>
 
                   {/* Mixed Relationships */}
                   <div>
-                    <h3 className="font-semibold text-orange-700 mb-2 flex items-center gap-2">
+                    <h3 className="font-display font-semibold text-nebula-orange mb-2 flex items-center gap-2">
                       <span>⚡</span>
                       Conflicting Chemistry ({Object.keys(teamAnalysis.mixedRelationships).length})
                     </h3>
                     {Object.keys(teamAnalysis.mixedRelationships).length > 0 ? (
-                      <div className="space-y-1 max-h-64 overflow-y-auto">
+                      <div className="space-y-1 max-h-64 overflow-y-auto pr-2">
                         {Object.entries(teamAnalysis.mixedRelationships).map(([character, rel]) => (
-                          <div key={character} className="bg-orange-50 px-3 py-2 rounded text-sm">
-                            <div className="font-medium text-orange-900">{character}</div>
-                            <div className="text-xs mt-1">
-                              <span className="text-green-700">✅ {rel.positive.join(', ')}</span>
+                          <div key={character} className="bg-nebula-orange/10 px-3 py-2 rounded text-sm hover:bg-nebula-orange/20 transition-colors duration-200">
+                            <div className="font-medium text-nebula-orange font-display">{character}</div>
+                            <div className="text-xs mt-1 font-mono">
+                              <span className="text-green-400">✅ {rel.positive.join(', ')}</span>
                               <br />
-                              <span className="text-red-700">❌ {rel.negative.join(', ')}</span>
+                              <span className="text-red-400">❌ {rel.negative.join(', ')}</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-gray-500 text-sm italic">No conflicting relationships</p>
+                      <p className="text-star-gray text-sm italic font-mono">No conflicting relationships</p>
                     )}
                   </div>
                 </div>
@@ -387,8 +387,8 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
         )}
 
         {selectedPlayerNames.length === 0 && (
-          <div className="bg-gray-100 border border-gray-300 rounded-lg p-8 text-center">
-            <p className="text-gray-600 text-lg">
+          <div className="glass-card p-8 text-center">
+            <p className="text-star-gray text-lg font-mono">
               Select 1-5 players above to analyze their chemistry relationships
             </p>
           </div>

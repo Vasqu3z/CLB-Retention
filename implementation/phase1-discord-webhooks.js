@@ -1,60 +1,20 @@
-// ===== DISCORD WEBHOOK NOTIFICATIONS =====
-// Purpose: Posts automated notifications to Discord when stats are updated
+// ===== DISCORD WEBHOOK NOTIFICATIONS (MULTI-CHANNEL) =====
+// Purpose: Posts automated notifications to Discord across 4 channels
 // Dependencies: getSharedConfig() from SharedConfig.js
-// Entry Point(s): notifyDiscordStatsUpdated(), postWeeklySchedule(), postGameResults()
+// Entry Point(s): notifyDiscordStatsUpdated(), postWeeklySchedule(), postGameResult(), postTransaction()
 
 /**
- * Posts a notification to Discord when UpdateAll completes.
- * Call this at the end of updateAll() in LeagueCore.js.
- *
- * @param {object} gameData - The processed game data object
+ * Helper function to post a payload to a Discord webhook.
+ * @param {string} webhookUrl - Discord webhook URL
+ * @param {object} payload - Discord message payload (content, embeds, etc.)
+ * @returns {boolean} True if successful, false otherwise
  */
-function notifyDiscordStatsUpdated(gameData) {
-  var config = getSharedConfig();
-  var webhookUrl = config.DISCORD_WEBHOOK_URL;
-
+function postToDiscordWebhook(webhookUrl, payload) {
   if (!webhookUrl || webhookUrl === '') {
-    Logger.log('Discord webhook not configured, skipping notification');
-    return;
-  }
-
-  if (config.DISCORD_NOTIFY_GAMES !== true && config.DISCORD_NOTIFY_STANDINGS !== true) {
-    Logger.log('Discord notifications disabled in config');
-    return;
+    return false;
   }
 
   try {
-    // ===== Build notification content =====
-
-    var embeds = [];
-
-    // Add game results embed
-    if (config.DISCORD_NOTIFY_GAMES === true) {
-      var gameResultsEmbed = buildGameResultsEmbed(gameData);
-      if (gameResultsEmbed) {
-        embeds.push(gameResultsEmbed);
-      }
-    }
-
-    // Add standings embed
-    if (config.DISCORD_NOTIFY_STANDINGS === true) {
-      var standingsEmbed = buildStandingsEmbed();
-      if (standingsEmbed) {
-        embeds.push(standingsEmbed);
-      }
-    }
-
-    if (embeds.length === 0) {
-      Logger.log('No content to post to Discord');
-      return;
-    }
-
-    // ===== Post to Discord =====
-    var payload = {
-      content: '📊 **League Hub Updated!**',
-      embeds: embeds
-    };
-
     var options = {
       method: 'post',
       contentType: 'application/json',
@@ -66,13 +26,60 @@ function notifyDiscordStatsUpdated(gameData) {
     var responseCode = response.getResponseCode();
 
     if (responseCode === 200 || responseCode === 204) {
-      Logger.log('SUCCESS: Discord notification sent');
+      return true;
     } else {
       Logger.log('WARNING: Discord webhook returned code ' + responseCode);
+      return false;
     }
-
   } catch (e) {
-    Logger.log('ERROR: Failed to send Discord notification: ' + e.toString());
+    Logger.log('ERROR: Failed to post to Discord webhook: ' + e.toString());
+    return false;
+  }
+}
+
+/**
+ * Posts notifications to Discord when UpdateAll completes.
+ * Call this at the end of updateAll() in LeagueCore.js.
+ *
+ * Handles 4 types of notifications across different channels:
+ * - SCORES: Game results → #scores channel
+ * - STANDINGS: Updated standings → #standings channel
+ *
+ * @param {object} gameData - The processed game data object
+ */
+function notifyDiscordStatsUpdated(gameData) {
+  var config = getSharedConfig();
+
+  // ===== Post game results to #scores channel =====
+  if (config.DISCORD_NOTIFY_SCORES === true && config.DISCORD_WEBHOOK_SCORES) {
+    var gameResultsEmbed = buildGameResultsEmbed(gameData);
+    if (gameResultsEmbed) {
+      var scorePayload = {
+        content: '⚾ **Game Results Updated!**',
+        embeds: [gameResultsEmbed]
+      };
+
+      var scoreSuccess = postToDiscordWebhook(config.DISCORD_WEBHOOK_SCORES, scorePayload);
+      if (scoreSuccess) {
+        Logger.log('SUCCESS: Game results posted to #scores');
+      }
+    }
+  }
+
+  // ===== Post standings update to #standings channel =====
+  if (config.DISCORD_NOTIFY_STANDINGS === true && config.DISCORD_WEBHOOK_STANDINGS) {
+    var standingsEmbed = buildStandingsEmbed();
+    if (standingsEmbed) {
+      var standingsPayload = {
+        content: '📊 **Standings Updated!**',
+        embeds: [standingsEmbed]
+      };
+
+      var standingsSuccess = postToDiscordWebhook(config.DISCORD_WEBHOOK_STANDINGS, standingsPayload);
+      if (standingsSuccess) {
+        Logger.log('SUCCESS: Standings posted to #standings');
+      }
+    }
   }
 }
 
@@ -187,17 +194,16 @@ function buildStandingsEmbed() {
 }
 
 /**
- * Posts the weekly schedule to Discord.
+ * Posts the weekly schedule to Discord #schedule channel.
  * Call this manually or via time-based trigger.
  *
  * @param {number} weekNumber - Week number to post
  */
 function postWeeklySchedule(weekNumber) {
   var config = getSharedConfig();
-  var webhookUrl = config.DISCORD_WEBHOOK_URL;
 
-  if (!webhookUrl || webhookUrl === '') {
-    Logger.log('Discord webhook not configured');
+  if (config.DISCORD_NOTIFY_SCHEDULE !== true || !config.DISCORD_WEBHOOK_SCHEDULE) {
+    Logger.log('Schedule notifications disabled or webhook not configured');
     return;
   }
 
@@ -247,17 +253,10 @@ function postWeeklySchedule(weekNumber) {
       }]
     };
 
-    var options = {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify(payload),
-      muteHttpExceptions: true
-    };
+    var success = postToDiscordWebhook(config.DISCORD_WEBHOOK_SCHEDULE, payload);
 
-    var response = UrlFetchApp.fetch(webhookUrl, options);
-
-    if (response.getResponseCode() === 200 || response.getResponseCode() === 204) {
-      Logger.log('SUCCESS: Week ' + weekNumber + ' schedule posted to Discord');
+    if (success) {
+      Logger.log('SUCCESS: Week ' + weekNumber + ' schedule posted to #schedule');
     }
 
   } catch (e) {
@@ -266,7 +265,7 @@ function postWeeklySchedule(weekNumber) {
 }
 
 /**
- * Posts a single game result to Discord.
+ * Posts a single game result to Discord #scores channel.
  * Can be called after a game is scored.
  *
  * @param {string} awayTeam - Away team name
@@ -277,9 +276,8 @@ function postWeeklySchedule(weekNumber) {
  */
 function postGameResult(awayTeam, homeTeam, awayRuns, homeRuns, mvp) {
   var config = getSharedConfig();
-  var webhookUrl = config.DISCORD_WEBHOOK_URL;
 
-  if (!webhookUrl || webhookUrl === '') {
+  if (config.DISCORD_NOTIFY_SCORES !== true || !config.DISCORD_WEBHOOK_SCORES) {
     return;
   }
 
@@ -301,17 +299,89 @@ function postGameResult(awayTeam, homeTeam, awayRuns, homeRuns, mvp) {
     }]
   };
 
-  try {
-    var options = {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify(payload),
-      muteHttpExceptions: true
-    };
+  var success = postToDiscordWebhook(config.DISCORD_WEBHOOK_SCORES, payload);
 
-    UrlFetchApp.fetch(webhookUrl, options);
-    Logger.log('Game result posted to Discord');
+  if (success) {
+    Logger.log('Game result posted to #scores');
+  }
+}
+
+/**
+ * Posts a transaction notification to Discord #transactions channel.
+ * Call this when a player moves teams, is signed, or released.
+ *
+ * @param {string} transactionType - Type: "Trade" | "Signing" | "Release" | "Activation" | "IR"
+ * @param {string} playerName - Player name
+ * @param {string} oldTeam - Previous team (or "Free Agent")
+ * @param {string} newTeam - New team (or "Free Agent")
+ * @param {string} notes - Optional transaction notes
+ */
+function postTransaction(transactionType, playerName, oldTeam, newTeam, notes) {
+  var config = getSharedConfig();
+
+  if (config.DISCORD_NOTIFY_TRANSACTIONS !== true || !config.DISCORD_WEBHOOK_TRANSACTIONS) {
+    return;
+  }
+
+  // Build transaction message
+  var description = '';
+  var color = 0x0099ff;
+
+  switch (transactionType) {
+    case 'Trade':
+      description = '🔄 **' + playerName + '** traded from **' + oldTeam + '** to **' + newTeam + '**';
+      color = 0xffa500;
+      break;
+    case 'Signing':
+      description = '✍️ **' + playerName + '** signed by **' + newTeam + '**';
+      color = 0x00ff00;
+      break;
+    case 'Release':
+      description = '📤 **' + playerName + '** released by **' + oldTeam + '**';
+      color = 0xff0000;
+      break;
+    case 'Activation':
+      description = '✅ **' + playerName + '** activated by **' + newTeam + '**';
+      color = 0x00ff00;
+      break;
+    case 'IR':
+      description = '🏥 **' + playerName + '** placed on IR by **' + oldTeam + '**';
+      color = 0xff6600;
+      break;
+    default:
+      description = '📝 **' + playerName + '**: ' + oldTeam + ' → ' + newTeam;
+  }
+
+  if (notes) {
+    description += '\n_' + notes + '_';
+  }
+
+  var payload = {
+    embeds: [{
+      title: '📋 Transaction',
+      description: description,
+      color: color,
+      timestamp: new Date().toISOString()
+    }]
+  };
+
+  var success = postToDiscordWebhook(config.DISCORD_WEBHOOK_TRANSACTIONS, payload);
+
+  if (success) {
+    Logger.log('Transaction posted to #transactions');
+  }
+}
+
+/**
+ * Helper function to get a config value from the Config sheet.
+ * @param {string} key - Config key to retrieve
+ * @returns {string} Config value or empty string
+ */
+function getConfigValue(key) {
+  try {
+    var config = getSharedConfig();
+    return config[key] || '';
   } catch (e) {
-    Logger.log('Failed to post game result: ' + e.toString());
+    return '';
   }
 }

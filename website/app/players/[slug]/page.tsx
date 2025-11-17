@@ -47,8 +47,9 @@ export async function generateStaticParams() {
 /**
  * Generate metadata for player profile pages
  */
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const playerName = await slugToPlayerName(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const playerName = await slugToPlayerName(slug);
 
   if (!playerName) {
     return {
@@ -62,8 +63,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function PlayerProfilePage({ params }: { params: { slug: string } }) {
-  const playerName = await slugToPlayerName(params.slug);
+export default async function PlayerProfilePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const playerName = await slugToPlayerName(slug);
 
   if (!playerName) {
     notFound();

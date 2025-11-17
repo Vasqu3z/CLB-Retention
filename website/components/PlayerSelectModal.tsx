@@ -81,7 +81,10 @@ export default function PlayerSelectModal({
 
         {/* Player List */}
         {filteredPlayers.length > 0 ? (
-          <div className="flex-1 overflow-y-auto space-y-1 pr-2">
+          <div
+            className="flex-1 overflow-y-auto space-y-1 pr-2"
+            onWheel={(e) => e.stopPropagation()}
+          >
             {filteredPlayers.map(player => (
               <button
                 key={player}

@@ -25,7 +25,7 @@ export default function AttributeComparisonView({ players }: Props) {
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-8">
           <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-            ⚾ Player Attribute Comparison
+            Player Attribute Comparison
           </h1>
           <p className="text-star-gray font-mono text-lg">
             Compare 2-5 players side-by-side across all 30 attributes

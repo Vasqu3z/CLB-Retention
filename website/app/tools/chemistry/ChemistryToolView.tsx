@@ -157,7 +157,7 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-8">
           <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-            ⚡ Player Chemistry Tool
+            Player Chemistry Tool
           </h1>
           <p className="text-star-gray font-mono text-lg">
             Analyze chemistry relationships and team compatibility for up to 5 players
@@ -195,14 +195,17 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                           <span className="text-lg">✅</span>
                           Positive Chemistry ({player.positive.length})
                         </h4>
-                        <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
+                        <div
+                          className="space-y-1 max-h-48 overflow-y-auto pr-2"
+                          onWheel={(e) => e.stopPropagation()}
+                        >
                           {player.positive.map(rel => (
                             <div
                               key={rel.player}
                               className="flex justify-between items-center text-sm bg-green-400/10 hover:bg-green-400/20 px-2 py-1 rounded font-mono transition-colors duration-200"
                             >
                               <span className="text-star-white">{rel.player}</span>
-                              <span className="font-semibold text-green-400">+{rel.value}</span>
+                              <span className="font-semibold text-green-400">+</span>
                             </div>
                           ))}
                         </div>
@@ -216,14 +219,17 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                           <span className="text-lg">❌</span>
                           Negative Chemistry ({player.negative.length})
                         </h4>
-                        <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
+                        <div
+                          className="space-y-1 max-h-48 overflow-y-auto pr-2"
+                          onWheel={(e) => e.stopPropagation()}
+                        >
                           {player.negative.map(rel => (
                             <div
                               key={rel.player}
                               className="flex justify-between items-center text-sm bg-red-400/10 hover:bg-red-400/20 px-2 py-1 rounded font-mono transition-colors duration-200"
                             >
                               <span className="text-star-white">{rel.player}</span>
-                              <span className="font-semibold text-red-400">{rel.value}</span>
+                              <span className="font-semibold text-red-400">-</span>
                             </div>
                           ))}
                         </div>

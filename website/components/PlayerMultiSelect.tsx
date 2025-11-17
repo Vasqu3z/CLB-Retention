@@ -114,7 +114,10 @@ export default function PlayerMultiSelect({
 
         {/* Dropdown menu */}
         {isOpen && filteredPlayers.length > 0 && selectedPlayers.length < maxSelections && (
-          <div className="absolute z-50 w-full mt-2 bg-space-navy/95 backdrop-blur-md border-2 border-cosmic-border rounded-lg shadow-2xl max-h-64 overflow-y-auto">
+          <div
+            className="absolute z-50 w-full mt-2 bg-space-navy/95 backdrop-blur-md border-2 border-cosmic-border rounded-lg shadow-2xl max-h-64 overflow-y-auto"
+            onWheel={(e) => e.stopPropagation()}
+          >
             {filteredPlayers.map(player => (
               <button
                 key={player}

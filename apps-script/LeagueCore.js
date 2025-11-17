@@ -100,6 +100,11 @@ function updateAll() {
     // Cache final data for Retention suite
     cacheCurrentSeasonStats(gameData);
 
+    // ===== PHASE 1: Website & Discord Integration =====
+    invalidateWebsiteCache();
+    notifyDiscordStatsUpdated(gameData);
+    // ===== End Phase 1 Integration =====
+
   } catch (e) {
     logError("Update All", e.toString(), "N/A");
     SpreadsheetApp.getUi().alert("Error during update: " + e.toString());
@@ -174,6 +179,11 @@ function updateAllPlayoffs() {
 
     SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
     logInfo("Update Playoffs", "Completed successfully in " + totalTime + "s");
+
+    // ===== PHASE 1: Website & Discord Integration =====
+    invalidateWebsiteCache();
+    notifyDiscordStatsUpdated(playoffGameData);
+    // ===== End Phase 1 Integration =====
 
   } catch (e) {
     logError("Update Playoffs", e.toString(), "N/A");
@@ -267,12 +277,17 @@ function quickUpdate() {
     
     SpreadsheetApp.getActiveSpreadsheet().toast(message, "Quick Update Complete", 10);
     logInfo("Quick Update", "Completed successfully in " + totalTime + "s");
-    
+
+    // ===== PHASE 1: Website & Discord Integration =====
+    invalidateWebsiteCache();
+    notifyDiscordStatsUpdated(gameData);
+    // ===== End Phase 1 Integration =====
+
   } catch (e) {
     logError("Quick Update", e.toString(), "N/A");
     SpreadsheetApp.getUi().alert("Error during quick update: " + e.toString());
   }
-  
+
   clearCache();
 }
 

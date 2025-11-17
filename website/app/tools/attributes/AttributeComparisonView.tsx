@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { PlayerAttributes } from '@/lib/sheets';
+import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 
 interface Props {
   players: PlayerAttributes[];
@@ -14,23 +15,13 @@ export default function AttributeComparisonView({ players }: Props) {
     .map(name => players.find(p => p.name === name))
     .filter((p): p is PlayerAttributes => p !== undefined);
 
-  const handlePlayerToggle = (playerName: string) => {
-    if (selectedPlayerNames.includes(playerName)) {
-      setSelectedPlayerNames(selectedPlayerNames.filter(n => n !== playerName));
-    } else if (selectedPlayerNames.length < 5) {
-      setSelectedPlayerNames([...selectedPlayerNames, playerName]);
-    }
-  };
-
-  const handleClearAll = () => {
-    setSelectedPlayerNames([]);
-  };
+  const playerNames = players.map(p => p.name).sort();
 
   return (
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent text-shadow-glow-orange">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
             ⚾ Player Attribute Comparison
           </h1>
           <p className="text-star-gray font-mono text-lg">
@@ -39,47 +30,13 @@ export default function AttributeComparisonView({ players }: Props) {
         </div>
 
         {/* Player Selection */}
-        <div className="glass-card p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-display font-bold text-star-white">
-              Select Players <span className="text-nebula-orange">({selectedPlayerNames.length}/5)</span>
-            </h2>
-            {selectedPlayerNames.length > 0 && (
-              <button
-                onClick={handleClearAll}
-                className="text-sm text-red-400 hover:text-red-300 font-display font-semibold transition-colors duration-200"
-              >
-                Clear All
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-            {players.map(player => {
-              const isSelected = selectedPlayerNames.includes(player.name);
-              const isDisabled = !isSelected && selectedPlayerNames.length >= 5;
-
-              return (
-                <button
-                  key={player.name}
-                  onClick={() => handlePlayerToggle(player.name)}
-                  disabled={isDisabled}
-                  className={`
-                    px-3 py-2 rounded-lg text-sm font-display font-semibold transition-all duration-300
-                    ${isSelected
-                      ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg hover:shadow-xl hover:scale-105'
-                      : isDisabled
-                      ? 'bg-space-blue/20 text-star-dim cursor-not-allowed border border-cosmic-border'
-                      : 'bg-space-blue/50 text-star-gray hover:text-star-white hover:bg-space-blue/70 hover:border-nebula-orange/50 border border-cosmic-border'
-                    }
-                  `}
-                >
-                  {player.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <PlayerMultiSelect
+          players={playerNames}
+          selectedPlayers={selectedPlayerNames}
+          onSelectionChange={setSelectedPlayerNames}
+          maxSelections={5}
+          placeholder="Search players..."
+        />
 
         {/* Comparison Table */}
         {selectedPlayers.length >= 2 ? (

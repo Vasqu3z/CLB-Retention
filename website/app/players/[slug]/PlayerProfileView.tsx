@@ -42,13 +42,16 @@ export default function PlayerProfileView({
                   src={registryEntry.imageUrl}
                   alt={playerName}
                   className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                  loading="eager"
+                  crossOrigin="anonymous"
                 />
               </div>
             )}
 
             {/* Player Info */}
             <div className="flex-1">
-              <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent text-shadow-glow-orange">
+              <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
                 {playerName}
               </h1>
               <div className="flex flex-wrap gap-4 text-star-gray font-mono">

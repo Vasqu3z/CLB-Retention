@@ -10,12 +10,12 @@
  * @returns {object} Configuration object with all key-value pairs
  */
 function getSharedConfig() {
-  var cache = CacheService.getScriptProperties();
+  var cache = CacheService.getScriptCache();
   var cacheKey = 'shared_config';
   var cacheDuration = 3600; // 1 hour in seconds
 
   // ===== P3: Check cache first =====
-  var cached = cache.getProperty(cacheKey);
+  var cached = cache.get(cacheKey);
 
   if (cached) {
     try {
@@ -66,7 +66,7 @@ function getSharedConfig() {
 
   // ===== Cache the result =====
   try {
-    cache.setProperty(cacheKey, JSON.stringify(config), cacheDuration);
+    cache.put(cacheKey, JSON.stringify(config), cacheDuration);
   } catch (e) {
     Logger.log('WARNING: Failed to cache config: ' + e.toString());
   }
@@ -92,7 +92,7 @@ function getConfigValue(key, defaultValue) {
  * Call this after updating the Config sheet.
  */
 function refreshConfigCache() {
-  var cache = CacheService.getScriptProperties();
+  var cache = CacheService.getScriptCache();
   cache.remove('shared_config');
 
   // Immediately rebuild cache

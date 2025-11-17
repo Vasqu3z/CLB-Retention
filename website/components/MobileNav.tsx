@@ -15,6 +15,13 @@ const navItems = [
   { href: "/playoffs", label: "Playoffs" },
 ];
 
+const toolsItems = [
+  { href: "/tools/attributes", label: "⚾ Attribute Comparison" },
+  { href: "/tools/stats", label: "📊 Stats Comparison" },
+  { href: "/tools/chemistry", label: "⚡ Chemistry Tool" },
+  { href: "/tools/lineup", label: "🏟️ Lineup Builder" },
+];
+
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
@@ -102,7 +109,7 @@ export default function MobileNav() {
             </div>
 
             {/* Navigation Links */}
-            <nav className="p-6" role="navigation" aria-label="Mobile navigation">
+            <nav className="p-6 overflow-y-auto max-h-[calc(100vh-200px)]" role="navigation" aria-label="Mobile navigation">
               <ul className="space-y-2">
                 {navItems.map((item, idx) => {
                   const isActive = pathname === item.href;
@@ -132,6 +139,42 @@ export default function MobileNav() {
                   );
                 })}
               </ul>
+
+              {/* Tools Section */}
+              <div className="mt-6 pt-6 border-t border-cosmic-border">
+                <h3 className="px-4 mb-2 text-xs font-bold text-star-dim uppercase tracking-wider">
+                  Tools
+                </h3>
+                <ul className="space-y-2">
+                  {toolsItems.map((item, idx) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <motion.li
+                        key={item.href}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: (navItems.length + idx) * 0.05, duration: 0.3 }}
+                      >
+                        <Link
+                          href={item.href}
+                          onClick={closeMenu}
+                          aria-current={isActive ? 'page' : undefined}
+                          className={`
+                            block px-4 py-3 rounded-lg font-display font-semibold text-base transition-all duration-300
+                            focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
+                            ${isActive
+                              ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
+                              : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 hover:translate-x-1'
+                            }
+                          `}
+                        >
+                          {item.label}
+                        </Link>
+                      </motion.li>
+                    );
+                  })}
+                </ul>
+              </div>
             </nav>
 
             {/* Footer */}

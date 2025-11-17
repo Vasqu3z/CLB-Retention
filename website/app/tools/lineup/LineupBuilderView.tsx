@@ -134,8 +134,16 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
       newBattingOrder[draggedFromBattingOrder] = null;
     }
 
-    // If position is occupied, move that player back to available
+    // Place player in field position
     newLineup[position] = draggedPlayer;
+
+    // Auto-add to batting order if not already in it
+    if (!newBattingOrder.includes(draggedPlayer)) {
+      const nextAvailableSlot = newBattingOrder.findIndex(p => p === null);
+      if (nextAvailableSlot !== -1) {
+        newBattingOrder[nextAvailableSlot] = draggedPlayer;
+      }
+    }
 
     setLineup(newLineup);
     setBattingOrder(newBattingOrder);
@@ -160,7 +168,16 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
       newBattingOrder[draggedFromBattingOrder] = null;
     }
 
+    // Place player in batting order
     newBattingOrder[position] = draggedPlayer;
+
+    // Auto-add to field if not already in it (place in next available position)
+    if (!newLineup.includes(draggedPlayer)) {
+      const nextAvailablePosition = newLineup.findIndex(p => p === null);
+      if (nextAvailablePosition !== -1) {
+        newLineup[nextAvailablePosition] = draggedPlayer;
+      }
+    }
 
     setLineup(newLineup);
     setBattingOrder(newBattingOrder);
@@ -170,14 +187,42 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
   };
 
   const handleRemoveFromPosition = (position: number) => {
+    const player = lineup[position];
+    if (!player) return;
+
     const newLineup = [...lineup];
+    const newBattingOrder = [...battingOrder];
+
+    // Remove from field
     newLineup[position] = null;
+
+    // Also remove from batting order
+    const battingIndex = newBattingOrder.indexOf(player);
+    if (battingIndex !== -1) {
+      newBattingOrder[battingIndex] = null;
+    }
+
     setLineup(newLineup);
+    setBattingOrder(newBattingOrder);
   };
 
   const handleRemoveFromBattingOrder = (position: number) => {
+    const player = battingOrder[position];
+    if (!player) return;
+
+    const newLineup = [...lineup];
     const newBattingOrder = [...battingOrder];
+
+    // Remove from batting order
     newBattingOrder[position] = null;
+
+    // Also remove from field
+    const fieldIndex = newLineup.indexOf(player);
+    if (fieldIndex !== -1) {
+      newLineup[fieldIndex] = null;
+    }
+
+    setLineup(newLineup);
     setBattingOrder(newBattingOrder);
   };
 

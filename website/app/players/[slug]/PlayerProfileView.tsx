@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import FadeIn from '@/components/animations/FadeIn';
 import { PlayerStats, PlayerAttributes, PlayerChemistry, PlayerRegistryEntry } from '@/lib/sheets';
+import { getTeamLogoPaths } from '@/lib/teamLogos';
 
 interface PlayerProfileViewProps {
   playerName: string;
@@ -14,6 +16,7 @@ interface PlayerProfileViewProps {
 }
 
 type TabType = 'stats' | 'attributes' | 'chemistry';
+type StatCategory = 'hitting' | 'pitching' | 'fielding';
 
 export default function PlayerProfileView({
   playerName,
@@ -25,6 +28,7 @@ export default function PlayerProfileView({
 }: PlayerProfileViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   const [season, setSeason] = useState<'regular' | 'playoffs'>('regular');
+  const [statCategory, setStatCategory] = useState<StatCategory>('hitting');
 
   const currentStats = season === 'regular' ? regularStats : playoffStats;
   const hasPlayoffStats = !!playoffStats;
@@ -33,7 +37,7 @@ export default function PlayerProfileView({
     <div className="space-y-6">
       {/* Player Header */}
       <FadeIn delay={0} direction="down">
-        <div className="glass-card p-6">
+        <div className="glass-card p-6 relative">
           <div className="flex items-start gap-6">
             {/* Player Image */}
             {registryEntry?.imageUrl && (
@@ -54,19 +58,38 @@ export default function PlayerProfileView({
               <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
                 {playerName}
               </h1>
-              <div className="flex flex-wrap gap-4 text-star-gray font-mono">
-                {registryEntry?.team && (
-                  <span>Team: <span className="text-nebula-orange font-semibold">{registryEntry.team}</span></span>
-                )}
+              <div className="flex flex-wrap gap-4 text-star-gray font-mono text-sm">
                 {attributes?.characterClass && (
                   <span>Class: <span className="text-nebula-coral font-semibold">{attributes.characterClass}</span></span>
                 )}
-                {attributes?.captain && (
-                  <span>Captain: <span className="text-solar-gold font-semibold">{attributes.captain}</span></span>
+                {attributes?.weight && (
+                  <span>Weight: <span className="text-star-white font-semibold">{attributes.weight}</span></span>
+                )}
+                {attributes?.battingSide && (
+                  <span>Bats: <span className="text-star-white font-semibold">{attributes.battingSide}</span></span>
+                )}
+                {attributes?.armSide && (
+                  <span>Throws: <span className="text-star-white font-semibold">{attributes.armSide}</span></span>
+                )}
+                {attributes?.ability && (
+                  <span>Ability: <span className="text-nebula-orange font-semibold">{attributes.ability}</span></span>
                 )}
               </div>
             </div>
           </div>
+
+          {/* Team Emblem Watermark */}
+          {registryEntry?.team && (
+            <div className="absolute bottom-4 right-4 w-16 h-16 opacity-20">
+              <Image
+                src={getTeamLogoPaths(registryEntry.team).emblem}
+                alt={registryEntry.team}
+                width={64}
+                height={64}
+                className="object-contain"
+              />
+            </div>
+          )}
         </div>
       </FadeIn>
 
@@ -140,9 +163,44 @@ export default function PlayerProfileView({
               </div>
             )}
 
+            {/* Stat Category Toggles */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStatCategory('hitting')}
+                className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                  statCategory === 'hitting'
+                    ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
+                    : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+                }`}
+              >
+                Hitting
+              </button>
+              <button
+                onClick={() => setStatCategory('pitching')}
+                className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                  statCategory === 'pitching'
+                    ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
+                    : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+                }`}
+              >
+                Pitching
+              </button>
+              <button
+                onClick={() => setStatCategory('fielding')}
+                className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                  statCategory === 'fielding'
+                    ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
+                    : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+                }`}
+              >
+                Fielding
+              </button>
+            </div>
+
             {currentStats ? (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-6">
                 {/* Hitting Stats */}
+                {statCategory === 'hitting' && (
                 <div className="glass-card p-6 hover:border-nebula-orange/50">
                   <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
                   <div className="space-y-2 font-mono text-sm">
@@ -159,8 +217,10 @@ export default function PlayerProfileView({
                     <StatRow label="OPS" value={currentStats.ops} highlight />
                   </div>
                 </div>
+                )}
 
                 {/* Pitching Stats */}
+                {statCategory === 'pitching' && (
                 <div className="glass-card p-6 hover:border-solar-gold/50">
                   <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
                   <div className="space-y-2 font-mono text-sm">
@@ -175,8 +235,10 @@ export default function PlayerProfileView({
                     <StatRow label="BAA" value={currentStats.baa} highlight />
                   </div>
                 </div>
+                )}
 
                 {/* Fielding Stats */}
+                {statCategory === 'fielding' && (
                 <div className="glass-card p-6 hover:border-nebula-coral/50">
                   <h3 className="text-xl font-display font-bold text-nebula-coral mb-4 text-shadow">Fielding</h3>
                   <div className="space-y-2 font-mono text-sm">
@@ -187,6 +249,7 @@ export default function PlayerProfileView({
                     <StatRow label="OAA" value={currentStats.oaa} highlight />
                   </div>
                 </div>
+                )}
               </div>
             ) : (
               <div className="glass-card p-12 text-center">
@@ -214,30 +277,16 @@ export default function PlayerProfileView({
               </div>
             </div>
 
-            {/* Character Info */}
-            <div className="glass-card p-6 hover:border-solar-gold/50">
-              <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Character Info</h3>
-              <div className="space-y-2 font-mono text-sm">
-                <StatRow label="Weight" value={attributes.weight} />
-                <StatRow label="Ability" value={attributes.ability} />
-                <StatRow label="Arm Side" value={attributes.armSide} />
-                <StatRow label="Batting Side" value={attributes.battingSide} />
-                {attributes.mii === 'Yes' && (
-                  <StatRow label="Mii Color" value={attributes.miiColor} />
-                )}
-              </div>
-            </div>
-
             {/* Pitching Attributes */}
             <div className="glass-card p-6 hover:border-nebula-orange/50">
               <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Pitching</h3>
               <div className="space-y-2 font-mono text-sm">
+                <StatRow label="Pre-Charge" value={attributes.preCharge} />
                 <StatRow label="Star Pitch" value={attributes.starPitch} />
                 <StatRow label="Fastball Speed" value={attributes.fastballSpeed} />
                 <StatRow label="Curveball Speed" value={attributes.curveballSpeed} />
                 <StatRow label="Curve" value={attributes.curve} />
                 <StatRow label="Stamina" value={attributes.stamina} />
-                <StatRow label="Pitching Avg" value={attributes.pitchingAverage.toFixed(2)} highlight />
               </div>
             </div>
 
@@ -252,8 +301,6 @@ export default function PlayerProfileView({
                 <StatRow label="Charge Contact" value={attributes.chargeHitContact} />
                 <StatRow label="Slap Power" value={attributes.slapHitPower} />
                 <StatRow label="Charge Power" value={attributes.chargeHitPower} />
-                <StatRow label="Pre-Charge" value={attributes.preCharge} />
-                <StatRow label="Batting Avg" value={attributes.battingAverage.toFixed(2)} highlight />
               </div>
             </div>
 
@@ -264,7 +311,6 @@ export default function PlayerProfileView({
                 <div className="space-y-2 font-mono text-sm">
                   <StatRow label="Fielding" value={attributes.fielding} />
                   <StatRow label="Throwing Speed" value={attributes.throwingSpeed} />
-                  <StatRow label="Fielding Avg" value={attributes.fieldingAverage.toFixed(2)} highlight />
                 </div>
                 <div className="space-y-2 font-mono text-sm">
                   <StatRow label="Speed" value={attributes.speed} />

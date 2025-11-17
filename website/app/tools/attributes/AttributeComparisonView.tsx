@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { PlayerAttributes } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 
+type AttributeTab = 'hitting' | 'pitching' | 'fielding';
+
 interface Props {
   players: PlayerAttributes[];
 }
 
 export default function AttributeComparisonView({ players }: Props) {
   const [selectedPlayerNames, setSelectedPlayerNames] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<AttributeTab>('hitting');
 
   const selectedPlayers = selectedPlayerNames
     .map(name => players.find(p => p.name === name))
@@ -27,6 +30,42 @@ export default function AttributeComparisonView({ players }: Props) {
           <p className="text-star-gray font-mono text-lg">
             Compare 2-5 players side-by-side across all 30 attributes
           </p>
+        </div>
+
+        {/* Attribute Category Tabs */}
+        <div className="glass-card p-4 mb-6">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('hitting')}
+              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                activeTab === 'hitting'
+                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+              }`}
+            >
+              Hitting
+            </button>
+            <button
+              onClick={() => setActiveTab('pitching')}
+              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                activeTab === 'pitching'
+                  ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+              }`}
+            >
+              Pitching
+            </button>
+            <button
+              onClick={() => setActiveTab('fielding')}
+              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                activeTab === 'fielding'
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+              }`}
+            >
+              Fielding & Running
+            </button>
+          </div>
         </div>
 
         {/* Player Selection */}
@@ -85,45 +124,57 @@ export default function AttributeComparisonView({ players }: Props) {
                 <AttributeRow label="Speed Overall" players={selectedPlayers} getValue={p => p.speedOverall} numeric />
 
                 {/* Pitching Attributes Section */}
-                <tr className="bg-gradient-to-r from-green-500/20 to-green-400/20">
-                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-green-400 text-shadow">
-                    Pitching Attributes
-                  </td>
-                </tr>
-                <AttributeRow label="Star Pitch" players={selectedPlayers} getValue={p => p.starPitch} />
-                <AttributeRow label="Fastball Speed" players={selectedPlayers} getValue={p => p.fastballSpeed} numeric />
-                <AttributeRow label="Curveball Speed" players={selectedPlayers} getValue={p => p.curveballSpeed} numeric />
-                <AttributeRow label="Curve" players={selectedPlayers} getValue={p => p.curve} numeric />
-                <AttributeRow label="Stamina" players={selectedPlayers} getValue={p => p.stamina} numeric />
-                <AttributeRow label="Pitching Average" players={selectedPlayers} getValue={p => p.pitchingAverage} numeric highlight />
+                {activeTab === 'pitching' && (
+                  <>
+                    <tr className="bg-gradient-to-r from-green-500/20 to-green-400/20">
+                      <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-green-400 text-shadow">
+                        Pitching Attributes
+                      </td>
+                    </tr>
+                    <AttributeRow label="Star Pitch" players={selectedPlayers} getValue={p => p.starPitch} />
+                    <AttributeRow label="Fastball Speed" players={selectedPlayers} getValue={p => p.fastballSpeed} numeric />
+                    <AttributeRow label="Curveball Speed" players={selectedPlayers} getValue={p => p.curveballSpeed} numeric />
+                    <AttributeRow label="Curve" players={selectedPlayers} getValue={p => p.curve} numeric />
+                    <AttributeRow label="Stamina" players={selectedPlayers} getValue={p => p.stamina} numeric />
+                    <AttributeRow label="Pitching Average" players={selectedPlayers} getValue={p => p.pitchingAverage} numeric highlight />
+                  </>
+                )}
 
                 {/* Hitting Attributes Section */}
-                <tr className="bg-gradient-to-r from-nebula-coral/20 to-star-pink/20">
-                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-nebula-coral text-shadow">
-                    Hitting Attributes
-                  </td>
-                </tr>
-                <AttributeRow label="Star Swing" players={selectedPlayers} getValue={p => p.starSwing} />
-                <AttributeRow label="Hit Curve" players={selectedPlayers} getValue={p => p.hitCurve} numeric />
-                <AttributeRow label="Hitting Trajectory" players={selectedPlayers} getValue={p => p.hittingTrajectory} />
-                <AttributeRow label="Slap Hit Contact" players={selectedPlayers} getValue={p => p.slapHitContact} numeric />
-                <AttributeRow label="Charge Hit Contact" players={selectedPlayers} getValue={p => p.chargeHitContact} numeric />
-                <AttributeRow label="Slap Hit Power" players={selectedPlayers} getValue={p => p.slapHitPower} numeric />
-                <AttributeRow label="Charge Hit Power" players={selectedPlayers} getValue={p => p.chargeHitPower} numeric />
-                <AttributeRow label="Pre-Charge" players={selectedPlayers} getValue={p => p.preCharge} />
-                <AttributeRow label="Batting Average" players={selectedPlayers} getValue={p => p.battingAverage} numeric highlight />
+                {activeTab === 'hitting' && (
+                  <>
+                    <tr className="bg-gradient-to-r from-nebula-coral/20 to-star-pink/20">
+                      <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-nebula-coral text-shadow">
+                        Hitting Attributes
+                      </td>
+                    </tr>
+                    <AttributeRow label="Star Swing" players={selectedPlayers} getValue={p => p.starSwing} />
+                    <AttributeRow label="Hit Curve" players={selectedPlayers} getValue={p => p.hitCurve} numeric />
+                    <AttributeRow label="Hitting Trajectory" players={selectedPlayers} getValue={p => p.hittingTrajectory} />
+                    <AttributeRow label="Slap Hit Contact" players={selectedPlayers} getValue={p => p.slapHitContact} numeric />
+                    <AttributeRow label="Charge Hit Contact" players={selectedPlayers} getValue={p => p.chargeHitContact} numeric />
+                    <AttributeRow label="Slap Hit Power" players={selectedPlayers} getValue={p => p.slapHitPower} numeric />
+                    <AttributeRow label="Charge Hit Power" players={selectedPlayers} getValue={p => p.chargeHitPower} numeric />
+                    <AttributeRow label="Pre-Charge" players={selectedPlayers} getValue={p => p.preCharge} />
+                    <AttributeRow label="Batting Average" players={selectedPlayers} getValue={p => p.battingAverage} numeric highlight />
+                  </>
+                )}
 
                 {/* Fielding & Running Section */}
-                <tr className="bg-gradient-to-r from-comet-yellow/20 to-nebula-orange/20">
-                  <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-comet-yellow text-shadow">
-                    Fielding & Running
-                  </td>
-                </tr>
-                <AttributeRow label="Fielding" players={selectedPlayers} getValue={p => p.fielding} numeric />
-                <AttributeRow label="Throwing Speed" players={selectedPlayers} getValue={p => p.throwingSpeed} numeric />
-                <AttributeRow label="Fielding Average" players={selectedPlayers} getValue={p => p.fieldingAverage} numeric highlight />
-                <AttributeRow label="Speed" players={selectedPlayers} getValue={p => p.speed} numeric />
-                <AttributeRow label="Bunting" players={selectedPlayers} getValue={p => p.bunting} numeric />
+                {activeTab === 'fielding' && (
+                  <>
+                    <tr className="bg-gradient-to-r from-comet-yellow/20 to-nebula-orange/20">
+                      <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-comet-yellow text-shadow">
+                        Fielding & Running
+                      </td>
+                    </tr>
+                    <AttributeRow label="Fielding" players={selectedPlayers} getValue={p => p.fielding} numeric />
+                    <AttributeRow label="Throwing Speed" players={selectedPlayers} getValue={p => p.throwingSpeed} numeric />
+                    <AttributeRow label="Fielding Average" players={selectedPlayers} getValue={p => p.fieldingAverage} numeric highlight />
+                    <AttributeRow label="Speed" players={selectedPlayers} getValue={p => p.speed} numeric />
+                    <AttributeRow label="Bunting" players={selectedPlayers} getValue={p => p.bunting} numeric />
+                  </>
+                )}
               </tbody>
             </table>
           </div>

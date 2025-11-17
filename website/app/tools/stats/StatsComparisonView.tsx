@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { PlayerStats } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 
+type StatTab = 'hitting' | 'pitching' | 'fielding';
+
 interface Props {
   regularPlayers: PlayerStats[];
   playoffPlayers: PlayerStats[];
@@ -12,6 +14,7 @@ interface Props {
 export default function StatsComparisonView({ regularPlayers, playoffPlayers }: Props) {
   const [selectedPlayerNames, setSelectedPlayerNames] = useState<string[]>([]);
   const [isPlayoffs, setIsPlayoffs] = useState(false);
+  const [activeTab, setActiveTab] = useState<StatTab>('hitting');
 
   const activePlayers = isPlayoffs ? playoffPlayers : regularPlayers;
 
@@ -66,6 +69,42 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
           </div>
         </div>
 
+        {/* Stat Category Tabs */}
+        <div className="glass-card p-4 mb-6">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('hitting')}
+              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                activeTab === 'hitting'
+                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+              }`}
+            >
+              Hitting
+            </button>
+            <button
+              onClick={() => setActiveTab('pitching')}
+              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                activeTab === 'pitching'
+                  ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+              }`}
+            >
+              Pitching
+            </button>
+            <button
+              onClick={() => setActiveTab('fielding')}
+              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
+                activeTab === 'fielding'
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
+                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
+              }`}
+            >
+              Fielding
+            </button>
+          </div>
+        </div>
+
         {/* Player Selection */}
         <PlayerMultiSelect
           players={availablePlayerNames}
@@ -79,6 +118,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
         {selectedPlayers.length >= 2 ? (
           <div className="space-y-6">
             {/* Hitting Stats */}
+            {activeTab === 'hitting' && (
             <div className="glass-card overflow-hidden">
               <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-nebula-orange text-shadow">⚾ Hitting Statistics</h3>
@@ -116,8 +156,10 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                 </table>
               </div>
             </div>
+            )}
 
             {/* Pitching Stats */}
+            {activeTab === 'pitching' && (
             <div className="glass-card overflow-hidden">
               <div className="bg-gradient-to-r from-green-500/30 to-green-400/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-green-400 text-shadow">🎯 Pitching Statistics</h3>
@@ -153,8 +195,10 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                 </table>
               </div>
             </div>
+            )}
 
             {/* Fielding Stats */}
+            {activeTab === 'fielding' && (
             <div className="glass-card overflow-hidden">
               <div className="bg-gradient-to-r from-comet-yellow/30 to-nebula-orange/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-comet-yellow text-shadow">🧤 Fielding Statistics</h3>
@@ -186,6 +230,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                 </table>
               </div>
             </div>
+            )}
           </div>
         ) : selectedPlayers.length === 1 ? (
           <div className="glass-card p-8 text-center border-nebula-orange/30">

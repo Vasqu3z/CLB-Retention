@@ -38,6 +38,12 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
   const [saveLineupName, setSaveLineupName] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
+  // Debug: Log playerNames to console
+  useEffect(() => {
+    console.log('Lineup Builder - Player count:', playerNames.length);
+    console.log('Lineup Builder - Players:', playerNames);
+  }, [playerNames]);
+
   // Load saved lineups from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('clb-saved-lineups');
@@ -301,18 +307,26 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
               <h3 className="font-bold text-lg text-gray-900 mb-3">
                 Available Players ({availablePlayers.length})
               </h3>
-              <div className="space-y-1 max-h-96 overflow-y-auto">
-                {availablePlayers.map(player => (
-                  <div
-                    key={player}
-                    draggable
-                    onDragStart={() => handleDragStart(player)}
-                    className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded cursor-move text-sm font-medium text-gray-900 transition-colors"
-                  >
-                    {player}
-                  </div>
-                ))}
-              </div>
+              {availablePlayers.length > 0 ? (
+                <div className="space-y-1 max-h-96 overflow-y-auto">
+                  {availablePlayers.map(player => (
+                    <div
+                      key={player}
+                      draggable
+                      onDragStart={() => handleDragStart(player)}
+                      className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded cursor-move text-sm font-medium text-gray-900 transition-colors"
+                    >
+                      {player}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm italic">
+                  {playerNames.length === 0
+                    ? 'No players available. Check console for errors.'
+                    : 'All players are in the lineup'}
+                </p>
+              )}
             </div>
 
             {/* Saved Lineups */}

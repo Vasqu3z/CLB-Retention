@@ -35,13 +35,25 @@ async function slugToPlayerName(slug: string): Promise<string | null> {
 
 /**
  * Generate static params for all players (for static generation at build time)
+ * Falls back to empty array if API fails during build - pages will be generated on-demand
  */
 export async function generateStaticParams() {
-  const registry = await getPlayerRegistry();
+  try {
+    const registry = await getPlayerRegistry();
 
-  return registry.map((player) => ({
-    slug: playerNameToSlug(player.playerName),
-  }));
+    if (!registry || registry.length === 0) {
+      console.warn('No players found in registry during build - pages will be generated on-demand');
+      return [];
+    }
+
+    return registry.map((player) => ({
+      slug: playerNameToSlug(player.playerName),
+    }));
+  } catch (error) {
+    console.error('Failed to generate static params for player pages:', error);
+    // Return empty array so build continues - pages will be generated on-demand with ISR
+    return [];
+  }
 }
 
 /**

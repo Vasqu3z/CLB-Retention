@@ -223,10 +223,11 @@ export const TEAM_REGISTRY_SHEET = {
 } as const;
 
 /**
- * Player Attributes sheet configuration (Database module)
+ * Player Attributes sheet configuration (consolidated into League Hub)
+ * Previously in separate Database spreadsheet, now in main League Hub
  */
 export const DATABASE_ATTRIBUTES_SHEET = {
-  NAME: "'Advanced Attributes'",
+  NAME: "'🎮 Attributes'",
   DATA_START_ROW: 2,
   MAX_ROWS: 100,
   START_COL: 'A',
@@ -268,10 +269,11 @@ export const DATABASE_ATTRIBUTES_SHEET = {
 } as const;
 
 /**
- * Chemistry Lookup sheet configuration (Database module)
+ * Chemistry Lookup sheet configuration (consolidated into League Hub)
+ * Previously in separate Database spreadsheet, now in main League Hub
  */
 export const CHEMISTRY_LOOKUP_SHEET = {
-  NAME: "'Chemistry Lookup'",
+  NAME: "'🎮 Chemistry'",
   DATA_START_ROW: 2,
   MAX_ROWS: 5000,  // Large range for all chemistry pairs
   START_COL: 'A',

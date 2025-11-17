@@ -1,5 +1,17 @@
 // Google Sheets API Integration
 // This module reads data from the Google Sheets spreadsheet
+//
+// SPREADSHEET CONFIGURATION:
+// - SHEETS_SPREADSHEET_ID: League Hub spreadsheet (standings, players, schedule, registries)
+// - DATABASE_SPREADSHEET_ID: Should point to League Hub (attributes and chemistry consolidated)
+//   Previously these were in a separate Database spreadsheet, but now everything is consolidated
+//   into the main League Hub spreadsheet.
+//
+// CONSOLIDATED SHEETS:
+// - 🎮 Attributes (previously "Advanced Attributes" in Database)
+// - 🎮 Chemistry (previously "Chemistry Lookup" in Database)
+// - 📋 Player Registry (includes DATABASE_ID column for character name mapping)
+//   Character Name Mapping is no longer needed - merged into Player Registry
 
 import { google } from 'googleapis';
 import { unstable_cache } from 'next/cache';

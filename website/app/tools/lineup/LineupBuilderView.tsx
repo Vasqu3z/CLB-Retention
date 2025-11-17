@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { ChemistryMatrix } from '@/lib/sheets';
+import PlayerSelectModal from '@/components/PlayerSelectModal';
 
 interface Props {
   chemistryMatrix: ChemistryMatrix;
@@ -42,6 +43,9 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [importText, setImportText] = useState('');
+  const [isPlayerSelectOpen, setIsPlayerSelectOpen] = useState(false);
+  const [selectingPosition, setSelectingPosition] = useState<number | null>(null);
+  const [selectingBattingSlot, setSelectingBattingSlot] = useState<number | null>(null);
 
   // Load saved lineups from localStorage
   useEffect(() => {
@@ -291,6 +295,66 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
     }
   };
 
+  // Modal handlers
+  const handleOpenPositionSelect = (position: number) => {
+    setSelectingPosition(position);
+    setSelectingBattingSlot(null);
+    setIsPlayerSelectOpen(true);
+  };
+
+  const handleOpenBattingSlotSelect = (slot: number) => {
+    setSelectingBattingSlot(slot);
+    setSelectingPosition(null);
+    setIsPlayerSelectOpen(true);
+  };
+
+  const handlePlayerSelected = (player: string) => {
+    const newLineup = [...lineup];
+    const newBattingOrder = [...battingOrder];
+
+    if (selectingPosition !== null) {
+      // Add to field position
+      newLineup[selectingPosition] = player;
+
+      // Auto-add to batting order if not already in it
+      if (!newBattingOrder.includes(player)) {
+        const nextAvailableSlot = newBattingOrder.findIndex(p => p === null);
+        if (nextAvailableSlot !== -1) {
+          newBattingOrder[nextAvailableSlot] = player;
+        }
+      }
+    } else if (selectingBattingSlot !== null) {
+      // Add to batting order
+      newBattingOrder[selectingBattingSlot] = player;
+
+      // Auto-add to field if not already in it
+      if (!newLineup.includes(player)) {
+        const nextAvailablePosition = newLineup.findIndex(p => p === null);
+        if (nextAvailablePosition !== -1) {
+          newLineup[nextAvailablePosition] = player;
+        }
+      }
+    }
+
+    setLineup(newLineup);
+    setBattingOrder(newBattingOrder);
+    setSelectingPosition(null);
+    setSelectingBattingSlot(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsPlayerSelectOpen(false);
+    setSelectingPosition(null);
+    setSelectingBattingSlot(null);
+  };
+
+  // Get modal title based on what's being selected
+  const modalTitle = selectingPosition !== null
+    ? `Select ${POSITIONS[selectingPosition].name}`
+    : selectingBattingSlot !== null
+    ? `Select Batter #${selectingBattingSlot + 1}`
+    : '';
+
   return (
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-7xl">
@@ -299,7 +363,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
             🏟️ Lineup Builder
           </h1>
           <p className="text-star-gray font-mono text-lg">
-            Drag and drop players to build your optimal lineup with chemistry visualization
+            Click on positions to select players and build your optimal lineup with chemistry visualization
           </p>
         </div>
 
@@ -418,21 +482,29 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                           </button>
                         </div>
                       ) : (
-                        <div className="bg-space-navy/30 backdrop-blur-sm rounded-lg border-2 border-dashed border-star-gray/30 px-4 py-3 text-center hover:border-star-gray/50 transition-colors duration-200">
+                        <button
+                          onClick={() => handleOpenPositionSelect(position.id)}
+                          className="bg-space-navy/30 backdrop-blur-sm rounded-lg border-2 border-dashed border-star-gray/30 px-4 py-3 text-center hover:border-nebula-orange/50 hover:bg-space-navy/50 transition-all duration-200 cursor-pointer"
+                        >
                           <div className="text-xs font-bold text-star-white font-display">{position.label}</div>
                           <div className="text-xs text-star-gray mt-1 font-mono">{position.name}</div>
-                        </div>
+                        </button>
                       )}
                     </div>
                   );
                 })}
               </div>
             </div>
+          </div>
 
+          {/* Sidebar */}
+          <div className="space-y-6">
             {/* Batting Order */}
-            <div className="glass-card p-6">
-              <h3 className="text-xl font-display font-bold text-star-white mb-4">⚾ Batting Order</h3>
-              <div className="grid grid-cols-3 gap-3">
+            <div className="glass-card p-4">
+              <h3 className="font-display font-bold text-lg text-star-white mb-3">
+                ⚾ Batting Order <span className="text-nebula-orange">({battingOrder.filter(p => p !== null).length}/9)</span>
+              </h3>
+              <div className="space-y-2">
                 {battingOrder.map((player, idx) => (
                   <div
                     key={idx}
@@ -446,8 +518,10 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                         onDragStart={() => handleDragStart(player, undefined, idx)}
                         className="bg-nebula-orange/10 border-2 border-nebula-orange/50 rounded-lg px-3 py-2 cursor-move hover:bg-nebula-orange/20 transition-all duration-200"
                       >
-                        <div className="text-xs font-bold text-nebula-orange font-display">#{idx + 1}</div>
-                        <div className="text-sm font-semibold text-star-white font-mono">{player}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs font-bold text-nebula-orange font-display w-6">#{idx + 1}</div>
+                          <div className="text-sm font-semibold text-star-white font-mono flex-1">{player}</div>
+                        </div>
                         <button
                           onClick={() => handleRemoveFromBattingOrder(idx)}
                           className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center shadow-lg"
@@ -456,42 +530,19 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                         </button>
                       </div>
                     ) : (
-                      <div className="bg-space-blue/20 border-2 border-dashed border-cosmic-border rounded-lg px-3 py-2 text-center hover:border-star-gray/50 transition-colors duration-200">
-                        <div className="text-xs font-bold text-star-gray font-display">#{idx + 1}</div>
-                        <div className="text-xs text-star-dim font-mono">Drop here</div>
-                      </div>
+                      <button
+                        onClick={() => handleOpenBattingSlotSelect(idx)}
+                        className="w-full bg-space-blue/20 border-2 border-dashed border-cosmic-border rounded-lg px-3 py-2 text-left hover:border-nebula-orange/50 hover:bg-space-blue/30 transition-all duration-200 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs font-bold text-star-gray font-display w-6">#{idx + 1}</div>
+                          <div className="text-xs text-star-dim font-mono">Click to select</div>
+                        </div>
+                      </button>
                     )}
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Available Players */}
-            <div className="glass-card p-4">
-              <h3 className="font-display font-bold text-lg text-star-white mb-3">
-                Available Players <span className="text-nebula-orange">({availablePlayers.length})</span>
-              </h3>
-              {availablePlayers.length > 0 ? (
-                <div className="space-y-1 max-h-96 overflow-y-auto pr-2">
-                  {availablePlayers.map(player => (
-                    <div
-                      key={player}
-                      draggable
-                      onDragStart={() => handleDragStart(player)}
-                      className="bg-space-blue/50 hover:bg-space-blue/70 border border-cosmic-border hover:border-nebula-orange/50 px-3 py-2 rounded cursor-move text-sm font-mono text-star-white transition-all duration-200"
-                    >
-                      {player}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-star-gray text-sm italic font-mono">
-                  All players assigned to field or batting order
-                </p>
-              )}
             </div>
 
             {/* Saved Lineups */}
@@ -612,6 +663,15 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
             </div>
           </div>
         )}
+
+        {/* Player Select Modal */}
+        <PlayerSelectModal
+          isOpen={isPlayerSelectOpen}
+          onClose={handleCloseModal}
+          onSelect={handlePlayerSelected}
+          availablePlayers={availablePlayers}
+          title={modalTitle}
+        />
       </div>
     </div>
   );

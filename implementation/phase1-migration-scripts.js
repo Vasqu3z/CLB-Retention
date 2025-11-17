@@ -93,18 +93,18 @@ function migrateToPlayerRegistry() {
     var databaseId = nameMapping[playerName] || playerName; // Default to same name if no mapping
 
     registry.push([
-      playerName,  // Column A: Player Name
-      team,        // Column B: Team
-      status,      // Column C: Status
-      databaseId,  // Column D: Database ID
+      databaseId,  // Column A: Database ID
+      playerName,  // Column B: Player Name
+      team,        // Column C: Team
+      status,      // Column D: Status
       imageUrl,    // Column E: Image URL
       ''           // Column F: Has Attributes (formula will populate)
     ]);
   }
 
-  // Sort alphabetically by player name
+  // Sort alphabetically by player name (now in column B, index 1)
   registry.sort(function(a, b) {
-    return a[0].localeCompare(b[0]);
+    return a[1].localeCompare(b[1]);
   });
 
   // ===== P1: Write all data ONCE =====
@@ -167,15 +167,15 @@ function populateTeamRegistry() {
   // ===== MODIFY THIS DATA FOR YOUR LEAGUE =====
 
   var teamData = [
-    // Team Name | Abbr | Captain | Status | Color | Logo URL | Emblem URL | Discord Role ID
-    ['Fire Flowers', 'FF', 'Mario', 'Active', '#FF0000', '', '', ''],
-    ['Banana Bunch', 'BB', 'Donkey Kong', 'Active', '#FFFF00', '', '', ''],
-    ['Shell Shockers', 'SS', 'Bowser', 'Active', '#00FF00', '', '', ''],
-    ['Star Squad', 'STR', 'Peach', 'Active', '#FFC0CB', '', '', ''],
-    ['Koopa Troop', 'KT', 'Bowser Jr.', 'Active', '#FF8C00', '', '', ''],
-    ['Yoshi Island', 'YI', 'Green Yoshi', 'Active', '#90EE90', '', '', ''],
-    ['Wario Warriors', 'WW', 'Wario', 'Active', '#800080', '', '', ''],
-    ['Luigi Legends', 'LL', 'Luigi', 'Active', '#00FF00', '', '', '']
+    // Team Name | Captain | Abbr | Status | Color | Logo URL | Emblem URL | Discord Role ID
+    ['Fire Flowers', 'Mario', 'FF', 'Active', '#FF0000', '', '', ''],
+    ['Banana Bunch', 'Donkey Kong', 'BB', 'Active', '#FFFF00', '', '', ''],
+    ['Shell Shockers', 'Bowser', 'SS', 'Active', '#00FF00', '', '', ''],
+    ['Star Squad', 'Peach', 'STR', 'Active', '#FFC0CB', '', '', ''],
+    ['Koopa Troop', 'Bowser Jr.', 'KT', 'Active', '#FF8C00', '', '', ''],
+    ['Yoshi Island', 'Green Yoshi', 'YI', 'Active', '#90EE90', '', '', ''],
+    ['Wario Warriors', 'Wario', 'WW', 'Active', '#800080', '', '', ''],
+    ['Luigi Legends', 'Luigi', 'LL', 'Active', '#00FF00', '', '', '']
   ];
 
   // ===== P1: Write all data ONCE =====

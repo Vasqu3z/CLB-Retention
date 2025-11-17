@@ -60,15 +60,15 @@ For boolean values, add dropdown validation:
 
 **Headers (Row 1):**
 ```
-| Player Name | Team | Status | Database ID | Image URL | Has Attributes |
+| Database ID | Player Name | Team | Status | Image URL | Has Attributes |
 ```
 
 ### Step 2: Column Descriptions
 
-- **Player Name** (A): Official league name (used everywhere)
-- **Team** (B): Current team assignment
-- **Status** (C): Active | Inactive | Free Agent | Injured
-- **Database ID** (D): Name used in Database spreadsheet (for mapping)
+- **Database ID** (A): Name used in Database spreadsheet (for mapping)
+- **Player Name** (B): Official league name (used everywhere)
+- **Team** (C): Current team assignment
+- **Status** (D): Active | Inactive | Free Agent | Injured
 - **Image URL** (E): Player icon URL for Discord/website
 - **Has Attributes** (F): Formula to check if player exists in attributes sheet
 
@@ -76,7 +76,7 @@ For boolean values, add dropdown validation:
 
 In cell F2, add this formula:
 ```excel
-=IF(A2="","",IF(COUNTIF('🎮 Player Attributes'!A:A,D2)>0,"✅ Yes","❌ No"))
+=IF(B2="","",IF(COUNTIF('Advanced Attributes'!A:A,A2)>0,"✅ Yes","❌ No"))
 ```
 
 Drag down to all rows.
@@ -86,10 +86,10 @@ Drag down to all rows.
 1. **Freeze row 1**
 2. **Bold header row**
 3. **Column widths:**
-   - A (Player Name): 200px
-   - B (Team): 150px
-   - C (Status): 100px
-   - D (Database ID): 200px
+   - A (Database ID): 200px
+   - B (Player Name): 200px
+   - C (Team): 150px
+   - D (Status): 100px
    - E (Image URL): 300px
    - F (Has Attributes): 120px
 4. **Header background:** Light green (#d4edda)
@@ -116,14 +116,14 @@ Drag down to all rows.
 
 **Headers (Row 1):**
 ```
-| Team Name | Abbreviation | In-Game Captain | Status | Color | Logo URL | Emblem URL | Discord Role ID |
+| Team Name | In-Game Captain | Abbreviation | Status | Color | Logo URL | Emblem URL | Discord Role ID |
 ```
 
 ### Step 2: Column Descriptions
 
 - **Team Name** (A): Official team name
-- **Abbreviation** (B): 2-3 letter code (FF, BB, etc.)
-- **In-Game Captain** (C): Team captain character
+- **In-Game Captain** (B): Team captain character
+- **Abbreviation** (C): 2-3 letter code (FF, BB, etc.)
 - **Status** (D): Active | Inactive | Eliminated
 - **Color** (E): Hex color code (#FF0000)
 - **Logo URL** (F): Full team logo URL
@@ -133,9 +133,9 @@ Drag down to all rows.
 ### Step 3: Example Data
 
 ```
-| Fire Flowers  | FF  | Mario       | Active | #FF0000 | https://... | https://... | 123456789 |
-| Banana Bunch  | BB  | Donkey Kong | Active | #FFFF00 | https://... | https://... | 987654321 |
-| Shell Shockers| SS  | Bowser      | Active | #00FF00 | https://... | https://... | 555555555 |
+| Fire Flowers  | Mario       | FF  | Active | #FF0000 | https://... | https://... | 123456789 |
+| Banana Bunch  | Donkey Kong | BB  | Active | #FFFF00 | https://... | https://... | 987654321 |
+| Shell Shockers| Bowser      | SS  | Active | #00FF00 | https://... | https://... | 555555555 |
 ```
 
 ### Step 4: Format the Sheet
@@ -144,8 +144,8 @@ Drag down to all rows.
 2. **Bold header row**
 3. **Column widths:**
    - A (Team Name): 200px
-   - B (Abbr): 80px
-   - C (Captain): 150px
+   - B (Captain): 150px
+   - C (Abbr): 80px
    - D (Status): 100px
    - E (Color): 100px
    - F (Logo URL): 300px

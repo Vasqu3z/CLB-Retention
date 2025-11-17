@@ -190,10 +190,10 @@ export const PLAYER_REGISTRY_SHEET = {
 
   // Column indices (0-based)
   COLUMNS: {
-    PLAYER_NAME: 0,      // A
-    TEAM: 1,             // B
-    STATUS: 2,           // C
-    DATABASE_ID: 3,      // D
+    DATABASE_ID: 0,      // A
+    PLAYER_NAME: 1,      // B
+    TEAM: 2,             // C
+    STATUS: 3,           // D
     IMAGE_URL: 4,        // E
     HAS_ATTRIBUTES: 5,   // F (formula)
   },
@@ -212,8 +212,8 @@ export const TEAM_REGISTRY_SHEET = {
   // Column indices (0-based)
   COLUMNS: {
     TEAM_NAME: 0,        // A
-    ABBR: 1,             // B
-    CAPTAIN: 2,          // C
+    CAPTAIN: 1,          // B
+    ABBR: 2,             // C
     STATUS: 3,           // D
     COLOR: 4,            // E
     LOGO_URL: 5,         // F

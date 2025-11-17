@@ -25,24 +25,23 @@ const POSITIONS = [
 
 interface SavedLineup {
   name: string;
-  players: (string | null)[];
+  players: (string | null)[]; // Field positions
+  battingOrder: (string | null)[]; // Batting order 1-9
   chemistry: number;
   timestamp: number;
 }
 
 export default function LineupBuilderView({ chemistryMatrix, playerNames }: Props) {
   const [lineup, setLineup] = useState<(string | null)[]>(Array(9).fill(null));
+  const [battingOrder, setBattingOrder] = useState<(string | null)[]>(Array(9).fill(null));
   const [savedLineups, setSavedLineups] = useState<SavedLineup[]>([]);
   const [draggedPlayer, setDraggedPlayer] = useState<string | null>(null);
   const [draggedFromPosition, setDraggedFromPosition] = useState<number | null>(null);
+  const [draggedFromBattingOrder, setDraggedFromBattingOrder] = useState<number | null>(null);
   const [saveLineupName, setSaveLineupName] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-
-  // Debug: Log playerNames to console
-  useEffect(() => {
-    console.log('Lineup Builder - Player count:', playerNames.length);
-    console.log('Lineup Builder - Players:', playerNames);
-  }, [playerNames]);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importText, setImportText] = useState('');
 
   // Load saved lineups from localStorage
   useEffect(() => {
@@ -105,13 +104,14 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
     return connections;
   }, [lineup, chemistryMatrix]);
 
-  // Get available players (not in lineup)
-  const availablePlayers = playerNames.filter(name => !lineup.includes(name));
+  // Get available players (not in lineup or batting order)
+  const availablePlayers = playerNames.filter(name => !lineup.includes(name) && !battingOrder.includes(name));
 
   // Drag handlers
-  const handleDragStart = (player: string, fromPosition?: number) => {
+  const handleDragStart = (player: string, fromPosition?: number, fromBattingOrder?: number) => {
     setDraggedPlayer(player);
     setDraggedFromPosition(fromPosition ?? null);
+    setDraggedFromBattingOrder(fromBattingOrder ?? null);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -122,18 +122,51 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
     if (!draggedPlayer) return;
 
     const newLineup = [...lineup];
+    const newBattingOrder = [...battingOrder];
 
     // If dragging from another position, clear that position
     if (draggedFromPosition !== null) {
       newLineup[draggedFromPosition] = null;
     }
 
+    // If dragging from batting order, clear that slot
+    if (draggedFromBattingOrder !== null) {
+      newBattingOrder[draggedFromBattingOrder] = null;
+    }
+
     // If position is occupied, move that player back to available
     newLineup[position] = draggedPlayer;
 
     setLineup(newLineup);
+    setBattingOrder(newBattingOrder);
     setDraggedPlayer(null);
     setDraggedFromPosition(null);
+    setDraggedFromBattingOrder(null);
+  };
+
+  const handleDropOnBattingOrder = (position: number) => {
+    if (!draggedPlayer) return;
+
+    const newLineup = [...lineup];
+    const newBattingOrder = [...battingOrder];
+
+    // If dragging from field position, clear that position
+    if (draggedFromPosition !== null) {
+      newLineup[draggedFromPosition] = null;
+    }
+
+    // If dragging from another batting order slot, clear that slot
+    if (draggedFromBattingOrder !== null) {
+      newBattingOrder[draggedFromBattingOrder] = null;
+    }
+
+    newBattingOrder[position] = draggedPlayer;
+
+    setLineup(newLineup);
+    setBattingOrder(newBattingOrder);
+    setDraggedPlayer(null);
+    setDraggedFromPosition(null);
+    setDraggedFromBattingOrder(null);
   };
 
   const handleRemoveFromPosition = (position: number) => {
@@ -142,8 +175,15 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
     setLineup(newLineup);
   };
 
+  const handleRemoveFromBattingOrder = (position: number) => {
+    const newBattingOrder = [...battingOrder];
+    newBattingOrder[position] = null;
+    setBattingOrder(newBattingOrder);
+  };
+
   const handleClearLineup = () => {
     setLineup(Array(9).fill(null));
+    setBattingOrder(Array(9).fill(null));
   };
 
   const handleSaveLineup = () => {
@@ -152,6 +192,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
     const newSavedLineup: SavedLineup = {
       name: saveLineupName.trim(),
       players: [...lineup],
+      battingOrder: [...battingOrder],
       chemistry: totalChemistry,
       timestamp: Date.now(),
     };
@@ -166,12 +207,43 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
 
   const handleLoadLineup = (savedLineup: SavedLineup) => {
     setLineup([...savedLineup.players]);
+    setBattingOrder([...savedLineup.battingOrder]);
   };
 
   const handleDeleteLineup = (index: number) => {
     const updatedLineups = savedLineups.filter((_, i) => i !== index);
     setSavedLineups(updatedLineups);
     localStorage.setItem('clb-saved-lineups', JSON.stringify(updatedLineups));
+  };
+
+  const handleExport = () => {
+    const exportData = {
+      name: 'Exported Lineup',
+      players: lineup,
+      battingOrder: battingOrder,
+      chemistry: totalChemistry,
+      timestamp: Date.now(),
+    };
+
+    const jsonString = JSON.stringify(exportData, null, 2);
+    navigator.clipboard.writeText(jsonString);
+    alert('Lineup copied to clipboard!');
+  };
+
+  const handleImport = () => {
+    try {
+      const imported = JSON.parse(importText);
+      if (imported.players && Array.isArray(imported.players)) {
+        setLineup(imported.players);
+        setBattingOrder(imported.battingOrder || Array(9).fill(null));
+        setShowImportDialog(false);
+        setImportText('');
+      } else {
+        alert('Invalid lineup format');
+      }
+    } catch (e) {
+      alert('Failed to import lineup. Please check the format.');
+    }
   };
 
   return (
@@ -188,7 +260,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Baseball Field */}
-          <div className="xl:col-span-2">
+          <div className="xl:col-span-2 space-y-6">
             <div className="bg-white rounded-lg shadow-lg p-6">
               {/* Chemistry Score */}
               <div className="mb-4 flex items-center justify-between">
@@ -202,10 +274,23 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                     </span>
                   </h2>
                   <p className="text-sm text-gray-600">
-                    {lineup.filter(p => p !== null).length}/9 players placed
+                    {lineup.filter(p => p !== null).length}/9 field positions filled
                   </p>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={handleExport}
+                    disabled={lineup.filter(p => p !== null).length === 0}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                  >
+                    📋 Export
+                  </button>
+                  <button
+                    onClick={() => setShowImportDialog(true)}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium"
+                  >
+                    📥 Import
+                  </button>
                   <button
                     onClick={() => setShowSaveDialog(true)}
                     disabled={lineup.filter(p => p !== null).length === 0}
@@ -215,7 +300,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                   </button>
                   <button
                     onClick={handleClearLineup}
-                    disabled={lineup.filter(p => p !== null).length === 0}
+                    disabled={lineup.filter(p => p !== null).length === 0 && battingOrder.filter(p => p !== null).length === 0}
                     className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
                   >
                     🗑️ Clear
@@ -298,6 +383,43 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                 })}
               </div>
             </div>
+
+            {/* Batting Order */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">⚾ Batting Order</h3>
+              <div className="grid grid-cols-3 gap-3">
+                {battingOrder.map((player, idx) => (
+                  <div
+                    key={idx}
+                    className="relative"
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDropOnBattingOrder(idx)}
+                  >
+                    {player ? (
+                      <div
+                        draggable
+                        onDragStart={() => handleDragStart(player, undefined, idx)}
+                        className="bg-blue-50 border-2 border-blue-300 rounded-lg px-3 py-2 cursor-move hover:bg-blue-100"
+                      >
+                        <div className="text-xs font-bold text-blue-600">#{idx + 1}</div>
+                        <div className="text-sm font-semibold text-gray-900">{player}</div>
+                        <button
+                          onClick={() => handleRemoveFromBattingOrder(idx)}
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg px-3 py-2 text-center">
+                        <div className="text-xs font-bold text-gray-400">#{idx + 1}</div>
+                        <div className="text-xs text-gray-400">Drop here</div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -322,9 +444,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                 </div>
               ) : (
                 <p className="text-gray-500 text-sm italic">
-                  {playerNames.length === 0
-                    ? 'No players available. Check console for errors.'
-                    : 'All players are in the lineup'}
+                  All players assigned to field or batting order
                 </p>
               )}
             </div>
@@ -404,6 +524,40 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                   onClick={() => {
                     setShowSaveDialog(false);
                     setSaveLineupName('');
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Import Dialog */}
+        {showImportDialog && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Import Lineup</h3>
+              <textarea
+                value={importText}
+                onChange={e => setImportText(e.target.value)}
+                placeholder="Paste lineup JSON here..."
+                className="w-full h-48 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 font-mono text-sm"
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={handleImport}
+                  disabled={!importText.trim()}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+                >
+                  Import
+                </button>
+                <button
+                  onClick={() => {
+                    setShowImportDialog(false);
+                    setImportText('');
                   }}
                   className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 font-medium"
                 >

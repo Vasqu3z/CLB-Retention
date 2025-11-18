@@ -1,9 +1,8 @@
 'use client';
 
-import { ReactNode, useCallback, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import EmptyState from './EmptyState';
-import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 
 export interface Column<T> {
   key: string;
@@ -42,56 +41,84 @@ export default function DataTable<T>({
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(defaultSortDirection);
   const [isCondensed, setIsCondensed] = useState(true);
-  const scrollContainerRef = useLenisScrollLock<HTMLDivElement>();
-  const hiddenColumnsCount = useMemo(() => columns.filter((col) => col.condensed).length, [columns]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isHoveringRef = useRef(false);
 
-  // Filter columns based on condensed mode
-  const visibleColumns = useMemo(
-    () => (isCondensed ? columns.filter(col => !col.condensed) : columns),
-    [columns, isCondensed]
-  );
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
-  // Handle column sort
-  const handleSort = useCallback(
-    (key: string) => {
-      if (sortKey === key) {
-        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-      } else {
-        setSortKey(key);
-        setSortDirection('desc');
+    const handleMouseEnter = () => {
+      isHoveringRef.current = true;
+    };
+
+    const handleMouseLeave = () => {
+      isHoveringRef.current = false;
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      // Prevent the main page from scrolling when the table is hovered
+      event.stopPropagation();
+
+      // When not actively hovering, block the wheel so the main Lenis scroll handles it
+      if (!isHoveringRef.current) {
+        event.preventDefault();
       }
-    },
-    [sortDirection, sortKey]
-  );
+    };
 
-  // Helper function to get nested property value
-  const getNestedValue = useCallback((obj: any, path: string) => {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
-  // Sort data
-  const sortedData = useMemo(() => {
-    if (!sortKey) {
-      return data;
+  // Filter columns based on condensed mode
+  const visibleColumns = isCondensed
+    ? columns.filter(col => !col.condensed)
+    : columns;
+
+  // Handle column sort
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('desc');
     }
+  };
 
-    return [...data].sort((a, b) => {
-      const aVal = getNestedValue(a, sortKey);
-      const bVal = getNestedValue(b, sortKey);
+  // Helper function to get nested property value
+  const getNestedValue = (obj: any, path: string) => {
+    return path.split('.').reduce((current, key) => current?.[key], obj);
+  };
 
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-      }
+  // Sort data
+  const sortedData = sortKey
+    ? [...data].sort((a, b) => {
+        const aVal = getNestedValue(a, sortKey);
+        const bVal = getNestedValue(b, sortKey);
 
-      const aStr = String(aVal || '');
-      const bStr = String(bVal || '');
+        // Handle numbers
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+        }
 
-      if (sortDirection === 'asc') {
-        return aStr.localeCompare(bStr, undefined, { numeric: true });
-      }
-      return bStr.localeCompare(aStr, undefined, { numeric: true });
-    });
-  }, [data, getNestedValue, sortDirection, sortKey]);
+        // Handle strings
+        const aStr = String(aVal || '');
+        const bStr = String(bVal || '');
+
+        if (sortDirection === 'asc') {
+          return aStr.localeCompare(bStr, undefined, { numeric: true });
+        } else {
+          return bStr.localeCompare(aStr, undefined, { numeric: true });
+        }
+      })
+    : data;
 
   return (
     <div className="space-y-4">

@@ -146,9 +146,9 @@ export default function Header() {
               {/* Dropdown Menu */}
               {showToolsDropdown && (
                 <div className="absolute top-full right-0 pt-2 w-56">
-                  <div className="glass-card bg-space-navy/90 border border-cosmic-border/80 shadow-2xl overflow-hidden">
+                  <div className="bg-space-navy border border-cosmic-border rounded-lg shadow-xl overflow-hidden">
                     {toolsItems.map((tool) => {
-                      const isActive = pathname.startsWith(tool.href);
+                      const isActive = pathname === tool.href;
                       return (
                         <Link
                           key={tool.href}
@@ -161,14 +161,7 @@ export default function Header() {
                             }
                           `}
                         >
-                          <span className="flex items-center justify-between gap-2">
-                            <span>{tool.label}</span>
-                            {isActive && (
-                              <span className="text-[10px] font-semibold tracking-wide text-nebula-orange">
-                                ACTIVE
-                              </span>
-                            )}
-                          </span>
+                          {tool.label}
                         </Link>
                       );
                     })}

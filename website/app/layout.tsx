@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import NextDynamic from "next/dynamic";
 import {
   Azeret_Mono,
   Chakra_Petch,
@@ -11,18 +10,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
-
-const SmoothScroll = NextDynamic(() => import("@/components/SmoothScroll"), {
-  ssr: false,
-});
-
-const AnimatedBackground = NextDynamic(
-  () => import("@/components/AnimatedBackground"),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
+import AnimatedBackground from "@/components/AnimatedBackground";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const headingFont = Chakra_Petch({
   subsets: ["latin"],

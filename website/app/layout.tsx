@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
-import NextDynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import {
   Azeret_Mono,
   Chakra_Petch,
@@ -40,12 +40,12 @@ const statFont = Orbitron({
   display: "swap",
 });
 
-const SmoothScroll = NextDynamic(() => import("@/components/SmoothScroll"), {
+const SmoothScroll = nextDynamic(() => import("@/components/SmoothScroll"), {
   ssr: false,
   loading: () => null,
 });
 
-const AnimatedBackground = NextDynamic(
+const AnimatedBackground = nextDynamic(
   () => import("@/components/AnimatedBackground"),
   {
     ssr: false,

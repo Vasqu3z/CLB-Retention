@@ -1,9 +1,8 @@
 'use client';
 
-import { ReactNode, useCallback, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import EmptyState from './EmptyState';
-import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 
 export interface Column<T> {
   key: string;
@@ -42,7 +41,7 @@ export default function DataTable<T>({
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(defaultSortDirection);
   const [isCondensed, setIsCondensed] = useState(true);
-  const scrollContainerRef = useLenisScrollLock<HTMLDivElement>();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const hiddenColumnsCount = useMemo(
     () => columns.filter((col) => col.condensed).length,

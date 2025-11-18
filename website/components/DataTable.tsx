@@ -1,8 +1,9 @@
 'use client';
 
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import EmptyState from './EmptyState';
+import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 
 export interface Column<T> {
   key: string;
@@ -41,41 +42,7 @@ export default function DataTable<T>({
   const [sortKey, setSortKey] = useState<string | null>(defaultSortKey || null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(defaultSortDirection);
   const [isCondensed, setIsCondensed] = useState(true);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isHoveringRef = useRef(false);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleMouseEnter = () => {
-      isHoveringRef.current = true;
-    };
-
-    const handleMouseLeave = () => {
-      isHoveringRef.current = false;
-    };
-
-    const handleWheel = (event: WheelEvent) => {
-      // Prevent the main page from scrolling when the table is hovered
-      event.stopPropagation();
-
-      // When not actively hovering, block the wheel so the main Lenis scroll handles it
-      if (!isHoveringRef.current) {
-        event.preventDefault();
-      }
-    };
-
-    container.addEventListener('mouseenter', handleMouseEnter);
-    container.addEventListener('mouseleave', handleMouseLeave);
-    container.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      container.removeEventListener('mouseenter', handleMouseEnter);
-      container.removeEventListener('mouseleave', handleMouseLeave);
-      container.removeEventListener('wheel', handleWheel);
-    };
-  }, []);
+  const scrollContainerRef = useLenisScrollLock<HTMLDivElement>();
 
   // Filter columns based on condensed mode
   const visibleColumns = isCondensed

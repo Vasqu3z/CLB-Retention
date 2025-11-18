@@ -1,4 +1,4 @@
-import { getAllPlayers } from '@/lib/sheets';
+import { getAllPlayers, getStandings } from '@/lib/sheets';
 import PlayersView from './PlayersView';
 import FadeIn from "@/components/animations/FadeIn";
 
@@ -7,10 +7,13 @@ export const revalidate = 60;
 
 export default async function PlayersPage() {
   // Fetch both regular season and playoff player data
-  const [regularPlayers, playoffPlayers] = await Promise.all([
+  const [regularPlayers, playoffPlayers, standings] = await Promise.all([
     getAllPlayers(false),
     getAllPlayers(true),
+    getStandings(false),
   ]);
+
+  const playoffEligibleTeams = standings.slice(0, 4).map((row) => row.team);
 
   return (
     <div className="space-y-8">
@@ -30,6 +33,7 @@ export default async function PlayersPage() {
         <PlayersView
           regularPlayers={regularPlayers}
           playoffPlayers={playoffPlayers}
+          playoffEligibleTeams={playoffEligibleTeams}
         />
       </FadeIn>
     </div>

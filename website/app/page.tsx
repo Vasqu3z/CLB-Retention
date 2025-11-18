@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LEAGUE_CONFIG } from "@/config/league";
-import { getLeagueLogo } from "@/lib/teamLogos";
-import { Trophy, TrendingUp, Calendar, Users, Target, BarChart3 } from "lucide-react";
+import { LEAGUE_CONFIG, getTeamByName } from "@/config/league";
+import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
+import { getSchedule, getStandings } from "@/lib/sheets";
+import { Trophy, TrendingUp, Calendar, Users, Target, BarChart3, Activity, Clock } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import Tilt from "@/components/animations/Tilt";
 
@@ -63,7 +64,21 @@ const navCards = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const [standings, schedule] = await Promise.all([
+    getStandings(),
+    getSchedule(),
+  ]);
+
+  const completedGames = schedule
+    .filter((game) => game.played)
+    .sort((a, b) => a.week - b.week);
+  const upcomingGame = schedule.find((game) => !game.played);
+  const latestGame = completedGames.at(-1);
+  const topTeam = standings[0];
+  const topTeamConfig = topTeam ? getTeamByName(topTeam.team) : null;
+  const topTeamLogos = topTeamConfig ? getTeamLogoPaths(topTeamConfig.name) : null;
+
   return (
     <div className="space-y-12">
       {/* Hero Section */}
@@ -99,6 +114,84 @@ export default function Home() {
             <div className="flex items-center justify-center gap-2 text-sm text-star-dim">
               <div className="w-2 h-2 rounded-full bg-nebula-teal animate-pulse" />
               <span className="font-mono">System Online</span>
+            </div>
+          </div>
+        </FadeIn>
+      </section>
+
+      {/* Mission Status */}
+      <section>
+        <FadeIn delay={0.25} direction="up">
+          <div className="glass-card grid gap-4 lg:grid-cols-3 border border-cosmic-border/70 bg-space-navy/80">
+            {/* Top Team */}
+            <div className="p-4 rounded-xl border border-cosmic-border/60 bg-gradient-to-br from-space-blue/60 to-space-purple/40">
+              <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-nebula-orange font-mono">
+                <span>League Leader</span>
+                <Trophy className="w-4 h-4 text-solar-gold" />
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                {topTeamLogos?.emblem && (
+                  <div className="w-12 h-12 relative">
+                    <Image src={topTeamLogos.emblem} alt={topTeam?.team || 'Top team'} width={48} height={48} className="object-contain" />
+                  </div>
+                )}
+                <div>
+                  <p className="text-lg font-display font-semibold text-star-white">
+                    {topTeam?.team || 'Standings updating'}
+                  </p>
+                  <p className="text-sm font-mono text-star-gray">
+                    {topTeam ? `${topTeam.wins}-${topTeam.losses} • Win % ${topTeam.winPct}` : 'Awaiting latest sync'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Latest Result */}
+            <div className="p-4 rounded-xl border border-cosmic-border/60 bg-gradient-to-br from-space-blue/60 to-space-navy/40">
+              <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-nebula-teal font-mono">
+                <span>Latest Result</span>
+                <Activity className="w-4 h-4" />
+              </div>
+              {latestGame ? (
+                <div className="mt-3 space-y-2 text-sm font-mono">
+                  <div className="flex items-center justify-between">
+                    <span className={latestGame.winner === latestGame.awayTeam ? 'font-bold text-star-white' : 'text-star-gray'}>
+                      {latestGame.awayTeam}
+                    </span>
+                    <span className="text-lg font-semibold text-nebula-cyan">{latestGame.awayScore}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={latestGame.winner === latestGame.homeTeam ? 'font-bold text-star-white' : 'text-star-gray'}>
+                      {latestGame.homeTeam}
+                    </span>
+                    <span className="text-lg font-semibold text-nebula-cyan">{latestGame.homeScore}</span>
+                  </div>
+                  <p className="text-xs uppercase tracking-widest text-star-dim mt-3">Week {latestGame.week}</p>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-star-gray">No games have been played yet.</p>
+              )}
+            </div>
+
+            {/* Next Game */}
+            <div className="p-4 rounded-xl border border-cosmic-border/60 bg-gradient-to-br from-space-blue/60 to-space-navy/40">
+              <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-comet-yellow font-mono">
+                <span>Next Up</span>
+                <Clock className="w-4 h-4" />
+              </div>
+              {upcomingGame ? (
+                <div className="mt-3 space-y-2 text-sm font-mono">
+                  <div className="flex items-center justify-between">
+                    <span className="text-star-white">{upcomingGame.awayTeam}</span>
+                    <span className="text-star-gray">@</span>
+                    <span className="text-star-white">{upcomingGame.homeTeam}</span>
+                  </div>
+                  <p className="text-xs uppercase tracking-widest text-star-dim">Week {upcomingGame.week}</p>
+                  <p className="text-xs text-star-gray">Tap schedule to see the full slate.</p>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-star-gray">Regular-season slate complete.</p>
+              )}
             </div>
           </div>
         </FadeIn>

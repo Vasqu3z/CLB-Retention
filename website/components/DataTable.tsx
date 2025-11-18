@@ -124,7 +124,7 @@ export default function DataTable<T>({
     <div className="space-y-4">
       {/* Header */}
       {(title || enableCondensed) && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {title && (
             <h2 className="text-2xl font-display font-semibold text-star-white flex items-center gap-2">
               <span className="text-nebula-orange">›</span> {title}
@@ -132,28 +132,42 @@ export default function DataTable<T>({
           )}
 
           {enableCondensed && (
-            <button
-              onClick={() => setIsCondensed(!isCondensed)}
-              aria-label={isCondensed ? 'Expand table to show all columns' : 'Condense table to show fewer columns'}
-              className="relative flex items-center gap-2 px-3 py-2 rounded-lg bg-space-blue/50 border border-cosmic-border hover:border-nebula-orange/50 hover:shadow-[0_0_12px_rgba(255,107,53,0.3)] transition-all duration-300 text-sm text-star-gray hover:text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
-            >
-              {/* Subtle glow effect */}
-              <div className="absolute inset-0 rounded-lg opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-br from-nebula-orange/10 to-transparent pointer-events-none" />
-
-              <div className="relative z-10 flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+              {hiddenColumnsCount > 0 && (
+                <span
+                  className="control-button" 
+                  data-size="pill"
+                  data-variant="outline"
+                  data-active={isCondensed ? 'true' : undefined}
+                >
+                  {isCondensed ? 'Condensed' : 'Full view'}
+                  <span className="text-star-white/80">•</span>
+                  {isCondensed
+                    ? `${hiddenColumnsCount} hidden`
+                    : 'All columns visible'}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsCondensed(!isCondensed)}
+                aria-label={isCondensed ? 'Expand table to show all columns' : 'Condense table to show fewer columns'}
+                className="control-button"
+                data-active={!isCondensed}
+                data-tone="orange"
+              >
                 {isCondensed ? (
                   <>
                     <Maximize2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Expand</span>
+                    <span>Expand</span>
                   </>
                 ) : (
                   <>
                     <Minimize2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Condense</span>
+                    <span>Condense</span>
                   </>
                 )}
-              </div>
-            </button>
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -166,7 +180,7 @@ export default function DataTable<T>({
           message="There are currently no entries to display. Check back later or try adjusting your filters."
         />
       ) : (
-        <div className="glass-card rounded-xl">
+        <div className="glass-card data-surface rounded-xl">
           <div
             ref={scrollContainerRef}
             className="relative overflow-x-auto overflow-y-auto max-h-[70vh]"
@@ -255,8 +269,10 @@ export default function DataTable<T>({
       {sortedData.length > 0 && (
         <div className="text-xs text-star-dim font-mono text-right">
           Showing {sortedData.length} {sortedData.length === 1 ? 'entry' : 'entries'}
-          {isCondensed && enableCondensed && (
-            <span className="ml-2 text-star-gray">• Condensed view</span>
+          {enableCondensed && hiddenColumnsCount > 0 && (
+            <span className="ml-2 text-star-gray">
+              • {isCondensed ? `${hiddenColumnsCount} columns hidden` : 'all columns visible'}
+            </span>
           )}
         </div>
       )}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
 import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
 import MobileNav from "./MobileNav";
@@ -25,11 +25,15 @@ const toolsItems = [
 ];
 
 export default function Header() {
-  const pathname = usePathname();
+  const pathname = usePathname() || '/';
   const teams = getActiveTeams();
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
 
   const isToolsActive = pathname.startsWith('/tools');
+  const activeTool = useMemo(
+    () => toolsItems.find((tool) => pathname.startsWith(tool.href)),
+    [pathname]
+  );
 
   return (
     <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30" role="banner">
@@ -95,7 +99,7 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1" role="navigation" aria-label="Main navigation">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}
@@ -123,7 +127,7 @@ export default function Header() {
             >
               <button
                 className={`
-                  px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 border-b-2
+                  px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 border-b-2 flex items-center gap-2
                   focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
                   ${isToolsActive
                     ? 'bg-nebula-orange/20 text-nebula-orange border-nebula-orange'
@@ -132,6 +136,11 @@ export default function Header() {
                 `}
               >
                 Tools ▾
+                {activeTool && (
+                  <span className="text-[10px] font-semibold tracking-wide uppercase rounded-full bg-nebula-orange/15 text-nebula-orange px-2 py-0.5">
+                    {activeTool.label.replace(/^[^A-Za-z0-9]+\s?/, '')}
+                  </span>
+                )}
               </button>
 
               {/* Dropdown Menu */}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow, Syne, Azeret_Mono, JetBrains_Mono } from 'next/font/google';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,7 +9,7 @@ import SidebarMobile from "@/components/SidebarMobile";
 import SmoothScroll from "@/components/SmoothScroll";
 
 // Dynamically import AnimatedBackground to reduce initial bundle size (~100 KB savings)
-const AnimatedBackground = dynamic(() => import('@/components/AnimatedBackground'), {
+const AnimatedBackground = dynamicImport(() => import('@/components/AnimatedBackground'), {
   ssr: false, // Only render on client
   loading: () => null,
 });

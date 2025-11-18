@@ -1,10 +1,9 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { PlayerStats } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 import SeasonToggle from '@/components/SeasonToggle';
-import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 
 type StatTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -33,21 +32,24 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
   const availablePlayerNames = activePlayers.map(p => p.name).sort();
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-          Player Stats Comparison
-        </h1>
-        <p className="text-star-gray font-mono text-lg">
-          Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics
-        </p>
-      </div>
+    <div className="min-h-screen py-8">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
+            Player Stats Comparison
+          </h1>
+          <p className="text-star-gray font-mono text-lg">
+            Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics
+          </p>
+        </div>
 
-      {/* Season Toggle */}
-      <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+        {/* Season Toggle */}
+        <div className="mb-6">
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+        </div>
 
-      {/* Stat Category Tabs */}
-      <div className="glass-card p-4">
+        {/* Stat Category Tabs */}
+        <div className="glass-card p-4 mb-6">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('hitting')}
@@ -80,28 +82,27 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
               Fielding
             </button>
           </div>
-      </div>
+        </div>
 
-      {/* Player Selection */}
-      <PlayerMultiSelect
-        className="mb-2"
-        players={availablePlayerNames}
-        selectedPlayers={selectedPlayerNames}
-        onSelectionChange={setSelectedPlayerNames}
-        maxSelections={5}
-        placeholder={`Search ${isPlayoffs ? 'playoff' : 'regular season'} players...`}
-      />
+        {/* Player Selection */}
+        <PlayerMultiSelect
+          players={availablePlayerNames}
+          selectedPlayers={selectedPlayerNames}
+          onSelectionChange={setSelectedPlayerNames}
+          maxSelections={5}
+          placeholder={`Search ${isPlayoffs ? 'playoff' : 'regular season'} players...`}
+        />
 
-      {/* Comparison Tables */}
-      {selectedPlayers.length >= 2 && (
-        <div className="space-y-6">
-          {/* Hitting Stats */}
-          {activeTab === 'hitting' && (
+        {/* Comparison Tables */}
+        {selectedPlayers.length >= 2 && (
+          <div className="space-y-6">
+            {/* Hitting Stats */}
+            {activeTab === 'hitting' && (
             <div className="glass-card overflow-hidden">
               <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-nebula-orange text-shadow">⚾ Hitting Statistics</h3>
               </div>
-              <ScrollableTable>
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-space-blue/30 border-b border-cosmic-border">
@@ -132,17 +133,17 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                     <StatRow label="OPS" players={selectedPlayers} getValue={p => p.ops} highlight />
                   </tbody>
                 </table>
-              </ScrollableTable>
+              </div>
             </div>
-          )}
+            )}
 
-          {/* Pitching Stats */}
-          {activeTab === 'pitching' && (
+            {/* Pitching Stats */}
+            {activeTab === 'pitching' && (
             <div className="glass-card overflow-hidden">
               <div className="bg-gradient-to-r from-green-500/30 to-green-400/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-green-400 text-shadow">🎯 Pitching Statistics</h3>
               </div>
-              <ScrollableTable>
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-space-blue/30 border-b border-cosmic-border">
@@ -171,17 +172,17 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                     <StatRow label="BAA" players={selectedPlayers} getValue={p => p.baa} highlight />
                   </tbody>
                 </table>
-              </ScrollableTable>
+              </div>
             </div>
-          )}
+            )}
 
-          {/* Fielding Stats */}
-          {activeTab === 'fielding' && (
+            {/* Fielding Stats */}
+            {activeTab === 'fielding' && (
             <div className="glass-card overflow-hidden">
               <div className="bg-gradient-to-r from-comet-yellow/30 to-nebula-orange/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-comet-yellow text-shadow">🧤 Fielding Statistics</h3>
               </div>
-              <ScrollableTable>
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-space-blue/30 border-b border-cosmic-border">
@@ -206,11 +207,12 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                     <StatRow label="CS" players={selectedPlayers} getValue={p => p.cs} numeric />
                   </tbody>
                 </table>
-              </ScrollableTable>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -253,15 +255,5 @@ function StatRow({ label, players, getValue, numeric = false, highlight = false 
         );
       })}
     </tr>
-  );
-}
-
-function ScrollableTable({ children }: { children: ReactNode }) {
-  const ref = useLenisScrollLock<HTMLDivElement>();
-
-  return (
-    <div ref={ref} className="relative overflow-auto max-h-[70vh]">
-      {children}
-    </div>
   );
 }

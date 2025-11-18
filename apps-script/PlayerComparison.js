@@ -1,28 +1,7 @@
 // ===== PLAYER COMPARISON TOOL =====
 // Purpose: Provides player comparison dialog with optimized data retrieval
-// Dependencies: LeagueConfig.js, PlayerComparisonApp.html
-// Entry Point(s): showPlayerComparison, getPlayerStats
-
-/**
- * Display the player comparison modal dialog
- */
-function showPlayerComparison() {
-  var html = HtmlService.createHtmlOutputFromFile('PlayerComparisonApp')
-    .setWidth(800)
-    .setHeight(600)
-    .setTitle('Player Comparison Tool');
-  SpreadsheetApp.getUi().showModalDialog(html, 'Player Comparison');
-}
-
-/**
- * Web app entry point
- * @returns {HtmlOutput} The player comparison web app
- */
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('PlayerComparisonApp')
-    .setTitle('Player Comparison Tool')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-}
+// Dependencies: LeagueConfig.js
+// Entry Point(s): getPlayerStats
 
 /**
  * Get list of all players sorted alphabetically

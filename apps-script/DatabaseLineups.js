@@ -1,15 +1,7 @@
 // ===== LINEUP BUILDER =====
 // Purpose: Interactive baseball field with chemistry visualization and lineup management
 // Dependencies: DatabaseConfig.js
-// Entry Point(s): getLineupChemistryDataFromJSON(), calculateTeamChemistry(), saveLineup(), showLineupBuilder()
-
-function showLineupBuilder() {
-  var html = HtmlService.createHtmlOutputFromFile('DatabaseLineupsApp')
-    .setWidth(1200)
-    .setHeight(800)
-    .setTitle('Lineup Builder');
-  SpreadsheetApp.getUi().showModalDialog(html, 'Lineup Builder');
-}
+// Entry Point(s): getLineupChemistryDataFromJSON(), calculateTeamChemistry(), saveLineup()
 
 // Get chemistry data from JSON (ultra-fast)
 function getLineupChemistryDataFromJSON() {

@@ -3,7 +3,7 @@
 // Dependencies: None (foundational config file)
 // Entry Point(s): getConfig()
 
-var CONFIG = {
+var DATABASE_CONFIG_DEFAULTS = {
   // Sheet Names (consolidated into League Hub)
   SHEETS: {
     ATTRIBUTES: '🎮 Attributes',
@@ -151,8 +151,44 @@ var CONFIG = {
   }
 };
 
+var DATABASE_CONFIG_OVERRIDES = {
+  'SHEETS.ATTRIBUTES': ['CLB_ATTRIBUTES_SHEET_NAME', 'DATABASE_ATTRIBUTES_SHEET', 'SHEETS.ATTRIBUTES'],
+  'SHEETS.CHEMISTRY': ['CLB_CHEMISTRY_MATRIX_SHEET_NAME', 'DATABASE_CHEMISTRY_SHEET'],
+  'SHEETS.MII_COLOR_CHEMISTRY': ['CLB_MII_CHEMISTRY_SHEET_NAME'],
+  'SHEETS.CHEMISTRY_LOOKUP': ['CLB_CHEMISTRY_LOOKUP_SHEET_NAME'],
+  'SHEETS.CHARACTER_NAME_MAPPING': ['CLB_PLAYER_REGISTRY_SHEET_NAME'],
+  'SHEETS.CHEMISTRY_CHANGE_LOG': ['CLB_CHEMISTRY_CHANGE_LOG_SHEET_NAME'],
+  'DEBUG.ENABLE_LOGGING': ['CLB_DEBUG_LOGGING_ENABLED', 'DATABASE_DEBUG_LOGGING']
+};
+
+var _databaseConfigCache = null;
+
 // Helper function to get config values
 function getConfig() {
-  return CONFIG;
+  if (!_databaseConfigCache) {
+    _databaseConfigCache = buildDatabaseConfig();
+  }
+  return _databaseConfigCache;
+}
 
+function buildDatabaseConfig() {
+  var config = JSON.parse(JSON.stringify(DATABASE_CONFIG_DEFAULTS));
+  var shared = {};
+
+  if (typeof getSharedConfig === 'function') {
+    try {
+      shared = getSharedConfig();
+    } catch (e) {
+      Logger.log('WARNING: Unable to read shared config for DatabaseConfig: ' + e.toString());
+    }
+  }
+
+  applySharedConfigOverrides(config, DATABASE_CONFIG_OVERRIDES, shared);
+  config.SHARED = shared;
+  return config;
+}
+
+function refreshDatabaseConfigCache() {
+  _databaseConfigCache = null;
+  return getConfig();
 }

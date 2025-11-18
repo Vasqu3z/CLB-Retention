@@ -534,6 +534,39 @@ var RETENTION_CONFIG = {
   }
 };
 
+var RETENTION_CONFIG_OVERRIDES = {
+  'DEBUG.ENABLE_LOGGING': ['RETENTION_DEBUG_LOGGING_ENABLED'],
+  'DEBUG.LOG_AUTO_FLAGGING': ['RETENTION_LOG_AUTO_FLAGGING'],
+  'DEBUG.LOG_DRAFT_EXPECTATIONS': ['RETENTION_LOG_DRAFT_EXPECTATIONS'],
+  'DEBUG.SHOW_PROGRESS_TOASTS': ['RETENTION_PROGRESS_TOASTS_ENABLED'],
+  'PLAYER_FILTERING.INCLUDE_PLAYERS_WITHOUT_TEAMS': ['RETENTION_INCLUDE_PLAYERS_WITHOUT_TEAMS'],
+  'INTEGRATIONS.TRANSACTIONS_ENABLED': ['RETENTION_TRANSACTIONS_ENABLED'],
+  'INTEGRATIONS.PLAYOFFS_ENABLED': ['RETENTION_PLAYOFFS_ENABLED'],
+  'INTEGRATIONS.CHEMISTRY_ENABLED': ['RETENTION_CHEMISTRY_ENABLED']
+};
+
+function refreshRetentionConfigOverrides() {
+  if (typeof applySharedConfigOverrides !== 'function') {
+    return RETENTION_CONFIG;
+  }
+
+  var shared = {};
+
+  if (typeof getSharedConfig === 'function') {
+    try {
+      shared = getSharedConfig();
+    } catch (e) {
+      Logger.log('WARNING: Unable to read shared config for RetentionConfig: ' + e.toString());
+    }
+  }
+
+  applySharedConfigOverrides(RETENTION_CONFIG, RETENTION_CONFIG_OVERRIDES, shared);
+  RETENTION_CONFIG.SHARED = shared;
+  return RETENTION_CONFIG;
+}
+
+refreshRetentionConfigOverrides();
+
 // ===== HELPER FUNCTIONS =====
 
 /**

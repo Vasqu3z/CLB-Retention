@@ -1,15 +1,7 @@
 // ===== PLAYER ATTRIBUTE COMPARISON =====
 // Purpose: Retrieve and compare player attributes with in-memory caching for performance
 // Dependencies: DatabaseConfig.js
-// Entry Point(s): getPlayerAttributes(), getPlayerAttributesWithAverages(), showAttributeComparison()
-
-function showAttributeComparison() {
-  var html = HtmlService.createHtmlOutputFromFile('DatabaseAttributesApp')
-    .setWidth(1000)
-    .setHeight(700)
-    .setTitle('Player Attribute Comparison');
-  SpreadsheetApp.getUi().showModalDialog(html, 'Player Attribute Comparison');
-}
+// Entry Point(s): getPlayerAttributes(), getPlayerAttributesWithAverages()
 
 function showAttributeComparisonAdmin() {
   var html = HtmlService.createHtmlOutputFromFile('DatabaseAttributesAdmin')

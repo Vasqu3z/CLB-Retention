@@ -124,6 +124,75 @@ function showConfigValues() {
   SpreadsheetApp.getUi().alert('Shared Configuration', message, SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
+/**
+ * Applies override values from the shared config to a nested config object.
+ *
+ * @param {object} baseConfig - Config object to mutate
+ * @param {Object<string, string|string[]>} overrides - Mapping of property paths to shared config keys
+ * @param {object} [shared] - Optional shared config object to reuse
+ * @returns {object} Updated config object
+ */
+function applySharedConfigOverrides(baseConfig, overrides, shared) {
+  if (!baseConfig || !overrides) {
+    return baseConfig;
+  }
+
+  var sharedConfig = shared;
+
+  if (!sharedConfig) {
+    if (typeof getSharedConfig !== 'function') {
+      return baseConfig;
+    }
+
+    sharedConfig = getSharedConfig();
+  }
+
+  var hasOwn = Object.prototype.hasOwnProperty;
+
+  for (var path in overrides) {
+    if (!hasOwn.call(overrides, path)) {
+      continue;
+    }
+
+    var candidateKeys = overrides[path];
+
+    if (!Array.isArray(candidateKeys)) {
+      candidateKeys = [candidateKeys];
+    }
+
+    for (var i = 0; i < candidateKeys.length; i++) {
+      var key = candidateKeys[i];
+
+      if (sharedConfig && hasOwn.call(sharedConfig, key)) {
+        setNestedConfigValue(baseConfig, path.split('.'), sharedConfig[key]);
+        break;
+      }
+    }
+  }
+
+  return baseConfig;
+}
+
+function setNestedConfigValue(target, pathSegments, value) {
+  if (!target || !pathSegments || !pathSegments.length) {
+    return;
+  }
+
+  var current = target;
+
+  for (var i = 0; i < pathSegments.length - 1; i++) {
+    var segment = pathSegments[i];
+
+    if (typeof current[segment] !== 'object' || current[segment] === null) {
+      current[segment] = {};
+    }
+
+    current = current[segment];
+  }
+
+  current[pathSegments[pathSegments.length - 1]] = value;
+}
+
 // ===== EXAMPLE USAGE IN OTHER MODULES =====
 
 /*

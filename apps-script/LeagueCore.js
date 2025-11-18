@@ -9,7 +9,6 @@ function onOpen() {
   ui.createMenu('Player Stats')
       .addItem('🧮 Process Regular Season', 'updateAll')
       .addItem('🏆 Process Postseason', 'updateAllPlayoffs')
-      .addItem('📊 Compare Players', 'showPlayerComparison')
       .addSeparator()
       // Transactions (collapsed)
       .addSubMenu(ui.createMenu('💰 Transactions')
@@ -29,10 +28,6 @@ function onOpen() {
 
   // CLB Tools Menu (Database/Character tools - consolidated from Database spreadsheet)
   ui.createMenu('🎮 CLB Tools')
-      .addItem('⚾ Player Attribute Comparison', 'showAttributeComparison')
-      .addItem('⚡ Player Chemistry Tool', 'showPlayerChemistry')
-      .addItem('🏟️ Lineup Builder', 'showLineupBuilder')
-      .addSeparator()
       .addItem('🔐 Admin: Comparison with Averages', 'showAttributeComparisonAdmin')
       .addSeparator()
       .addSubMenu(ui.createMenu('🔧 Chemistry Tools')
@@ -42,8 +37,6 @@ function onOpen() {
       .addSubMenu(ui.createMenu('📦 Stats Preset Import/Export')
           .addItem('📥 Import Full Preset', 'importChemistryFromStatsPreset')
           .addItem('📤 Export Full Preset', 'exportChemistryToStatsPreset'))
-      .addSeparator()
-      .addItem('📋 About', 'showAbout')
       .addToUi();
 }
 

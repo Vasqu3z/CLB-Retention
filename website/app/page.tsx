@@ -2,122 +2,226 @@ import Link from "next/link";
 import Image from "next/image";
 import { LEAGUE_CONFIG } from "@/config/league";
 import { getLeagueLogo } from "@/lib/teamLogos";
-import { Trophy, TrendingUp, Calendar, Users, Target, BarChart3 } from "lucide-react";
+import { Trophy, TrendingUp, Calendar, Users, Target, BarChart3, Zap, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import Tilt from "@/components/animations/Tilt";
 
-const navCards = [
+const mainNavCards = [
   {
     href: "/standings",
     title: "Standings",
-    description: "View league standings and team records",
+    description: "Current season rankings",
     icon: Trophy,
-    gradient: "from-nebula-orange/20 to-solar-gold/20",
-    borderColor: "border-nebula-orange/50",
-    iconColor: "text-nebula-orange",
+    gradient: "from-field-green/30 via-nebula-teal/20 to-transparent",
+    borderColor: "border-field-green/60",
+    iconColor: "text-field-green",
+    size: "large" as const,
   },
   {
     href: "/leaders",
-    title: "League Leaders",
-    description: "View top performers around the league",
+    title: "Leaders",
+    description: "Top performers",
     icon: TrendingUp,
-    gradient: "from-comet-yellow/20 to-nebula-coral/20",
-    borderColor: "border-comet-yellow/50",
-    iconColor: "text-comet-yellow",
+    gradient: "from-solar-gold/25 via-comet-yellow/15 to-transparent",
+    borderColor: "border-solar-gold/60",
+    iconColor: "text-solar-gold",
+    size: "medium" as const,
   },
   {
     href: "/schedule",
     title: "Schedule",
-    description: "View game schedule and results",
+    description: "Games & results",
     icon: Calendar,
-    gradient: "from-nebula-cyan/20 to-nebula-teal/20",
-    borderColor: "border-nebula-cyan/50",
-    iconColor: "text-nebula-cyan",
+    gradient: "from-cosmic-purple/25 via-deep-violet/15 to-transparent",
+    borderColor: "border-cosmic-purple/60",
+    iconColor: "text-cosmic-purple",
+    size: "medium" as const,
   },
+];
+
+const secondaryNavCards = [
   {
     href: "/teams",
     title: "Teams",
-    description: "Browse team rosters and statistics",
+    description: "Team rosters & stats",
     icon: Users,
-    gradient: "from-star-pink/20 to-nebula-coral/20",
-    borderColor: "border-star-pink/50",
-    iconColor: "text-star-pink",
+    gradient: "from-nebula-orange/20 to-nebula-coral/10",
+    borderColor: "border-nebula-orange/50",
+    iconColor: "text-nebula-orange",
   },
   {
     href: "/players",
     title: "Players",
-    description: "View individual player statistics",
+    description: "Individual statistics",
     icon: Target,
-    gradient: "from-nebula-teal/20 to-nebula-cyan/20",
-    borderColor: "border-nebula-teal/50",
-    iconColor: "text-nebula-teal",
+    gradient: "from-nebula-cyan/20 to-nebula-teal/10",
+    borderColor: "border-nebula-cyan/50",
+    iconColor: "text-nebula-cyan",
   },
   {
     href: "/playoffs",
     title: "Playoffs",
-    description: "Playoff bracket and postseason results",
+    description: "Postseason bracket",
+    icon: Award,
+    gradient: "from-infield-dirt/30 to-leather-brown/10",
+    borderColor: "border-infield-dirt/60",
+    iconColor: "text-infield-dirt",
+  },
+  {
+    href: "/tools",
+    title: "Tools",
+    description: "Advanced analytics",
     icon: BarChart3,
-    gradient: "from-solar-gold/20 to-comet-yellow/20",
-    borderColor: "border-solar-gold/50",
-    iconColor: "text-solar-gold",
+    gradient: "from-royal-purple/20 to-cosmic-purple/10",
+    borderColor: "border-royal-purple/50",
+    iconColor: "text-royal-purple",
   },
 ];
 
 export default function Home() {
   return (
-    <div className="space-y-12">
-      {/* Hero Section */}
-      <section className="text-center py-12 relative">
-        {/* Decorative glow */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-          <div className="w-96 h-96 bg-nebula-orange/30 rounded-full blur-[120px]" />
-        </div>
+    <div className="space-y-16">
+      {/* Hero Section - Baseball Diamond Inspired */}
+      <section className="relative py-16">
+        {/* Baseball stitching pattern background */}
+        <div
+          className="absolute inset-0 opacity-5 pointer-events-none"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 10px,
+              currentColor 10px,
+              currentColor 12px
+            )`,
+            color: 'var(--field-green)'
+          }}
+        />
 
-        <FadeIn delay={0} direction="down" duration={0.8}>
-          <div className="relative z-10">
-            <div className="mb-6 flex justify-center">
-              <div className="w-32 h-32 relative">
-                <Image
-                  src={getLeagueLogo()}
-                  alt="CLB Logo"
-                  width={128}
-                  height={128}
-                  className="object-contain drop-shadow-[0_0_20px_rgba(255,107,53,0.6)]"
-                  priority
-                />
+        <FadeIn delay={0} direction="down" duration={0.9}>
+          <div className="relative z-10 text-center">
+            {/* Logo with baseball-inspired glow */}
+            <div className="mb-8 flex justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-field-green/20 rounded-full blur-3xl" />
+                <div className="relative w-40 h-40">
+                  <Image
+                    src={getLeagueLogo()}
+                    alt="CLB Logo"
+                    width={160}
+                    height={160}
+                    className="object-contain drop-shadow-[0_0_30px_rgba(45,95,63,0.8)]"
+                    priority
+                  />
+                </div>
               </div>
             </div>
 
-            <h1 className="text-6xl lg:text-7xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange via-solar-gold to-comet-yellow bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            {/* Title with distinctive gradient - avoiding generic orange */}
+            <h1 className="text-6xl lg:text-8xl font-display font-bold mb-6 bg-gradient-to-r from-field-green via-nebula-teal to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
               {LEAGUE_CONFIG.name}
             </h1>
 
-            <p className="text-xl text-star-gray font-mono mb-2 text-shadow">
-              Mission Control • Season {LEAGUE_CONFIG.currentSeason}
-            </p>
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-2xl text-vintage-cream font-display font-semibold tracking-wide text-shadow-strong">
+                ⚾ Season {LEAGUE_CONFIG.currentSeason} ⚾
+              </p>
 
-            <div className="flex items-center justify-center gap-2 text-sm text-star-dim">
-              <div className="w-2 h-2 rounded-full bg-nebula-teal animate-pulse" />
-              <span className="font-mono">System Online</span>
+              <div className="flex items-center gap-3">
+                <Zap className="w-5 h-5 text-nebula-teal animate-pulse" />
+                <span className="font-mono text-star-gray">Live Statistics • Real-Time Updates</span>
+                <Zap className="w-5 h-5 text-nebula-teal animate-pulse" />
+              </div>
             </div>
           </div>
         </FadeIn>
       </section>
 
-      {/* Navigation Cards */}
+      {/* Main Navigation - Asymmetric Baseball Diamond Layout */}
       <section>
-        <FadeIn delay={0.3} direction="up">
-          <h2 className="text-2xl font-display font-semibold mb-6 text-star-white flex items-center gap-2 text-shadow">
-            <span className="text-nebula-orange">›</span> Quick Access
+        <FadeIn delay={0.2} direction="up">
+          <h2 className="text-3xl font-display font-bold mb-8 text-center">
+            <span className="bg-gradient-to-r from-field-green to-nebula-teal bg-clip-text text-transparent">
+              Game Center
+            </span>
           </h2>
         </FadeIn>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {navCards.map((card, idx) => {
+        {/* Asymmetric grid - NOT the boring 3x2 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {mainNavCards.map((card, idx) => {
+            const Icon = card.icon;
+            const isLarge = card.size === 'large';
+
+            return (
+              <FadeIn
+                key={card.href}
+                delay={0.3 + idx * 0.15}
+                direction="up"
+                duration={0.7}
+                className={isLarge ? "lg:col-span-2" : ""}
+              >
+                <Tilt tiltAngle={8}>
+                  <Link
+                    href={card.href}
+                    className={`
+                      group relative p-8 rounded-2xl border-2 ${card.borderColor}
+                      bg-gradient-to-br ${card.gradient}
+                      transition-all duration-500
+                      backdrop-blur-md
+                      hover:shadow-[0_12px_40px_rgba(45,95,63,0.4)]
+                      hover:scale-[1.02]
+                      block h-full
+                      ${isLarge ? 'min-h-[280px]' : 'min-h-[220px]'}
+                    `}
+                  >
+                    {/* Baseball stitch decoration */}
+                    <div className="absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <div className="w-full h-full border-4 border-current rounded-full border-dashed" style={{ borderColor: card.iconColor.replace('text-', 'var(--') + ')' }} />
+                    </div>
+
+                    {/* Hover gradient overlay */}
+                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/5 via-transparent to-transparent" />
+
+                    <div className="relative z-10 flex flex-col h-full">
+                      <Icon className={`w-12 h-12 ${card.iconColor} mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`} />
+
+                      <h3 className="text-3xl font-display font-bold mb-2 text-star-white group-hover:text-vintage-cream transition-colors">
+                        {card.title}
+                      </h3>
+
+                      <p className="text-lg text-star-gray font-body group-hover:text-star-white transition-colors">
+                        {card.description}
+                      </p>
+
+                      {isLarge && (
+                        <div className="mt-auto pt-6">
+                          <div className="inline-flex items-center gap-2 text-sm font-display font-semibold text-field-green group-hover:gap-4 transition-all">
+                            View Details
+                            <span className="group-hover:translate-x-1 transition-transform">→</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                </Tilt>
+              </FadeIn>
+            );
+          })}
+        </div>
+
+        {/* Secondary nav - 4 column grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {secondaryNavCards.map((card, idx) => {
             const Icon = card.icon;
             return (
-              <FadeIn key={card.href} delay={0.4 + idx * 0.1} direction="up" duration={0.6}>
-                <Tilt>
+              <FadeIn
+                key={card.href}
+                delay={0.7 + idx * 0.1}
+                direction="up"
+                duration={0.6}
+              >
+                <Tilt tiltAngle={6}>
                   <Link
                     href={card.href}
                     className={`
@@ -125,19 +229,19 @@ export default function Home() {
                       bg-gradient-to-br ${card.gradient}
                       transition-all duration-300
                       backdrop-blur-sm
-                      hover:shadow-[0_8px_30px_rgba(255,107,53,0.3)]
+                      hover:shadow-[0_8px_24px_rgba(255,255,255,0.1)]
+                      hover:scale-105
                       block h-full
                     `}
                   >
-                    {/* Hover glow effect */}
                     <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
 
-                    <div className="relative z-10">
-                      <Icon className={`w-8 h-8 ${card.iconColor} mb-3 group-hover:scale-110 transition-transform duration-300`} />
-                      <h3 className="text-xl font-display font-semibold mb-2 text-star-white">
+                    <div className="relative z-10 text-center">
+                      <Icon className={`w-8 h-8 ${card.iconColor} mx-auto mb-3 group-hover:scale-125 transition-transform duration-300`} />
+                      <h3 className="text-lg font-display font-semibold mb-1 text-star-white">
                         {card.title}
                       </h3>
-                      <p className="text-sm text-star-gray">
+                      <p className="text-xs text-star-gray font-body">
                         {card.description}
                       </p>
                     </div>
@@ -149,15 +253,33 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Status Footer */}
-      <section className="text-center py-8 border-t border-cosmic-border">
-        <div className="text-sm text-star-dim font-mono space-y-1">
-          <p>Data powered by Google Sheets • Built with Next.js</p>
-          <p className="text-xs">
-            <span className="text-nebula-orange">▸</span> Real-time stats synchronized every 60 seconds
-          </p>
-        </div>
-      </section>
+      {/* Status Footer with Baseball Theme */}
+      <FadeIn delay={1.2} direction="up">
+        <section className="text-center py-12 border-t-2 border-field-green/30 relative">
+          {/* Infield dirt pattern */}
+          <div
+            className="absolute inset-0 opacity-5 pointer-events-none"
+            style={{
+              backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
+              backgroundSize: '20px 20px',
+              color: 'var(--infield-dirt)'
+            }}
+          />
+
+          <div className="relative z-10 space-y-3">
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-field-green/10 border border-field-green/30">
+              <div className="w-3 h-3 rounded-full bg-nebula-teal animate-pulse shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
+              <span className="font-display font-semibold text-nebula-teal tracking-wide">
+                SYSTEM OPERATIONAL
+              </span>
+            </div>
+
+            <p className="text-sm text-star-dim font-mono">
+              Powered by Google Sheets • Next.js • Real-time sync every 60s
+            </p>
+          </div>
+        </section>
+      </FadeIn>
     </div>
   );
 }

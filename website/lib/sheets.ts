@@ -1,5 +1,17 @@
 // Google Sheets API Integration
 // This module reads data from the Google Sheets spreadsheet
+//
+// SPREADSHEET CONFIGURATION:
+// - SHEETS_SPREADSHEET_ID: League Hub spreadsheet (standings, players, schedule, registries)
+// - DATABASE_SPREADSHEET_ID: Should point to League Hub (attributes and chemistry consolidated)
+//   Previously these were in a separate Database spreadsheet, but now everything is consolidated
+//   into the main League Hub spreadsheet.
+//
+// CONSOLIDATED SHEETS:
+// - 🎮 Attributes (previously "Advanced Attributes" in Database)
+// - 🎮 Chemistry (previously "Chemistry Lookup" in Database)
+// - 📋 Player Registry (includes DATABASE_ID column for character name mapping)
+//   Character Name Mapping is no longer needed - merged into Player Registry
 
 import { google } from 'googleapis';
 import { unstable_cache } from 'next/cache';
@@ -11,6 +23,10 @@ import {
   QUALIFICATION_THRESHOLDS,
   PLAYOFF_SERIES,
   DISPLAY_CONFIG,
+  PLAYER_REGISTRY_SHEET,
+  TEAM_REGISTRY_SHEET,
+  DATABASE_ATTRIBUTES_SHEET,
+  CHEMISTRY_LOOKUP_SHEET,
   buildSheetRange,
   buildFullRange,
 } from '@/config/sheets';
@@ -1070,4 +1086,403 @@ export async function getCalculatedFieldingLeaders(isPlayoffs: boolean = false) 
   );
 
   return { nicePlays, errors, stolenBases };
+}
+
+// ===== PLAYER REGISTRY (PHASE 1 FOUNDATION) =====
+export interface PlayerRegistryEntry {
+  playerName: string;
+  team: string;
+  status: string;
+  databaseId: string;
+  imageUrl: string;
+  hasAttributes: string; // ✅ or ❌
+}
+
+/**
+ * Fetches the Player Registry from League Hub (single source of truth for players)
+ * @returns Array of all registered players with team assignments and metadata
+ */
+export async function getPlayerRegistry(): Promise<PlayerRegistryEntry[]> {
+  try {
+    const range = buildFullRange(
+      PLAYER_REGISTRY_SHEET.NAME,
+      PLAYER_REGISTRY_SHEET.DATA_START_ROW,
+      PLAYER_REGISTRY_SHEET.MAX_ROWS,
+      PLAYER_REGISTRY_SHEET.START_COL,
+      PLAYER_REGISTRY_SHEET.END_COL
+    );
+    const data = await getSheetData(range);
+
+    return data
+      .filter((row) => row[PLAYER_REGISTRY_SHEET.COLUMNS.PLAYER_NAME])
+      .map((row) => ({
+        playerName: String(row[PLAYER_REGISTRY_SHEET.COLUMNS.PLAYER_NAME] || '').trim(),
+        team: String(row[PLAYER_REGISTRY_SHEET.COLUMNS.TEAM] || '').trim(),
+        status: String(row[PLAYER_REGISTRY_SHEET.COLUMNS.STATUS] || '').trim(),
+        databaseId: String(row[PLAYER_REGISTRY_SHEET.COLUMNS.DATABASE_ID] || '').trim(),
+        imageUrl: String(row[PLAYER_REGISTRY_SHEET.COLUMNS.IMAGE_URL] || '').trim(),
+        hasAttributes: String(row[PLAYER_REGISTRY_SHEET.COLUMNS.HAS_ATTRIBUTES] || '').trim(),
+      }));
+  } catch (error) {
+    console.error('Error fetching player registry:', error);
+    return [];
+  }
+}
+
+// ===== TEAM REGISTRY (PHASE 1 FOUNDATION) =====
+export interface TeamRegistryEntry {
+  teamName: string;
+  abbr: string;
+  captain: string;
+  status: string;
+  color: string;
+  logoUrl: string;
+  emblemUrl: string;
+  discordRoleId: string;
+}
+
+/**
+ * Fetches the Team Registry from League Hub (single source of truth for teams)
+ * @returns Array of all registered teams with colors, logos, and metadata
+ */
+export async function getTeamRegistry(): Promise<TeamRegistryEntry[]> {
+  try {
+    const range = buildFullRange(
+      TEAM_REGISTRY_SHEET.NAME,
+      TEAM_REGISTRY_SHEET.DATA_START_ROW,
+      TEAM_REGISTRY_SHEET.MAX_ROWS,
+      TEAM_REGISTRY_SHEET.START_COL,
+      TEAM_REGISTRY_SHEET.END_COL
+    );
+    const data = await getSheetData(range);
+
+    return data
+      .filter((row) => row[TEAM_REGISTRY_SHEET.COLUMNS.TEAM_NAME])
+      .map((row) => ({
+        teamName: String(row[TEAM_REGISTRY_SHEET.COLUMNS.TEAM_NAME] || '').trim(),
+        abbr: String(row[TEAM_REGISTRY_SHEET.COLUMNS.ABBR] || '').trim(),
+        captain: String(row[TEAM_REGISTRY_SHEET.COLUMNS.CAPTAIN] || '').trim(),
+        status: String(row[TEAM_REGISTRY_SHEET.COLUMNS.STATUS] || '').trim(),
+        color: String(row[TEAM_REGISTRY_SHEET.COLUMNS.COLOR] || '').trim(),
+        logoUrl: String(row[TEAM_REGISTRY_SHEET.COLUMNS.LOGO_URL] || '').trim(),
+        emblemUrl: String(row[TEAM_REGISTRY_SHEET.COLUMNS.EMBLEM_URL] || '').trim(),
+        discordRoleId: String(row[TEAM_REGISTRY_SHEET.COLUMNS.DISCORD_ROLE_ID] || '').trim(),
+      }));
+  } catch (error) {
+    console.error('Error fetching team registry:', error);
+    return [];
+  }
+}
+
+// ===== PLAYER ATTRIBUTES (DATABASE MODULE) =====
+export interface PlayerAttributes {
+  name: string;
+  characterClass: string;
+  captain: string;
+  mii: string;
+  miiColor: string;
+  armSide: string;
+  battingSide: string;
+  weight: number;
+  ability: string;
+
+  // Overall stats
+  pitchingOverall: number;
+  battingOverall: number;
+  fieldingOverall: number;
+  speedOverall: number;
+
+  // Pitching attributes
+  starPitch: string;
+  fastballSpeed: number;
+  curveballSpeed: number;
+  curve: number;
+  stamina: number;
+
+  // Hitting attributes
+  starSwing: string;
+  hitCurve: number;
+  hittingTrajectory: string;
+  slapHitContact: number;
+  chargeHitContact: number;
+  slapHitPower: number;
+  chargeHitPower: number;
+  preCharge: string;
+
+  // Fielding attributes
+  fielding: number;
+  throwingSpeed: number;
+
+  // Running attributes
+  speed: number;
+  bunting: number;
+
+  // Calculated averages
+  pitchingAverage: number;
+  battingAverage: number;
+  fieldingAverage: number;
+}
+
+/**
+ * Parses raw attribute data from Database spreadsheet into structured PlayerAttributes objects
+ * Calculates average stats: pitching, batting, and fielding averages
+ * @param attributeData - 2D array from Sheets API (columns A-AD)
+ * @param playerFilter - Optional player name to filter by
+ * @returns Array of PlayerAttributes with both raw and calculated stats
+ */
+function parsePlayerAttributes(attributeData: any[][], playerFilter?: string): PlayerAttributes[] {
+  const players: PlayerAttributes[] = [];
+
+  for (const row of attributeData) {
+    const playerName = String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.NAME] || '').trim();
+
+    if (!playerName) continue;
+    if (playerFilter && playerName !== playerFilter) continue;
+
+    const fastballSpeed = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.FASTBALL_SPEED]) || 0;
+    const curveballSpeed = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.CURVEBALL_SPEED]) || 0;
+    const curve = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.CURVE]) || 0;
+    const stamina = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.STAMINA]) || 0;
+
+    const slapHitContact = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.SLAP_HIT_CONTACT]) || 0;
+    const chargeHitContact = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.CHARGE_HIT_CONTACT]) || 0;
+    const slapHitPower = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.SLAP_HIT_POWER]) || 0;
+    const chargeHitPower = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.CHARGE_HIT_POWER]) || 0;
+
+    const throwingSpeed = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.THROWING_SPEED]) || 0;
+    const fielding = Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.FIELDING]) || 0;
+
+    // Calculate averages (matches DatabaseAttributes.js logic)
+    const pitchingAverage = ((curveballSpeed / 2) + (fastballSpeed / 2) + curve + stamina) / 4;
+    const battingAverage = (slapHitContact + chargeHitContact + slapHitPower + chargeHitPower) / 4;
+    const fieldingAverage = (throwingSpeed + fielding) / 2;
+
+    players.push({
+      name: playerName,
+      characterClass: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.CHARACTER_CLASS] || ''),
+      captain: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.CAPTAIN] || ''),
+      mii: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.MII] || ''),
+      miiColor: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.MII_COLOR] || ''),
+      armSide: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.ARM_SIDE] || ''),
+      battingSide: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.BATTING_SIDE] || ''),
+      weight: Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.WEIGHT]) || 0,
+      ability: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.ABILITY] || ''),
+
+      // Overall stats
+      pitchingOverall: Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.PITCHING_OVERALL]) || 0,
+      battingOverall: Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.BATTING_OVERALL]) || 0,
+      fieldingOverall: Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.FIELDING_OVERALL]) || 0,
+      speedOverall: Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.SPEED_OVERALL]) || 0,
+
+      // Pitching attributes
+      starPitch: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.STAR_PITCH] || ''),
+      fastballSpeed,
+      curveballSpeed,
+      curve,
+      stamina,
+
+      // Hitting attributes
+      starSwing: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.STAR_SWING] || ''),
+      hitCurve: Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.HIT_CURVE]) || 0,
+      hittingTrajectory: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.HITTING_TRAJECTORY] || ''),
+      slapHitContact,
+      chargeHitContact,
+      slapHitPower,
+      chargeHitPower,
+      preCharge: String(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.PRE_CHARGE] || ''),
+
+      // Fielding attributes
+      fielding,
+      throwingSpeed,
+
+      // Running attributes
+      speed: Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.SPEED]) || 0,
+      bunting: Number(row[DATABASE_ATTRIBUTES_SHEET.COLUMNS.BUNTING]) || 0,
+
+      // Calculated averages
+      pitchingAverage: Number(pitchingAverage.toFixed(2)),
+      battingAverage: Number(battingAverage.toFixed(2)),
+      fieldingAverage: Number(fieldingAverage.toFixed(2)),
+    });
+  }
+
+  return players;
+}
+
+/**
+ * Fetches player attributes for a specific player from the Database spreadsheet
+ * @param playerName - Name of the player to fetch attributes for
+ * @param databaseSpreadsheetId - Optional Database spreadsheet ID (defaults to env var)
+ * @returns PlayerAttributes object or null if player not found
+ */
+export async function getPlayerAttributes(
+  playerName: string,
+  databaseSpreadsheetId?: string
+): Promise<PlayerAttributes | null> {
+  try {
+    const range = buildFullRange(
+      DATABASE_ATTRIBUTES_SHEET.NAME,
+      DATABASE_ATTRIBUTES_SHEET.DATA_START_ROW,
+      DATABASE_ATTRIBUTES_SHEET.MAX_ROWS,
+      DATABASE_ATTRIBUTES_SHEET.START_COL,
+      DATABASE_ATTRIBUTES_SHEET.END_COL
+    );
+
+    const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
+    const attributeData = await getSheetData(range, dbId);
+
+    const players = parsePlayerAttributes(attributeData, playerName);
+    return players.length > 0 ? players[0] : null;
+  } catch (error) {
+    console.error(`Error fetching player attributes (player=${playerName}):`, error);
+    return null;
+  }
+}
+
+/**
+ * Fetches all player attributes from the Database spreadsheet
+ * Used for comparison tools and league-wide analysis
+ * @param databaseSpreadsheetId - Optional Database spreadsheet ID (defaults to env var)
+ * @returns Array of all PlayerAttributes objects
+ */
+export async function getAllPlayerAttributes(
+  databaseSpreadsheetId?: string
+): Promise<PlayerAttributes[]> {
+  try {
+    const range = buildFullRange(
+      DATABASE_ATTRIBUTES_SHEET.NAME,
+      DATABASE_ATTRIBUTES_SHEET.DATA_START_ROW,
+      DATABASE_ATTRIBUTES_SHEET.MAX_ROWS,
+      DATABASE_ATTRIBUTES_SHEET.START_COL,
+      DATABASE_ATTRIBUTES_SHEET.END_COL
+    );
+
+    const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
+    const attributeData = await getSheetData(range, dbId);
+
+    return parsePlayerAttributes(attributeData);
+  } catch (error) {
+    console.error('Error fetching all player attributes:', error);
+    return [];
+  }
+}
+
+// ===== PLAYER CHEMISTRY (DATABASE MODULE) =====
+export interface ChemistryPair {
+  player1: string;
+  player2: string;
+  value: number;
+  type: 'positive' | 'negative' | 'neutral';
+}
+
+export interface ChemistryMatrix {
+  [playerName: string]: {
+    [otherPlayerName: string]: number;
+  };
+}
+
+export interface PlayerChemistry {
+  name: string;
+  positive: string[];  // Players with positive chemistry
+  negative: string[];  // Players with negative chemistry
+  posCount: number;
+  negCount: number;
+}
+
+/**
+ * Builds a chemistry matrix from raw lookup data for fast lookups
+ * @param lookupData - 2D array from Chemistry Lookup sheet
+ * @returns Chemistry matrix object with player1 → player2 → value
+ */
+function buildChemistryMatrix(lookupData: any[][]): ChemistryMatrix {
+  const matrix: ChemistryMatrix = {};
+
+  for (const row of lookupData) {
+    const player1 = String(row[CHEMISTRY_LOOKUP_SHEET.COLUMNS.PLAYER_1] || '').trim();
+    const player2 = String(row[CHEMISTRY_LOOKUP_SHEET.COLUMNS.PLAYER_2] || '').trim();
+    const value = Number(row[CHEMISTRY_LOOKUP_SHEET.COLUMNS.CHEMISTRY_VALUE]) || 0;
+
+    if (!player1 || !player2) continue;
+
+    // Initialize nested objects
+    if (!matrix[player1]) matrix[player1] = {};
+    if (!matrix[player2]) matrix[player2] = {};
+
+    // Chemistry is bidirectional
+    matrix[player1][player2] = value;
+    matrix[player2][player1] = value;
+  }
+
+  return matrix;
+}
+
+/**
+ * Fetches the full chemistry matrix from the Database spreadsheet
+ * @param databaseSpreadsheetId - Optional Database spreadsheet ID (defaults to env var)
+ * @returns Chemistry matrix object for all player pairs
+ */
+export async function getChemistryMatrix(
+  databaseSpreadsheetId?: string
+): Promise<ChemistryMatrix> {
+  try {
+    const range = buildFullRange(
+      CHEMISTRY_LOOKUP_SHEET.NAME,
+      CHEMISTRY_LOOKUP_SHEET.DATA_START_ROW,
+      CHEMISTRY_LOOKUP_SHEET.MAX_ROWS,
+      CHEMISTRY_LOOKUP_SHEET.START_COL,
+      CHEMISTRY_LOOKUP_SHEET.END_COL
+    );
+
+    const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
+    const lookupData = await getSheetData(range, dbId);
+
+    return buildChemistryMatrix(lookupData);
+  } catch (error) {
+    console.error('Error fetching chemistry matrix:', error);
+    return {};
+  }
+}
+
+/**
+ * Fetches chemistry data for a specific player
+ * @param playerName - Name of the player to fetch chemistry for
+ * @param databaseSpreadsheetId - Optional Database spreadsheet ID (defaults to env var)
+ * @returns PlayerChemistry object with positive and negative chemistry lists
+ */
+export async function getPlayerChemistry(
+  playerName: string,
+  databaseSpreadsheetId?: string
+): Promise<PlayerChemistry | null> {
+  try {
+    const matrix = await getChemistryMatrix(databaseSpreadsheetId);
+
+    if (!matrix[playerName]) {
+      return null;
+    }
+
+    const positive: string[] = [];
+    const negative: string[] = [];
+
+    Object.entries(matrix[playerName]).forEach(([otherPlayer, value]) => {
+      if (value >= CHEMISTRY_LOOKUP_SHEET.THRESHOLDS.POSITIVE_MIN) {
+        positive.push(otherPlayer);
+      } else if (value <= CHEMISTRY_LOOKUP_SHEET.THRESHOLDS.NEGATIVE_MAX) {
+        negative.push(otherPlayer);
+      }
+    });
+
+    positive.sort();
+    negative.sort();
+
+    return {
+      name: playerName,
+      positive,
+      negative,
+      posCount: positive.length,
+      negCount: negative.length,
+    };
+  } catch (error) {
+    console.error(`Error fetching player chemistry (player=${playerName}):`, error);
+    return null;
+  }
 }

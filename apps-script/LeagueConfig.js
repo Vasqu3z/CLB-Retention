@@ -274,6 +274,35 @@ var CONFIG = {
       FIELDING_MAP: {
         gp: 2, np: 3, e: 4, sb: 5
       }
+    },
+
+    // ===== PHASE 1: PLAYER & TEAM REGISTRY LAYOUTS =====
+    // Player Registry sheet layout (single source of truth for players)
+    PLAYER_REGISTRY: {
+      DATA_START_ROW: 2,
+      COLUMNS: {
+        DATABASE_ID: 0,      // Column A
+        PLAYER_NAME: 1,      // Column B
+        TEAM: 2,             // Column C
+        STATUS: 3,           // Column D
+        IMAGE_URL: 4,        // Column E
+        HAS_ATTRIBUTES: 5    // Column F (formula)
+      }
+    },
+
+    // Team Registry sheet layout (single source of truth for teams)
+    TEAM_REGISTRY: {
+      DATA_START_ROW: 2,
+      COLUMNS: {
+        TEAM_NAME: 0,        // Column A
+        CAPTAIN: 1,          // Column B
+        ABBR: 2,             // Column C
+        STATUS: 3,           // Column D
+        COLOR: 4,            // Column E
+        LOGO_URL: 5,         // Column F
+        EMBLEM_URL: 6,       // Column G
+        DISCORD_ROLE_ID: 7   // Column H
+      }
     }
   }
 };

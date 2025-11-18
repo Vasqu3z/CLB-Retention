@@ -4,6 +4,8 @@
 // ===== MENU =====
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
+
+  // Player Stats Menu (League Hub operations)
   ui.createMenu('Player Stats')
       .addItem('🧮 Process Regular Season', 'updateAll')
       .addItem('🏆 Process Postseason', 'updateAllPlayoffs')
@@ -23,7 +25,25 @@ function onOpen() {
       // Archive & Maintenance (collapsed)
       .addSubMenu(ui.createMenu('📦 Archive & Maintenance')
           .addItem('Archive Current Season', 'archiveCurrentSeason'))
+      .addToUi();
 
+  // CLB Tools Menu (Database/Character tools - consolidated from Database spreadsheet)
+  ui.createMenu('🎮 CLB Tools')
+      .addItem('⚾ Player Attribute Comparison', 'showAttributeComparison')
+      .addItem('⚡ Player Chemistry Tool', 'showPlayerChemistry')
+      .addItem('🏟️ Lineup Builder', 'showLineupBuilder')
+      .addSeparator()
+      .addItem('🔐 Admin: Comparison with Averages', 'showAttributeComparisonAdmin')
+      .addSeparator()
+      .addSubMenu(ui.createMenu('🔧 Chemistry Tools')
+          .addItem('✏️ Visual Chemistry Editor', 'showChemistryEditor')
+          .addItem('📊 Update Chemistry JSON Cache', 'updateChemistryDataJSON')
+          .addItem('🧹 Clear JSON Cache', 'clearChemistryCache'))
+      .addSubMenu(ui.createMenu('📦 Stats Preset Import/Export')
+          .addItem('📥 Import Full Preset', 'importChemistryFromStatsPreset')
+          .addItem('📤 Export Full Preset', 'exportChemistryToStatsPreset'))
+      .addSeparator()
+      .addItem('📋 About', 'showAbout')
       .addToUi();
 }
 
@@ -100,6 +120,11 @@ function updateAll() {
     // Cache final data for Retention suite
     cacheCurrentSeasonStats(gameData);
 
+    // ===== PHASE 1: Website & Discord Integration =====
+    invalidateWebsiteCache();
+    notifyDiscordStatsUpdated(gameData);
+    // ===== End Phase 1 Integration =====
+
   } catch (e) {
     logError("Update All", e.toString(), "N/A");
     SpreadsheetApp.getUi().alert("Error during update: " + e.toString());
@@ -174,6 +199,11 @@ function updateAllPlayoffs() {
 
     SpreadsheetApp.getActiveSpreadsheet().toast(message, "✅ Update Complete", 10);
     logInfo("Update Playoffs", "Completed successfully in " + totalTime + "s");
+
+    // ===== PHASE 1: Website & Discord Integration =====
+    invalidateWebsiteCache();
+    notifyDiscordStatsUpdated(playoffGameData);
+    // ===== End Phase 1 Integration =====
 
   } catch (e) {
     logError("Update Playoffs", e.toString(), "N/A");
@@ -267,12 +297,17 @@ function quickUpdate() {
     
     SpreadsheetApp.getActiveSpreadsheet().toast(message, "Quick Update Complete", 10);
     logInfo("Quick Update", "Completed successfully in " + totalTime + "s");
-    
+
+    // ===== PHASE 1: Website & Discord Integration =====
+    invalidateWebsiteCache();
+    notifyDiscordStatsUpdated(gameData);
+    // ===== End Phase 1 Integration =====
+
   } catch (e) {
     logError("Quick Update", e.toString(), "N/A");
     SpreadsheetApp.getUi().alert("Error during quick update: " + e.toString());
   }
-  
+
   clearCache();
 }
 

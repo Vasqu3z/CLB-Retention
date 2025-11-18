@@ -106,6 +106,17 @@ function processAllGameSheetsOnce() {
         gameMVP: gameMVP                     // NEW: Game MVP from Q48
       };
 
+      // ===== PHASE 1: Validate players against registry =====
+      try {
+        if (typeof validateGamePlayers === 'function') {
+          validateGamePlayers(gameData, sheetName);
+        }
+      } catch (validationError) {
+        // Log but don't stop processing
+        logError("Game Validation", "Validation failed for " + sheetName, validationError.toString());
+      }
+      // ===== End Phase 1 Validation =====
+
       // Extract week number
       var weekMatch = sheetName.match(/W(\d+)/);
       var weekNum = weekMatch ? parseInt(weekMatch[1]) : 999;
@@ -251,6 +262,17 @@ function processAllPlayoffGameSheetsOnce() {
         savePitcher: savePitcher,
         gameMVP: gameMVP
       };
+
+      // ===== PHASE 1: Validate players against registry =====
+      try {
+        if (typeof validateGamePlayers === 'function') {
+          validateGamePlayers(gameData, sheetName);
+        }
+      } catch (validationError) {
+        // Log but don't stop processing
+        logError("Game Validation", "Validation failed for " + sheetName, validationError.toString());
+      }
+      // ===== End Phase 1 Validation =====
 
       // Determine winner/loser
       var team1 = gameData.homeTeam;

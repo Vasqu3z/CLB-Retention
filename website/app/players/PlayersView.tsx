@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { PlayerStats } from '@/lib/sheets';
 import { getActiveTeams } from '@/config/league';
 import SeasonToggle from '@/components/SeasonToggle';
 import DataTable, { Column } from '@/components/DataTable';
 import { Search } from 'lucide-react';
+import { playerNameToSlug } from '@/lib/utils';
 
 type Tab = 'hitting' | 'pitching' | 'fielding';
 
@@ -68,6 +70,14 @@ export default function PlayersView({
       sortable: true,
       align: 'left',
       className: 'font-semibold text-star-white',
+      render: (player) => (
+        <Link
+          href={`/players/${playerNameToSlug(player.name)}`}
+          className="hover:text-nebula-cyan transition-colors underline decoration-nebula-cyan/30 hover:decoration-nebula-cyan"
+        >
+          {player.name}
+        </Link>
+      ),
     },
     {
       key: 'team',
@@ -113,6 +123,14 @@ export default function PlayersView({
       sortable: true,
       align: 'left',
       className: 'font-semibold text-star-white',
+      render: (player) => (
+        <Link
+          href={`/players/${playerNameToSlug(player.name)}`}
+          className="hover:text-nebula-cyan transition-colors underline decoration-nebula-cyan/30 hover:decoration-nebula-cyan"
+        >
+          {player.name}
+        </Link>
+      ),
     },
     {
       key: 'team',
@@ -150,6 +168,14 @@ export default function PlayersView({
       sortable: true,
       align: 'left',
       className: 'font-semibold text-star-white',
+      render: (player) => (
+        <Link
+          href={`/players/${playerNameToSlug(player.name)}`}
+          className="hover:text-nebula-cyan transition-colors underline decoration-nebula-cyan/30 hover:decoration-nebula-cyan"
+        >
+          {player.name}
+        </Link>
+      ),
     },
     {
       key: 'team',

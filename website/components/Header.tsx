@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
 import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
 import MobileNav from "./MobileNav";
@@ -16,9 +17,19 @@ const navItems = [
   { href: "/playoffs", label: "Playoffs" },
 ];
 
+const toolsItems = [
+  { href: "/tools/attributes", label: "⚾ Attribute Comparison" },
+  { href: "/tools/stats", label: "📊 Stats Comparison" },
+  { href: "/tools/chemistry", label: "⚡ Chemistry Tool" },
+  { href: "/tools/lineup", label: "🏟️ Lineup Builder" },
+];
+
 export default function Header() {
   const pathname = usePathname();
   const teams = getActiveTeams();
+  const [showToolsDropdown, setShowToolsDropdown] = useState(false);
+
+  const isToolsActive = pathname.startsWith('/tools');
 
   return (
     <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30" role="banner">
@@ -103,6 +114,52 @@ export default function Header() {
                 </Link>
               );
             })}
+
+            {/* Tools Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setShowToolsDropdown(true)}
+              onMouseLeave={() => setShowToolsDropdown(false)}
+            >
+              <button
+                className={`
+                  px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 border-b-2
+                  focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
+                  ${isToolsActive
+                    ? 'bg-nebula-orange/20 text-nebula-orange border-nebula-orange'
+                    : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 border-transparent'
+                  }
+                `}
+              >
+                Tools ▾
+              </button>
+
+              {/* Dropdown Menu */}
+              {showToolsDropdown && (
+                <div className="absolute top-full right-0 pt-2 w-56">
+                  <div className="glass-card bg-space-navy/90 border border-cosmic-border/80 shadow-2xl overflow-hidden">
+                    {toolsItems.map((tool) => {
+                      const isActive = pathname === tool.href;
+                      return (
+                        <Link
+                          key={tool.href}
+                          href={tool.href}
+                          className={`
+                            block px-4 py-3 text-sm transition-all duration-200
+                            ${isActive
+                              ? 'bg-nebula-orange/20 text-nebula-orange'
+                              : 'text-star-gray hover:text-star-white hover:bg-space-blue/50'
+                            }
+                          `}
+                        >
+                          {tool.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Mobile Navigation */}

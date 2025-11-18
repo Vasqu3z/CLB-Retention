@@ -179,6 +179,121 @@ export const DISPLAY_CONFIG = {
 } as const;
 
 /**
+ * Player Registry sheet configuration (Phase 1 foundation)
+ */
+export const PLAYER_REGISTRY_SHEET = {
+  NAME: "'📋 Player Registry'",
+  DATA_START_ROW: 2,
+  MAX_ROWS: 100,
+  START_COL: 'A',
+  END_COL: 'F',
+
+  // Column indices (0-based)
+  COLUMNS: {
+    DATABASE_ID: 0,      // A
+    PLAYER_NAME: 1,      // B
+    TEAM: 2,             // C
+    STATUS: 3,           // D
+    IMAGE_URL: 4,        // E
+    HAS_ATTRIBUTES: 5,   // F (formula)
+  },
+} as const;
+
+/**
+ * Team Registry sheet configuration (Phase 1 foundation)
+ */
+export const TEAM_REGISTRY_SHEET = {
+  NAME: "'📋 Team Registry'",
+  DATA_START_ROW: 2,
+  MAX_ROWS: 20,
+  START_COL: 'A',
+  END_COL: 'H',
+
+  // Column indices (0-based)
+  COLUMNS: {
+    TEAM_NAME: 0,        // A
+    CAPTAIN: 1,          // B
+    ABBR: 2,             // C
+    STATUS: 3,           // D
+    COLOR: 4,            // E
+    LOGO_URL: 5,         // F
+    EMBLEM_URL: 6,       // G
+    DISCORD_ROLE_ID: 7,  // H
+  },
+} as const;
+
+/**
+ * Player Attributes sheet configuration (consolidated into League Hub)
+ * Previously in separate Database spreadsheet, now in main League Hub
+ */
+export const DATABASE_ATTRIBUTES_SHEET = {
+  NAME: "'🎮 Attributes'",
+  DATA_START_ROW: 2,
+  MAX_ROWS: 100,
+  START_COL: 'A',
+  END_COL: 'AD',
+
+  // Column indices (0-based) - matches DatabaseConfig.js
+  COLUMNS: {
+    NAME: 0,                // A
+    CHARACTER_CLASS: 1,     // B
+    CAPTAIN: 2,             // C
+    MII: 3,                 // D
+    MII_COLOR: 4,           // E
+    ARM_SIDE: 5,            // F
+    BATTING_SIDE: 6,        // G
+    WEIGHT: 7,              // H
+    ABILITY: 8,             // I
+    PITCHING_OVERALL: 9,    // J
+    BATTING_OVERALL: 10,    // K
+    FIELDING_OVERALL: 11,   // L
+    SPEED_OVERALL: 12,      // M
+    STAR_SWING: 13,         // N
+    HIT_CURVE: 14,          // O
+    HITTING_TRAJECTORY: 15, // P
+    SLAP_HIT_CONTACT: 16,   // Q
+    CHARGE_HIT_CONTACT: 17, // R
+    SLAP_HIT_POWER: 18,     // S
+    CHARGE_HIT_POWER: 19,   // T
+    SPEED: 20,              // U
+    BUNTING: 21,            // V
+    FIELDING: 22,           // W
+    THROWING_SPEED: 23,     // X
+    PRE_CHARGE: 24,         // Y
+    STAR_PITCH: 25,         // Z
+    FASTBALL_SPEED: 26,     // AA
+    CURVEBALL_SPEED: 27,    // AB
+    CURVE: 28,              // AC
+    STAMINA: 29,            // AD
+  },
+} as const;
+
+/**
+ * Chemistry Lookup sheet configuration (consolidated into League Hub)
+ * Previously in separate Database spreadsheet, now in main League Hub
+ */
+export const CHEMISTRY_LOOKUP_SHEET = {
+  NAME: "'🎮 Chemistry'",
+  DATA_START_ROW: 2,
+  MAX_ROWS: 5000,  // Large range for all chemistry pairs
+  START_COL: 'A',
+  END_COL: 'C',
+
+  // Column indices (0-based)
+  COLUMNS: {
+    PLAYER_1: 0,          // A
+    PLAYER_2: 1,          // B
+    CHEMISTRY_VALUE: 2,   // C
+  },
+
+  // Chemistry thresholds
+  THRESHOLDS: {
+    POSITIVE_MIN: 100,    // Values >= 100 are positive chemistry
+    NEGATIVE_MAX: -100,   // Values <= -100 are negative chemistry
+  },
+} as const;
+
+/**
  * Helper function to build sheet range string
  */
 export function buildSheetRange(

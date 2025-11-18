@@ -346,14 +346,6 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
             )}
           </div>
         )}
-
-        {selectedPlayerNames.length === 0 && (
-          <div className="glass-card p-8 text-center">
-            <p className="text-star-gray text-lg font-mono">
-              Select 1-5 players above to analyze their chemistry relationships
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

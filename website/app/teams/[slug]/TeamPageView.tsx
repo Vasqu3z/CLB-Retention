@@ -90,13 +90,17 @@ export default function TeamPageView({
     ? (teamData.hitting.h / teamData.hitting.ab).toFixed(3).substring(1)
     : '.000';
 
-  const teamOBP = teamData && (teamData.hitting.ab + teamData.hitting.bb) > 0
-    ? ((teamData.hitting.h + teamData.hitting.bb) / (teamData.hitting.ab + teamData.hitting.bb)).toFixed(3).substring(1)
-    : '.000';
+  // OBP can be >= 1.000 in rare cases, handle accordingly
+  const teamOBPValue = teamData && (teamData.hitting.ab + teamData.hitting.bb) > 0
+    ? (teamData.hitting.h + teamData.hitting.bb) / (teamData.hitting.ab + teamData.hitting.bb)
+    : 0;
+  const teamOBP = teamOBPValue >= 1 ? teamOBPValue.toFixed(3) : (teamOBPValue > 0 ? teamOBPValue.toFixed(3).substring(1) : '.000');
 
-  const teamSLG = teamData && teamData.hitting.ab > 0
-    ? (teamData.hitting.tb / teamData.hitting.ab).toFixed(3).substring(1)
-    : '.000';
+  // SLG can be >= 1.000, so only remove leading zero if < 1
+  const teamSLGValue = teamData && teamData.hitting.ab > 0
+    ? teamData.hitting.tb / teamData.hitting.ab
+    : 0;
+  const teamSLG = teamSLGValue >= 1 ? teamSLGValue.toFixed(3) : (teamSLGValue > 0 ? teamSLGValue.toFixed(3).substring(1) : '.000');
 
   // Calculate OPS from raw stats (not from formatted OBP/SLG strings) since OPS can be > 1.000
   const teamOPS = teamData && teamData.hitting.ab > 0 && (teamData.hitting.ab + teamData.hitting.bb) > 0

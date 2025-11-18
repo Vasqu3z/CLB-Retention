@@ -27,8 +27,8 @@ export default async function StandingsPage() {
     };
   });
 
-  // Calculate stats for stat cards
-  const topTeam = enhancedStandings[0];
+  // Calculate stats for stat cards - with safe defaults for empty arrays
+  const topTeam = enhancedStandings[0] || null;
   const totalGames = enhancedStandings.reduce((sum, t) => sum + t.wins + t.losses, 0) / 2; // Divide by 2 since each game involves 2 teams
 
   // Highest Runs/Game team
@@ -40,16 +40,20 @@ export default async function StandingsPage() {
       runsPerGame: gamesPlayed > 0 ? t.runsScored / gamesPlayed : 0,
     };
   });
-  const highestRunsPerGameTeam = teamsWithGames.reduce((max, t) =>
-    t.runsPerGame > max.runsPerGame ? t : max
-  );
 
-  // Lowest ERA team (Runs Allowed / Games)
-  const lowestERATeam = teamsWithGames.reduce((min, t) => {
-    const era = t.gamesPlayed > 0 ? t.runsAllowed / t.gamesPlayed : 999;
-    const minEra = min.gamesPlayed > 0 ? min.runsAllowed / min.gamesPlayed : 999;
-    return era < minEra ? t : min;
-  });
+  // Safe reduce with initial value for empty arrays
+  const highestRunsPerGameTeam = teamsWithGames.length > 0
+    ? teamsWithGames.reduce((max, t) => t.runsPerGame > max.runsPerGame ? t : max, teamsWithGames[0])
+    : null;
+
+  // Lowest ERA team (Runs Allowed / Games) - safe reduce with initial value
+  const lowestERATeam = teamsWithGames.length > 0
+    ? teamsWithGames.reduce((min, t) => {
+        const era = t.gamesPlayed > 0 ? t.runsAllowed / t.gamesPlayed : 999;
+        const minEra = min.gamesPlayed > 0 ? min.runsAllowed / min.gamesPlayed : 999;
+        return era < minEra ? t : min;
+      }, teamsWithGames[0])
+    : null;
 
   return (
     <div className="space-y-8">
@@ -70,9 +74,9 @@ export default async function StandingsPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="League Leader"
-            value={`${topTeam?.wins}-${topTeam?.losses}`}
+            value={topTeam ? `${topTeam.wins}-${topTeam.losses}` : 'N/A'}
             icon={Trophy}
-            sublabel={`Win %: ${topTeam?.winPct}`}
+            sublabel={topTeam ? `Win %: ${topTeam.winPct}` : 'No data available'}
             color="orange"
           >
             {topTeam?.fullLogoPath && (
@@ -112,7 +116,7 @@ export default async function StandingsPage() {
 
           <StatCard
             label="Highest Scoring"
-            value={highestRunsPerGameTeam.runsPerGame.toFixed(2)}
+            value={highestRunsPerGameTeam ? highestRunsPerGameTeam.runsPerGame.toFixed(2) : 'N/A'}
             icon={TrendingUp}
             sublabel="Runs scored per game"
             color="cyan"
@@ -134,7 +138,7 @@ export default async function StandingsPage() {
 
           <StatCard
             label="Lowest ERA"
-            value={(lowestERATeam.gamesPlayed > 0 ? lowestERATeam.runsAllowed / lowestERATeam.gamesPlayed : 0).toFixed(2)}
+            value={lowestERATeam ? (lowestERATeam.gamesPlayed > 0 ? lowestERATeam.runsAllowed / lowestERATeam.gamesPlayed : 0).toFixed(2) : 'N/A'}
             icon={TrendingDown}
             sublabel="Runs allowed per game"
             color="teal"

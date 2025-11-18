@@ -1,11 +1,50 @@
 import type { Metadata } from "next";
+import { Barlow, Syne, Azeret_Mono, JetBrains_Mono } from 'next/font/google';
+import dynamic from 'next/dynamic';
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
 import SmoothScroll from "@/components/SmoothScroll";
-import AnimatedBackground from "@/components/AnimatedBackground";
+
+// Dynamically import AnimatedBackground to reduce initial bundle size (~100 KB savings)
+const AnimatedBackground = dynamic(() => import('@/components/AnimatedBackground'), {
+  ssr: false, // Only render on client
+  loading: () => null,
+});
+
+// Optimize font loading with display: 'swap' and limited weights
+const barlow = Barlow({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-barlow',
+  preload: true,
+});
+
+const syne = Syne({
+  weight: ['400', '600', '700', '800'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-syne',
+  preload: true,
+});
+
+const azeretMono = Azeret_Mono({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-azeret-mono',
+  preload: true,
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-jetbrains-mono',
+});
 
 export const metadata: Metadata = {
   title: "Comets League Baseball | CLB Stats",
@@ -22,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${barlow.variable} ${syne.variable} ${azeretMono.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen flex flex-col">
         <AnimatedBackground />
         <SmoothScroll />

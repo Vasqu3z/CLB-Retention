@@ -13,8 +13,8 @@ const POSITIVE_MIN = 100;
 const NEGATIVE_MAX = -100;
 
 const POSITIONS = [
-  { id: 0, label: 'P', name: 'Pitcher', x: 50, y: 70 },
-  { id: 1, label: 'C', name: 'Catcher', x: 50, y: 85 },
+  { id: 0, label: 'P', name: 'Pitcher', x: 50, y: 63 },
+  { id: 1, label: 'C', name: 'Catcher', x: 50, y: 78 },
   { id: 2, label: '1B', name: 'First Base', x: 72, y: 72 },
   { id: 3, label: '2B', name: 'Second Base', x: 65, y: 50 },
   { id: 4, label: '3B', name: 'Third Base', x: 28, y: 72 },
@@ -46,6 +46,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
   const [isPlayerSelectOpen, setIsPlayerSelectOpen] = useState(false);
   const [selectingPosition, setSelectingPosition] = useState<number | null>(null);
   const [selectingBattingSlot, setSelectingBattingSlot] = useState<number | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Load saved lineups from localStorage
   useEffect(() => {
@@ -58,6 +59,16 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (!statusMessage) return;
+    const timeout = setTimeout(() => setStatusMessage(null), 4000);
+    return () => clearTimeout(timeout);
+  }, [statusMessage]);
+
+  const showStatusMessage = (type: 'success' | 'error', message: string) => {
+    setStatusMessage({ type, message });
+  };
 
   // Calculate total chemistry
   const totalChemistry = useMemo(() => {
@@ -252,6 +263,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
 
     setSaveLineupName('');
     setShowSaveDialog(false);
+    showStatusMessage('success', 'Lineup saved to your browser.');
   };
 
   const handleLoadLineup = (savedLineup: SavedLineup) => {
@@ -263,9 +275,10 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
     const updatedLineups = savedLineups.filter((_, i) => i !== index);
     setSavedLineups(updatedLineups);
     localStorage.setItem('clb-saved-lineups', JSON.stringify(updatedLineups));
+    showStatusMessage('success', 'Saved lineup deleted.');
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const exportData = {
       name: 'Exported Lineup',
       players: lineup,
@@ -275,8 +288,12 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
     };
 
     const jsonString = JSON.stringify(exportData, null, 2);
-    navigator.clipboard.writeText(jsonString);
-    alert('Lineup copied to clipboard!');
+    try {
+      await navigator.clipboard.writeText(jsonString);
+      showStatusMessage('success', 'Lineup copied to clipboard!');
+    } catch {
+      showStatusMessage('error', 'Unable to copy lineup. Please try again.');
+    }
   };
 
   const handleImport = () => {
@@ -287,11 +304,12 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
         setBattingOrder(imported.battingOrder || Array(9).fill(null));
         setShowImportDialog(false);
         setImportText('');
+        showStatusMessage('success', 'Lineup imported successfully.');
       } else {
-        alert('Invalid lineup format');
+        showStatusMessage('error', 'Invalid lineup format.');
       }
     } catch (e) {
-      alert('Failed to import lineup. Please check the format.');
+      showStatusMessage('error', 'Failed to import lineup. Please check the format.');
     }
   };
 
@@ -356,18 +374,17 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
     : '';
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-            Lineup Builder
-          </h1>
-          <p className="text-star-gray font-mono text-lg">
-            Click on positions to select players and build your optimal lineup with chemistry visualization
-          </p>
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
+          Lineup Builder
+        </h1>
+        <p className="text-star-gray font-mono text-lg">
+          Click on positions to select players and build your optimal lineup with chemistry visualization
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Baseball Field */}
           <div className="xl:col-span-2 space-y-6">
             <div className="glass-card p-6">
@@ -415,6 +432,20 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                     🗑️ Clear
                   </button>
                 </div>
+
+                {statusMessage && (
+                  <div
+                    className={`w-full rounded-lg border px-4 py-3 font-mono text-sm mt-4 ${
+                      statusMessage.type === 'success'
+                        ? 'bg-green-500/10 border-green-400/70 text-green-100'
+                        : 'bg-red-500/10 border-red-400/70 text-red-200'
+                    }`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {statusMessage.message}
+                  </div>
+                )}
               </div>
 
               {/* Baseball Field */}
@@ -597,8 +628,8 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
           </div>
         </div>
 
-        {/* Save Dialog */}
-        {showSaveDialog && (
+      {/* Save Dialog */}
+      {showSaveDialog && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="glass-card p-6 max-w-md w-full">
               <h3 className="text-xl font-display font-bold text-star-white mb-4">Save Lineup</h3>
@@ -631,10 +662,10 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
               </div>
             </div>
           </div>
-        )}
+      )}
 
-        {/* Import Dialog */}
-        {showImportDialog && (
+      {/* Import Dialog */}
+      {showImportDialog && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="glass-card p-6 max-w-md w-full">
               <h3 className="text-xl font-display font-bold text-star-white mb-4">Import Lineup</h3>
@@ -665,17 +696,16 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
               </div>
             </div>
           </div>
-        )}
+      )}
 
-        {/* Player Select Modal */}
-        <PlayerSelectModal
-          isOpen={isPlayerSelectOpen}
-          onClose={handleCloseModal}
-          onSelect={handlePlayerSelected}
-          availablePlayers={availablePlayers}
-          title={modalTitle}
-        />
-      </div>
+      {/* Player Select Modal */}
+      <PlayerSelectModal
+        isOpen={isPlayerSelectOpen}
+        onClose={handleCloseModal}
+        onSelect={handlePlayerSelected}
+        availablePlayers={availablePlayers}
+        title={modalTitle}
+      />
     </div>
   );
 }

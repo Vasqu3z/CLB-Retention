@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { PlayerAttributes } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
+import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 
 type AttributeTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -20,20 +21,21 @@ export default function AttributeComparisonView({ players }: Props) {
 
   const playerNames = players.map(p => p.name).sort();
 
-  return (
-    <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-            Player Attribute Comparison
-          </h1>
-          <p className="text-star-gray font-mono text-lg">
-            Compare 2-5 players side-by-side across all 30 attributes
-          </p>
-        </div>
+  const tableScrollRef = useLenisScrollLock<HTMLDivElement>();
 
-        {/* Attribute Category Tabs */}
-        <div className="glass-card p-4 mb-6">
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
+          Player Attribute Comparison
+        </h1>
+        <p className="text-star-gray font-mono text-lg">
+          Compare 2-5 players side-by-side across all 30 attributes
+        </p>
+      </div>
+
+      {/* Attribute Category Tabs */}
+      <div className="glass-card p-4">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('hitting')}
@@ -66,20 +68,25 @@ export default function AttributeComparisonView({ players }: Props) {
               Fielding & Running
             </button>
           </div>
-        </div>
+      </div>
 
-        {/* Player Selection */}
-        <PlayerMultiSelect
-          players={playerNames}
-          selectedPlayers={selectedPlayerNames}
-          onSelectionChange={setSelectedPlayerNames}
-          maxSelections={5}
-          placeholder="Search players..."
-        />
+      {/* Player Selection */}
+      <PlayerMultiSelect
+        className="mb-2"
+        players={playerNames}
+        selectedPlayers={selectedPlayerNames}
+        onSelectionChange={setSelectedPlayerNames}
+        maxSelections={5}
+        placeholder="Search players..."
+      />
 
-        {/* Comparison Table */}
-        {selectedPlayers.length >= 2 && (
-          <div className="glass-card overflow-x-auto">
+      {/* Comparison Table */}
+      {selectedPlayers.length >= 2 && (
+        <div className="glass-card">
+          <div
+            ref={tableScrollRef}
+            className="relative overflow-auto max-h-[70vh]"
+          >
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-space-blue/30 border-b border-cosmic-border">
@@ -175,8 +182,8 @@ export default function AttributeComparisonView({ players }: Props) {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

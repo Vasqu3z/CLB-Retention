@@ -137,7 +137,7 @@ export default function Header() {
               {/* Dropdown Menu */}
               {showToolsDropdown && (
                 <div className="absolute top-full right-0 pt-2 w-56">
-                  <div className="bg-space-navy border border-cosmic-border rounded-lg shadow-xl overflow-hidden">
+                  <div className="glass-card bg-space-navy/90 border border-cosmic-border/80 shadow-2xl overflow-hidden">
                     {toolsItems.map((tool) => {
                       const isActive = pathname === tool.href;
                       return (

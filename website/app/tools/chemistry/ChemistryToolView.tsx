@@ -153,32 +153,32 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
   }, [selectedPlayerNames, chemistryMatrix]);
 
   return (
-    <div className="min-h-screen py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-            Player Chemistry Tool
-          </h1>
-          <p className="text-star-gray font-mono text-lg">
-            Analyze chemistry relationships and team compatibility for up to 5 players
-          </p>
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
+          Player Chemistry Tool
+        </h1>
+        <p className="text-star-gray font-mono text-lg">
+          Analyze chemistry relationships and team compatibility for up to 5 players
+        </p>
+      </div>
 
-        {/* Player Selection */}
-        <PlayerMultiSelect
-          players={playerNames}
-          selectedPlayers={selectedPlayerNames}
-          onSelectionChange={setSelectedPlayerNames}
-          maxSelections={5}
-          placeholder="Search players..."
-        />
+      {/* Player Selection */}
+      <PlayerMultiSelect
+        className="mb-2"
+        players={playerNames}
+        selectedPlayers={selectedPlayerNames}
+        onSelectionChange={setSelectedPlayerNames}
+        maxSelections={5}
+        placeholder="Search players..."
+      />
 
-        {/* Chemistry Display */}
-        {selectedPlayersData.length > 0 && (
-          <div className="space-y-6">
-            {/* Individual Player Chemistry */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {selectedPlayersData.map(player => (
+      {/* Chemistry Display */}
+      {selectedPlayersData.length > 0 && (
+        <div className="space-y-6">
+          {/* Individual Player Chemistry */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {selectedPlayersData.map(player => (
                 <div key={player.name} className="glass-card overflow-hidden hover:border-nebula-orange/50 transition-all duration-300">
                   <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
                     <h3 className="font-display font-bold text-lg text-star-white">{player.name}</h3>
@@ -346,7 +346,6 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
             )}
           </div>
         )}
-      </div>
     </div>
   );
 }

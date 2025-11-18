@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface PlayerMultiSelectProps {
   players: string[];
@@ -8,6 +9,7 @@ interface PlayerMultiSelectProps {
   onSelectionChange: (players: string[]) => void;
   maxSelections?: number;
   placeholder?: string;
+  className?: string;
 }
 
 export default function PlayerMultiSelect({
@@ -16,16 +18,29 @@ export default function PlayerMultiSelect({
   onSelectionChange,
   maxSelections = 5,
   placeholder = 'Search players...',
+  className = '',
 }: PlayerMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const isInsideTrigger = containerRef.current?.contains(target);
+      const isInsideDropdown = dropdownMenuRef.current?.contains(target);
+
+      if (!isInsideTrigger && !isInsideDropdown) {
         setIsOpen(false);
       }
     }
@@ -33,6 +48,30 @@ export default function PlayerMultiSelect({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Track dropdown position to render via portal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const updatePosition = () => {
+      if (!triggerRef.current) return;
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [isOpen]);
 
   // Filter players based on search query
   const filteredPlayers = players.filter(player =>
@@ -57,8 +96,52 @@ export default function PlayerMultiSelect({
     onSelectionChange([]);
   };
 
+  const dropdownBaseClass =
+    'rounded-xl border border-cosmic-border/70 bg-[#050c1f]/98 shadow-[0_25px_80px_rgba(5,12,31,0.85)] backdrop-blur-2xl';
+
+  const dropdownPositionStyle = {
+    position: 'absolute' as const,
+    top: dropdownPosition.top,
+    left: dropdownPosition.left,
+    width: dropdownPosition.width,
+    zIndex: 1000,
+  };
+
+  const dropdownList = (
+    <div
+      ref={dropdownMenuRef}
+      style={dropdownPositionStyle}
+      className={`${dropdownBaseClass} max-h-64 overflow-y-auto before:pointer-events-none before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent`}
+      onWheel={(e) => e.stopPropagation()}
+    >
+      {filteredPlayers.map(player => (
+        <button
+          key={player}
+          onClick={() => handleTogglePlayer(player)}
+          className="w-full px-4 py-2.5 text-left text-star-gray hover:text-star-white hover:bg-space-blue/70 transition-all duration-200 font-display font-semibold border-b border-cosmic-border/50 last:border-b-0 hover:border-nebula-orange/50"
+        >
+          {player}
+        </button>
+      ))}
+    </div>
+  );
+
+  const emptyDropdown = (
+    <div
+      ref={dropdownMenuRef}
+      style={dropdownPositionStyle}
+      className={`${dropdownBaseClass} px-4 py-6 text-center`}
+    >
+      <p className="text-star-dim font-mono text-sm">No players found matching &ldquo;{searchQuery}&rdquo;</p>
+    </div>
+  );
+
   return (
-    <div className="glass-card p-6 mb-6" ref={dropdownRef}>
+    <div
+      className={`glass-card p-6 ${className}`.trim()}
+      ref={containerRef}
+      style={{ overflow: 'visible' }}
+    >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-display font-bold text-star-white">
           Select Players <span className="text-nebula-orange">({selectedPlayers.length}/{maxSelections})</span>
@@ -95,7 +178,7 @@ export default function PlayerMultiSelect({
       )}
 
       {/* Search input */}
-      <div className="relative">
+      <div className="relative" ref={triggerRef}>
         <input
           ref={inputRef}
           type="text"
@@ -113,29 +196,11 @@ export default function PlayerMultiSelect({
         />
 
         {/* Dropdown menu */}
-        {isOpen && filteredPlayers.length > 0 && selectedPlayers.length < maxSelections && (
-          <div
-            className="absolute z-[100] w-full mt-2 bg-space-navy border-2 border-cosmic-border rounded-lg shadow-2xl max-h-64 overflow-y-auto"
-            onWheel={(e) => e.stopPropagation()}
-          >
-            {filteredPlayers.map(player => (
-              <button
-                key={player}
-                onClick={() => handleTogglePlayer(player)}
-                className="w-full px-4 py-2.5 text-left text-star-gray hover:text-star-white hover:bg-space-blue/70 transition-all duration-200 font-display font-semibold border-b border-cosmic-border/50 last:border-b-0 hover:border-nebula-orange/50"
-              >
-                {player}
-              </button>
-            ))}
-          </div>
-        )}
+        {isMounted && isOpen && selectedPlayers.length < maxSelections && filteredPlayers.length > 0 &&
+          createPortal(dropdownList, document.body)}
 
-        {/* No results message */}
-        {isOpen && filteredPlayers.length === 0 && searchQuery && selectedPlayers.length < maxSelections && (
-          <div className="absolute z-[100] w-full mt-2 bg-space-navy border-2 border-cosmic-border rounded-lg shadow-2xl px-4 py-6 text-center">
-            <p className="text-star-dim font-mono text-sm">No players found matching &ldquo;{searchQuery}&rdquo;</p>
-          </div>
-        )}
+        {isMounted && isOpen && filteredPlayers.length === 0 && searchQuery && selectedPlayers.length < maxSelections &&
+          createPortal(emptyDropdown, document.body)}
       </div>
 
       {/* Helper text */}

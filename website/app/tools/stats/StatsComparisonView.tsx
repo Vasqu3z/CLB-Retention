@@ -5,6 +5,7 @@ import { PlayerStats } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 import SeasonToggle from '@/components/SeasonToggle';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
+import FadeIn from '@/components/animations/FadeIn';
 
 type StatTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -34,23 +35,28 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
 
   return (
     <div className="space-y-8">
-      <div className="relative">
-        {/* Baseball stitching accent */}
-        <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-field-green/50 to-transparent rounded-full" />
+      <FadeIn delay={0.1} direction="up">
+        <div className="relative">
+          {/* Baseball stitching accent */}
+          <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-field-green/50 to-transparent rounded-full" />
 
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-field-green via-nebula-teal to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-          📊 Player Stats Comparison
-        </h1>
-        <p className="text-star-gray font-mono text-lg">
-          Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics
-        </p>
-      </div>
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-field-green via-nebula-teal to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            Player Stats Comparison
+          </h1>
+          <p className="text-star-gray font-mono text-lg">
+            Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics
+          </p>
+        </div>
+      </FadeIn>
 
       {/* Season Toggle */}
-      <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+      <FadeIn delay={0.2} direction="up">
+        <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+      </FadeIn>
 
       {/* Stat Category Tabs */}
-      <div className="glass-card p-4">
+      <FadeIn delay={0.3} direction="up">
+        <div className="glass-card p-4">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('hitting')}
@@ -83,21 +89,25 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
               Fielding
             </button>
           </div>
-      </div>
+        </div>
+      </FadeIn>
 
       {/* Player Selection */}
-      <PlayerMultiSelect
-        className="mb-2"
-        players={availablePlayerNames}
-        selectedPlayers={selectedPlayerNames}
-        onSelectionChange={setSelectedPlayerNames}
-        maxSelections={5}
-        placeholder={`Search ${isPlayoffs ? 'playoff' : 'regular season'} players...`}
-      />
+      <FadeIn delay={0.4} direction="up">
+        <PlayerMultiSelect
+          className="mb-2"
+          players={availablePlayerNames}
+          selectedPlayers={selectedPlayerNames}
+          onSelectionChange={setSelectedPlayerNames}
+          maxSelections={5}
+          placeholder={`Search ${isPlayoffs ? 'playoff' : 'regular season'} players...`}
+        />
+      </FadeIn>
 
       {/* Comparison Tables */}
       {selectedPlayers.length >= 2 && (
-        <div className="space-y-6">
+        <FadeIn delay={0.5} direction="up">
+          <div className="space-y-6">
           {/* Hitting Stats */}
           {activeTab === 'hitting' && (
             <div className="glass-card overflow-hidden">
@@ -212,7 +222,8 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
               </ScrollableTable>
             </div>
           )}
-        </div>
+          </div>
+        </FadeIn>
       )}
     </div>
   );

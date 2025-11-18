@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
+import NextDynamic from "next/dynamic";
 import {
   Azeret_Mono,
   Chakra_Petch,
@@ -12,11 +12,11 @@ import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
 
-const SmoothScroll = dynamic(() => import("@/components/SmoothScroll"), {
+const SmoothScroll = NextDynamic(() => import("@/components/SmoothScroll"), {
   ssr: false,
 });
 
-const AnimatedBackground = dynamic(
+const AnimatedBackground = NextDynamic(
   () => import("@/components/AnimatedBackground"),
   {
     ssr: false,

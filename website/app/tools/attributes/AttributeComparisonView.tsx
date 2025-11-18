@@ -78,7 +78,7 @@ export default function AttributeComparisonView({ players }: Props) {
         />
 
         {/* Comparison Table */}
-        {selectedPlayers.length >= 2 ? (
+        {selectedPlayers.length >= 2 && (
           <div className="glass-card overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -136,7 +136,6 @@ export default function AttributeComparisonView({ players }: Props) {
                     <AttributeRow label="Curveball Speed" players={selectedPlayers} getValue={p => p.curveballSpeed} numeric />
                     <AttributeRow label="Curve" players={selectedPlayers} getValue={p => p.curve} numeric />
                     <AttributeRow label="Stamina" players={selectedPlayers} getValue={p => p.stamina} numeric />
-                    <AttributeRow label="Pitching Average" players={selectedPlayers} getValue={p => p.pitchingAverage} numeric highlight />
                   </>
                 )}
 
@@ -156,7 +155,6 @@ export default function AttributeComparisonView({ players }: Props) {
                     <AttributeRow label="Slap Hit Power" players={selectedPlayers} getValue={p => p.slapHitPower} numeric />
                     <AttributeRow label="Charge Hit Power" players={selectedPlayers} getValue={p => p.chargeHitPower} numeric />
                     <AttributeRow label="Pre-Charge" players={selectedPlayers} getValue={p => p.preCharge} />
-                    <AttributeRow label="Batting Average" players={selectedPlayers} getValue={p => p.battingAverage} numeric highlight />
                   </>
                 )}
 
@@ -170,25 +168,12 @@ export default function AttributeComparisonView({ players }: Props) {
                     </tr>
                     <AttributeRow label="Fielding" players={selectedPlayers} getValue={p => p.fielding} numeric />
                     <AttributeRow label="Throwing Speed" players={selectedPlayers} getValue={p => p.throwingSpeed} numeric />
-                    <AttributeRow label="Fielding Average" players={selectedPlayers} getValue={p => p.fieldingAverage} numeric highlight />
                     <AttributeRow label="Speed" players={selectedPlayers} getValue={p => p.speed} numeric />
                     <AttributeRow label="Bunting" players={selectedPlayers} getValue={p => p.bunting} numeric />
                   </>
                 )}
               </tbody>
             </table>
-          </div>
-        ) : selectedPlayers.length === 1 ? (
-          <div className="glass-card p-8 text-center border-nebula-orange/30 mt-8">
-            <p className="text-nebula-orange text-lg font-display font-semibold">
-              Please select at least one more player to compare
-            </p>
-          </div>
-        ) : (
-          <div className="glass-card p-8 text-center mt-8">
-            <p className="text-star-gray text-lg font-mono">
-              Select 2-5 players above to start comparing attributes
-            </p>
           </div>
         )}
       </div>

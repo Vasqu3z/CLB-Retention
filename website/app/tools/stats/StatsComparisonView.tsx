@@ -94,7 +94,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
         />
 
         {/* Comparison Tables */}
-        {selectedPlayers.length >= 2 ? (
+        {selectedPlayers.length >= 2 && (
           <div className="space-y-6">
             {/* Hitting Stats */}
             {activeTab === 'hitting' && (
@@ -125,8 +125,8 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                     <StatRow label="H" players={selectedPlayers} getValue={p => p.h} numeric />
                     <StatRow label="HR" players={selectedPlayers} getValue={p => p.hr} numeric />
                     <StatRow label="RBI" players={selectedPlayers} getValue={p => p.rbi} numeric />
-                    <StatRow label="ROB" players={selectedPlayers} getValue={p => p.rob} numeric />
-                    <StatRow label="DP" players={selectedPlayers} getValue={p => p.dp} numeric />
+                    <StatRow label="Hits Robbed (ROB)" players={selectedPlayers} getValue={p => p.rob} numeric />
+                    <StatRow label="Double Plays Hit Into (DP)" players={selectedPlayers} getValue={p => p.dp} numeric />
                     <StatRow label="AVG" players={selectedPlayers} getValue={p => p.avg} highlight />
                     <StatRow label="OBP" players={selectedPlayers} getValue={p => p.obp} highlight />
                     <StatRow label="SLG" players={selectedPlayers} getValue={p => p.slg} highlight />
@@ -210,18 +210,6 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
               </div>
             </div>
             )}
-          </div>
-        ) : selectedPlayers.length === 1 ? (
-          <div className="glass-card p-8 text-center border-nebula-orange/30 mt-8">
-            <p className="text-nebula-orange text-lg font-display font-semibold">
-              Please select at least one more player to compare
-            </p>
-          </div>
-        ) : (
-          <div className="glass-card p-8 text-center mt-8">
-            <p className="text-star-gray text-lg font-mono">
-              Select 2-5 players above to start comparing statistics
-            </p>
           </div>
         )}
       </div>

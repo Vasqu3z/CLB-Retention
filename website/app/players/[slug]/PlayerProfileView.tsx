@@ -59,12 +59,13 @@ export default function PlayerProfileView({
             {/* Player Image */}
             {registryEntry?.imageUrl && (
               <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-nebula-orange/50 flex-shrink-0 hover:border-nebula-orange transition-all duration-300 hover:drop-shadow-[0_0_16px_rgba(255,107,53,0.6)]">
-                <img
+                <Image
                   src={registryEntry.imageUrl}
                   alt={playerName}
+                  width={96}
+                  height={96}
                   className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
+                  unoptimized
                 />
               </div>
             )}
@@ -276,7 +277,7 @@ export default function PlayerProfileView({
                 Positive Chemistry ({chemistry.posCount})
               </h3>
               {chemistry.positive.length > 0 ? (
-                <div className="max-h-96 overflow-y-auto pr-2 space-y-1">
+                <div className="max-h-96 overflow-y-auto pr-2 space-y-1" onWheel={(e) => e.stopPropagation()}>
                   {chemistry.positive.map((player, idx) => (
                     <Link
                       key={idx}
@@ -298,7 +299,7 @@ export default function PlayerProfileView({
                 Negative Chemistry ({chemistry.negCount})
               </h3>
               {chemistry.negative.length > 0 ? (
-                <div className="max-h-96 overflow-y-auto pr-2 space-y-1">
+                <div className="max-h-96 overflow-y-auto pr-2 space-y-1" onWheel={(e) => e.stopPropagation()}>
                   {chemistry.negative.map((player, idx) => (
                     <Link
                       key={idx}

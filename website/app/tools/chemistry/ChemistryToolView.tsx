@@ -303,7 +303,7 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                       Shared Positive Chemistry ({Object.keys(teamAnalysis.sharedPositive).length})
                     </h3>
                     {Object.keys(teamAnalysis.sharedPositive).length > 0 ? (
-                      <div className="space-y-1 max-h-64 overflow-y-auto pr-2">
+                      <div className="space-y-1 max-h-64 overflow-y-auto pr-2" onWheel={(e) => e.stopPropagation()}>
                         {Object.entries(teamAnalysis.sharedPositive).map(([character, players]) => (
                           <div key={character} className="bg-nebula-cyan/10 px-3 py-2 rounded text-sm hover:bg-nebula-cyan/20 transition-colors duration-200">
                             <div className="font-medium text-nebula-cyan font-display">{character}</div>
@@ -325,7 +325,7 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                       Conflicting Chemistry ({Object.keys(teamAnalysis.mixedRelationships).length})
                     </h3>
                     {Object.keys(teamAnalysis.mixedRelationships).length > 0 ? (
-                      <div className="space-y-1 max-h-64 overflow-y-auto pr-2">
+                      <div className="space-y-1 max-h-64 overflow-y-auto pr-2" onWheel={(e) => e.stopPropagation()}>
                         {Object.entries(teamAnalysis.mixedRelationships).map(([character, rel]) => (
                           <div key={character} className="bg-nebula-orange/10 px-3 py-2 rounded text-sm hover:bg-nebula-orange/20 transition-colors duration-200">
                             <div className="font-medium text-nebula-orange font-display">{character}</div>

@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import FadeIn from '@/components/animations/FadeIn';
 import { PlayerStats, PlayerAttributes, PlayerChemistry, PlayerRegistryEntry } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
+import { playerNameToSlug } from '@/lib/utils';
 
 interface PlayerProfileViewProps {
   playerName: string;
@@ -16,7 +18,22 @@ interface PlayerProfileViewProps {
 }
 
 type TabType = 'stats' | 'attributes' | 'chemistry';
-type StatCategory = 'hitting' | 'pitching' | 'fielding';
+
+// Helper function to get class color
+function getClassColor(characterClass: string): string {
+  switch (characterClass) {
+    case 'Power':
+      return 'text-red-400';
+    case 'Technique':
+      return 'text-solar-gold';
+    case 'Balanced':
+      return 'text-green-400';
+    case 'Speed':
+      return 'text-blue-400';
+    default:
+      return 'text-nebula-coral';
+  }
+}
 
 export default function PlayerProfileView({
   playerName,
@@ -28,7 +45,6 @@ export default function PlayerProfileView({
 }: PlayerProfileViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   const [season, setSeason] = useState<'regular' | 'playoffs'>('regular');
-  const [statCategory, setStatCategory] = useState<StatCategory>('hitting');
 
   const currentStats = season === 'regular' ? regularStats : playoffStats;
   const hasPlayoffStats = !!playoffStats;
@@ -41,14 +57,13 @@ export default function PlayerProfileView({
           <div className="flex items-start gap-6">
             {/* Player Image */}
             {registryEntry?.imageUrl && (
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-nebula-orange/50 flex-shrink-0 hover:border-nebula-orange transition-all duration-300 hover:drop-shadow-[0_0_16px_rgba(255,107,53,0.6)] relative">
-                <Image
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-nebula-orange/50 flex-shrink-0 hover:border-nebula-orange transition-all duration-300 hover:drop-shadow-[0_0_16px_rgba(255,107,53,0.6)]">
+                <img
                   src={registryEntry.imageUrl}
                   alt={playerName}
-                  width={96}
-                  height={96}
                   className="w-full h-full object-cover"
-                  unoptimized
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
                 />
               </div>
             )}
@@ -60,7 +75,7 @@ export default function PlayerProfileView({
               </h1>
               <div className="flex flex-wrap gap-4 text-star-gray font-mono text-sm">
                 {attributes?.characterClass && (
-                  <span>Class: <span className="text-nebula-coral font-semibold">{attributes.characterClass}</span></span>
+                  <span>Class: <span className={`${getClassColor(attributes.characterClass)} font-semibold`}>{attributes.characterClass}</span></span>
                 )}
                 {attributes?.weight && (
                   <span>Weight: <span className="text-star-white font-semibold">{attributes.weight}</span></span>
@@ -163,93 +178,53 @@ export default function PlayerProfileView({
               </div>
             )}
 
-            {/* Stat Category Toggles */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setStatCategory('hitting')}
-                className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                  statCategory === 'hitting'
-                    ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                    : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-                }`}
-              >
-                Hitting
-              </button>
-              <button
-                onClick={() => setStatCategory('pitching')}
-                className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                  statCategory === 'pitching'
-                    ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
-                    : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-                }`}
-              >
-                Pitching
-              </button>
-              <button
-                onClick={() => setStatCategory('fielding')}
-                className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                  statCategory === 'fielding'
-                    ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
-                    : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-                }`}
-              >
-                Fielding
-              </button>
-            </div>
-
             {currentStats ? (
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Hitting Stats */}
-                {statCategory === 'hitting' && (
                 <div className="glass-card p-6 hover:border-nebula-orange/50">
                   <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
                   <div className="space-y-2 font-mono text-sm">
-                    <StatRow label="GP" value={currentStats.gp} />
-                    <StatRow label="AB" value={currentStats.ab} />
-                    <StatRow label="H" value={currentStats.h} />
-                    <StatRow label="HR" value={currentStats.hr} />
-                    <StatRow label="RBI" value={currentStats.rbi} />
-                    <StatRow label="ROB" value={currentStats.rob} />
-                    <StatRow label="DP" value={currentStats.dp} />
-                    <StatRow label="AVG" value={currentStats.avg} highlight />
-                    <StatRow label="OBP" value={currentStats.obp} highlight />
-                    <StatRow label="SLG" value={currentStats.slg} highlight />
-                    <StatRow label="OPS" value={currentStats.ops} highlight />
+                    <StatRowWithLabel label="Games Played (GP)" value={currentStats.gp} />
+                    <StatRowWithLabel label="At Bats (AB)" value={currentStats.ab} />
+                    <StatRowWithLabel label="Hits (H)" value={currentStats.h} />
+                    <StatRowWithLabel label="Home Runs (HR)" value={currentStats.hr} />
+                    <StatRowWithLabel label="RBI" value={currentStats.rbi} />
+                    <StatRowWithLabel label="Runners on Base (ROB)" value={currentStats.rob} />
+                    <StatRowWithLabel label="Double Plays (DP)" value={currentStats.dp} />
+                    <StatRowWithLabel label="Batting Average (AVG)" value={currentStats.avg} highlight />
+                    <StatRowWithLabel label="On-Base Percentage (OBP)" value={currentStats.obp} highlight />
+                    <StatRowWithLabel label="Slugging (SLG)" value={currentStats.slg} highlight />
+                    <StatRowWithLabel label="OPS" value={currentStats.ops} highlight />
                   </div>
                 </div>
-                )}
 
                 {/* Pitching Stats */}
-                {statCategory === 'pitching' && (
                 <div className="glass-card p-6 hover:border-solar-gold/50">
                   <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
                   <div className="space-y-2 font-mono text-sm">
-                    <StatRow label="IP" value={currentStats.ip?.toFixed(2)} />
-                    <StatRow label="W" value={currentStats.w} />
-                    <StatRow label="L" value={currentStats.l} />
-                    <StatRow label="SV" value={currentStats.sv} />
-                    <StatRow label="H" value={currentStats.hAllowed} />
-                    <StatRow label="HR" value={currentStats.hrAllowed} />
-                    <StatRow label="ERA" value={currentStats.era} highlight />
-                    <StatRow label="WHIP" value={currentStats.whip} highlight />
-                    <StatRow label="BAA" value={currentStats.baa} highlight />
+                    <StatRowWithLabel label="Innings Pitched (IP)" value={currentStats.ip?.toFixed(2)} />
+                    <StatRowWithLabel label="Wins (W)" value={currentStats.w} />
+                    <StatRowWithLabel label="Losses (L)" value={currentStats.l} />
+                    <StatRowWithLabel label="Saves (SV)" value={currentStats.sv} />
+                    <StatRowWithLabel label="Hits Allowed (H)" value={currentStats.hAllowed} />
+                    <StatRowWithLabel label="Home Runs Allowed (HR)" value={currentStats.hrAllowed} />
+                    <StatRowWithLabel label="ERA" value={currentStats.era} highlight />
+                    <StatRowWithLabel label="WHIP" value={currentStats.whip} highlight />
+                    <StatRowWithLabel label="Batting Average Against (BAA)" value={currentStats.baa} highlight />
                   </div>
                 </div>
-                )}
 
                 {/* Fielding Stats */}
-                {statCategory === 'fielding' && (
-                <div className="glass-card p-6 hover:border-nebula-coral/50">
-                  <h3 className="text-xl font-display font-bold text-nebula-coral mb-4 text-shadow">Fielding</h3>
+                <div className="glass-card p-6 hover:border-emerald-500/50">
+                  <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding</h3>
                   <div className="space-y-2 font-mono text-sm">
-                    <StatRow label="NP" value={currentStats.np} />
-                    <StatRow label="E" value={currentStats.e} />
-                    <StatRow label="SB" value={currentStats.sb} />
-                    <StatRow label="CS" value={currentStats.cs} />
-                    <StatRow label="OAA" value={currentStats.oaa} highlight />
+                    <StatRowWithLabel label="Number of Plays (NP)" value={currentStats.np} />
+                    <StatRowWithLabel label="Errors (E)" value={currentStats.e} />
+                    <StatRowWithLabel label="Stolen Bases (SB)" value={currentStats.sb} />
+                    <StatRowWithLabel label="Caught Stealing (CS)" value={currentStats.cs} />
+                    <StatRowWithLabel label="Outs Above Average (OAA)" value={currentStats.oaa} highlight />
                   </div>
                 </div>
-                )}
               </div>
             ) : (
               <div className="glass-card p-12 text-center">
@@ -265,22 +240,12 @@ export default function PlayerProfileView({
       {/* Attributes Tab */}
       {activeTab === 'attributes' && attributes && (
         <FadeIn delay={0.15} direction="up">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Overall Ratings */}
-            <div className="glass-card p-6 hover:border-nebula-orange/50">
-              <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Overall Ratings</h3>
-              <div className="space-y-2 font-mono text-sm">
-                <StatRow label="Pitching" value={attributes.pitchingOverall} highlight />
-                <StatRow label="Batting" value={attributes.battingOverall} highlight />
-                <StatRow label="Fielding" value={attributes.fieldingOverall} highlight />
-                <StatRow label="Speed" value={attributes.speedOverall} highlight />
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Pitching Attributes */}
-            <div className="glass-card p-6 hover:border-nebula-orange/50">
-              <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Pitching</h3>
+            <div className="glass-card p-6 hover:border-solar-gold/50">
+              <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
               <div className="space-y-2 font-mono text-sm">
+                <StatRow label="Overall" value={attributes.pitchingOverall} highlight />
                 <StatRow label="Pre-Charge" value={attributes.preCharge} />
                 <StatRow label="Star Pitch" value={attributes.starPitch} />
                 <StatRow label="Fastball Speed" value={attributes.fastballSpeed} />
@@ -291,9 +256,10 @@ export default function PlayerProfileView({
             </div>
 
             {/* Hitting Attributes */}
-            <div className="glass-card p-6 hover:border-nebula-coral/50">
-              <h3 className="text-xl font-display font-bold text-nebula-coral mb-4 text-shadow">Hitting</h3>
+            <div className="glass-card p-6 hover:border-nebula-orange/50">
+              <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
               <div className="space-y-2 font-mono text-sm">
+                <StatRow label="Overall" value={attributes.battingOverall} highlight />
                 <StatRow label="Star Swing" value={attributes.starSwing} />
                 <StatRow label="Hit Trajectory" value={attributes.hittingTrajectory} />
                 <StatRow label="Hit Curve" value={attributes.hitCurve} />
@@ -305,17 +271,15 @@ export default function PlayerProfileView({
             </div>
 
             {/* Fielding & Speed Attributes */}
-            <div className="glass-card p-6 lg:col-span-2 hover:border-comet-yellow/50">
-              <h3 className="text-xl font-display font-bold text-comet-yellow mb-4 text-shadow">Fielding & Speed</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2 font-mono text-sm">
-                  <StatRow label="Fielding" value={attributes.fielding} />
-                  <StatRow label="Throwing Speed" value={attributes.throwingSpeed} />
-                </div>
-                <div className="space-y-2 font-mono text-sm">
-                  <StatRow label="Speed" value={attributes.speed} />
-                  <StatRow label="Bunting" value={attributes.bunting} />
-                </div>
+            <div className="glass-card p-6 hover:border-emerald-500/50">
+              <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding & Speed</h3>
+              <div className="space-y-2 font-mono text-sm">
+                <StatRow label="Fielding Overall" value={attributes.fieldingOverall} highlight />
+                <StatRow label="Speed Overall" value={attributes.speedOverall} highlight />
+                <StatRow label="Fielding" value={attributes.fielding} />
+                <StatRow label="Throwing Speed" value={attributes.throwingSpeed} />
+                <StatRow label="Speed" value={attributes.speed} />
+                <StatRow label="Bunting" value={attributes.bunting} />
               </div>
             </div>
           </div>
@@ -334,12 +298,13 @@ export default function PlayerProfileView({
               {chemistry.positive.length > 0 ? (
                 <div className="max-h-96 overflow-y-auto pr-2 space-y-1">
                   {chemistry.positive.map((player, idx) => (
-                    <div
+                    <Link
                       key={idx}
-                      className="text-star-gray hover:text-green-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-green-400/10 cursor-default"
+                      href={`/players/${playerNameToSlug(player)}`}
+                      className="block text-star-gray hover:text-green-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-green-400/10 underline decoration-green-400/30 hover:decoration-green-400"
                     >
                       {player}
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
@@ -355,12 +320,13 @@ export default function PlayerProfileView({
               {chemistry.negative.length > 0 ? (
                 <div className="max-h-96 overflow-y-auto pr-2 space-y-1">
                   {chemistry.negative.map((player, idx) => (
-                    <div
+                    <Link
                       key={idx}
-                      className="text-star-gray hover:text-red-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-red-400/10 cursor-default"
+                      href={`/players/${playerNameToSlug(player)}`}
+                      className="block text-star-gray hover:text-red-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-red-400/10 underline decoration-red-400/30 hover:decoration-red-400"
                     >
                       {player}
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
@@ -375,6 +341,19 @@ export default function PlayerProfileView({
 }
 
 // Helper component for displaying stat rows
+function StatRowWithLabel({ label, value, highlight = false }: { label: string; value: any; highlight?: boolean }) {
+  const displayValue = value === undefined || value === null ? '-' : value;
+
+  return (
+    <div className="flex justify-between items-center py-1 hover:bg-space-blue/20 transition-colors duration-200 px-2 rounded">
+      <span className="text-star-gray text-xs">{label}:</span>
+      <span className={highlight ? 'text-nebula-orange font-semibold' : 'text-star-white'}>
+        {displayValue}
+      </span>
+    </div>
+  );
+}
+
 function StatRow({ label, value, highlight = false }: { label: string; value: any; highlight?: boolean }) {
   const displayValue = value === undefined || value === null ? '-' : value;
 

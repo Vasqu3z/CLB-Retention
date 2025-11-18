@@ -136,25 +136,27 @@ export default function Header() {
 
               {/* Dropdown Menu */}
               {showToolsDropdown && (
-                <div className="absolute top-full right-0 mt-2 w-56 bg-space-navy/95 backdrop-blur-md border border-cosmic-border rounded-lg shadow-xl overflow-hidden">
-                  {toolsItems.map((tool) => {
-                    const isActive = pathname === tool.href;
-                    return (
-                      <Link
-                        key={tool.href}
-                        href={tool.href}
-                        className={`
-                          block px-4 py-3 text-sm transition-all duration-200
-                          ${isActive
-                            ? 'bg-nebula-orange/20 text-nebula-orange'
-                            : 'text-star-gray hover:text-star-white hover:bg-space-blue/50'
-                          }
-                        `}
-                      >
-                        {tool.label}
-                      </Link>
-                    );
-                  })}
+                <div className="absolute top-full right-0 pt-2 w-56">
+                  <div className="bg-space-navy/95 backdrop-blur-md border border-cosmic-border rounded-lg shadow-xl overflow-hidden">
+                    {toolsItems.map((tool) => {
+                      const isActive = pathname === tool.href;
+                      return (
+                        <Link
+                          key={tool.href}
+                          href={tool.href}
+                          className={`
+                            block px-4 py-3 text-sm transition-all duration-200
+                            ${isActive
+                              ? 'bg-nebula-orange/20 text-nebula-orange'
+                              : 'text-star-gray hover:text-star-white hover:bg-space-blue/50'
+                            }
+                          `}
+                        >
+                          {tool.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

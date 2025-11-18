@@ -8,6 +8,7 @@ import { getActiveTeams } from '@/config/league';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import SeasonToggle from '@/components/SeasonToggle';
 import DataTable, { Column } from '@/components/DataTable';
+import ControlShelf from '@/components/ControlShelf';
 
 type Tab = 'hitting' | 'pitching' | 'fielding';
 
@@ -24,6 +25,7 @@ interface TeamStatsViewProps {
   playoffTeamData: TeamData[];
   regularRunsByTeam: Record<string, number>;
   playoffRunsByTeam: Record<string, number>;
+  playoffEligibleTeams: string[];
 }
 
 interface EnhancedTeam extends TeamData {
@@ -48,10 +50,13 @@ export default function TeamStatsView({
   regularTeamData,
   playoffTeamData,
   regularRunsByTeam,
-  playoffRunsByTeam
+  playoffRunsByTeam,
+  playoffEligibleTeams
 }: TeamStatsViewProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('hitting');
+  const [teamFilter, setTeamFilter] = useState('all');
+  const [highlightSeeds, setHighlightSeeds] = useState(false);
 
   const teams = useMemo(() => getActiveTeams(), []);
   const teamLookup = useMemo(() => {
@@ -122,6 +127,17 @@ export default function TeamStatsView({
         };
       });
   }, [teamData, runsByTeam, teams, teamLookup]);
+
+  const filteredTeamData = useMemo(() => {
+    if (teamFilter === 'all') {
+      return enhancedTeamData;
+    }
+    return enhancedTeamData.filter((team) => team.slug === teamFilter);
+  }, [enhancedTeamData, teamFilter]);
+
+  const highlightRow = highlightSeeds
+    ? (team: EnhancedTeam) => playoffEligibleTeams.includes(team.teamName)
+    : undefined;
 
   // Define hitting columns
   const hittingColumns: Column<EnhancedTeam>[] = useMemo(() => [
@@ -250,57 +266,70 @@ export default function TeamStatsView({
 
   return (
     <div className="space-y-8">
-      {/* Season Toggle */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex-1" /> {/* Spacer */}
-        <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="glass-card p-2">
-        <nav className="flex space-x-2" aria-label="Tabs">
+      <ControlShelf
+        title="Control Deck"
+        description="Pin the season, focus on a single club, or light up the playoff seeds."
+      >
+        <div className="flex flex-wrap gap-3 items-center">
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+          <nav className="flex flex-wrap gap-2" aria-label="Stat groups">
+            {(['hitting', 'pitching', 'fielding'] as Tab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-full border text-sm font-semibold uppercase tracking-wide transition-all ${
+                  activeTab === tab
+                    ? 'border-nebula-orange text-nebula-orange bg-nebula-orange/10 shadow-[0_0_20px_rgba(255,107,53,0.35)]'
+                    : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-orange/50'
+                }`}
+                aria-pressed={activeTab === tab}
+              >
+                {tab}
+              </button>
+            ))}
+          </nav>
+        </div>
+        <div className="flex flex-wrap gap-3 items-center w-full">
+          <label className="flex flex-col text-xs font-mono uppercase tracking-widest text-star-gray/80 gap-1">
+            Team focus
+            <select
+              value={teamFilter}
+              onChange={(event) => setTeamFilter(event.target.value)}
+              className="min-w-[220px] rounded-lg border border-cosmic-border bg-space-blue/40 px-3 py-2 text-sm text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange"
+            >
+              <option value="all">All teams</option>
+              {teams.map((team) => (
+                <option key={team.slug} value={team.slug}>
+                  {team.shortName}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
-            onClick={() => setActiveTab('hitting')}
-            className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-              activeTab === 'hitting'
-                ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
+            type="button"
+            onClick={() => setHighlightSeeds((prev) => !prev)}
+            aria-pressed={highlightSeeds}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${
+              highlightSeeds
+                ? 'border-nebula-teal text-nebula-teal bg-nebula-teal/10 shadow-[0_0_12px_rgba(0,255,198,0.35)]'
+                : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-teal/40'
             }`}
           >
-            Hitting
+            {highlightSeeds ? 'Playoff seeds highlighted' : 'Highlight playoff seeds'}
           </button>
-          <button
-            onClick={() => setActiveTab('pitching')}
-            className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-              activeTab === 'pitching'
-                ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
-                : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
-            }`}
-          >
-            Pitching
-          </button>
-          <button
-            onClick={() => setActiveTab('fielding')}
-            className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-              activeTab === 'fielding'
-                ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
-                : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
-            }`}
-          >
-            Fielding
-          </button>
-        </nav>
-      </div>
+        </div>
+      </ControlShelf>
 
       {/* Hitting Table */}
       {activeTab === 'hitting' && (
         <DataTable
           columns={hittingColumns}
-          data={enhancedTeamData}
+          data={filteredTeamData}
           getRowKey={(team) => team.teamName}
           defaultSortKey="rGame"
           defaultSortDirection="desc"
           enableCondensed={true}
+          highlightRow={highlightRow}
         />
       )}
 
@@ -308,11 +337,12 @@ export default function TeamStatsView({
       {activeTab === 'pitching' && (
         <DataTable
           columns={pitchingColumns}
-          data={enhancedTeamData}
+          data={filteredTeamData}
           getRowKey={(team) => team.teamName}
           defaultSortKey="era"
           defaultSortDirection="asc"
           enableCondensed={true}
+          highlightRow={highlightRow}
         />
       )}
 
@@ -320,11 +350,12 @@ export default function TeamStatsView({
       {activeTab === 'fielding' && (
         <DataTable
           columns={fieldingColumns}
-          data={enhancedTeamData}
+          data={filteredTeamData}
           getRowKey={(team) => team.teamName}
           defaultSortKey="der"
           defaultSortDirection="desc"
           enableCondensed={true}
+          highlightRow={highlightRow}
         />
       )}
     </div>

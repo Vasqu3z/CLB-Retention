@@ -238,6 +238,17 @@ input:-webkit-autofill:active {
   transform: translateY(-2px);
 }
 
+/* Data-heavy surfaces favor clarity over glow */
+.data-surface {
+  background: var(--glass-bg-light);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.65);
+}
+
+.data-surface * {
+  text-shadow: none !important;
+}
+
 /* Selection color */
 ::selection {
   background: var(--nebula-orange);

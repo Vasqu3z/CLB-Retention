@@ -17,6 +17,8 @@ export default async function TeamsPage() {
   const regularRunsByTeam = mapRunsFromStandings(regularStandings);
   const playoffRunsByTeam = mapRunsFromPlayoffGames(playoffTeamData, playoffSchedule);
 
+  const playoffEligibleTeams = regularStandings.slice(0, 4).map((row) => row.team);
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -37,6 +39,7 @@ export default async function TeamsPage() {
           playoffTeamData={playoffTeamData}
           regularRunsByTeam={regularRunsByTeam}
           playoffRunsByTeam={playoffRunsByTeam}
+          playoffEligibleTeams={playoffEligibleTeams}
         />
       </FadeIn>
     </div>

@@ -548,3 +548,107 @@ input[type="password"]::placeholder {
   color: var(--star-gray);
   opacity: 0.5;
 }
+
+/* Mission control form system */
+.control-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 200px;
+}
+
+.control-label {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: rgba(232, 237, 245, 0.65);
+}
+
+.control-input,
+.control-input select,
+.control-stack select,
+.control-stack input {
+  height: 44px;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(155, 165, 192, 0.35);
+  background: rgba(30, 36, 66, 0.55);
+  color: var(--star-white);
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  padding: 0 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.control-input:focus,
+.control-stack select:focus,
+.control-stack input:focus {
+  outline: none;
+  border-color: rgba(255, 107, 53, 0.7);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+  background: rgba(30, 36, 66, 0.75);
+}
+
+.control-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 1.25rem;
+  min-height: 44px;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(140deg, rgba(21, 24, 41, 0.9), rgba(42, 31, 61, 0.75));
+  color: rgba(232, 237, 245, 0.75);
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.control-button:hover {
+  color: var(--star-white);
+  border-color: rgba(255, 107, 53, 0.35);
+  transform: translateY(-1px);
+}
+
+.control-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.45);
+}
+
+.control-button[data-active="true"] {
+  border-color: rgba(255, 107, 53, 0.8);
+  color: var(--nebula-orange);
+  box-shadow: 0 12px 30px rgba(255, 107, 53, 0.25);
+  background: linear-gradient(140deg, rgba(255, 107, 53, 0.15), rgba(21, 24, 41, 0.85));
+}
+
+.control-button[data-tone="cyan"][data-active="true"] {
+  border-color: rgba(0, 212, 255, 0.9);
+  color: var(--nebula-cyan);
+  box-shadow: 0 12px 30px rgba(0, 212, 255, 0.25);
+}
+
+.control-button[data-tone="teal"][data-active="true"] {
+  border-color: rgba(0, 255, 198, 0.8);
+  color: var(--nebula-teal);
+  box-shadow: 0 12px 30px rgba(0, 255, 198, 0.25);
+}
+
+.control-button[data-tone="neutral"][data-active="true"] {
+  border-color: rgba(155, 165, 192, 0.7);
+  color: var(--star-white);
+}
+
+.control-button[data-variant="outline"] {
+  background: rgba(14, 16, 33, 0.4);
+}
+
+.control-button[data-size="pill"] {
+  border-radius: 999px;
+  min-height: 38px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}

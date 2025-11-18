@@ -107,7 +107,12 @@ export default function DataTable<T>({
           {enableCondensed && (
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
               {hiddenColumnsCount > 0 && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-cosmic-border/60 bg-space-blue/60 px-3 py-1 text-xs font-mono uppercase tracking-wide text-star-gray">
+                <span
+                  className="control-button" 
+                  data-size="pill"
+                  data-variant="outline"
+                  data-active={isCondensed ? 'true' : undefined}
+                >
                   {isCondensed ? 'Condensed' : 'Full view'}
                   <span className="text-star-white/80">•</span>
                   {isCondensed
@@ -116,24 +121,24 @@ export default function DataTable<T>({
                 </span>
               )}
               <button
+                type="button"
                 onClick={() => setIsCondensed(!isCondensed)}
                 aria-label={isCondensed ? 'Expand table to show all columns' : 'Condense table to show fewer columns'}
-                className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-space-blue/90 to-space-purple/70 border border-nebula-orange/40 text-sm font-semibold text-star-white shadow-[0_8px_20px_rgba(0,0,0,0.45)] transition-all duration-300 hover:shadow-[0_12px_30px_rgba(255,107,53,0.35)] focus:outline-none focus:ring-2 focus:ring-nebula-orange/70 focus:ring-offset-2 focus:ring-offset-space-navy"
+                className="control-button"
+                data-active={!isCondensed}
+                data-tone="orange"
               >
-                <div className="absolute inset-0 rounded-lg opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-br from-nebula-orange/10 to-transparent pointer-events-none" />
-                <div className="relative z-10 flex items-center gap-2">
-                  {isCondensed ? (
-                    <>
-                      <Maximize2 className="w-4 h-4" />
-                      <span>Expand</span>
-                    </>
-                  ) : (
-                    <>
-                      <Minimize2 className="w-4 h-4" />
-                      <span>Condense</span>
-                    </>
-                  )}
-                </div>
+                {isCondensed ? (
+                  <>
+                    <Maximize2 className="w-4 h-4" />
+                    <span>Expand</span>
+                  </>
+                ) : (
+                  <>
+                    <Minimize2 className="w-4 h-4" />
+                    <span>Condense</span>
+                  </>
+                )}
               </button>
             </div>
           )}

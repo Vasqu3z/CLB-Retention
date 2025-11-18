@@ -80,29 +80,31 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
         title="Timeline"
         description="Jump between weeks, filter by club, or collapse the archive."
       >
-        <div className="flex flex-col gap-3 w-full">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-col gap-4 w-full">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1" aria-label="Weeks timeline">
             {weekNumbers.map((week) => (
               <button
                 key={week}
+                type="button"
                 onClick={() => handleTimelineJump(week)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all border whitespace-nowrap ${
-                  focusedWeek === week
-                    ? 'border-nebula-orange text-nebula-orange bg-nebula-orange/10'
-                    : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-orange/40'
-                }`}
+                className="control-button"
+                data-size="pill"
+                data-tone="orange"
+                data-active={focusedWeek === week}
+                aria-pressed={focusedWeek === week}
+                style={{ whiteSpace: 'nowrap' }}
               >
                 Week {week}
               </button>
             ))}
           </div>
-          <div className="flex flex-wrap gap-3 items-center">
-            <label className="flex flex-col text-xs font-mono uppercase tracking-widest text-star-gray/80 gap-1">
-              Team filter
+          <div className="flex flex-wrap gap-3 items-stretch">
+            <div className="control-stack w-full sm:w-auto">
+              <span className="control-label">Team filter</span>
               <select
                 value={teamFilter}
                 onChange={(event) => setTeamFilter(event.target.value)}
-                className="min-w-[200px] rounded-lg border border-cosmic-border bg-space-blue/40 px-3 py-2 text-sm text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange"
+                className="control-input pr-10"
               >
                 <option value="all">All teams</option>
                 {teams.map((team) => (
@@ -111,18 +113,16 @@ export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
             <button
               type="button"
               onClick={() => setShowCompletedOnly((prev) => !prev)}
               aria-pressed={showCompletedOnly}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all border ${
-                showCompletedOnly
-                  ? 'border-nebula-cyan text-nebula-cyan bg-nebula-cyan/10'
-                  : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-cyan/40'
-              }`}
+              className="control-button"
+              data-tone="cyan"
+              data-active={showCompletedOnly}
             >
-              {showCompletedOnly ? 'Completed only' : 'Show upcoming games'}
+              {showCompletedOnly ? 'Completed only' : 'Include upcoming games'}
             </button>
           </div>
         </div>

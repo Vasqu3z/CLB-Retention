@@ -246,18 +246,19 @@ export default function PlayersView({
         title="Data Controls"
         description="Filter by team, lock in qualified leaders, or spotlight playoff rosters."
       >
-        <div className="flex flex-wrap gap-3 items-center">
-          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-          <nav className="flex flex-wrap gap-2" aria-label="Stat groups">
+        <div className="flex flex-wrap gap-3 items-stretch w-full">
+          <div className="flex items-center">
+            <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+          </div>
+          <nav className="flex flex-wrap gap-2 items-center" aria-label="Stat groups">
             {(['hitting', 'pitching', 'fielding'] as Tab[]).map((tab) => (
               <button
                 key={tab}
+                type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-full border text-sm font-semibold uppercase tracking-wide transition-all ${
-                  activeTab === tab
-                    ? 'border-nebula-orange text-nebula-orange bg-nebula-orange/10 shadow-[0_0_20px_rgba(255,107,53,0.35)]'
-                    : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-orange/50'
-                }`}
+                className="control-button"
+                data-tone="orange"
+                data-active={activeTab === tab}
                 aria-pressed={activeTab === tab}
               >
                 {tab}
@@ -265,34 +266,40 @@ export default function PlayersView({
             ))}
           </nav>
         </div>
-        <div className="flex flex-wrap gap-3 items-center w-full">
-          <label className="relative flex-1 min-w-[220px]">
-            <span className="sr-only">Search players</span>
-            <div className="pointer-events-none absolute inset-y-0 left-0 pl-4 flex items-center">
-              <Search className="h-4 w-4 text-star-gray" />
+        <div className="flex flex-wrap gap-3 items-stretch w-full">
+          <div className="control-stack flex-1 min-w-[240px]">
+            <label htmlFor="player-search" className="control-label">
+              Search roster
+            </label>
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                <Search className="h-4 w-4 text-star-gray" />
+              </div>
+              <input
+                id="player-search"
+                type="text"
+                placeholder="Search players by name or team"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="control-input w-full pl-9 pr-16"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-3 text-[10px] font-mono uppercase tracking-[0.3em] text-star-gray hover:text-star-white"
+                >
+                  Clear
+                </button>
+              )}
             </div>
-            <input
-              type="text"
-              placeholder="Search players by name or team"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-space-blue/30 border border-cosmic-border rounded-lg font-mono text-sm text-star-white placeholder-star-gray/50 focus:outline-none focus:ring-2 focus:ring-nebula-orange"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3 text-xs font-mono uppercase tracking-widest text-star-gray hover:text-star-white"
-              >
-                Clear
-              </button>
-            )}
-          </label>
-          <label className="flex flex-col text-xs font-mono uppercase tracking-widest text-star-gray/80 gap-1">
-            Team filter
+          </div>
+          <div className="control-stack w-full sm:w-auto">
+            <span className="control-label">Team filter</span>
             <select
               value={teamFilter}
               onChange={(event) => setTeamFilter(event.target.value)}
-              className="min-w-[180px] rounded-lg border border-cosmic-border bg-space-blue/40 px-3 py-2 text-sm text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange"
+              className="control-input pr-10"
             >
               <option value="all">All teams</option>
               {teams.map((team) => (
@@ -301,17 +308,15 @@ export default function PlayersView({
                 </option>
               ))}
             </select>
-          </label>
+          </div>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setQualifiedOnly((prev) => !prev)}
               aria-pressed={qualifiedOnly}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all border ${
-                qualifiedOnly
-                  ? 'border-nebula-cyan text-nebula-cyan bg-nebula-cyan/10 shadow-[0_0_12px_rgba(0,212,255,0.35)]'
-                  : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-cyan/40'
-              }`}
+              className="control-button"
+              data-tone="cyan"
+              data-active={qualifiedOnly}
             >
               {qualifiedOnly ? 'Qualified only' : 'Show all players'}
             </button>
@@ -319,11 +324,9 @@ export default function PlayersView({
               type="button"
               onClick={() => setSpotlightPlayoffTeams((prev) => !prev)}
               aria-pressed={spotlightPlayoffTeams}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all border ${
-                spotlightPlayoffTeams
-                  ? 'border-nebula-teal text-nebula-teal bg-nebula-teal/10 shadow-[0_0_12px_rgba(0,255,198,0.35)]'
-                  : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-teal/40'
-              }`}
+              className="control-button"
+              data-tone="teal"
+              data-active={spotlightPlayoffTeams}
             >
               {spotlightPlayoffTeams ? 'Playoff teams highlighted' : 'Highlight playoff teams'}
             </button>

@@ -270,18 +270,19 @@ export default function TeamStatsView({
         title="Control Deck"
         description="Pin the season, focus on a single club, or light up the playoff seeds."
       >
-        <div className="flex flex-wrap gap-3 items-center">
-          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-          <nav className="flex flex-wrap gap-2" aria-label="Stat groups">
+        <div className="flex flex-wrap gap-3 items-stretch w-full">
+          <div className="flex items-center">
+            <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+          </div>
+          <nav className="flex flex-wrap gap-2 items-center" aria-label="Stat groups">
             {(['hitting', 'pitching', 'fielding'] as Tab[]).map((tab) => (
               <button
                 key={tab}
+                type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-full border text-sm font-semibold uppercase tracking-wide transition-all ${
-                  activeTab === tab
-                    ? 'border-nebula-orange text-nebula-orange bg-nebula-orange/10 shadow-[0_0_20px_rgba(255,107,53,0.35)]'
-                    : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-orange/50'
-                }`}
+                className="control-button"
+                data-tone="orange"
+                data-active={activeTab === tab}
                 aria-pressed={activeTab === tab}
               >
                 {tab}
@@ -289,13 +290,13 @@ export default function TeamStatsView({
             ))}
           </nav>
         </div>
-        <div className="flex flex-wrap gap-3 items-center w-full">
-          <label className="flex flex-col text-xs font-mono uppercase tracking-widest text-star-gray/80 gap-1">
-            Team focus
+        <div className="flex flex-wrap gap-3 items-stretch w-full">
+          <div className="control-stack w-full sm:w-auto">
+            <span className="control-label">Team focus</span>
             <select
               value={teamFilter}
               onChange={(event) => setTeamFilter(event.target.value)}
-              className="min-w-[220px] rounded-lg border border-cosmic-border bg-space-blue/40 px-3 py-2 text-sm text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange"
+              className="control-input pr-10"
             >
               <option value="all">All teams</option>
               {teams.map((team) => (
@@ -304,16 +305,14 @@ export default function TeamStatsView({
                 </option>
               ))}
             </select>
-          </label>
+          </div>
           <button
             type="button"
             onClick={() => setHighlightSeeds((prev) => !prev)}
             aria-pressed={highlightSeeds}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${
-              highlightSeeds
-                ? 'border-nebula-teal text-nebula-teal bg-nebula-teal/10 shadow-[0_0_12px_rgba(0,255,198,0.35)]'
-                : 'border-cosmic-border/70 text-star-gray hover:text-star-white hover:border-nebula-teal/40'
-            }`}
+            className="control-button"
+            data-tone="teal"
+            data-active={highlightSeeds}
           >
             {highlightSeeds ? 'Playoff seeds highlighted' : 'Highlight playoff seeds'}
           </button>

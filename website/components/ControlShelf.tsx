@@ -23,7 +23,7 @@ export default function ControlShelf({ title, description, children, className }
           )}
         </header>
       )}
-      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
+      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-stretch">
         {children}
       </div>
     </section>

@@ -6,11 +6,40 @@ import StandingsTable from "./StandingsTable";
 import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import Image from "next/image";
+import EmptyState from "@/components/EmptyState";
 
 export const revalidate = 60;
 
 export default async function StandingsPage() {
   const standings = await getStandings();
+
+  const headerSection = (
+    <FadeIn delay={0} direction="down">
+      <div>
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+          League Standings
+        </h1>
+        <p className="text-star-gray font-mono text-shadow">
+          Regular Season • Updated in real-time
+        </p>
+      </div>
+    </FadeIn>
+  );
+
+  if (standings.length === 0) {
+    return (
+      <div className="space-y-8">
+        {headerSection}
+        <FadeIn delay={0.15} direction="up">
+          <EmptyState
+            icon="database"
+            title="Standings unavailable"
+            message="We couldn't load the current standings. Check back soon once the league hub syncs again."
+          />
+        </FadeIn>
+      </div>
+    );
+  }
 
   // Enhance standings with team info for stat card calculations
   const enhancedStandings = standings.map((team) => {
@@ -28,51 +57,47 @@ export default async function StandingsPage() {
   });
 
   // Calculate stats for stat cards
-  const topTeam = enhancedStandings[0];
-  const totalGames = enhancedStandings.reduce((sum, t) => sum + t.wins + t.losses, 0) / 2; // Divide by 2 since each game involves 2 teams
-
-  // Highest Runs/Game team
-  const teamsWithGames = enhancedStandings.map(t => {
+  const topTeam = enhancedStandings[0] ?? null;
+  const teamsWithGames = enhancedStandings.map((t) => {
     const gamesPlayed = t.wins + t.losses;
+    const runsPerGame = gamesPlayed > 0 ? t.runsScored / gamesPlayed : 0;
+    const runsAllowedPerGame = gamesPlayed > 0 ? t.runsAllowed / gamesPlayed : Number.POSITIVE_INFINITY;
     return {
       ...t,
       gamesPlayed,
-      runsPerGame: gamesPlayed > 0 ? t.runsScored / gamesPlayed : 0,
+      runsPerGame,
+      runsAllowedPerGame,
     };
   });
-  const highestRunsPerGameTeam = teamsWithGames.reduce((max, t) =>
-    t.runsPerGame > max.runsPerGame ? t : max
-  );
+  const totalGames = teamsWithGames.reduce((sum, t) => sum + t.gamesPlayed, 0) / 2; // Divide by 2 since each game involves 2 teams
 
-  // Lowest ERA team (Runs Allowed / Games)
-  const lowestERATeam = teamsWithGames.reduce((min, t) => {
-    const era = t.gamesPlayed > 0 ? t.runsAllowed / t.gamesPlayed : 999;
-    const minEra = min.gamesPlayed > 0 ? min.runsAllowed / min.gamesPlayed : 999;
-    return era < minEra ? t : min;
-  });
+  const highestRunsPerGameTeam = teamsWithGames.reduce<typeof teamsWithGames[number] | null>((max, team) => {
+    if (!max || team.runsPerGame > max.runsPerGame) {
+      return team;
+    }
+    return max;
+  }, null);
+
+  const lowestERATeam = teamsWithGames.reduce<typeof teamsWithGames[number] | null>((min, team) => {
+    if (!min || team.runsAllowedPerGame < min.runsAllowedPerGame) {
+      return team;
+    }
+    return min;
+  }, null);
 
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <FadeIn delay={0} direction="down">
-        <div>
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-            League Standings
-          </h1>
-          <p className="text-star-gray font-mono text-shadow">
-            Regular Season • Updated in real-time
-          </p>
-        </div>
-      </FadeIn>
+      {headerSection}
 
       {/* Stat Cards */}
       <FadeIn delay={0.15} direction="up">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="League Leader"
-            value={`${topTeam?.wins}-${topTeam?.losses}`}
+            value={topTeam ? `${topTeam.wins}-${topTeam.losses}` : '—'}
             icon={Trophy}
-            sublabel={`Win %: ${topTeam?.winPct}`}
+            sublabel={topTeam ? `Win %: ${topTeam.winPct}` : 'Win %: —'}
             color="orange"
           >
             {topTeam?.fullLogoPath && (
@@ -112,7 +137,7 @@ export default async function StandingsPage() {
 
           <StatCard
             label="Highest Scoring"
-            value={highestRunsPerGameTeam.runsPerGame.toFixed(2)}
+            value={highestRunsPerGameTeam ? highestRunsPerGameTeam.runsPerGame.toFixed(2) : '0.00'}
             icon={TrendingUp}
             sublabel="Runs scored per game"
             color="cyan"
@@ -134,7 +159,13 @@ export default async function StandingsPage() {
 
           <StatCard
             label="Lowest ERA"
-            value={(lowestERATeam.gamesPlayed > 0 ? lowestERATeam.runsAllowed / lowestERATeam.gamesPlayed : 0).toFixed(2)}
+            value={
+              lowestERATeam
+                ? (lowestERATeam.runsAllowedPerGame === Number.POSITIVE_INFINITY
+                    ? '0.00'
+                    : lowestERATeam.runsAllowedPerGame.toFixed(2))
+                : '0.00'
+            }
             icon={TrendingDown}
             sublabel="Runs allowed per game"
             color="teal"

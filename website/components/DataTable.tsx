@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import EmptyState from './EmptyState';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
@@ -45,47 +45,52 @@ export default function DataTable<T>({
   const scrollContainerRef = useLenisScrollLock<HTMLDivElement>();
 
   // Filter columns based on condensed mode
-  const visibleColumns = isCondensed
-    ? columns.filter(col => !col.condensed)
-    : columns;
+  const visibleColumns = useMemo(
+    () => (isCondensed ? columns.filter(col => !col.condensed) : columns),
+    [columns, isCondensed]
+  );
 
   // Handle column sort
-  const handleSort = (key: string) => {
-    if (sortKey === key) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDirection('desc');
-    }
-  };
+  const handleSort = useCallback(
+    (key: string) => {
+      if (sortKey === key) {
+        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      } else {
+        setSortKey(key);
+        setSortDirection('desc');
+      }
+    },
+    [sortDirection, sortKey]
+  );
 
   // Helper function to get nested property value
-  const getNestedValue = (obj: any, path: string) => {
+  const getNestedValue = useCallback((obj: any, path: string) => {
     return path.split('.').reduce((current, key) => current?.[key], obj);
-  };
+  }, []);
 
   // Sort data
-  const sortedData = sortKey
-    ? [...data].sort((a, b) => {
-        const aVal = getNestedValue(a, sortKey);
-        const bVal = getNestedValue(b, sortKey);
+  const sortedData = useMemo(() => {
+    if (!sortKey) {
+      return data;
+    }
 
-        // Handle numbers
-        if (typeof aVal === 'number' && typeof bVal === 'number') {
-          return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-        }
+    return [...data].sort((a, b) => {
+      const aVal = getNestedValue(a, sortKey);
+      const bVal = getNestedValue(b, sortKey);
 
-        // Handle strings
-        const aStr = String(aVal || '');
-        const bStr = String(bVal || '');
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+      }
 
-        if (sortDirection === 'asc') {
-          return aStr.localeCompare(bStr, undefined, { numeric: true });
-        } else {
-          return bStr.localeCompare(aStr, undefined, { numeric: true });
-        }
-      })
-    : data;
+      const aStr = String(aVal || '');
+      const bStr = String(bVal || '');
+
+      if (sortDirection === 'asc') {
+        return aStr.localeCompare(bStr, undefined, { numeric: true });
+      }
+      return bStr.localeCompare(aStr, undefined, { numeric: true });
+    });
+  }, [data, getNestedValue, sortDirection, sortKey]);
 
   return (
     <div className="space-y-4">

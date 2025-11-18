@@ -68,17 +68,39 @@ async function getSheetDataUncached(range: string, spreadsheetId?: string): Prom
   }
 }
 
-// Cached version with 60-second revalidation
-export const getSheetData = unstable_cache(
-  async (range: string, spreadsheetId?: string) => {
-    return getSheetDataUncached(range, spreadsheetId);
-  },
-  ['sheet-data'],
-  {
-    revalidate: 60, // Cache for 60 seconds
-    tags: ['sheets'],
+type SheetCacheOptions = {
+  revalidate?: number;
+  tag?: string;
+};
+
+const sheetCacheMap = new Map<string, () => Promise<any[][]>>();
+
+export function getSheetData(
+  range: string,
+  spreadsheetId?: string,
+  options?: SheetCacheOptions
+) {
+  const revalidate = options?.revalidate ?? 300;
+  const tag = options?.tag ?? `sheet:${range}`;
+  const cacheKey = `${spreadsheetId || 'default'}:${range}:${revalidate}:${tag}`;
+
+  if (!sheetCacheMap.has(cacheKey)) {
+    sheetCacheMap.set(
+      cacheKey,
+      unstable_cache(
+        async () => getSheetDataUncached(range, spreadsheetId),
+        ['sheet-data', cacheKey],
+        {
+          revalidate,
+          tags: [tag],
+        }
+      )
+    );
   }
-);
+
+  const fetcher = sheetCacheMap.get(cacheKey)!;
+  return fetcher();
+}
 
 // ===== STANDINGS =====
 export interface StandingsRow {
@@ -116,7 +138,10 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
       STANDINGS_SHEET.START_COL,
       STANDINGS_SHEET.END_COL
     );
-    const data = await getSheetData(range);
+    const data = await getSheetData(range, undefined, {
+      revalidate: 300,
+      tag: 'standings',
+    });
 
     // Also fetch cell notes for H2H records (column B = team names)
     const auth = await getAuthClient();
@@ -213,7 +238,10 @@ export async function getTeamRoster(teamName: string, isPlayoffs: boolean = fals
       PLAYER_STATS_SHEET.START_COL,
       PLAYER_STATS_SHEET.END_COL
     );
-    const playerData = await getSheetData(range);
+    const playerData = await getSheetData(range, undefined, {
+      revalidate: 300,
+      tag: `players:team:${isPlayoffs ? 'playoffs' : 'regular'}`,
+    });
 
     return parsePlayerStats(playerData, teamName);
   } catch (error) {
@@ -351,7 +379,10 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
     SCHEDULE_SHEET.START_COL,
     SCHEDULE_SHEET.END_COL
   );
-  const scheduleData = await getSheetData(range);
+  const scheduleData = await getSheetData(range, undefined, {
+    revalidate: 180,
+    tag: 'schedule:regular',
+  });
 
   const schedule: ScheduleGame[] = [];
 
@@ -431,7 +462,10 @@ export async function getPlayoffSchedule(): Promise<PlayoffGame[]> {
     SCHEDULE_SHEET.START_COL,
     SCHEDULE_SHEET.END_COL
   );
-  const scheduleData = await getSheetData(range);
+  const scheduleData = await getSheetData(range, undefined, {
+    revalidate: 180,
+    tag: 'schedule:playoffs',
+  });
 
   const schedule: PlayoffGame[] = [];
 
@@ -673,7 +707,10 @@ export async function getTeamData(teamName?: string, isPlayoffs: boolean = false
       TEAM_STATS_SHEET.START_COL,
       TEAM_STATS_SHEET.END_COL
     );
-    const data = await getSheetData(range);
+    const data = await getSheetData(range, undefined, {
+      revalidate: 300,
+      tag: `team-stats:${isPlayoffs ? 'playoffs' : 'regular'}`,
+    });
 
     const teamDataList = data
       .filter((row) => row[TEAM_STATS_SHEET.COLUMNS.NAME] && String(row[TEAM_STATS_SHEET.COLUMNS.NAME]).trim() !== '')
@@ -751,7 +788,10 @@ export async function getAllPlayers(isPlayoffs: boolean = false): Promise<Player
       PLAYER_STATS_SHEET.START_COL,
       PLAYER_STATS_SHEET.END_COL
     );
-    const playerData = await getSheetData(range);
+    const playerData = await getSheetData(range, undefined, {
+      revalidate: 300,
+      tag: `players:all:${isPlayoffs ? 'playoffs' : 'regular'}`,
+    });
     return parsePlayerStats(playerData);
   } catch (error) {
     console.error(`Error fetching all players (isPlayoffs=${isPlayoffs}):`, error);
@@ -1111,7 +1151,10 @@ export async function getPlayerRegistry(): Promise<PlayerRegistryEntry[]> {
       PLAYER_REGISTRY_SHEET.START_COL,
       PLAYER_REGISTRY_SHEET.END_COL
     );
-    const data = await getSheetData(range);
+    const data = await getSheetData(range, undefined, {
+      revalidate: 600,
+      tag: 'registry:players',
+    });
 
     return data
       .filter((row) => row[PLAYER_REGISTRY_SHEET.COLUMNS.PLAYER_NAME])
@@ -1154,7 +1197,10 @@ export async function getTeamRegistry(): Promise<TeamRegistryEntry[]> {
       TEAM_REGISTRY_SHEET.START_COL,
       TEAM_REGISTRY_SHEET.END_COL
     );
-    const data = await getSheetData(range);
+    const data = await getSheetData(range, undefined, {
+      revalidate: 600,
+      tag: 'registry:teams',
+    });
 
     return data
       .filter((row) => row[TEAM_REGISTRY_SHEET.COLUMNS.TEAM_NAME])
@@ -1329,7 +1375,10 @@ export async function getPlayerAttributes(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const attributeData = await getSheetData(range, dbId);
+    const attributeData = await getSheetData(range, dbId, {
+      revalidate: 900,
+      tag: 'attributes:players',
+    });
 
     const players = parsePlayerAttributes(attributeData, playerName);
     return players.length > 0 ? players[0] : null;
@@ -1358,7 +1407,10 @@ export async function getAllPlayerAttributes(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const attributeData = await getSheetData(range, dbId);
+    const attributeData = await getSheetData(range, dbId, {
+      revalidate: 900,
+      tag: 'attributes:players',
+    });
 
     return parsePlayerAttributes(attributeData);
   } catch (error) {
@@ -1434,7 +1486,10 @@ export async function getChemistryMatrix(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const lookupData = await getSheetData(range, dbId);
+    const lookupData = await getSheetData(range, dbId, {
+      revalidate: 900,
+      tag: 'chemistry',
+    });
 
     return buildChemistryMatrix(lookupData);
   } catch (error) {

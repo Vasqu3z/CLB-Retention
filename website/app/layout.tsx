@@ -1,11 +1,56 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+import {
+  Azeret_Mono,
+  Chakra_Petch,
+  JetBrains_Mono,
+  Orbitron,
+} from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
-import SmoothScroll from "@/components/SmoothScroll";
-import AnimatedBackground from "@/components/AnimatedBackground";
+
+const SmoothScroll = dynamic(() => import("@/components/SmoothScroll"), {
+  ssr: false,
+});
+
+const AnimatedBackground = dynamic(
+  () => import("@/components/AnimatedBackground"),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
+
+const headingFont = Chakra_Petch({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-heading",
+});
+
+const bodyFont = Azeret_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  display: "swap",
+  variable: "--font-body",
+});
+
+const monoFont = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-mono",
+});
+
+const statFont = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-stat",
+});
 
 export const metadata: Metadata = {
   title: "Comets League Baseball | CLB Stats",
@@ -22,7 +67,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`
+        ${headingFont.variable}
+        ${bodyFont.variable}
+        ${monoFont.variable}
+        ${statFont.variable}
+      `}
+    >
       <body className="min-h-screen flex flex-col">
         <AnimatedBackground />
         <SmoothScroll />

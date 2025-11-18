@@ -1,14 +1,6 @@
 // ===== PLAYER CHEMISTRY TOOL (JSON-BASED, MULTI-PLAYER) =====
 // Display chemistry for up to 5 selected players for comparison
 
-function showPlayerChemistry() {
-  var html = HtmlService.createHtmlOutputFromFile('DatabaseChemistryApp')
-    .setWidth(1100)
-    .setHeight(750)
-    .setTitle('Player Chemistry Tool');
-  SpreadsheetApp.getUi().showModalDialog(html, 'Player Chemistry Tool');
-}
-
 /**
  * Get all available players from JSON cache
  */

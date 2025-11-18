@@ -4,8 +4,54 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
-import SmoothScroll from "@/components/SmoothScroll";
-import AnimatedBackground from "@/components/AnimatedBackground";
+import NextDynamic from "next/dynamic";
+import {
+  Azeret_Mono,
+  Chakra_Petch,
+  JetBrains_Mono,
+  Orbitron,
+} from "next/font/google";
+
+const headingFont = Chakra_Petch({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const bodyFont = Azeret_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const monoFont = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const statFont = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-stat",
+  display: "swap",
+});
+
+const SmoothScroll = NextDynamic(() => import("@/components/SmoothScroll"), {
+  ssr: false,
+  loading: () => null,
+});
+
+const AnimatedBackground = NextDynamic(
+  () => import("@/components/AnimatedBackground"),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 export const metadata: Metadata = {
   title: "Comets League Baseball | CLB Stats",
@@ -21,9 +67,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const fontVariables = `${headingFont.variable} ${bodyFont.variable} ${monoFont.variable} ${statFont.variable}`;
+
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col">
+      <body className={`${fontVariables} min-h-screen flex flex-col`}>
         <AnimatedBackground />
         <SmoothScroll />
         <Header />

@@ -1,18 +1,40 @@
-import { getTeamData, getStandings } from '@/lib/sheets';
+import { getTeamData, getStandings, getPlayoffSchedule } from '@/lib/sheets';
 import TeamStatsView from './TeamStatsView';
 import FadeIn from "@/components/animations/FadeIn";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
+function buildRunsMapFromStandings(standings: Awaited<ReturnType<typeof getStandings>>) {
+  return standings.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.team] = entry.runsScored || 0;
+    return acc;
+  }, {});
+}
+
+function buildRunsMapFromPlayoffs(games: Awaited<ReturnType<typeof getPlayoffSchedule>>) {
+  return games.reduce<Record<string, number>>((acc, game) => {
+    if (!game.played || game.homeScore === undefined || game.awayScore === undefined) {
+      return acc;
+    }
+
+    acc[game.homeTeam] = (acc[game.homeTeam] || 0) + (game.homeScore || 0);
+    acc[game.awayTeam] = (acc[game.awayTeam] || 0) + (game.awayScore || 0);
+    return acc;
+  }, {});
+}
+
 export default async function TeamsPage() {
   // Fetch both regular season and playoff data
-  const [regularTeamData, regularStandings, playoffTeamData, playoffStandings] = await Promise.all([
+  const [regularTeamData, regularStandings, playoffTeamData, playoffSchedule] = await Promise.all([
     getTeamData(undefined, false),
     getStandings(false),
     getTeamData(undefined, true),
-    getStandings(true),
+    getPlayoffSchedule(),
   ]);
+
+  const regularRunsByTeam = buildRunsMapFromStandings(regularStandings);
+  const playoffRunsByTeam = buildRunsMapFromPlayoffs(playoffSchedule);
 
   return (
     <div className="space-y-8">
@@ -31,9 +53,9 @@ export default async function TeamsPage() {
       <FadeIn delay={0.15} direction="up">
         <TeamStatsView
           regularTeamData={regularTeamData}
-          regularStandings={regularStandings}
           playoffTeamData={playoffTeamData}
-          playoffStandings={playoffStandings}
+          regularRunsByTeam={regularRunsByTeam}
+          playoffRunsByTeam={playoffRunsByTeam}
         />
       </FadeIn>
     </div>

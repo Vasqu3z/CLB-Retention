@@ -40,10 +40,10 @@ const config: Config = {
         warning: 'var(--warning)',
       },
       fontFamily: {
-        'display': ['Chakra Petch', 'sans-serif'],
-        'body': ['Azeret Mono', 'monospace'],
-        'mono': ['JetBrains Mono', 'monospace'],
-        'stat': ['Orbitron', 'sans-serif'],
+        'display': ['var(--font-display)', 'Chakra Petch', 'sans-serif'],
+        'body': ['var(--font-body)', 'Azeret Mono', 'monospace'],
+        'mono': ['var(--font-mono)', 'JetBrains Mono', 'monospace'],
+        'stat': ['var(--font-stat)', 'Orbitron', 'sans-serif'],
       },
       backdropBlur: {
         'glass': '10px',

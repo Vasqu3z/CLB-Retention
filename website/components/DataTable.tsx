@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import EmptyState from './EmptyState';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
@@ -44,20 +44,29 @@ export default function DataTable<T>({
   const [isCondensed, setIsCondensed] = useState(true);
   const scrollContainerRef = useLenisScrollLock<HTMLDivElement>();
 
+  const hiddenColumnsCount = useMemo(
+    () => columns.filter((col) => col.condensed).length,
+    [columns]
+  );
+
   // Filter columns based on condensed mode
-  const visibleColumns = isCondensed
-    ? columns.filter(col => !col.condensed)
-    : columns;
+  const visibleColumns = useMemo(
+    () => (isCondensed ? columns.filter((col) => !col.condensed) : columns),
+    [columns, isCondensed]
+  );
 
   // Handle column sort
-  const handleSort = (key: string) => {
-    if (sortKey === key) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
+  const handleSort = useCallback((key: string) => {
+    setSortKey((previousKey) => {
+      if (previousKey === key) {
+        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+        return previousKey;
+      }
+
       setSortDirection('desc');
-    }
-  };
+      return key;
+    });
+  }, []);
 
   // Helper function to get nested property value
   const getNestedValue = (obj: any, path: string) => {
@@ -65,27 +74,29 @@ export default function DataTable<T>({
   };
 
   // Sort data
-  const sortedData = sortKey
-    ? [...data].sort((a, b) => {
-        const aVal = getNestedValue(a, sortKey);
-        const bVal = getNestedValue(b, sortKey);
+  const sortedData = useMemo(() => {
+    if (!sortKey) {
+      return data;
+    }
 
-        // Handle numbers
-        if (typeof aVal === 'number' && typeof bVal === 'number') {
-          return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-        }
+    return [...data].sort((a, b) => {
+      const aVal = getNestedValue(a, sortKey);
+      const bVal = getNestedValue(b, sortKey);
 
-        // Handle strings
-        const aStr = String(aVal || '');
-        const bStr = String(bVal || '');
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+      }
 
-        if (sortDirection === 'asc') {
-          return aStr.localeCompare(bStr, undefined, { numeric: true });
-        } else {
-          return bStr.localeCompare(aStr, undefined, { numeric: true });
-        }
-      })
-    : data;
+      const aStr = String(aVal ?? '');
+      const bStr = String(bVal ?? '');
+
+      if (sortDirection === 'asc') {
+        return aStr.localeCompare(bStr, undefined, { numeric: true });
+      }
+
+      return bStr.localeCompare(aStr, undefined, { numeric: true });
+    });
+  }, [data, sortDirection, sortKey]);
 
   return (
     <div className="space-y-4">
@@ -101,7 +112,11 @@ export default function DataTable<T>({
           {enableCondensed && (
             <button
               onClick={() => setIsCondensed(!isCondensed)}
-              aria-label={isCondensed ? 'Expand table to show all columns' : 'Condense table to show fewer columns'}
+              aria-label={
+                isCondensed
+                  ? `Expand table to show ${hiddenColumnsCount} hidden column${hiddenColumnsCount === 1 ? '' : 's'}`
+                  : 'Condense table to hide optional columns'
+              }
               className="relative flex items-center gap-2 px-3 py-2 rounded-lg bg-space-blue/50 border border-cosmic-border hover:border-nebula-orange/50 hover:shadow-[0_0_12px_rgba(255,107,53,0.3)] transition-all duration-300 text-sm text-star-gray hover:text-star-white focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
             >
               {/* Subtle glow effect */}

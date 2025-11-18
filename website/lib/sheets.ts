@@ -80,6 +80,17 @@ export const getSheetData = unstable_cache(
   }
 );
 
+function createCachedFetcher<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  key: string,
+  options: { revalidate?: number; tags?: string[] } = {}
+) {
+  return unstable_cache(fn, [key], {
+    revalidate: options.revalidate ?? 120,
+    tags: options.tags ?? [key],
+  });
+}
+
 // ===== STANDINGS =====
 export interface StandingsRow {
   rank: string;
@@ -98,7 +109,7 @@ export interface StandingsRow {
  * @param isPlayoffs - If true, returns empty array (playoffs use bracket system instead)
  * @returns Array of team standings sorted by rank with optional H2H tooltips
  */
-export async function getStandings(isPlayoffs: boolean = false): Promise<StandingsRow[]> {
+async function fetchStandings(isPlayoffs: boolean = false): Promise<StandingsRow[]> {
   // Playoffs don't have standings - they use a bracket system
   if (isPlayoffs) {
     return [];
@@ -167,6 +178,11 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
     return [];
   }
 }
+
+export const getStandings = createCachedFetcher(fetchStandings, 'standings', {
+  revalidate: 120,
+  tags: ['standings'],
+});
 
 // ===== TEAM ROSTER =====
 export interface PlayerStats {
@@ -342,7 +358,7 @@ export interface ScheduleGame {
   savePitcher?: string;
 }
 
-export async function getSchedule(): Promise<ScheduleGame[]> {
+async function fetchSchedule(): Promise<ScheduleGame[]> {
   // Read from "📅 Schedule" sheet - includes game results in columns D-L
   const range = buildFullRange(
     SCHEDULE_SHEET.REGULAR_SEASON,
@@ -406,6 +422,11 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
   return schedule;
 }
 
+export const getSchedule = createCachedFetcher(fetchSchedule, 'schedule', {
+  revalidate: 180,
+  tags: ['schedule'],
+});
+
 // ===== PLAYOFF SCHEDULE =====
 export interface PlayoffGame {
   code: string; // Q1, S1-A, F2, etc.
@@ -422,7 +443,7 @@ export interface PlayoffGame {
   savePitcher?: string;
 }
 
-export async function getPlayoffSchedule(): Promise<PlayoffGame[]> {
+async function fetchPlayoffSchedule(): Promise<PlayoffGame[]> {
   // Read from "🏆 Schedule" sheet - identical structure to regular schedule
   const range = buildFullRange(
     SCHEDULE_SHEET.PLAYOFFS,
@@ -485,6 +506,11 @@ export async function getPlayoffSchedule(): Promise<PlayoffGame[]> {
 
   return schedule;
 }
+
+export const getPlayoffSchedule = createCachedFetcher(fetchPlayoffSchedule, 'playoff-schedule', {
+  revalidate: 300,
+  tags: ['playoff-schedule'],
+});
 
 // ===== PLAYOFF BRACKET BUILDER =====
 export interface SeriesResult {
@@ -662,7 +688,7 @@ export interface TeamData {
   };
 }
 
-export async function getTeamData(teamName?: string, isPlayoffs: boolean = false): Promise<TeamData[]> {
+async function fetchTeamData(teamName?: string, isPlayoffs: boolean = false): Promise<TeamData[]> {
   try {
     // Read from team stats sheet
     const sheetName = isPlayoffs ? TEAM_STATS_SHEET.PLAYOFFS : TEAM_STATS_SHEET.REGULAR_SEASON;
@@ -725,6 +751,11 @@ export async function getTeamData(teamName?: string, isPlayoffs: boolean = false
   }
 }
 
+export const getTeamData = createCachedFetcher(fetchTeamData, 'team-data', {
+  revalidate: 300,
+  tags: ['team-data'],
+});
+
 // ===== LEAGUE LEADERS (calculated from Player Data) =====
 export interface LeaderEntry {
   rank: string;
@@ -740,7 +771,7 @@ export interface LeaderEntry {
  * @param isPlayoffs - If true, reads from playoff sheet; otherwise regular season
  * @returns Array of all PlayerStats objects with calculated rate stats
  */
-export async function getAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]> {
+async function fetchAllPlayers(isPlayoffs: boolean = false): Promise<PlayerStats[]> {
   try {
     // Read all players from player stats sheet (not filtered by team)
     const sheetName = isPlayoffs ? PLAYER_STATS_SHEET.PLAYOFFS : PLAYER_STATS_SHEET.REGULAR_SEASON;
@@ -759,6 +790,11 @@ export async function getAllPlayers(isPlayoffs: boolean = false): Promise<Player
     return [];
   }
 }
+
+export const getAllPlayers = createCachedFetcher(fetchAllPlayers, 'all-players', {
+  revalidate: 180,
+  tags: ['players'],
+});
 
 /**
  * Calculates the average games played across all teams

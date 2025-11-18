@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { TeamData, StandingsRow } from '@/lib/sheets';
+import { useMemo, useState } from 'react';
+import { TeamData } from '@/lib/sheets';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getActiveTeams } from '@/config/league';
@@ -13,9 +13,9 @@ type Tab = 'hitting' | 'pitching' | 'fielding';
 
 interface TeamStatsViewProps {
   regularTeamData: TeamData[];
-  regularStandings: StandingsRow[];
   playoffTeamData: TeamData[];
-  playoffStandings: StandingsRow[];
+  regularRunsByTeam: Record<string, number>;
+  playoffRunsByTeam: Record<string, number>;
 }
 
 interface EnhancedTeam extends TeamData {
@@ -34,82 +34,79 @@ interface EnhancedTeam extends TeamData {
   emblemPath?: string;
 }
 
+const formatRateStat = (value: number | null | undefined) => {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return '.000';
+  }
+
+  const clamped = value < 0 ? 0 : value;
+  const fixed = clamped.toFixed(3);
+  return clamped >= 1 ? fixed : fixed.substring(1);
+};
+
 export default function TeamStatsView({
   regularTeamData,
-  regularStandings,
   playoffTeamData,
-  playoffStandings
+  regularRunsByTeam,
+  playoffRunsByTeam
 }: TeamStatsViewProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('hitting');
 
   // Use appropriate data based on toggle
   const teamData = isPlayoffs ? playoffTeamData : regularTeamData;
-  const standings = isPlayoffs ? playoffStandings : regularStandings;
+  const runsByTeam = isPlayoffs ? playoffRunsByTeam : regularRunsByTeam;
 
-  const teams = getActiveTeams();
-
-  // Helper to get team color
-  const getTeamColor = (teamName: string) => {
-    const team = teams.find(t => t.name === teamName);
-    return team?.primaryColor || '#000000';
-  };
-
-  // Helper to get team slug
-  const getTeamSlug = (teamName: string) => {
-    const team = teams.find(t => t.name === teamName);
-    return team?.slug || '';
-  };
+  const teams = useMemo(() => getActiveTeams(), []);
 
   // Calculate derived stats and prepare data (filter to active teams only)
-  const activeTeamNames = teams.map(t => t.name);
-  const enhancedTeamData: EnhancedTeam[] = teamData
-    .filter(team => activeTeamNames.includes(team.teamName))
-    .map(team => {
-      // Get runs scored from standings
-      const standingsEntry = standings.find(s => s.team === team.teamName);
-      const runsScored = standingsEntry?.runsScored || 0;
+  const activeTeamNames = useMemo(() => teams.map((t) => t.name), [teams]);
+  const enhancedTeamData: EnhancedTeam[] = useMemo(() => {
+    return teamData
+      .filter(team => activeTeamNames.includes(team.teamName))
+      .map(team => {
+        const runsScored = runsByTeam[team.teamName] || 0;
 
-    // Calculate rate stats
-    const avg = team.hitting.ab > 0 ? (team.hitting.h / team.hitting.ab).toFixed(3).substring(1) : '.000';
-    const obp = (team.hitting.ab + team.hitting.bb) > 0
-      ? ((team.hitting.h + team.hitting.bb) / (team.hitting.ab + team.hitting.bb)).toFixed(3).substring(1)
-      : '.000';
-    const slg = team.hitting.ab > 0 ? (team.hitting.tb / team.hitting.ab).toFixed(3).substring(1) : '.000';
-    const ops = team.hitting.ab > 0 && (team.hitting.ab + team.hitting.bb) > 0
-      ? ((team.hitting.h + team.hitting.bb) / (team.hitting.ab + team.hitting.bb) +
-         team.hitting.tb / team.hitting.ab).toFixed(3)
-      : '0.000';
+        // Calculate rate stats
+      const avg = formatRateStat(team.hitting.ab > 0 ? team.hitting.h / team.hitting.ab : 0);
+      const obpDenominator = team.hitting.ab + team.hitting.bb;
+      const obp = formatRateStat(obpDenominator > 0 ? (team.hitting.h + team.hitting.bb) / obpDenominator : 0);
+      const slg = formatRateStat(team.hitting.ab > 0 ? team.hitting.tb / team.hitting.ab : 0);
+      const ops = team.hitting.ab > 0 && obpDenominator > 0
+        ? ((team.hitting.h + team.hitting.bb) / obpDenominator +
+            team.hitting.tb / team.hitting.ab).toFixed(3)
+        : '0.000';
 
-    const era = team.pitching.ip > 0 ? ((team.pitching.r * 9) / team.pitching.ip).toFixed(2) : '0.00';
-    const whip = team.pitching.ip > 0 ? ((team.pitching.h + team.pitching.bb) / team.pitching.ip).toFixed(2) : '0.00';
-    const baa = team.pitching.bf > 0 ? (team.pitching.h / team.pitching.bf).toFixed(3).substring(1) : '.000';
+      const era = team.pitching.ip > 0 ? ((team.pitching.r * 9) / team.pitching.ip).toFixed(2) : '0.00';
+      const whip = team.pitching.ip > 0 ? ((team.pitching.h + team.pitching.bb) / team.pitching.ip).toFixed(2) : '0.00';
+      const baa = formatRateStat(team.pitching.bf > 0 ? team.pitching.h / team.pitching.bf : 0);
 
-    // New derived stats
-    const rGame = team.gp > 0 ? (runsScored / team.gp).toFixed(2) : '0.00'; // Runs scored per game
-    const oaa = team.fielding.np - team.fielding.e; // Outs Above Average
-    const der = team.gp > 0 ? (oaa / team.gp).toFixed(2) : '0.00'; // Defensive Efficiency Rating (OAA/Game)
+      // New derived stats
+      const rGame = team.gp > 0 ? (runsScored / team.gp).toFixed(2) : '0.00'; // Runs scored per game
+      const oaa = team.fielding.np - team.fielding.e; // Outs Above Average
+      const der = team.gp > 0 ? (oaa / team.gp).toFixed(2) : '0.00'; // Defensive Efficiency Rating (OAA/Game)
 
-    const teamConfig = teams.find(t => t.name === team.teamName);
-    const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
+      const teamConfig = teams.find(t => t.name === team.teamName);
+      const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
 
-    return {
-      ...team,
-      avg,
-      obp,
-      slg,
-      ops,
-      era,
-      whip,
-      baa,
-      rGame,
-      oaa,
-      der,
-      color: getTeamColor(team.teamName),
-      slug: getTeamSlug(team.teamName),
-      emblemPath: logos?.emblem,
-    };
-  });
+        return {
+          ...team,
+          avg,
+          obp,
+          slg,
+          ops,
+          era,
+          whip,
+          baa,
+          rGame,
+          oaa,
+          der,
+        color: teamConfig?.primaryColor || '#000000',
+        slug: teamConfig?.slug || '',
+        emblemPath: logos?.emblem,
+      };
+    });
+  }, [activeTeamNames, runsByTeam, teamData, teams]);
 
   // Define hitting columns
   const hittingColumns: Column<EnhancedTeam>[] = [
@@ -127,6 +124,7 @@ export default function TeamStatsView({
                 alt={team.teamName}
                 width={20}
                 height={20}
+                loading="lazy"
                 className="object-contain"
               />
             </div>
@@ -165,6 +163,7 @@ export default function TeamStatsView({
                 alt={team.teamName}
                 width={20}
                 height={20}
+                loading="lazy"
                 className="object-contain"
               />
             </div>
@@ -201,6 +200,7 @@ export default function TeamStatsView({
                 alt={team.teamName}
                 width={20}
                 height={20}
+                loading="lazy"
                 className="object-contain"
               />
             </div>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import FadeIn from '@/components/animations/FadeIn';
+import SeasonToggle from '@/components/SeasonToggle';
 import { PlayerStats, PlayerAttributes, PlayerChemistry, PlayerRegistryEntry } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import { playerNameToSlug } from '@/lib/utils';
@@ -44,9 +45,9 @@ export default function PlayerProfileView({
   registryEntry,
 }: PlayerProfileViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
-  const [season, setSeason] = useState<'regular' | 'playoffs'>('regular');
+  const [isPlayoffs, setIsPlayoffs] = useState(false);
 
-  const currentStats = season === 'regular' ? regularStats : playoffStats;
+  const currentStats = isPlayoffs ? playoffStats : regularStats;
   const hasPlayoffStats = !!playoffStats;
 
   return (
@@ -154,28 +155,7 @@ export default function PlayerProfileView({
           <div className="space-y-6">
             {/* Season Toggle */}
             {hasPlayoffStats && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSeason('regular')}
-                  className={`px-4 py-2 font-display font-semibold text-sm rounded-lg transition-all duration-300 ${
-                    season === 'regular'
-                      ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                      : 'bg-space-navy/50 text-star-gray hover:text-star-white hover:bg-space-blue/50 border border-cosmic-border'
-                  }`}
-                >
-                  Regular Season
-                </button>
-                <button
-                  onClick={() => setSeason('playoffs')}
-                  className={`px-4 py-2 font-display font-semibold text-sm rounded-lg transition-all duration-300 ${
-                    season === 'playoffs'
-                      ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                      : 'bg-space-navy/50 text-star-gray hover:text-star-white hover:bg-space-blue/50 border border-cosmic-border'
-                  }`}
-                >
-                  Playoffs
-                </button>
-              </div>
+              <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
             )}
 
             {currentStats ? (
@@ -229,7 +209,7 @@ export default function PlayerProfileView({
             ) : (
               <div className="glass-card p-12 text-center">
                 <p className="text-star-gray font-mono">
-                  No {season === 'playoffs' ? 'playoff' : 'regular season'} stats available for this player.
+                  No {isPlayoffs ? 'playoff' : 'regular season'} stats available for this player.
                 </p>
               </div>
             )}

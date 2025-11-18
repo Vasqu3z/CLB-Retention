@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { PlayerStats } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
+import SeasonToggle from '@/components/SeasonToggle';
 
 type StatTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -43,30 +44,8 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
         </div>
 
         {/* Season Toggle */}
-        <div className="glass-card p-6 mb-6">
-          <div className="flex items-center gap-4">
-            <span className="font-display font-bold text-star-white">Season:</span>
-            <button
-              onClick={() => setIsPlayoffs(false)}
-              className={`px-4 py-2 rounded-lg font-display font-semibold transition-all duration-300 ${
-                !isPlayoffs
-                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                  : 'bg-space-blue/50 text-star-gray hover:text-star-white hover:bg-space-blue/70 border border-cosmic-border'
-              }`}
-            >
-              Regular Season
-            </button>
-            <button
-              onClick={() => setIsPlayoffs(true)}
-              className={`px-4 py-2 rounded-lg font-display font-semibold transition-all duration-300 ${
-                isPlayoffs
-                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                  : 'bg-space-blue/50 text-star-gray hover:text-star-white hover:bg-space-blue/70 border border-cosmic-border'
-              }`}
-            >
-              Playoffs
-            </button>
-          </div>
+        <div className="mb-6">
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
         </div>
 
         {/* Stat Category Tabs */}

@@ -4,13 +4,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
-import nextDynamic from "next/dynamic";
 import {
   Azeret_Mono,
   Chakra_Petch,
   JetBrains_Mono,
   Orbitron,
 } from "next/font/google";
+import SmoothScroll from "@/components/SmoothScroll";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 const headingFont = Chakra_Petch({
   subsets: ["latin"],
@@ -39,19 +40,6 @@ const statFont = Orbitron({
   variable: "--font-stat",
   display: "swap",
 });
-
-const SmoothScroll = nextDynamic(() => import("@/components/SmoothScroll"), {
-  ssr: false,
-  loading: () => null,
-});
-
-const AnimatedBackground = nextDynamic(
-  () => import("@/components/AnimatedBackground"),
-  {
-    ssr: false,
-    loading: () => null,
-  }
-);
 
 export const metadata: Metadata = {
   title: "Comets League Baseball | CLB Stats",

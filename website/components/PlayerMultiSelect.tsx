@@ -115,7 +115,7 @@ export default function PlayerMultiSelect({
         {/* Dropdown menu */}
         {isOpen && filteredPlayers.length > 0 && selectedPlayers.length < maxSelections && (
           <div
-            className="absolute z-50 w-full mt-2 bg-space-navy/95 backdrop-blur-md border-2 border-cosmic-border rounded-lg shadow-2xl max-h-64 overflow-y-auto"
+            className="absolute z-[100] w-full mt-2 bg-space-navy border-2 border-cosmic-border rounded-lg shadow-2xl max-h-64 overflow-y-auto"
             onWheel={(e) => e.stopPropagation()}
           >
             {filteredPlayers.map(player => (
@@ -132,7 +132,7 @@ export default function PlayerMultiSelect({
 
         {/* No results message */}
         {isOpen && filteredPlayers.length === 0 && searchQuery && selectedPlayers.length < maxSelections && (
-          <div className="absolute z-50 w-full mt-2 bg-space-navy/95 backdrop-blur-md border-2 border-cosmic-border rounded-lg shadow-2xl px-4 py-6 text-center">
+          <div className="absolute z-[100] w-full mt-2 bg-space-navy border-2 border-cosmic-border rounded-lg shadow-2xl px-4 py-6 text-center">
             <p className="text-star-dim font-mono text-sm">No players found matching &ldquo;{searchQuery}&rdquo;</p>
           </div>
         )}

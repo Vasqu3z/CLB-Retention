@@ -59,13 +59,14 @@ export default function PlayerProfileView({
             {/* Player Image */}
             {registryEntry?.imageUrl && (
               <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-nebula-orange/50 flex-shrink-0 hover:border-nebula-orange transition-all duration-300 hover:drop-shadow-[0_0_16px_rgba(255,107,53,0.6)]">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={registryEntry.imageUrl}
                   alt={playerName}
-                  width={96}
-                  height={96}
                   className="w-full h-full object-cover"
-                  unoptimized
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  loading="eager"
                 />
               </div>
             )}

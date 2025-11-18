@@ -420,7 +420,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
               {/* Baseball Field */}
               <div
                 className="relative aspect-square rounded-lg p-8 border border-green-600/30 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: 'url(/Lineup Builder Template.png)' }}
+                style={{ backgroundImage: 'url(/Lineup%20Builder%20Template.png)' }}
               >
                 {/* Chemistry Lines (SVG) */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }}>

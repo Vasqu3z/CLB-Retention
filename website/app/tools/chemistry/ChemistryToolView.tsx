@@ -154,9 +154,12 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-          Player Chemistry Tool
+      <div className="relative">
+        {/* Baseball stitching accent */}
+        <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-nebula-teal/50 to-transparent rounded-full" />
+
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-teal via-nebula-cyan to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+          ⚡ Player Chemistry Tool
         </h1>
         <p className="text-star-gray font-mono text-lg">
           Analyze chemistry relationships and team compatibility for up to 5 players

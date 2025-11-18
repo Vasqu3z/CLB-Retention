@@ -96,17 +96,22 @@ export default function PlayerMultiSelect({
     onSelectionChange([]);
   };
 
+  const dropdownBaseClass =
+    'rounded-xl border border-cosmic-border/70 bg-[#050c1f]/98 shadow-[0_25px_80px_rgba(5,12,31,0.85)] backdrop-blur-2xl';
+
+  const dropdownPositionStyle = {
+    position: 'absolute' as const,
+    top: dropdownPosition.top,
+    left: dropdownPosition.left,
+    width: dropdownPosition.width,
+    zIndex: 1000,
+  };
+
   const dropdownList = (
     <div
       ref={dropdownMenuRef}
-      style={{
-        position: 'absolute',
-        top: dropdownPosition.top,
-        left: dropdownPosition.left,
-        width: dropdownPosition.width,
-        zIndex: 1000,
-      }}
-      className="bg-space-navy/95 border-2 border-cosmic-border rounded-lg shadow-2xl max-h-64 overflow-y-auto"
+      style={dropdownPositionStyle}
+      className={`${dropdownBaseClass} max-h-64 overflow-y-auto before:pointer-events-none before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/5 before:to-transparent`}
       onWheel={(e) => e.stopPropagation()}
     >
       {filteredPlayers.map(player => (
@@ -124,14 +129,8 @@ export default function PlayerMultiSelect({
   const emptyDropdown = (
     <div
       ref={dropdownMenuRef}
-      style={{
-        position: 'absolute',
-        top: dropdownPosition.top,
-        left: dropdownPosition.left,
-        width: dropdownPosition.width,
-        zIndex: 1000,
-      }}
-      className="bg-space-navy/95 border-2 border-cosmic-border rounded-lg shadow-2xl px-4 py-6 text-center"
+      style={dropdownPositionStyle}
+      className={`${dropdownBaseClass} px-4 py-6 text-center`}
     >
       <p className="text-star-dim font-mono text-sm">No players found matching &ldquo;{searchQuery}&rdquo;</p>
     </div>

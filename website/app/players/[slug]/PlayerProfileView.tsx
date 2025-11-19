@@ -175,7 +175,7 @@ export default function PlayerProfileView({
                     <StatRowWithLabel label="Hits (H)" value={currentStats.h} />
                     <StatRowWithLabel label="Home Runs (HR)" value={currentStats.hr} />
                     <StatRowWithLabel label="RBI" value={currentStats.rbi} />
-                    <StatRowWithLabel label="Runners on Base (ROB)" value={currentStats.rob} />
+                    <StatRowWithLabel label="Hits Robbed (ROB)" value={currentStats.rob} />
                     <StatRowWithLabel label="Double Plays (DP)" value={currentStats.dp} />
                     <StatRowWithLabel label="Batting Average (AVG)" value={currentStats.avg} highlight />
                     <StatRowWithLabel label="On-Base Percentage (OBP)" value={currentStats.obp} highlight />

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { ChemistryMatrix } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 import FadeIn from '@/components/animations/FadeIn';
+import LiveStatsIndicator from '@/components/LiveStatsIndicator';
 
 interface Props {
   chemistryMatrix: ChemistryMatrix;
@@ -163,9 +164,10 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
           <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-teal via-nebula-cyan to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
             Player Chemistry Tool
           </h1>
-          <p className="text-star-gray font-mono text-lg">
+          <p className="text-star-gray font-mono text-lg mb-3">
             Analyze chemistry relationships and team compatibility for up to 5 players
           </p>
+          <LiveStatsIndicator />
         </div>
       </FadeIn>
 

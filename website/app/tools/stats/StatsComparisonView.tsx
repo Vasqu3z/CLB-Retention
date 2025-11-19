@@ -6,6 +6,7 @@ import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 import SeasonToggle from '@/components/SeasonToggle';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 import FadeIn from '@/components/animations/FadeIn';
+import LiveStatsIndicator from '@/components/LiveStatsIndicator';
 
 type StatTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -43,9 +44,10 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
           <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-field-green via-nebula-teal to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
             Player Stats Comparison
           </h1>
-          <p className="text-star-gray font-mono text-lg">
+          <p className="text-star-gray font-mono text-lg mb-3">
             Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics
           </p>
+          <LiveStatsIndicator />
         </div>
       </FadeIn>
 

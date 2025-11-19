@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import FadeIn from '@/components/animations/FadeIn';
 import SeasonToggle from '@/components/SeasonToggle';
+import LiveStatsIndicator from '@/components/LiveStatsIndicator';
 import { PlayerStats, PlayerAttributes, PlayerChemistry, PlayerRegistryEntry } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import { playerNameToSlug } from '@/lib/utils';
@@ -73,9 +74,12 @@ export default function PlayerProfileView({
 
             {/* Player Info */}
             <div className="flex-1">
-              <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
+              <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
                 {playerName}
               </h1>
+              <div className="mb-4">
+                <LiveStatsIndicator />
+              </div>
               <div className="flex flex-wrap gap-4 text-star-gray font-mono text-sm">
                 {attributes?.characterClass && (
                   <span>Class: <span className={`${getClassColor(attributes.characterClass)} font-semibold`}>{attributes.characterClass}</span></span>

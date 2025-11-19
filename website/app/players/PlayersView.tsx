@@ -63,8 +63,8 @@ export default function PlayersView({
     [filteredPlayers]
   );
 
-  // Define hitting columns - memoize to prevent re-creation
-  const hittingColumns: Column<PlayerStats>[] = useMemo(() => [
+  // Define hitting columns
+  const hittingColumns: Column<PlayerStats>[] = [
     {
       key: 'name',
       label: 'Player',
@@ -114,10 +114,10 @@ export default function PlayersView({
       className: 'text-nebula-cyan',
       render: (player) => player.ops || '0.000'
     },
-  ], [getTeamColor]);
+  ];
 
-  // Define pitching columns - memoize to prevent re-creation
-  const pitchingColumns: Column<PlayerStats>[] = useMemo(() => [
+  // Define pitching columns
+  const pitchingColumns: Column<PlayerStats>[] = [
     {
       key: 'name',
       label: 'Player',
@@ -159,10 +159,10 @@ export default function PlayersView({
     { key: 'era', label: <StatTooltip stat="ERA">ERA</StatTooltip>, align: 'center', className: 'font-bold text-nebula-teal' },
     { key: 'whip', label: <StatTooltip stat="WHIP">WHIP</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
     { key: 'baa', label: <StatTooltip stat="BAA">BAA</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
-  ], [getTeamColor]);
+  ];
 
-  // Define fielding columns - memoize to prevent re-creation
-  const fieldingColumns: Column<PlayerStats>[] = useMemo(() => [
+  // Define fielding columns
+  const fieldingColumns: Column<PlayerStats>[] = [
     {
       key: 'name',
       label: 'Player',
@@ -194,7 +194,7 @@ export default function PlayersView({
     { key: 'e', label: <StatTooltip stat="E">E</StatTooltip>, align: 'center' },
     { key: 'sb', label: <StatTooltip stat="SB">SB</StatTooltip>, align: 'center' },
     { key: 'cs', label: <StatTooltip stat="CS">CS</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
-  ], [getTeamColor]);
+  ];
 
   return (
     <div className="space-y-8">
@@ -265,43 +265,41 @@ export default function PlayersView({
       </div>
 
       {/* Tables */}
-      <div suppressHydrationWarning>
-        {/* Hitting Table */}
-        {activeTab === 'hitting' && (
-          <DataTable
-            columns={hittingColumns}
-            data={hitters}
-            getRowKey={(player) => `${player.name}-${player.team}`}
-            defaultSortKey="ab"
-            defaultSortDirection="desc"
-            enableCondensed={true}
-          />
-        )}
+      {/* Hitting Table */}
+      {activeTab === 'hitting' && (
+        <DataTable
+          columns={hittingColumns}
+          data={hitters}
+          getRowKey={(player) => `${player.name}-${player.team}`}
+          defaultSortKey="ab"
+          defaultSortDirection="desc"
+          enableCondensed={true}
+        />
+      )}
 
-        {/* Pitching Table */}
-        {activeTab === 'pitching' && (
-          <DataTable
-            columns={pitchingColumns}
-            data={pitchers}
-            getRowKey={(player) => `${player.name}-${player.team}`}
-            defaultSortKey="ip"
-            defaultSortDirection="desc"
-            enableCondensed={true}
-          />
-        )}
+      {/* Pitching Table */}
+      {activeTab === 'pitching' && (
+        <DataTable
+          columns={pitchingColumns}
+          data={pitchers}
+          getRowKey={(player) => `${player.name}-${player.team}`}
+          defaultSortKey="ip"
+          defaultSortDirection="desc"
+          enableCondensed={true}
+        />
+      )}
 
-        {/* Fielding Table */}
-        {activeTab === 'fielding' && (
-          <DataTable
-            columns={fieldingColumns}
-            data={fielders}
-            getRowKey={(player) => `${player.name}-${player.team}`}
-            defaultSortKey="np"
-            defaultSortDirection="desc"
-            enableCondensed={true}
-          />
-        )}
-      </div>
+      {/* Fielding Table */}
+      {activeTab === 'fielding' && (
+        <DataTable
+          columns={fieldingColumns}
+          data={fielders}
+          getRowKey={(player) => `${player.name}-${player.team}`}
+          defaultSortKey="np"
+          defaultSortDirection="desc"
+          enableCondensed={true}
+        />
+      )}
     </div>
   );
 }

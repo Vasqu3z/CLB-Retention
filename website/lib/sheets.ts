@@ -14,7 +14,6 @@
 //   Character Name Mapping is no longer needed - merged into Player Registry
 
 import { google } from 'googleapis';
-import type { Auth } from 'googleapis';
 import { unstable_cache } from 'next/cache';
 import {
   STANDINGS_SHEET,
@@ -50,14 +49,7 @@ const googleAuth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
 });
 
-type SheetsAuthClient =
-  | Auth.GoogleAuth
-  | Auth.OAuth2Client
-  | Auth.JWT
-  | Auth.Compute
-  | Auth.UserRefreshClient
-  | Auth.BaseExternalAccountClient
-  | Auth.Impersonated;
+type SheetsAuthClient = Awaited<ReturnType<typeof googleAuth.getClient>>;
 
 let authClientPromise: Promise<SheetsAuthClient> | null = null;
 

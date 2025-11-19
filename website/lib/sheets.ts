@@ -53,6 +53,7 @@ type SheetsAuthClient = Awaited<ReturnType<typeof googleAuth.getClient>>;
 
 const DEFAULT_SHEET_REVALIDATE_SECONDS = 60;
 const LOW_CHURN_SHEET_REVALIDATE_SECONDS = 300;
+const STANDINGS_REVALIDATE_SECONDS = 300;
 
 let authClientPromise: Promise<SheetsAuthClient> | null = null;
 
@@ -161,7 +162,7 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
       STANDINGS_SHEET.START_COL,
       STANDINGS_SHEET.END_COL
     );
-    const dataPromise = getSheetData(range);
+    const dataPromise = getSheetData(range, undefined, STANDINGS_REVALIDATE_SECONDS);
     const notesPromise = getStandingsNotes(sheetName);
 
     const [data, notes] = await Promise.all([dataPromise, notesPromise]);
@@ -222,7 +223,7 @@ async function fetchStandingsNotes(sheetName: string): Promise<string[]> {
 }
 
 const getStandingsNotes = unstable_cache(fetchStandingsNotes, ['standings-notes'], {
-  revalidate: 60,
+  revalidate: STANDINGS_REVALIDATE_SECONDS,
   tags: ['sheets', 'standings-notes'],
 });
 

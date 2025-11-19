@@ -81,7 +81,7 @@ const ICON_COLOR_VALUES: Record<string, string> = {
 };
 
 const navCardBaseClass =
-  "group relative block h-full overflow-hidden rounded-2xl border-2 px-8 py-8 bg-gradient-to-br " +
+  "group relative block h-full cursor-pointer overflow-hidden rounded-2xl border-2 px-8 py-8 bg-gradient-to-br " +
   "backdrop-blur-md transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 " +
   "focus-visible:ring-nebula-teal focus-visible:ring-offset-2 focus-visible:ring-offset-space-black";
 
@@ -181,7 +181,7 @@ export default function Home() {
                     )}
                   >
                     {/* Baseball stitch decoration */}
-                    <div className="absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <div className="pointer-events-none absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
                       <div
                         className="w-full h-full border-4 border-current rounded-full border-dashed"
                         style={{ borderColor: ICON_COLOR_VALUES[card.iconColor] || '#E8EDF5' }}
@@ -189,7 +189,7 @@ export default function Home() {
                     </div>
 
                     {/* Hover gradient overlay */}
-                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/5 via-transparent to-transparent" />
+                    <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/5 via-transparent to-transparent" />
 
                     <div className="relative z-10 flex flex-col h-full">
                       <Icon className={`w-12 h-12 ${card.iconColor} mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`} />
@@ -239,7 +239,7 @@ export default function Home() {
                       "backdrop-blur-sm hover:shadow-[0_8px_24px_rgba(255,255,255,0.1)] hover:scale-105 min-h-[180px]"
                     )}
                   >
-                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
+                    <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
 
                     <div className="relative z-10 text-center">
                       <Icon className={`w-12 h-12 ${card.iconColor} mx-auto mb-4 group-hover:scale-125 transition-transform duration-300`} />

@@ -82,13 +82,13 @@ export default function StandingsTable({ standings }: StandingsTableProps) {
     },
     {
       key: 'wins',
-      label: <StatTooltip stat="W">W</StatTooltip>,
+      label: <StatTooltip stat="W_TEAM">W</StatTooltip>,
       align: 'center',
       className: 'font-semibold',
     },
     {
       key: 'losses',
-      label: <StatTooltip stat="L">L</StatTooltip>,
+      label: <StatTooltip stat="L_TEAM">L</StatTooltip>,
       align: 'center',
       className: 'font-semibold',
     },

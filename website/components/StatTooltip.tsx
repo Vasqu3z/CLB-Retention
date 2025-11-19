@@ -11,11 +11,26 @@ interface StatDefinition {
 }
 
 const statDefinitions: Record<string, StatDefinition> = {
+  // General Stats
+  GP: {
+    name: 'Games Played',
+    description: 'Total number of games a player has appeared in.',
+  },
+
   // Batting Stats
   AVG: {
     name: 'Batting Average',
     formula: 'H ÷ AB',
     description: 'The ratio of hits to at-bats. Measures how often a batter gets a hit.',
+  },
+  BAA: {
+    name: 'Batting Average Against',
+    formula: 'H allowed ÷ AB faced',
+    description: 'Opponent batting average against a pitcher. Lower is better.',
+  },
+  CS: {
+    name: 'Caught Stealing',
+    description: 'Number of times a baserunner was caught attempting to steal.',
   },
   OBP: {
     name: 'On-Base Percentage',
@@ -145,6 +160,14 @@ const statDefinitions: Record<string, StatDefinition> = {
   },
 
   // Team Stats
+  'W_TEAM': {
+    name: 'Wins',
+    description: 'Number of games won by the team.',
+  },
+  'L_TEAM': {
+    name: 'Losses',
+    description: 'Number of games lost by the team.',
+  },
   GB: {
     name: 'Games Back',
     description: 'Number of games a team trails the division leader.',

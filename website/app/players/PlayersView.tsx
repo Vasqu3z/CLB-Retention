@@ -74,7 +74,7 @@ export default function PlayersView({
       render: (player) => (
         <Link
           href={`/players/${playerNameToSlug(player.name)}`}
-          className="hover:text-nebula-cyan transition-colors underline decoration-nebula-cyan/30 hover:decoration-nebula-cyan"
+          className="hover:text-nebula-orange transition-colors"
         >
           {player.name}
         </Link>
@@ -91,7 +91,7 @@ export default function PlayersView({
         </span>
       ),
     },
-    { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
+    { key: 'gp', label: <StatTooltip stat="GP">GP</StatTooltip>, align: 'center', className: 'text-star-gray' },
     { key: 'ab', label: <StatTooltip stat="AB">AB</StatTooltip>, align: 'center' },
     { key: 'h', label: <StatTooltip stat="H">H</StatTooltip>, align: 'center' },
     { key: 'hr', label: <StatTooltip stat="HR">HR</StatTooltip>, align: 'center' },
@@ -127,7 +127,7 @@ export default function PlayersView({
       render: (player) => (
         <Link
           href={`/players/${playerNameToSlug(player.name)}`}
-          className="hover:text-nebula-cyan transition-colors underline decoration-nebula-cyan/30 hover:decoration-nebula-cyan"
+          className="hover:text-nebula-orange transition-colors"
         >
           {player.name}
         </Link>
@@ -144,7 +144,7 @@ export default function PlayersView({
         </span>
       ),
     },
-    { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
+    { key: 'gp', label: <StatTooltip stat="GP">GP</StatTooltip>, align: 'center', className: 'text-star-gray' },
     {
       key: 'ip',
       label: <StatTooltip stat="IP">IP</StatTooltip>,
@@ -158,7 +158,7 @@ export default function PlayersView({
     { key: 'hrAllowed', label: <StatTooltip stat="HR">HR</StatTooltip>, align: 'center' },
     { key: 'era', label: <StatTooltip stat="ERA">ERA</StatTooltip>, align: 'center', className: 'font-bold text-nebula-teal' },
     { key: 'whip', label: <StatTooltip stat="WHIP">WHIP</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
-    { key: 'baa', label: 'BAA', align: 'center', className: 'text-nebula-cyan' },
+    { key: 'baa', label: <StatTooltip stat="BAA">BAA</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
   ];
 
   // Define fielding columns
@@ -172,7 +172,7 @@ export default function PlayersView({
       render: (player) => (
         <Link
           href={`/players/${playerNameToSlug(player.name)}`}
-          className="hover:text-nebula-cyan transition-colors underline decoration-nebula-cyan/30 hover:decoration-nebula-cyan"
+          className="hover:text-nebula-orange transition-colors"
         >
           {player.name}
         </Link>
@@ -189,11 +189,11 @@ export default function PlayersView({
         </span>
       ),
     },
-    { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
+    { key: 'gp', label: <StatTooltip stat="GP">GP</StatTooltip>, align: 'center', className: 'text-star-gray' },
     { key: 'np', label: <StatTooltip stat="NP">NP</StatTooltip>, align: 'center', className: 'font-bold text-solar-gold' },
     { key: 'e', label: <StatTooltip stat="E">E</StatTooltip>, align: 'center' },
     { key: 'sb', label: <StatTooltip stat="SB">SB</StatTooltip>, align: 'center' },
-    { key: 'cs', label: 'CS', align: 'center', className: 'text-nebula-cyan' },
+    { key: 'cs', label: <StatTooltip stat="CS">CS</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
   ];
 
   return (

@@ -178,7 +178,7 @@ export interface PlayerStats {
   h?: number;
   hr?: number;
   rbi?: number;
-  rob?: number; // Runners on Base (performance vs expected)
+  rob?: number; // Hits Robbed (defensive Nice Plays)
   dp?: number; // Double Plays Hit Into
   avg?: string;
   obp?: string;

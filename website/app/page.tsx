@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LEAGUE_CONFIG } from "@/config/league";
 import { getLeagueLogo } from "@/lib/teamLogos";
-import { Trophy, TrendingUp, Calendar, Users, Target, BarChart3, Zap, Award } from "lucide-react";
+import { Trophy, TrendingUp, Calendar, Users, Target, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import Tilt from "@/components/animations/Tilt";
 
@@ -45,16 +45,6 @@ const mainNavCards = [
     gradient: "from-infield-dirt/30 to-leather-brown/10",
     borderColor: "border-infield-dirt/60",
     iconColor: "text-infield-dirt",
-    size: "medium" as const,
-  },
-  {
-    href: "/tools",
-    title: "Tools",
-    description: "Advanced analytics",
-    icon: BarChart3,
-    gradient: "from-royal-purple/20 to-cosmic-purple/10",
-    borderColor: "border-royal-purple/50",
-    iconColor: "text-royal-purple",
     size: "medium" as const,
   },
 ];

@@ -50,10 +50,19 @@ const googleAuth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
 });
 
-let authClientPromise: Promise<Auth.OAuth2Client> | null = null;
+type SheetsAuthClient =
+  | Auth.GoogleAuth
+  | Auth.OAuth2Client
+  | Auth.JWT
+  | Auth.Compute
+  | Auth.UserRefreshClient
+  | Auth.BaseExternalAccountClient
+  | Auth.Impersonated;
+
+let authClientPromise: Promise<SheetsAuthClient> | null = null;
 
 // Initialize Google Sheets API client
-async function getAuthClient(): Promise<Auth.OAuth2Client> {
+async function getAuthClient(): Promise<SheetsAuthClient> {
   if (!authClientPromise) {
     authClientPromise = googleAuth.getClient();
   }

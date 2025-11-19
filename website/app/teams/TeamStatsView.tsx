@@ -8,6 +8,7 @@ import { getActiveTeams } from '@/config/league';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import SeasonToggle from '@/components/SeasonToggle';
 import DataTable, { Column } from '@/components/DataTable';
+import StatTooltip from '@/components/StatTooltip';
 
 type Tab = 'hitting' | 'pitching' | 'fielding';
 
@@ -143,18 +144,18 @@ export default function TeamStatsView({
         </Link>
       ),
     },
-    { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
-    { key: 'rGame', label: 'R/G', align: 'center', className: 'font-bold text-nebula-orange' },
-    { key: 'hitting.ab', label: 'AB', align: 'center', condensed: true, render: (team) => team.hitting.ab },
-    { key: 'hitting.h', label: 'H', align: 'center', condensed: true, render: (team) => team.hitting.h },
-    { key: 'hitting.hr', label: 'HR', align: 'center', render: (team) => team.hitting.hr },
-    { key: 'hitting.rbi', label: 'RBI', align: 'center', render: (team) => team.hitting.rbi },
+    { key: 'gp', label: <StatTooltip stat="GP">GP</StatTooltip>, align: 'center', className: 'text-star-gray' },
+    { key: 'rGame', label: <StatTooltip stat="R/G">R/G</StatTooltip>, align: 'center', className: 'font-bold text-nebula-orange' },
+    { key: 'hitting.ab', label: <StatTooltip stat="AB">AB</StatTooltip>, align: 'center', condensed: true, render: (team) => team.hitting.ab },
+    { key: 'hitting.h', label: <StatTooltip stat="H">H</StatTooltip>, align: 'center', condensed: true, render: (team) => team.hitting.h },
+    { key: 'hitting.hr', label: <StatTooltip stat="HR">HR</StatTooltip>, align: 'center', render: (team) => team.hitting.hr },
+    { key: 'hitting.rbi', label: <StatTooltip stat="RBI">RBI</StatTooltip>, align: 'center', render: (team) => team.hitting.rbi },
     { key: 'hitting.dp', label: 'DP', align: 'center', condensed: true, render: (team) => team.hitting.dp },
-    { key: 'hitting.rob', label: 'ROB', align: 'center', condensed: true, render: (team) => team.hitting.rob },
-    { key: 'avg', label: 'AVG', align: 'center', className: 'text-nebula-cyan' },
-    { key: 'obp', label: 'OBP', align: 'center', className: 'text-nebula-cyan', condensed: true },
-    { key: 'slg', label: 'SLG', align: 'center', className: 'text-nebula-cyan' },
-    { key: 'ops', label: 'OPS', align: 'center', className: 'text-nebula-cyan' },
+    { key: 'hitting.rob', label: <StatTooltip stat="ROB">ROB</StatTooltip>, align: 'center', condensed: true, render: (team) => team.hitting.rob },
+    { key: 'avg', label: <StatTooltip stat="AVG">AVG</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
+    { key: 'obp', label: <StatTooltip stat="OBP">OBP</StatTooltip>, align: 'center', className: 'text-nebula-cyan', condensed: true },
+    { key: 'slg', label: <StatTooltip stat="SLG">SLG</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
+    { key: 'ops', label: <StatTooltip stat="OPS">OPS</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
   ];
 
   // Define pitching columns
@@ -181,16 +182,16 @@ export default function TeamStatsView({
         </Link>
       ),
     },
-    { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
-    { key: 'era', label: 'ERA', align: 'center', className: 'font-bold text-nebula-teal' },
-    { key: 'pitching.ip', label: 'IP', align: 'center', render: (team) => team.pitching.ip.toFixed(2) },
-    { key: 'wins', label: 'W', align: 'center', condensed: true },
-    { key: 'losses', label: 'L', align: 'center', condensed: true },
-    { key: 'pitching.sv', label: 'SV', align: 'center', condensed: true, render: (team) => team.pitching.sv },
-    { key: 'pitching.h', label: 'H', align: 'center', render: (team) => team.pitching.h },
-    { key: 'pitching.hr', label: 'HR', align: 'center', render: (team) => team.pitching.hr },
-    { key: 'whip', label: 'WHIP', align: 'center', className: 'text-nebula-cyan' },
-    { key: 'baa', label: 'BAA', align: 'center', className: 'text-nebula-cyan' },
+    { key: 'gp', label: <StatTooltip stat="GP">GP</StatTooltip>, align: 'center', className: 'text-star-gray' },
+    { key: 'era', label: <StatTooltip stat="ERA">ERA</StatTooltip>, align: 'center', className: 'font-bold text-nebula-teal' },
+    { key: 'pitching.ip', label: <StatTooltip stat="IP">IP</StatTooltip>, align: 'center', render: (team) => team.pitching.ip.toFixed(2) },
+    { key: 'wins', label: <StatTooltip stat="W_TEAM">W</StatTooltip>, align: 'center', condensed: true },
+    { key: 'losses', label: <StatTooltip stat="L_TEAM">L</StatTooltip>, align: 'center', condensed: true },
+    { key: 'pitching.sv', label: <StatTooltip stat="SV">SV</StatTooltip>, align: 'center', condensed: true, render: (team) => team.pitching.sv },
+    { key: 'pitching.h', label: <StatTooltip stat="H">H</StatTooltip>, align: 'center', render: (team) => team.pitching.h },
+    { key: 'pitching.hr', label: <StatTooltip stat="HR">HR</StatTooltip>, align: 'center', render: (team) => team.pitching.hr },
+    { key: 'whip', label: <StatTooltip stat="WHIP">WHIP</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
+    { key: 'baa', label: <StatTooltip stat="BAA">BAA</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
   ];
 
   // Define fielding columns
@@ -217,25 +218,25 @@ export default function TeamStatsView({
         </Link>
       ),
     },
-    { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
+    { key: 'gp', label: <StatTooltip stat="GP">GP</StatTooltip>, align: 'center', className: 'text-star-gray' },
     {
       key: 'der',
-      label: 'DER',
+      label: <StatTooltip stat="DER">DER</StatTooltip>,
       align: 'center',
       className: 'font-bold text-solar-gold',
       render: (team) => `${parseFloat(team.der) > 0 ? '+' : ''}${team.der}`
     },
-    { key: 'fielding.np', label: 'NP', align: 'center', render: (team) => team.fielding.np },
-    { key: 'fielding.e', label: 'E', align: 'center', render: (team) => team.fielding.e },
+    { key: 'fielding.np', label: <StatTooltip stat="NP">NP</StatTooltip>, align: 'center', render: (team) => team.fielding.np },
+    { key: 'fielding.e', label: <StatTooltip stat="E">E</StatTooltip>, align: 'center', render: (team) => team.fielding.e },
     {
       key: 'oaa',
-      label: 'OAA',
+      label: <StatTooltip stat="OAA">OAA</StatTooltip>,
       align: 'center',
       className: 'text-nebula-cyan',
       render: (team) => `${team.oaa > 0 ? '+' : ''}${team.oaa}`
     },
-    { key: 'fielding.sb', label: 'SB', align: 'center', render: (team) => team.fielding.sb },
-    { key: 'fielding.cs', label: 'CS', align: 'center', render: (team) => team.fielding.cs },
+    { key: 'fielding.sb', label: <StatTooltip stat="SB">SB</StatTooltip>, align: 'center', render: (team) => team.fielding.sb },
+    { key: 'fielding.cs', label: <StatTooltip stat="CS">CS</StatTooltip>, align: 'center', render: (team) => team.fielding.cs },
   ];
 
   return (

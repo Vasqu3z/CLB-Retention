@@ -168,6 +168,21 @@ const statDefinitions: Record<string, StatDefinition> = {
     name: 'Losses',
     description: 'Number of games lost by the team.',
   },
+  'R/G': {
+    name: 'Runs Per Game',
+    formula: 'Total Runs ÷ Games Played',
+    description: 'Average number of runs scored per game.',
+  },
+  DER: {
+    name: 'Defensive Efficiency Rating',
+    formula: '(NP - E) ÷ Games Played',
+    description: 'Outs Above Average per game. Measures defensive performance.',
+  },
+  OAA: {
+    name: 'Outs Above Average',
+    formula: 'NP - E',
+    description: 'Net defensive plays (Nice Plays minus Errors). Positive is good.',
+  },
   GB: {
     name: 'Games Back',
     description: 'Number of games a team trails the division leader.',

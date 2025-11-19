@@ -150,7 +150,7 @@ export default function TeamStatsView({
     { key: 'hitting.h', label: <StatTooltip stat="H">H</StatTooltip>, align: 'center', condensed: true, render: (team) => team.hitting.h },
     { key: 'hitting.hr', label: <StatTooltip stat="HR">HR</StatTooltip>, align: 'center', render: (team) => team.hitting.hr },
     { key: 'hitting.rbi', label: <StatTooltip stat="RBI">RBI</StatTooltip>, align: 'center', render: (team) => team.hitting.rbi },
-    { key: 'hitting.dp', label: 'DP', align: 'center', condensed: true, render: (team) => team.hitting.dp },
+    { key: 'hitting.dp', label: <StatTooltip stat="DP">DP</StatTooltip>, align: 'center', condensed: true, render: (team) => team.hitting.dp },
     { key: 'hitting.rob', label: <StatTooltip stat="ROB">ROB</StatTooltip>, align: 'center', condensed: true, render: (team) => team.hitting.rob },
     { key: 'avg', label: <StatTooltip stat="AVG">AVG</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
     { key: 'obp', label: <StatTooltip stat="OBP">OBP</StatTooltip>, align: 'center', className: 'text-nebula-cyan', condensed: true },

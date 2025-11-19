@@ -182,7 +182,7 @@ interface StatTooltipProps {
 export default function StatTooltip({ stat, children, showIcon = false, iconOnly = false }: StatTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<'top' | 'bottom'>('top');
-  const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLSpanElement>(null);
 
@@ -206,6 +206,8 @@ export default function StatTooltip({ stat, children, showIcon = false, iconOnly
         : triggerRect.top - tooltipRect.height - 8;
 
       setCoords({ top, left });
+    } else if (!isVisible) {
+      setCoords(null);
     }
   }, [isVisible]);
 
@@ -242,10 +244,12 @@ export default function StatTooltip({ stat, children, showIcon = false, iconOnly
           ref={tooltipRef}
           id={`tooltip-${stat}`}
           role="tooltip"
-          className="fixed z-[9999] w-64 px-3 py-2.5 -translate-x-1/2 bg-space-navy/95 backdrop-blur-md border border-cosmic-border/80 rounded-lg shadow-2xl pointer-events-none animate-in fade-in duration-200"
+          className="fixed z-[9999] w-64 px-3 py-2.5 -translate-x-1/2 bg-space-navy/95 backdrop-blur-md border border-cosmic-border/80 rounded-lg shadow-2xl pointer-events-none"
           style={{
-            top: `${coords.top}px`,
-            left: `${coords.left}px`,
+            top: coords ? `${coords.top}px` : '-9999px',
+            left: coords ? `${coords.left}px` : '-9999px',
+            opacity: coords ? 1 : 0,
+            transition: coords ? 'opacity 200ms' : 'none',
           }}
         >
           {/* Arrow */}

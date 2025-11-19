@@ -18,7 +18,7 @@ const navItems = [
 const toolsItems = [
   { href: "/tools/attributes", label: "Attribute Comparison" },
   { href: "/tools/stats", label: "Stats Comparison" },
-  { href: "/tools/chemistry", label: "Chemistry Tool" },
+  { href: "/tools/chemistry", label: "Chemistry Comparison" },
   { href: "/tools/lineup", label: "Lineup Builder" },
 ];
 
@@ -140,10 +140,10 @@ export default function MobileNav() {
                 })}
               </ul>
 
-              {/* Tools Section */}
+              {/* References Section */}
               <div className="mt-6 pt-6 border-t border-cosmic-border">
                 <h3 className="px-4 mb-2 text-xs font-bold text-star-dim uppercase tracking-wider">
-                  Tools
+                  References
                 </h3>
                 <ul className="space-y-2">
                   {toolsItems.map((item, idx) => {

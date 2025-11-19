@@ -54,7 +54,7 @@ export default function PlayerProfileView({
   return (
     <div className="space-y-6">
       {/* Player Header */}
-      <FadeIn delay={0} direction="down">
+      <FadeIn delay={0} direction="down" useViewport={false}>
         <div className="glass-card p-6 relative">
           <div className="flex items-start gap-6">
             {/* Player Image */}
@@ -116,7 +116,7 @@ export default function PlayerProfileView({
       </FadeIn>
 
       {/* Tab Navigation */}
-      <FadeIn delay={0.1} direction="up">
+      <FadeIn delay={0.1} direction="up" useViewport={false}>
         <div className="flex gap-2 border-b border-cosmic-border">
           <button
             onClick={() => setActiveTab('stats')}
@@ -157,7 +157,7 @@ export default function PlayerProfileView({
 
       {/* Stats Tab */}
       {activeTab === 'stats' && (
-        <FadeIn delay={0.15} direction="up">
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
           <div className="space-y-6">
             {/* Season Toggle */}
             {hasPlayoffStats && (
@@ -202,7 +202,7 @@ export default function PlayerProfileView({
 
                 {/* Fielding Stats */}
                 <div className="glass-card p-6 hover:border-emerald-500/50">
-                  <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding</h3>
+                  <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding & Running</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <StatRowWithLabel label="Number of Plays (NP)" value={currentStats.np} />
                     <StatRowWithLabel label="Errors (E)" value={currentStats.e} />
@@ -225,7 +225,7 @@ export default function PlayerProfileView({
 
       {/* Attributes Tab */}
       {activeTab === 'attributes' && attributes && (
-        <FadeIn delay={0.15} direction="up">
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Pitching Attributes */}
             <div className="glass-card p-6 hover:border-solar-gold/50">
@@ -274,7 +274,7 @@ export default function PlayerProfileView({
 
       {/* Chemistry Tab */}
       {activeTab === 'chemistry' && chemistry && (
-        <FadeIn delay={0.15} direction="up">
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Positive Chemistry */}
             <div className="glass-card p-6 border-green-400/30 hover:border-green-400/50">

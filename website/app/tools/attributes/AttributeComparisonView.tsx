@@ -99,6 +99,7 @@ export default function AttributeComparisonView({ players }: Props) {
           <div
             ref={tableScrollRef}
             className="relative overflow-auto max-h-[70vh]"
+            onWheel={(e) => e.stopPropagation()}
           >
             <table className="w-full text-sm">
               <thead>
@@ -146,8 +147,8 @@ export default function AttributeComparisonView({ players }: Props) {
                 {/* Pitching Attributes Section */}
                 {activeTab === 'pitching' && (
                   <>
-                    <tr className="bg-gradient-to-r from-green-500/20 to-green-400/20">
-                      <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-green-400 text-shadow">
+                    <tr className="bg-gradient-to-r from-solar-gold/20 to-comet-yellow/20">
+                      <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-solar-gold text-shadow">
                         Pitching Attributes
                       </td>
                     </tr>
@@ -181,8 +182,8 @@ export default function AttributeComparisonView({ players }: Props) {
                 {/* Fielding & Running Section */}
                 {activeTab === 'fielding' && (
                   <>
-                    <tr className="bg-gradient-to-r from-comet-yellow/20 to-nebula-orange/20">
-                      <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-comet-yellow text-shadow">
+                    <tr className="bg-gradient-to-r from-field-green/20 to-nebula-teal/20">
+                      <td colSpan={selectedPlayers.length + 1} className="px-4 py-2 font-display font-bold text-field-green text-shadow">
                         Fielding & Running
                       </td>
                     </tr>

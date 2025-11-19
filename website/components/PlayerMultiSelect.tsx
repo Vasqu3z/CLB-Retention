@@ -71,7 +71,7 @@ export default function PlayerMultiSelect({
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
     };
-  }, [isOpen]);
+  }, [isOpen, selectedPlayers.length]);
 
   // Filter players based on search query
   const filteredPlayers = players.filter(player =>

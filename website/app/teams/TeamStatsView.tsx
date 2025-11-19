@@ -278,7 +278,7 @@ export default function TeamStatsView({
                 : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
             }`}
           >
-            Fielding
+            Fielding & Running
           </button>
         </nav>
       </div>

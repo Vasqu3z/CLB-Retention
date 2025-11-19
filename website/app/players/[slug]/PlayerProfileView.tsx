@@ -157,164 +157,170 @@ export default function PlayerProfileView({
 
       {/* Stats Tab */}
       {activeTab === 'stats' && (
-        <div className="space-y-6">
-          {/* Season Toggle */}
-          {hasPlayoffStats && (
-            <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-          )}
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
+          <div className="space-y-6">
+            {/* Season Toggle */}
+            {hasPlayoffStats && (
+              <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+            )}
 
-          {currentStats ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Hitting Stats */}
-              <div className="glass-card p-6 hover:border-nebula-orange/50">
-                <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
-                <div className="space-y-2 font-mono text-sm">
-                  <StatRowWithLabel label="Games Played (GP)" value={currentStats.gp} />
-                  <StatRowWithLabel label="At Bats (AB)" value={currentStats.ab} />
-                  <StatRowWithLabel label="Hits (H)" value={currentStats.h} />
-                  <StatRowWithLabel label="Home Runs (HR)" value={currentStats.hr} />
-                  <StatRowWithLabel label="RBI" value={currentStats.rbi} />
-                  <StatRowWithLabel label="Hits Robbed (ROB)" value={currentStats.rob} />
-                  <StatRowWithLabel label="Double Plays (DP)" value={currentStats.dp} />
-                  <StatRowWithLabel label="Batting Average (AVG)" value={currentStats.avg} highlight />
-                  <StatRowWithLabel label="On-Base Percentage (OBP)" value={currentStats.obp} highlight />
-                  <StatRowWithLabel label="Slugging (SLG)" value={currentStats.slg} highlight />
-                  <StatRowWithLabel label="OPS" value={currentStats.ops} highlight />
+            {currentStats ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Hitting Stats */}
+                <div className="glass-card p-6 hover:border-nebula-orange/50">
+                  <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
+                  <div className="space-y-2 font-mono text-sm">
+                    <StatRowWithLabel label="Games Played (GP)" value={currentStats.gp} />
+                    <StatRowWithLabel label="At Bats (AB)" value={currentStats.ab} />
+                    <StatRowWithLabel label="Hits (H)" value={currentStats.h} />
+                    <StatRowWithLabel label="Home Runs (HR)" value={currentStats.hr} />
+                    <StatRowWithLabel label="RBI" value={currentStats.rbi} />
+                    <StatRowWithLabel label="Hits Robbed (ROB)" value={currentStats.rob} />
+                    <StatRowWithLabel label="Double Plays (DP)" value={currentStats.dp} />
+                    <StatRowWithLabel label="Batting Average (AVG)" value={currentStats.avg} highlight />
+                    <StatRowWithLabel label="On-Base Percentage (OBP)" value={currentStats.obp} highlight />
+                    <StatRowWithLabel label="Slugging (SLG)" value={currentStats.slg} highlight />
+                    <StatRowWithLabel label="OPS" value={currentStats.ops} highlight />
+                  </div>
+                </div>
+
+                {/* Pitching Stats */}
+                <div className="glass-card p-6 hover:border-solar-gold/50">
+                  <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
+                  <div className="space-y-2 font-mono text-sm">
+                    <StatRowWithLabel label="Innings Pitched (IP)" value={currentStats.ip?.toFixed(2)} />
+                    <StatRowWithLabel label="Wins (W)" value={currentStats.w} />
+                    <StatRowWithLabel label="Losses (L)" value={currentStats.l} />
+                    <StatRowWithLabel label="Saves (SV)" value={currentStats.sv} />
+                    <StatRowWithLabel label="Hits Allowed (H)" value={currentStats.hAllowed} />
+                    <StatRowWithLabel label="Home Runs Allowed (HR)" value={currentStats.hrAllowed} />
+                    <StatRowWithLabel label="ERA" value={currentStats.era} highlight />
+                    <StatRowWithLabel label="WHIP" value={currentStats.whip} highlight />
+                    <StatRowWithLabel label="Batting Average Against (BAA)" value={currentStats.baa} highlight />
+                  </div>
+                </div>
+
+                {/* Fielding Stats */}
+                <div className="glass-card p-6 hover:border-emerald-500/50">
+                  <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding</h3>
+                  <div className="space-y-2 font-mono text-sm">
+                    <StatRowWithLabel label="Number of Plays (NP)" value={currentStats.np} />
+                    <StatRowWithLabel label="Errors (E)" value={currentStats.e} />
+                    <StatRowWithLabel label="Stolen Bases (SB)" value={currentStats.sb} />
+                    <StatRowWithLabel label="Caught Stealing (CS)" value={currentStats.cs} />
+                    <StatRowWithLabel label="Outs Above Average (OAA)" value={currentStats.oaa} highlight />
+                  </div>
                 </div>
               </div>
-
-              {/* Pitching Stats */}
-              <div className="glass-card p-6 hover:border-solar-gold/50">
-                <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
-                <div className="space-y-2 font-mono text-sm">
-                  <StatRowWithLabel label="Innings Pitched (IP)" value={currentStats.ip?.toFixed(2)} />
-                  <StatRowWithLabel label="Wins (W)" value={currentStats.w} />
-                  <StatRowWithLabel label="Losses (L)" value={currentStats.l} />
-                  <StatRowWithLabel label="Saves (SV)" value={currentStats.sv} />
-                  <StatRowWithLabel label="Hits Allowed (H)" value={currentStats.hAllowed} />
-                  <StatRowWithLabel label="Home Runs Allowed (HR)" value={currentStats.hrAllowed} />
-                  <StatRowWithLabel label="ERA" value={currentStats.era} highlight />
-                  <StatRowWithLabel label="WHIP" value={currentStats.whip} highlight />
-                  <StatRowWithLabel label="Batting Average Against (BAA)" value={currentStats.baa} highlight />
-                </div>
+            ) : (
+              <div className="glass-card p-12 text-center">
+                <p className="text-star-gray font-mono">
+                  No {isPlayoffs ? 'playoff' : 'regular season'} stats available for this player.
+                </p>
               </div>
-
-              {/* Fielding Stats */}
-              <div className="glass-card p-6 hover:border-emerald-500/50">
-                <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding</h3>
-                <div className="space-y-2 font-mono text-sm">
-                  <StatRowWithLabel label="Number of Plays (NP)" value={currentStats.np} />
-                  <StatRowWithLabel label="Errors (E)" value={currentStats.e} />
-                  <StatRowWithLabel label="Stolen Bases (SB)" value={currentStats.sb} />
-                  <StatRowWithLabel label="Caught Stealing (CS)" value={currentStats.cs} />
-                  <StatRowWithLabel label="Outs Above Average (OAA)" value={currentStats.oaa} highlight />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="glass-card p-12 text-center">
-              <p className="text-star-gray font-mono">
-                No {isPlayoffs ? 'playoff' : 'regular season'} stats available for this player.
-              </p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </FadeIn>
       )}
 
       {/* Attributes Tab */}
       {activeTab === 'attributes' && attributes && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Pitching Attributes */}
-          <div className="glass-card p-6 hover:border-solar-gold/50">
-            <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
-            <div className="space-y-2 font-mono text-sm">
-              <StatRow label="Overall" value={attributes.pitchingOverall} highlight />
-              <StatRow label="Pre-Charge" value={attributes.preCharge} />
-              <StatRow label="Star Pitch" value={attributes.starPitch} />
-              <StatRow label="Fastball Speed" value={attributes.fastballSpeed} />
-              <StatRow label="Curveball Speed" value={attributes.curveballSpeed} />
-              <StatRow label="Curve" value={attributes.curve} />
-              <StatRow label="Stamina" value={attributes.stamina} />
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Pitching Attributes */}
+            <div className="glass-card p-6 hover:border-solar-gold/50">
+              <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
+              <div className="space-y-2 font-mono text-sm">
+                <StatRow label="Overall" value={attributes.pitchingOverall} highlight />
+                <StatRow label="Pre-Charge" value={attributes.preCharge} />
+                <StatRow label="Star Pitch" value={attributes.starPitch} />
+                <StatRow label="Fastball Speed" value={attributes.fastballSpeed} />
+                <StatRow label="Curveball Speed" value={attributes.curveballSpeed} />
+                <StatRow label="Curve" value={attributes.curve} />
+                <StatRow label="Stamina" value={attributes.stamina} />
+              </div>
             </div>
-          </div>
 
-          {/* Hitting Attributes */}
-          <div className="glass-card p-6 hover:border-nebula-orange/50">
-            <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
-            <div className="space-y-2 font-mono text-sm">
-              <StatRow label="Overall" value={attributes.battingOverall} highlight />
-              <StatRow label="Star Swing" value={attributes.starSwing} />
-              <StatRow label="Hit Trajectory" value={attributes.hittingTrajectory} />
-              <StatRow label="Hit Curve" value={attributes.hitCurve} />
-              <StatRow label="Slap Contact" value={attributes.slapHitContact} />
-              <StatRow label="Charge Contact" value={attributes.chargeHitContact} />
-              <StatRow label="Slap Power" value={attributes.slapHitPower} />
-              <StatRow label="Charge Power" value={attributes.chargeHitPower} />
+            {/* Hitting Attributes */}
+            <div className="glass-card p-6 hover:border-nebula-orange/50">
+              <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
+              <div className="space-y-2 font-mono text-sm">
+                <StatRow label="Overall" value={attributes.battingOverall} highlight />
+                <StatRow label="Star Swing" value={attributes.starSwing} />
+                <StatRow label="Hit Trajectory" value={attributes.hittingTrajectory} />
+                <StatRow label="Hit Curve" value={attributes.hitCurve} />
+                <StatRow label="Slap Contact" value={attributes.slapHitContact} />
+                <StatRow label="Charge Contact" value={attributes.chargeHitContact} />
+                <StatRow label="Slap Power" value={attributes.slapHitPower} />
+                <StatRow label="Charge Power" value={attributes.chargeHitPower} />
+              </div>
             </div>
-          </div>
 
-          {/* Fielding & Speed Attributes */}
-          <div className="glass-card p-6 hover:border-emerald-500/50">
-            <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding & Speed</h3>
-            <div className="space-y-2 font-mono text-sm">
-              <StatRow label="Fielding Overall" value={attributes.fieldingOverall} highlight />
-              <StatRow label="Speed Overall" value={attributes.speedOverall} highlight />
-              <StatRow label="Fielding" value={attributes.fielding} />
-              <StatRow label="Throwing Speed" value={attributes.throwingSpeed} />
-              <StatRow label="Speed" value={attributes.speed} />
-              <StatRow label="Bunting" value={attributes.bunting} />
+            {/* Fielding & Speed Attributes */}
+            <div className="glass-card p-6 hover:border-emerald-500/50">
+              <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding & Speed</h3>
+              <div className="space-y-2 font-mono text-sm">
+                <StatRow label="Fielding Overall" value={attributes.fieldingOverall} highlight />
+                <StatRow label="Speed Overall" value={attributes.speedOverall} highlight />
+                <StatRow label="Fielding" value={attributes.fielding} />
+                <StatRow label="Throwing Speed" value={attributes.throwingSpeed} />
+                <StatRow label="Speed" value={attributes.speed} />
+                <StatRow label="Bunting" value={attributes.bunting} />
+              </div>
             </div>
           </div>
-        </div>
+        </FadeIn>
       )}
 
       {/* Chemistry Tab */}
       {activeTab === 'chemistry' && chemistry && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Positive Chemistry */}
-          <div className="glass-card p-6 border-green-400/30 hover:border-green-400/50">
-            <h3 className="text-xl font-display font-bold text-green-400 mb-4 text-shadow">
-              Positive Chemistry ({chemistry.posCount})
-            </h3>
-            {chemistry.positive.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto pr-2 space-y-1" onWheel={(e) => e.stopPropagation()}>
-                {chemistry.positive.map((player, idx) => (
-                  <Link
-                    key={idx}
-                    href={`/players/${playerNameToSlug(player)}`}
-                    className="block text-star-gray hover:text-green-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-green-400/10 underline decoration-green-400/30 hover:decoration-green-400"
-                  >
-                    {player}
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-star-gray font-mono text-sm">No positive chemistry</div>
-            )}
-          </div>
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Positive Chemistry */}
+            <div className="glass-card p-6 border-green-400/30 hover:border-green-400/50">
+              <h3 className="text-xl font-display font-bold text-green-400 mb-4 text-shadow">
+                Positive Chemistry ({chemistry.posCount})
+              </h3>
+              {chemistry.positive.length > 0 ? (
+                <div className="max-h-96 overflow-y-auto pr-2 space-y-1" onWheel={(e) => e.stopPropagation()}>
+                  {chemistry.positive.map((player, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/players/${playerNameToSlug(player)}`}
+                      className="block text-star-gray hover:text-green-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-green-400/10 underline decoration-green-400/30 hover:decoration-green-400"
+                    >
+                      {player}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-star-gray font-mono text-sm">No positive chemistry</div>
+              )}
+            </div>
 
-          {/* Negative Chemistry */}
-          <div className="glass-card p-6 border-red-400/30 hover:border-red-400/50">
-            <h3 className="text-xl font-display font-bold text-red-400 mb-4 text-shadow">
-              Negative Chemistry ({chemistry.negCount})
-            </h3>
-            {chemistry.negative.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto pr-2 space-y-1" onWheel={(e) => e.stopPropagation()}>
-                {chemistry.negative.map((player, idx) => (
-                  <Link
-                    key={idx}
-                    href={`/players/${playerNameToSlug(player)}`}
-                    className="block text-star-gray hover:text-red-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-red-400/10 underline decoration-red-400/30 hover:decoration-red-400"
-                  >
-                    {player}
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-star-gray font-mono text-sm">No negative chemistry</div>
-            )}
+            {/* Negative Chemistry */}
+            <div className="glass-card p-6 border-red-400/30 hover:border-red-400/50">
+              <h3 className="text-xl font-display font-bold text-red-400 mb-4 text-shadow">
+                Negative Chemistry ({chemistry.negCount})
+              </h3>
+              {chemistry.negative.length > 0 ? (
+                <div className="max-h-96 overflow-y-auto pr-2 space-y-1" onWheel={(e) => e.stopPropagation()}>
+                  {chemistry.negative.map((player, idx) => (
+                    <Link
+                      key={idx}
+                      href={`/players/${playerNameToSlug(player)}`}
+                      className="block text-star-gray hover:text-red-400 transition-all duration-200 font-mono text-sm py-1 px-2 rounded hover:bg-red-400/10 underline decoration-red-400/30 hover:decoration-red-400"
+                    >
+                      {player}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-star-gray font-mono text-sm">No negative chemistry</div>
+              )}
+            </div>
           </div>
-        </div>
+        </FadeIn>
       )}
     </div>
   );

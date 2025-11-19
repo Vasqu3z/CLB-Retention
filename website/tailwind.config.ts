@@ -25,6 +25,7 @@ const config: Config = {
         // Cool Accents
         'nebula-cyan': 'var(--nebula-cyan)',
         'nebula-teal': 'var(--nebula-teal)',
+        'nebula-purple': 'var(--nebula-purple)',
 
         // Baseball-Specific Colors
         'field-green': 'var(--field-green)',

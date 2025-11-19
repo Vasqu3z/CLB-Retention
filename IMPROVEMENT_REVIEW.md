@@ -1,8 +1,15 @@
-# Comets League Baseball Website - Comprehensive Improvement Review
+# Comets League Baseball Website - Remaining Improvements
 
 ## Executive Summary
 
-The Comets League Baseball website is a beautifully designed Next.js application with excellent visual design, good performance practices, and interactive tools. However, there are opportunities for improvement across performance optimization, user experience for baseball novices, accessibility, and information architecture.
+The Comets League Baseball website has successfully implemented several key improvements including stat tooltips, keyboard navigation for the Tools dropdown, lazy loading for team emblems, and player profile linking. This document now focuses on the remaining opportunities for improvement across performance optimization, user experience, accessibility, and information architecture.
+
+**Recent Implementations ✅:**
+- StatTooltip component with 40+ baseball stat definitions
+- Keyboard-accessible Tools dropdown with ARIA attributes
+- Lazy loading for team emblem images
+- Player name links throughout site (Leaders, Teams pages)
+- LiveStatsIndicator component integration
 
 ---
 
@@ -14,8 +21,9 @@ The Comets League Baseball website is a beautifully designed Next.js application
 - Good use of caching (unstable_cache wrapper for Google Sheets API)
 - Memoization in DataTable component for sorted data
 - Font optimization with display: 'swap'
+- ✅ Team emblems now lazy load in Header
 
-### Issues Found
+### Remaining Issues
 
 #### 1.1 Bundle Size and Component Rendering
 **File:** `/home/user/Comets-League-Baseball/website/app/page.tsx`
@@ -26,41 +34,6 @@ The Comets League Baseball website is a beautifully designed Next.js application
 - Consider code-splitting navigation cards into a separate lazy-loaded component
 - Implement React.memo() on navigation cards to prevent re-renders
 - Consider using CSS animations instead of Framer Motion for simple fade effects
-
----
-
-#### 1.2 Image Loading Strategy
-**Files:** 
-- `/home/user/Comets-League-Baseball/website/app/page.tsx` (line 114)
-- `/home/user/Comets-League-Baseball/website/components/Header.tsx` (lines 52-88)
-
-**Issue:** Multiple team emblem images (8 teams) load immediately in header without lazy loading
-
-**Recommendation:**
-- Implement `loading="lazy"` on team emblem images in header (line 82 of Header.tsx)
-- Consider displaying emblem images only on scroll or on demand
-- Add skeleton loaders for team images while loading
-
-```typescript
-// Current (Header.tsx line 82-87):
-<Image
-  src={logos.emblem}
-  alt={team.name}
-  width={32}
-  height={32}
-  className="object-contain group-hover:drop-shadow-..."
-/>
-
-// Recommended:
-<Image
-  src={logos.emblem}
-  alt={team.name}
-  width={32}
-  height={32}
-  loading="lazy"
-  className="object-contain group-hover:drop-shadow-..."
-/>
-```
 
 ---
 
@@ -127,7 +100,7 @@ const { hitters, pitchers, fielders } = useMemo(() => {
     pitchers: [],
     fielders: []
   };
-  
+
   for (const p of filteredPlayers) {
     if (p.ab && p.ab > 0) categorized.hitters.push(p);
     if (p.ip && p.ip > 0) categorized.pitchers.push(p);
@@ -156,7 +129,6 @@ const { hitters, pitchers, fielders } = useMemo(() => {
 ### Performance Optimization Summary Table
 | Issue | Severity | Impact | Effort |
 |-------|----------|--------|--------|
-| Team emblem lazy loading | Medium | Reduces initial page load by ~5-15KB | Low |
 | Multiple array filters | Medium | Reduces memory usage on player pages | Low |
 | Virtual scrolling for large tables | Medium | Improves responsiveness with 500+ rows | Medium |
 | Home page animation performance | Low | Smoother page interactions | Medium |
@@ -172,58 +144,27 @@ const { hitters, pitchers, fielders } = useMemo(() => {
 - Existing loading and empty states
 - Season toggle for regular/playoff data
 - Responsive mobile design
+- ✅ Comprehensive StatTooltip system with baseball stat definitions
+- ✅ Player links on Leaders and Team roster pages
 
-### Issues and Opportunities
+### Remaining Opportunities
 
-#### 2.1 Missing Stat Explanations and Tooltips
-**Files:** 
-- `/home/user/Comets-League-Baseball/website/app/standings/StandingsTable.tsx` (lines 160-200)
-- `/home/user/Comets-League-Baseball/website/app/players/PlayersView.tsx` (lines 66-196)
-- `/home/user/Comets-League-Baseball/website/app/leaders/LeadersView.tsx` (lines 83-110)
+#### 2.2 Missing Comprehensive Stats Guide Page
 
-**Issue:** Abbreviations like "W", "L", "Win %", "RS", "RA", "OBP", "SLG", "OPS" are shown without explanation. Casual fans won't know what these mean.
+**Issue:** While stat tooltips are now available, a centralized glossary would help users learn all stats at once.
 
 **Recommendations:**
 
-1. **Create a tooltip system** for stat abbreviations:
-```typescript
-// New component: /components/StatTooltip.tsx
-interface StatTooltipProps {
-  abbr: string;
-  description: string;
-  children: React.ReactNode;
-}
-
-export function StatTooltip({ abbr, description, children }: StatTooltipProps) {
-  return (
-    <div className="group relative inline-block">
-      {children}
-      <div className="invisible group-hover:visible absolute z-10 w-48 bg-space-navy border border-nebula-orange rounded-lg p-3 text-xs text-star-gray bottom-full mb-2">
-        <div className="font-bold text-star-white mb-1">{abbr}</div>
-        {description}
-      </div>
-    </div>
-  );
-}
-
-// Usage in StandingsTable.tsx:
-<StatTooltip 
-  abbr="Win %" 
-  description="Winning percentage (Wins ÷ Total Games Played)"
->
-  <span className="font-bold text-comet-yellow">{row.winPct}</span>
-</StatTooltip>
-```
-
-2. **Add a legend page** at `/app/stats-guide/page.tsx`:
-   - Comprehensive guide to all baseball statistics
+**Add a comprehensive stats guide page** at `/app/stats-guide/page.tsx`:
    - Organized by category (hitting, pitching, fielding)
-   - Include calculation formulas
+   - Include calculation formulas (already in tooltips, but show all together)
    - Link from each stats page to relevant sections
+   - Add good/bad ranges for each stat
+   - Example interpretations
 
 ---
 
-#### 2.2 Missing Context Navigation
+#### 2.3 Missing Context Navigation
 **Files:**
 - `/home/user/Comets-League-Baseball/website/app/standings/page.tsx`
 - `/home/user/Comets-League-Baseball/website/app/players/[slug]/PlayerProfileView.tsx`
@@ -245,23 +186,23 @@ export function StatTooltip({ abbr, description, children }: StatTooltipProps) {
     Related Content
   </h3>
   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-    <Link 
+    <Link
       href={`/teams/${teamSlug}`}
       className="p-3 rounded-lg bg-space-blue/30 hover:bg-space-blue/50 transition-all text-center"
     >
       <div className="text-xs text-star-gray">Team Roster</div>
       <div className="font-semibold text-star-white">{team}</div>
     </Link>
-    
-    <Link 
+
+    <Link
       href={`/tools/stats?compare=${playerName}`}
       className="p-3 rounded-lg bg-space-blue/30 hover:bg-space-blue/50 transition-all text-center"
     >
       <div className="text-xs text-star-gray">Compare Stats</div>
       <div className="font-semibold text-star-white">vs Others</div>
     </Link>
-    
-    <Link 
+
+    <Link
       href="/leaders"
       className="p-3 rounded-lg bg-space-blue/30 hover:bg-space-blue/50 transition-all text-center"
     >
@@ -293,7 +234,7 @@ export function StatTooltip({ abbr, description, children }: StatTooltipProps) {
 
 ---
 
-#### 2.3 Poor Mobile Data Density
+#### 2.4 Poor Mobile Data Density
 **Files:**
 - `/home/user/Comets-League-Baseball/website/components/DataTable.tsx` (lines 140-220)
 - `/home/user/Comets-League-Baseball/website/app/standings/StandingsTable.tsx`
@@ -313,7 +254,7 @@ export function StatTooltip({ abbr, description, children }: StatTooltipProps) {
       {isCondensed && enableCondensed && (
         <span className="text-nebula-orange/70 italic">
           {visibleColumns.length} of {columns.length} columns visible
-          <button 
+          <button
             onClick={() => setIsCondensed(false)}
             className="ml-2 underline text-nebula-orange hover:text-nebula-orange/80"
           >
@@ -335,7 +276,7 @@ export function StatTooltip({ abbr, description, children }: StatTooltipProps) {
 
 ---
 
-#### 2.4 No Sorting/Filtering on many pages
+#### 2.5 No Sorting/Filtering on many pages
 **Files:**
 - `/home/user/Comets-League-Baseball/website/app/schedule/ScheduleView.tsx`
 - `/home/user/Comets-League-Baseball/website/app/teams/page.tsx`
@@ -352,8 +293,8 @@ const [selectedTeamFilter, setSelectedTeamFilter] = useState<string | null>(null
 
 const filteredGames = useMemo(() => {
   if (!selectedTeamFilter) return schedule;
-  return schedule.filter(game => 
-    game.homeTeam === selectedTeamFilter || 
+  return schedule.filter(game =>
+    game.homeTeam === selectedTeamFilter ||
     game.awayTeam === selectedTeamFilter
   );
 }, [schedule, selectedTeamFilter]);
@@ -381,7 +322,7 @@ const filteredGames = useMemo(() => {
 
 ---
 
-#### 2.5 Lack of Feedback for User Actions
+#### 2.6 Lack of Feedback for User Actions
 **Files:**
 - `/home/user/Comets-League-Baseball/website/app/tools/lineup/LineupBuilderView.tsx` (lines 43-50, 70-72)
 - `/home/user/Comets-League-Baseball/website/app/tools/stats/StatsComparisonView.tsx`
@@ -419,8 +360,7 @@ const filteredGames = useMemo(() => {
 ### UI/UX Enhancements Summary Table
 | Issue | Severity | Impact | Effort |
 |-------|----------|--------|--------|
-| Missing stat tooltips | High | Confuses novice fans | Medium |
-| Missing stats guide page | High | Baseball literacy barrier | Medium |
+| Missing comprehensive stats guide page | Medium | Helpful for learning all stats | Medium |
 | No contextual navigation | Medium | Limits discoverability | Medium |
 | Poor mobile table UX | Medium | Bad experience on phones | High |
 | No schedule/team filtering | Low | Convenience feature | Low |
@@ -432,18 +372,16 @@ const filteredGames = useMemo(() => {
 
 ### Current State
 - Good visual design and navigation
-- Existing stats pages but no educational context
-- Some abbreviations defined in legends but not explained
+- ✅ StatTooltip system explains abbreviations throughout site
+- Some abbreviations defined in legends
 
-### Critical Gaps
+### Remaining Gaps
 
-#### 3.1 Baseball Terms and Concepts
+#### 3.1 No Comprehensive Baseball Glossary Page
 **Files:**
-- `/home/user/Comets-League-Baseball/website/app/standings/page.tsx` (Legend at lines 168-200)
-- `/home/user/Comets-League-Baseball/website/app/players/PlayersView.tsx` (Column definitions)
-- `/home/user/Comets-League-Baseball/website/app/leaders/LeadersView.tsx`
+- Site-wide need for centralized glossary
 
-**Issue:** The site assumes users understand baseball. Terms like "ERA", "WHIP", "Win %", "SLG", "OPS" are shown without explanation.
+**Issue:** While stat tooltips are helpful in context, users can't browse all definitions in one place to learn before using the site.
 
 **Recommendations:**
 
@@ -455,7 +393,7 @@ const filteredGames = useMemo(() => {
 // - Pitching Stats (IP, W, L, SV, ERA, WHIP, BAA, etc.)
 // - Fielding Stats (NP, E, SB, CS, OAA, etc.)
 // - League-specific Stats (DP, ROB, etc.)
-// 
+//
 // Each entry should include:
 // - Full name
 // - Calculation formula
@@ -492,7 +430,7 @@ export const glossaryEntries = [
    - Cover: positions, scoring, basic stats
 
 3. **Explain league-specific stats**:
-   - ROB (Runners On Base performance)
+   - ROB (Hits Robbed - defensive stat)
    - DP (Double Plays Hit Into)
    - OAA (Outs Above Average)
    - NP (Nice Plays)
@@ -590,7 +528,7 @@ const classDescriptions = {
 
 <div className="glass-card p-6 mb-6">
   <h2 className="text-xl font-display font-semibold mb-4">Understanding Chemistry</h2>
-  
+
   <div className="space-y-4 text-sm text-star-gray">
     <div>
       <div className="flex items-center gap-2 mb-1">
@@ -599,7 +537,7 @@ const classDescriptions = {
       </div>
       <p>Players have positive chemistry when they complement each other's playing styles. +100 or higher indicates strong synergy.</p>
     </div>
-    
+
     <div>
       <div className="flex items-center gap-2 mb-1">
         <div className="w-3 h-3 rounded-full bg-nebula-coral/50"></div>
@@ -658,7 +596,7 @@ const classDescriptions = {
 ### Accessibility for Novices Summary Table
 | Issue | Severity | Impact | Effort |
 |-------|----------|--------|--------|
-| No baseball glossary | Critical | Confuses most new users | Medium |
+| No baseball glossary page | High | Would centralize all stat info | Medium |
 | League rules/format unexplained | High | Users don't understand context | Medium |
 | Chemistry system unclear | High | Tools are confusing | Low |
 | Player class not explained | Medium | Attribute info is useless | Low |
@@ -676,8 +614,10 @@ const classDescriptions = {
 - Focus ring support on interactive elements
 - Good color contrast in most places
 - Responsive design works well
+- ✅ Tools dropdown now keyboard accessible with Enter/Space/Escape
+- ✅ Click-outside handling and proper ARIA attributes
 
-### Issues and Improvements
+### Remaining Improvements
 
 #### 4.1 Missing ARIA Labels on Key Elements
 **Files:**
@@ -707,7 +647,7 @@ const classDescriptions = {
       : 'none' // Add 'none' when not sorted
   }
   aria-label={
-    column.sortable !== false 
+    column.sortable !== false
       ? `${column.label}, sortable column. Click to sort by ${column.label}`
       : column.label
   }
@@ -731,7 +671,7 @@ const classDescriptions = {
 ```typescript
 // In team filter component:
 <div className="mb-4">
-  <label 
+  <label
     htmlFor="team-filter"
     className="block text-sm font-semibold text-star-gray mb-2"
   >
@@ -754,15 +694,13 @@ const classDescriptions = {
 
 ---
 
-#### 4.2 Keyboard Navigation Gaps
+#### 4.2 Remaining Keyboard Navigation Gaps
 **Files:**
 - `/home/user/Comets-League-Baseball/website/app/tools/lineup/LineupBuilderView.tsx` (Drag & drop)
 - `/home/user/Comets-League-Baseball/website/app/schedule/ScheduleView.tsx` (Game cards)
-- `/home/user/Comets-League-Baseball/website/components/Header.tsx` (Tools dropdown)
 
-**Issue:** 
+**Issue:**
 - Drag & drop operations are not keyboard accessible
-- Tools dropdown only opens on hover (not accessible without mouse)
 - Game cards aren't properly keyboard navigable
 
 **Recommendations:**
@@ -792,59 +730,7 @@ const handlePositionKeyDown = (e: React.KeyboardEvent, position: number) => {
 </button>
 ```
 
-2. **Make Tools dropdown keyboard accessible**:
-```typescript
-// In Header.tsx, improve dropdown:
-const [isToolsOpen, setIsToolsOpen] = useState(false);
-
-<div
-  className="relative"
-  onMouseEnter={() => setIsToolsOpen(true)}
-  onMouseLeave={() => setIsToolsOpen(false)}
->
-  <button
-    className={...}
-    onClick={() => setIsToolsOpen(!isToolsOpen)}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        setIsToolsOpen(!isToolsOpen);
-      }
-      if (e.key === 'Escape') {
-        setIsToolsOpen(false);
-      }
-    }}
-    aria-haspopup="menu"
-    aria-expanded={isToolsOpen}
-  >
-    Tools ▾
-  </button>
-  
-  {isToolsOpen && (
-    <div 
-      className="..."
-      role="menu"
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') setIsToolsOpen(false);
-      }}
-    >
-      {toolsItems.map((tool) => (
-        <Link
-          key={tool.href}
-          href={tool.href}
-          className="..."
-          onClick={() => setIsToolsOpen(false)}
-          role="menuitem"
-        >
-          {tool.label}
-        </Link>
-      ))}
-    </div>
-  )}
-</div>
-```
-
-3. **Make schedule cards keyboard accessible**:
+2. **Make schedule cards keyboard accessible**:
 ```typescript
 // In ScheduleView.tsx, game cards should be buttons or links:
 {game.boxScoreUrl ? (
@@ -952,8 +838,7 @@ npm install --save-dev @axe-core/cli
 | Issue | Severity | Impact | Effort |
 |-------|----------|--------|--------|
 | Missing ARIA labels | Medium | Confusion for screen readers | Low |
-| Keyboard navigation gaps | High | Inaccessible with keyboard only | Medium |
-| Dropdown not keyboard accessible | Medium | Users can't access Tools | Low |
+| Keyboard navigation gaps (Lineup Builder) | High | Can't use lineup builder | Medium |
 | Color contrast unknown | Medium | May fail WCAG AA | Low |
 | Heading hierarchy issues | Low | Navigation difficulty | Low |
 | Drag & drop not keyboard accessible | High | Can't use lineup builder | Medium |
@@ -1022,7 +907,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
 2. **Add "back to" navigation in detail pages**:
 ```typescript
 // In PlayerProfileView.tsx:
-<Link 
+<Link
   href={`/teams/${teamSlug}`}
   className="flex items-center gap-2 text-nebula-cyan hover:text-nebula-teal mb-4"
 >
@@ -1158,20 +1043,20 @@ But the site doesn't acknowledge these different workflows.
   <h2 className="text-2xl font-display font-bold mb-6">
     How to Use Comets League Baseball
   </h2>
-  
+
   <div className="grid md:grid-cols-3 gap-6">
     <Link href="/getting-started" className="glass-card p-6 hover:scale-[1.02] transition-all">
       <Users className="w-8 h-8 text-nebula-cyan mb-3" />
       <h3 className="font-semibold mb-2">I'm New to This</h3>
       <p className="text-sm text-star-gray">Learn baseball stats and league structure</p>
     </Link>
-    
+
     <Link href="/workflows" className="glass-card p-6 hover:scale-[1.02] transition-all">
       <BookOpen className="w-8 h-8 text-nebula-orange mb-3" />
       <h3 className="font-semibold mb-2">Recommended Paths</h3>
       <p className="text-sm text-star-gray">Based on your interests and goals</p>
     </Link>
-    
+
     <Link href="/tools" className="glass-card p-6 hover:scale-[1.02] transition-all">
       <Zap className="w-8 h-8 text-solar-gold mb-3" />
       <h3 className="font-semibold mb-2">Advanced Tools</h3>
@@ -1241,7 +1126,7 @@ export default function SitemapPage() {
   return (
     <div className="space-y-8">
       <h1>Site Map</h1>
-      
+
       <section>
         <h2>Core League Data</h2>
         <ul className="space-y-2 ml-4">
@@ -1253,7 +1138,7 @@ export default function SitemapPage() {
           <li><Link href="/playoffs">Playoffs</Link> - Playoff bracket</li>
         </ul>
       </section>
-      
+
       <section>
         <h2>Advanced Tools</h2>
         <ul className="space-y-2 ml-4">
@@ -1263,7 +1148,7 @@ export default function SitemapPage() {
           <li><Link href="/tools/lineup">Lineup Builder</Link> - Build lineups</li>
         </ul>
       </section>
-      
+
       <section>
         <h2>Resources</h2>
         <ul className="space-y-2 ml-4">
@@ -1306,14 +1191,14 @@ export default function SitemapPage() {
 ## IMPLEMENTATION PRIORITY MATRIX
 
 ### Critical (Do First)
-1. Add stat tooltips and glossary (High impact for novices)
-2. Fix keyboard navigation in Tools dropdown (Accessibility blocker)
+1. ✅ ~~Add stat tooltips~~ (COMPLETED - StatTooltip component integrated)
+2. ✅ ~~Fix keyboard navigation in Tools dropdown~~ (COMPLETED - Now accessible)
 3. Make lineup builder keyboard accessible (Accessibility blocker)
 4. Add league info / rules documentation (Sets context)
-5. Create stats guide page (Educate novices)
+5. Create stats glossary page (Centralize all stat info for learning)
 
 ### High Priority (Do Soon)
-1. Add ARIA labels throughout
+1. Add ARIA labels to DataTable columns
 2. Implement breadcrumb navigation
 3. Create tools hub page with workflows
 4. Optimize array filtering in PlayersView
@@ -1328,58 +1213,15 @@ export default function SitemapPage() {
 
 ### Low Priority (Nice to Have)
 1. Global command palette search
-2. Lazy load team emblems in header
-3. Add sitemap page
-4. Card view alternative to tables on mobile
-5. Status message styling improvements
-
----
-
-## SPECIFIC RECOMMENDATIONS BY FILE
-
-### `/app/page.tsx`
-- [ ] Add "First Time Here?" quick start section
-- [ ] Add onboarding buttons for different user types
-- [ ] Consider lazy-loading navigation cards
-
-### `/components/DataTable.tsx`
-- [ ] Add proper aria-sort attribute values
-- [ ] Show column count in condensed mode indicator
-- [ ] Consider implementing virtual scrolling
-
-### `/app/standings/page.tsx`
-- [ ] Add links to individual team pages
-- [ ] Add stat explanation tooltips
-
-### `/app/players/PlayersView.tsx`
-- [ ] Optimize array filtering (combine into single useMemo)
-- [ ] Add compare buttons to player rows
-- [ ] Add link to stats comparison tool
-
-### `/components/Header.tsx`
-- [ ] Make Tools dropdown keyboard accessible
-- [ ] Add keyboard event handlers to dropdown button
-- [ ] Lazy load team emblem images
-
-### `/app/tools/`
-- [ ] Create /tools/page.tsx hub page
-- [ ] Add tool descriptions and use cases
-- [ ] Add "related tools" sections to each tool
-
-### `/app/leaders/LeadersView.tsx`
-- [ ] Add stat explanations to card titles
-- [ ] Link to stats guide page
-
-### `/app/players/[slug]/PlayerProfileView.tsx`
-- [ ] Add related content section
-- [ ] Explain player class/attributes
-- [ ] Link to teammates
+2. Add sitemap page
+3. Card view alternative to tables on mobile
+4. Status message styling improvements
 
 ---
 
 ## NEW PAGES TO CREATE
 
-1. `/app/glossary/page.tsx` - Baseball stats glossary
+1. `/app/glossary/page.tsx` - Baseball stats glossary (centralize StatTooltip definitions)
 2. `/app/league-info/page.tsx` - League rules and structure
 3. `/app/tools/page.tsx` - Tools hub with descriptions
 4. `/app/getting-started/page.tsx` - Onboarding guide
@@ -1389,7 +1231,7 @@ export default function SitemapPage() {
 
 ## COMPONENT IMPROVEMENTS
 
-1. Create `/components/StatTooltip.tsx` - Reusable tooltip for stats
+1. ✅ ~~Create `/components/StatTooltip.tsx`~~ (COMPLETED - Comprehensive with 40+ definitions)
 2. Create `/components/Breadcrumb.tsx` - Navigation breadcrumbs
 3. Create `/components/RelatedContent.tsx` - Quick links to related pages
 4. Enhance `/components/LoadingState.tsx` - Already good, add variants
@@ -1399,13 +1241,12 @@ export default function SitemapPage() {
 
 ## SUMMARY
 
-The Comets League Baseball website has a strong foundation with excellent visual design and good technical architecture. The main opportunities for improvement are:
+The Comets League Baseball website has made significant progress with recent implementations including comprehensive stat tooltips, keyboard navigation, and player linking. The main remaining opportunities for improvement are:
 
-1. **Educating novice fans** through glossaries, guides, and stat explanations
+1. **Educating novice fans** through centralized glossaries, guides, and onboarding
 2. **Improving discoverability** through better navigation and search
-3. **Enhancing accessibility** through keyboard support and ARIA labels
+3. **Enhancing accessibility** through keyboard support for all tools and ARIA labels
 4. **Optimizing performance** through smart loading and memoization
-5. **Creating better UX** through tooltips, contextual help, and related content links
+5. **Creating better UX** through contextual help and related content links
 
 Implementing the critical improvements would significantly improve the experience for new users and make the site more inclusive and discoverable.
-

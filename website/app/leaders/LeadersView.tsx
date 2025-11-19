@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { LeaderEntry } from "@/lib/sheets";
 import { getTeamByName } from "@/config/league";
 import { getTeamLogoPaths } from "@/lib/teamLogos";
+import { playerNameToSlug } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import SeasonToggle from "@/components/SeasonToggle";
@@ -162,7 +163,12 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
                           </div>
                         </Link>
                       )}
-                      <span className="font-semibold text-star-white text-sm">{leader.player}</span>
+                      <Link
+                        href={`/players/${playerNameToSlug(leader.player)}`}
+                        className="font-semibold text-star-white text-sm hover:text-nebula-orange transition-colors"
+                      >
+                        {leader.player}
+                      </Link>
                     </>
                   )}
                 </div>

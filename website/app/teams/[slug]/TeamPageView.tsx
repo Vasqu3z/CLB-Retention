@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Team } from '@/config/league';
 import { PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
+import { playerNameToSlug } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import SeasonToggle from '@/components/SeasonToggle';
@@ -315,7 +316,14 @@ export default function TeamPageView({
             <tbody>
               {sortedHitters.map((player, idx) => (
                 <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
-                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/players/${playerNameToSlug(player.name)}`}
+                      className="font-semibold text-star-white hover:text-nebula-orange transition-colors"
+                    >
+                      {player.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.ab}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.h}</td>
@@ -400,7 +408,14 @@ export default function TeamPageView({
             <tbody>
               {sortedPitchers.map((player, idx) => (
                 <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
-                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/players/${playerNameToSlug(player.name)}`}
+                      className="font-semibold text-star-white hover:text-nebula-orange transition-colors"
+                    >
+                      {player.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.ip?.toFixed(2) || '0.00'}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.w}</td>
@@ -471,7 +486,14 @@ export default function TeamPageView({
             <tbody>
               {sortedFielders.map((player, idx) => (
                 <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
-                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/players/${playerNameToSlug(player.name)}`}
+                      className="font-semibold text-star-white hover:text-nebula-orange transition-colors"
+                    >
+                      {player.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.np || 0}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.e || 0}</td>

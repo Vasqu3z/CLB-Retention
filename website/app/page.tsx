@@ -118,19 +118,20 @@ export default function Home() {
             </div>
 
             {/* Title with distinctive gradient - avoiding generic orange */}
-            <h1 className="text-6xl lg:text-8xl font-display font-bold mb-6 bg-gradient-to-r from-field-green via-nebula-teal to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight bg-gradient-to-r from-field-green via-nebula-teal to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
               {LEAGUE_CONFIG.name}
             </h1>
 
             <div className="flex flex-col items-center gap-4">
               <p className="text-2xl text-vintage-cream font-display font-semibold tracking-wide text-shadow-strong">
-                ⚾ Season {LEAGUE_CONFIG.currentSeason} ⚾
+                Season {LEAGUE_CONFIG.currentSeason}
               </p>
 
-              <div className="flex items-center gap-3">
-                <Zap className="w-5 h-5 text-nebula-teal animate-pulse" />
-                <span className="font-mono text-star-gray">Live Statistics • Real-Time Updates</span>
-                <Zap className="w-5 h-5 text-nebula-teal animate-pulse" />
+              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-field-green/10 border border-field-green/30">
+                <div className="w-3 h-3 rounded-full bg-nebula-teal animate-pulse shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
+                <span className="font-display font-semibold text-nebula-teal tracking-wide">
+                  SYSTEM OPERATIONAL
+                </span>
               </div>
             </div>
           </div>
@@ -266,14 +267,7 @@ export default function Home() {
             }}
           />
 
-          <div className="relative z-10 space-y-3">
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-field-green/10 border border-field-green/30">
-              <div className="w-3 h-3 rounded-full bg-nebula-teal animate-pulse shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
-              <span className="font-display font-semibold text-nebula-teal tracking-wide">
-                SYSTEM OPERATIONAL
-              </span>
-            </div>
-
+          <div className="relative z-10">
             <p className="text-sm text-star-dim font-mono">
               Powered by Google Sheets • Next.js • Real-time sync every 60s
             </p>

@@ -70,6 +70,15 @@ const secondaryNavCards = [
   },
 ];
 
+const ICON_COLOR_VALUES: Record<string, string> = {
+  'text-field-green': '#2D5F3F',
+  'text-solar-gold': '#FFA62B',
+  'text-cosmic-purple': '#8B5CF6',
+  'text-infield-dirt': '#A0826D',
+  'text-nebula-orange': '#FF6B35',
+  'text-nebula-cyan': '#00D4FF',
+};
+
 export default function Home() {
   return (
     <div className="space-y-16">
@@ -86,7 +95,7 @@ export default function Home() {
               currentColor 10px,
               currentColor 12px
             )`,
-            color: 'var(--field-green)'
+            color: '#2D5F3F'
           }}
         />
 
@@ -170,7 +179,10 @@ export default function Home() {
                   >
                     {/* Baseball stitch decoration */}
                     <div className="absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
-                      <div className="w-full h-full border-4 border-current rounded-full border-dashed" style={{ borderColor: card.iconColor.replace('text-', 'var(--') + ')' }} />
+                      <div
+                        className="w-full h-full border-4 border-current rounded-full border-dashed"
+                        style={{ borderColor: ICON_COLOR_VALUES[card.iconColor] || '#E8EDF5' }}
+                      />
                     </div>
 
                     {/* Hover gradient overlay */}
@@ -256,7 +268,7 @@ export default function Home() {
             style={{
               backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
               backgroundSize: '20px 20px',
-              color: 'var(--infield-dirt)'
+              color: '#A0826D'
             }}
           />
 

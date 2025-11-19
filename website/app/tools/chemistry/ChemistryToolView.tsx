@@ -5,6 +5,7 @@ import { ChemistryMatrix } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 import FadeIn from '@/components/animations/FadeIn';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
+import SurfaceCard from '@/components/SurfaceCard';
 
 interface Props {
   chemistryMatrix: ChemistryMatrix;
@@ -190,7 +191,7 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
           {/* Individual Player Chemistry */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {selectedPlayersData.map(player => (
-                <div key={player.name} className="glass-card overflow-hidden hover:border-nebula-orange/50 transition-all duration-300">
+                <SurfaceCard key={player.name} className="overflow-hidden hover:border-nebula-orange/50 transition-all duration-300">
                   <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
                     <h3 className="font-display font-bold text-lg text-star-white">{player.name}</h3>
                     <p className="text-sm text-star-gray font-mono">
@@ -217,9 +218,9 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                             >
                               <span className="text-star-white">{rel.player}</span>
                               <span className="font-semibold text-green-400">+</span>
-                            </div>
-                          ))}
-                        </div>
+                </SurfaceCard>
+            ))}
+          </div>
                       </div>
                     )}
 
@@ -257,7 +258,7 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
 
             {/* Team Analysis (only show if 2+ players selected) */}
             {selectedPlayerNames.length >= 2 && (
-              <div className="glass-card p-6">
+              <SurfaceCard className="p-6">
                 <h2 className="text-2xl font-display font-bold text-star-white mb-4">
                   📊 Team Chemistry Analysis
                 </h2>
@@ -353,7 +354,7 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                     )}
                   </div>
                 </div>
-              </div>
+              </SurfaceCard>
             )}
           </div>
         </FadeIn>

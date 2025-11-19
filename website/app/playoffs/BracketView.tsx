@@ -5,6 +5,7 @@ import { getTeamByName } from "@/config/league";
 import { getTeamLogoPaths } from "@/lib/teamLogos";
 import Link from "next/link";
 import Image from "next/image";
+import SurfaceCard from "@/components/SurfaceCard";
 
 interface BracketViewProps {
   bracket: BracketRound[];
@@ -26,17 +27,17 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
   };
   if (bracket.length === 0) {
     return (
-      <div className="glass-card p-8 text-center">
+      <SurfaceCard className="p-8 text-center">
         <p className="text-lg font-display text-star-white">No playoff games scheduled yet.</p>
         <p className="mt-2 font-mono text-star-gray">Check back when the playoffs begin!</p>
-      </div>
+      </SurfaceCard>
     );
   }
 
   return (
     <div className="space-y-8">
       {bracket.map((round, roundIdx) => (
-        <div key={roundIdx} className="glass-card p-6">
+        <SurfaceCard key={roundIdx} className="p-6">
           {/* Round Header */}
           <div className="mb-6 pb-3 border-b border-star-gray/20">
             <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-solar-gold via-comet-yellow to-nebula-orange bg-clip-text text-transparent">
@@ -53,9 +54,9 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
               const teamBLogos = teamBConfig ? getTeamLogoPaths(teamBConfig.name) : null;
 
               return (
-                <div
+                <SurfaceCard
                   key={seriesIdx}
-                  className="glass-card p-0 overflow-hidden hover:border-nebula-orange/50 hover:scale-[1.02] transition-all duration-300"
+                  className="p-0 overflow-hidden hover:border-nebula-orange/50 hover:scale-[1.02] transition-all duration-300"
                 >
                   {/* Series Header */}
                   <div className="bg-space-blue/30 backdrop-blur-sm px-4 py-2 border-b border-cosmic-border">
@@ -97,7 +98,11 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
                           className={`font-semibold font-mono text-sm ${
                             series.winner === series.teamA ? 'font-bold' : ''
                           }`}
-                          style={series.winner === series.teamA && teamAConfig ? { color: teamAConfig.primaryColor } : undefined}
+                          style={
+                            series.winner === series.teamA && teamAConfig
+                              ? { color: teamAConfig.primaryColor }
+                              : { color: '#E8EDF5' }
+                          }
                         >
                           {series.teamA}
                         </span>
@@ -133,7 +138,11 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
                           className={`font-semibold font-mono text-sm ${
                             series.winner === series.teamB ? 'font-bold' : ''
                           }`}
-                          style={series.winner === series.teamB && teamBConfig ? { color: teamBConfig.primaryColor } : undefined}
+                          style={
+                            series.winner === series.teamB && teamBConfig
+                              ? { color: teamBConfig.primaryColor }
+                              : { color: '#E8EDF5' }
+                          }
                         >
                           {series.teamB}
                         </span>
@@ -181,7 +190,11 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
                                     )}
                                     <span
                                       className="font-medium text-xs"
-                                      style={homeWon && homeTeamConfig ? { color: homeTeamConfig.primaryColor, fontWeight: 'bold' } : { color: 'var(--star-white)' }}
+                                      style={
+                                        homeWon && homeTeamConfig
+                                          ? { color: homeTeamConfig.primaryColor, fontWeight: 'bold' }
+                                          : { color: '#E8EDF5' }
+                                      }
                                     >
                                       {homeTeamConfig?.shortName || game.homeTeam}
                                     </span>
@@ -202,7 +215,11 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
                                     )}
                                     <span
                                       className="font-medium text-xs"
-                                      style={awayWon && awayTeamConfig ? { color: awayTeamConfig.primaryColor, fontWeight: 'bold' } : { color: 'var(--star-white)' }}
+                                      style={
+                                        awayWon && awayTeamConfig
+                                          ? { color: awayTeamConfig.primaryColor, fontWeight: 'bold' }
+                                          : { color: '#E8EDF5' }
+                                      }
                                     >
                                       {awayTeamConfig?.shortName || game.awayTeam}
                                     </span>
@@ -237,15 +254,15 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
                     </div>
                   )}
                 </div>
-              </div>
-            );
+                </SurfaceCard>
+              );
             })}
           </div>
-        </div>
+        </SurfaceCard>
       ))}
 
       {/* Legend */}
-      <div className="glass-card p-6">
+      <SurfaceCard className="p-6">
         <p className="font-display font-semibold text-nebula-orange mb-3 text-sm uppercase tracking-wider">
           How to Read the Bracket
         </p>
@@ -255,7 +272,7 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
           <li>• Click 📊 to view individual game box scores</li>
           <li>• TBD teams will be filled in as previous rounds complete</li>
         </ul>
-      </div>
+      </SurfaceCard>
     </div>
   );
 }

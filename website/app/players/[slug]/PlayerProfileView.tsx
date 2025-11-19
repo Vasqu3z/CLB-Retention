@@ -6,6 +6,7 @@ import Image from 'next/image';
 import FadeIn from '@/components/animations/FadeIn';
 import SeasonToggle from '@/components/SeasonToggle';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
+import SurfaceCard from '@/components/SurfaceCard';
 import { PlayerStats, PlayerAttributes, PlayerChemistry, PlayerRegistryEntry } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import { playerNameToSlug } from '@/lib/utils';
@@ -55,7 +56,7 @@ export default function PlayerProfileView({
     <div className="space-y-6">
       {/* Player Header */}
       <FadeIn delay={0} direction="down" useViewport={false}>
-        <div className="glass-card p-6 relative">
+        <SurfaceCard className="p-6 relative">
           <div className="flex items-start gap-6">
             {/* Player Image */}
             {registryEntry?.imageUrl && (
@@ -112,7 +113,7 @@ export default function PlayerProfileView({
               />
             </div>
           )}
-        </div>
+        </SurfaceCard>
       </FadeIn>
 
       {/* Tab Navigation */}
@@ -167,7 +168,7 @@ export default function PlayerProfileView({
             {currentStats ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Hitting Stats */}
-                <div className="glass-card p-6 hover:border-nebula-orange/50">
+                <SurfaceCard className="p-6 hover:border-nebula-orange/50">
                   <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <StatRowWithLabel label="Games Played (GP)" value={currentStats.gp} />
@@ -182,10 +183,10 @@ export default function PlayerProfileView({
                     <StatRowWithLabel label="Slugging (SLG)" value={currentStats.slg} highlight />
                     <StatRowWithLabel label="OPS" value={currentStats.ops} highlight />
                   </div>
-                </div>
+                </SurfaceCard>
 
                 {/* Pitching Stats */}
-                <div className="glass-card p-6 hover:border-solar-gold/50">
+                <SurfaceCard className="p-6 hover:border-solar-gold/50">
                   <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <StatRowWithLabel label="Innings Pitched (IP)" value={currentStats.ip?.toFixed(2)} />
@@ -198,10 +199,10 @@ export default function PlayerProfileView({
                     <StatRowWithLabel label="WHIP" value={currentStats.whip} highlight />
                     <StatRowWithLabel label="Batting Average Against (BAA)" value={currentStats.baa} highlight />
                   </div>
-                </div>
+                </SurfaceCard>
 
                 {/* Fielding Stats */}
-                <div className="glass-card p-6 hover:border-emerald-500/50">
+                <SurfaceCard className="p-6 hover:border-emerald-500/50">
                   <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding & Running</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <StatRowWithLabel label="Number of Plays (NP)" value={currentStats.np} />
@@ -210,14 +211,14 @@ export default function PlayerProfileView({
                     <StatRowWithLabel label="Caught Stealing (CS)" value={currentStats.cs} />
                     <StatRowWithLabel label="Outs Above Average (OAA)" value={currentStats.oaa} highlight />
                   </div>
-                </div>
+                </SurfaceCard>
               </div>
             ) : (
-              <div className="glass-card p-12 text-center">
+              <SurfaceCard className="p-12 text-center">
                 <p className="text-star-gray font-mono">
                   No {isPlayoffs ? 'playoff' : 'regular season'} stats available for this player.
                 </p>
-              </div>
+              </SurfaceCard>
             )}
           </div>
         </FadeIn>
@@ -228,7 +229,7 @@ export default function PlayerProfileView({
         <FadeIn delay={0.15} direction="up" useViewport={false}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Pitching Attributes */}
-            <div className="glass-card p-6 hover:border-solar-gold/50">
+            <SurfaceCard className="p-6 hover:border-solar-gold/50">
               <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
               <div className="space-y-2 font-mono text-sm">
                 <StatRow label="Overall" value={attributes.pitchingOverall} highlight />
@@ -239,10 +240,10 @@ export default function PlayerProfileView({
                 <StatRow label="Curve" value={attributes.curve} />
                 <StatRow label="Stamina" value={attributes.stamina} />
               </div>
-            </div>
+            </SurfaceCard>
 
             {/* Hitting Attributes */}
-            <div className="glass-card p-6 hover:border-nebula-orange/50">
+            <SurfaceCard className="p-6 hover:border-nebula-orange/50">
               <h3 className="text-xl font-display font-bold text-nebula-orange mb-4 text-shadow">Hitting</h3>
               <div className="space-y-2 font-mono text-sm">
                 <StatRow label="Overall" value={attributes.battingOverall} highlight />
@@ -254,10 +255,10 @@ export default function PlayerProfileView({
                 <StatRow label="Slap Power" value={attributes.slapHitPower} />
                 <StatRow label="Charge Power" value={attributes.chargeHitPower} />
               </div>
-            </div>
+            </SurfaceCard>
 
             {/* Fielding & Speed Attributes */}
-            <div className="glass-card p-6 hover:border-emerald-500/50">
+            <SurfaceCard className="p-6 hover:border-emerald-500/50">
               <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding & Speed</h3>
               <div className="space-y-2 font-mono text-sm">
                 <StatRow label="Fielding Overall" value={attributes.fieldingOverall} highlight />
@@ -267,7 +268,7 @@ export default function PlayerProfileView({
                 <StatRow label="Speed" value={attributes.speed} />
                 <StatRow label="Bunting" value={attributes.bunting} />
               </div>
-            </div>
+            </SurfaceCard>
           </div>
         </FadeIn>
       )}
@@ -277,7 +278,7 @@ export default function PlayerProfileView({
         <FadeIn delay={0.15} direction="up" useViewport={false}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Positive Chemistry */}
-            <div className="glass-card p-6 border-green-400/30 hover:border-green-400/50">
+            <SurfaceCard className="p-6 border-green-400/30 hover:border-green-400/50">
               <h3 className="text-xl font-display font-bold text-green-400 mb-4 text-shadow">
                 Positive Chemistry ({chemistry.posCount})
               </h3>
@@ -296,10 +297,10 @@ export default function PlayerProfileView({
               ) : (
                 <div className="text-star-gray font-mono text-sm">No positive chemistry</div>
               )}
-            </div>
+            </SurfaceCard>
 
             {/* Negative Chemistry */}
-            <div className="glass-card p-6 border-red-400/30 hover:border-red-400/50">
+            <SurfaceCard className="p-6 border-red-400/30 hover:border-red-400/50">
               <h3 className="text-xl font-display font-bold text-red-400 mb-4 text-shadow">
                 Negative Chemistry ({chemistry.negCount})
               </h3>
@@ -318,7 +319,7 @@ export default function PlayerProfileView({
               ) : (
                 <div className="text-star-gray font-mono text-sm">No negative chemistry</div>
               )}
-            </div>
+            </SurfaceCard>
           </div>
         </FadeIn>
       )}

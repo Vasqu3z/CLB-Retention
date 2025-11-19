@@ -7,6 +7,7 @@ import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import LiveStatsIndicator from "@/components/LiveStatsIndicator";
 import Image from "next/image";
+import SurfaceCard from "@/components/SurfaceCard";
 
 export const revalidate = 60;
 
@@ -166,7 +167,7 @@ export default async function StandingsPage() {
 
       {/* Legend */}
       <FadeIn delay={0.45} direction="up">
-        <div className="glass-card p-6">
+        <SurfaceCard className="p-6">
           <h3 className="text-sm font-display font-semibold text-nebula-orange mb-4 uppercase tracking-wider">
             Legend
           </h3>
@@ -196,7 +197,7 @@ export default async function StandingsPage() {
               <span className="text-star-white ml-2">Runs Allowed</span>
             </div>
           </div>
-        </div>
+        </SurfaceCard>
       </FadeIn>
     </div>
   );

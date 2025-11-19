@@ -1,4 +1,5 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 const config: Config = {
   content: [
@@ -9,49 +10,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Deep Space Base
-        'space-black': 'var(--space-black)',
-        'space-navy': 'var(--space-navy)',
-        'space-blue': 'var(--space-blue)',
-        'space-purple': 'var(--space-purple)',
-
-        // Warm Nebula Accents
-        'nebula-orange': 'var(--nebula-orange)',
-        'nebula-coral': 'var(--nebula-coral)',
-        'comet-yellow': 'var(--comet-yellow)',
-        'solar-gold': 'var(--solar-gold)',
-        'star-pink': 'var(--star-pink)',
-
-        // Cool Accents
-        'nebula-cyan': 'var(--nebula-cyan)',
-        'nebula-teal': 'var(--nebula-teal)',
-        'nebula-purple': 'rgb(var(--nebula-purple) / <alpha-value>)',
-
-        // Baseball-Specific Colors
-        'field-green': 'var(--field-green)',
-        'infield-dirt': 'var(--infield-dirt)',
-        'vintage-cream': 'var(--vintage-cream)',
-        'leather-brown': 'var(--leather-brown)',
-        'chalk-white': 'var(--chalk-white)',
-        'dugout-blue': 'var(--dugout-blue)',
-
-        // Enhanced Purple Palette
-        'cosmic-purple': 'var(--cosmic-purple)',
-        'deep-violet': 'var(--deep-violet)',
-        'royal-purple': 'var(--royal-purple)',
-
-        // Atmosphere/Text
-        'star-white': 'var(--star-white)',
-        'star-gray': 'var(--star-gray)',
-        'star-dim': 'var(--star-dim)',
-        'cosmic-border': 'var(--cosmic-border)',
-
-        // Functional (aliased for convenience)
-        primary: 'var(--nebula-orange)',
-        secondary: 'var(--solar-gold)',
-        success: 'var(--success)',
-        danger: 'var(--danger)',
-        warning: 'var(--warning)',
+        'space-black': '#0B0D1E',
+        'space-navy': '#151829',
+        'space-blue': '#1E2442',
+        'space-purple': '#2A1F3D',
+        'nebula-orange': '#FF6B35',
+        'nebula-coral': '#FF8C61',
+        'comet-yellow': '#FFD23F',
+        'solar-gold': '#FFA62B',
+        'star-pink': '#FF6F91',
+        'nebula-cyan': '#00D4FF',
+        'nebula-teal': '#00FFC6',
+        'nebula-purple': '#A78BFA',
+        'field-green': '#2D5F3F',
+        'infield-dirt': '#A0826D',
+        'vintage-cream': '#FFF8DC',
+        'leather-brown': '#8B4513',
+        'chalk-white': '#FAFAF9',
+        'dugout-blue': '#1E3A5F',
+        'cosmic-purple': '#8B5CF6',
+        'deep-violet': '#6D28D9',
+        'royal-purple': '#7C3AED',
+        'star-white': '#E8EDF5',
+        'star-gray': '#9BA5C0',
+        'star-dim': '#4A5270',
+        'cosmic-border': '#2D3348',
+        primary: '#FF6B35',
+        secondary: '#FFA62B',
+        success: '#00FFC6',
+        danger: '#FF6B35',
+        warning: '#FFD23F',
+      },
+      boxShadow: {
+        panel: '0 4px 16px rgba(0, 0, 0, 0.3)',
+        'panel-strong': '0 8px 32px rgba(255, 107, 53, 0.25)',
+        'glow-orange': '0 0 20px rgba(255, 107, 53, 0.3)',
+        'glow-gold': '0 0 20px rgba(255, 162, 43, 0.3)',
+        'glow-cyan': '0 0 20px rgba(0, 212, 255, 0.3)',
       },
       fontFamily: {
         'display': ['var(--font-barlow)', 'sans-serif'],
@@ -62,8 +57,26 @@ const config: Config = {
       backdropBlur: {
         'glass': '10px',
       },
+      textShadow: {
+        sm: '0 1px 2px rgba(0, 0, 0, 0.35)',
+        DEFAULT: '0 2px 8px rgba(0, 0, 0, 0.5)',
+        strong: '0 2px 12px rgba(0, 0, 0, 0.8)',
+        glow: '0 0 20px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.6)',
+        'glow-orange': '0 0 30px rgba(255, 107, 53, 0.6), 0 2px 8px rgba(0, 0, 0, 0.8)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ matchUtilities, theme }) => {
+      matchUtilities(
+        {
+          'text-shadow': (value) => ({
+            textShadow: value,
+          }),
+        },
+        { values: theme('textShadow') as Record<string, string> }
+      );
+    }),
+  ],
 };
 export default config;

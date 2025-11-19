@@ -188,10 +188,13 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
       {selectedPlayersData.length > 0 && (
         <FadeIn delay={0.3} direction="up">
           <div className="space-y-6">
-          {/* Individual Player Chemistry */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {selectedPlayersData.map(player => (
-                <SurfaceCard key={player.name} className="overflow-hidden hover:border-nebula-orange/50 transition-all duration-300">
+            {/* Individual Player Chemistry */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {selectedPlayersData.map(player => (
+                <SurfaceCard
+                  key={player.name}
+                  className="overflow-hidden hover:border-nebula-orange/50 transition-all duration-300"
+                >
                   <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
                     <h3 className="font-display font-bold text-lg text-star-white">{player.name}</h3>
                     <p className="text-sm text-star-gray font-mono">
@@ -218,9 +221,9 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                             >
                               <span className="text-star-white">{rel.player}</span>
                               <span className="font-semibold text-green-400">+</span>
-                </SurfaceCard>
-            ))}
-          </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
 
@@ -252,7 +255,7 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
                       <p className="text-star-gray text-sm italic font-mono">No chemistry relationships</p>
                     )}
                   </div>
-                </div>
+                </SurfaceCard>
               ))}
             </div>
 

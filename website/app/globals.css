@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-  /* Deep Space Base - Pure blacks and neutral grays */
-  --space-black: #000000;
-  --space-navy: #0F0F0F;
-  --space-blue: #1A1A1A;
+  /* Deep Space Base */
+  --space-black: #0B0D1E;
+  --space-navy: #151829;
+  --space-blue: #1E2442;
   --space-purple: #2A1F3D;
 
   /* Warm Nebula Accents */
@@ -36,8 +36,8 @@
   /* Atmosphere/Text */
   --star-white: #E8EDF5;
   --star-gray: #9BA5C0;
-  --star-dim: #666666;
-  --cosmic-border: #333333;
+  --star-dim: #4A5270;
+  --cosmic-border: #2D3348;
 
   /* Functional Colors */
   --success: #00FFC6;
@@ -45,8 +45,8 @@
   --warning: #FFD23F;
 
   /* Glass-morphism */
-  --glass-bg: rgba(0, 0, 0, 0.75);
-  --glass-bg-light: rgba(0, 0, 0, 0.55);
+  --glass-bg: rgba(11, 13, 30, 0.75);
+  --glass-bg-light: rgba(11, 13, 30, 0.55);
   --glass-border: rgba(255, 255, 255, 0.1);
 
   /* Performance: CSS Containment for complex elements */

@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Database, Search, Calendar, Users } from 'lucide-react';
+import SurfaceCard from '@/components/SurfaceCard';
 
 interface EmptyStateProps {
   icon?: 'database' | 'search' | 'calendar' | 'users';
@@ -17,7 +18,7 @@ export default function EmptyState({ icon = 'database', title, message, children
   }[icon];
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 glass-card">
+    <SurfaceCard className="flex flex-col items-center justify-center py-16 px-4">
       <div className="w-16 h-16 rounded-full bg-space-blue/30 flex items-center justify-center mb-4">
         <IconComponent className="w-8 h-8 text-star-gray" />
       </div>
@@ -30,6 +31,6 @@ export default function EmptyState({ icon = 'database', title, message, children
         </p>
       )}
       {children}
-    </div>
+    </SurfaceCard>
   );
 }

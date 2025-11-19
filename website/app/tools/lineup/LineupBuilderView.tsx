@@ -5,6 +5,7 @@ import { ChemistryMatrix } from '@/lib/sheets';
 import PlayerSelectModal from '@/components/PlayerSelectModal';
 import FadeIn from '@/components/animations/FadeIn';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
+import SurfaceCard from '@/components/SurfaceCard';
 
 interface Props {
   chemistryMatrix: ChemistryMatrix;
@@ -396,7 +397,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Baseball Field */}
           <div className="xl:col-span-2 space-y-6">
-            <div className="glass-card p-6">
+            <SurfaceCard className="p-6">
               {/* Chemistry Score */}
               <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
@@ -537,13 +538,13 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                   );
                 })}
               </div>
-            </div>
+            </SurfaceCard>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Batting Order */}
-            <div className="glass-card p-4">
+            <SurfaceCard className="p-4">
               <h3 className="font-display font-bold text-lg text-star-white mb-3">
                 ⚾ Batting Order <span className="text-nebula-orange">({battingOrder.filter(p => p !== null).length}/9)</span>
               </h3>
@@ -586,10 +587,10 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                   </div>
                 ))}
               </div>
-            </div>
+            </SurfaceCard>
 
             {/* Saved Lineups */}
-            <div className="glass-card p-4">
+            <SurfaceCard className="p-4">
               <h3 className="font-display font-bold text-lg text-star-white mb-3">
                 Saved Lineups <span className="text-nebula-orange">({savedLineups.length})</span>
               </h3>
@@ -633,7 +634,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
               ) : (
                 <p className="text-star-gray text-sm italic font-mono">No saved lineups yet</p>
               )}
-            </div>
+            </SurfaceCard>
           </div>
         </div>
       </FadeIn>
@@ -641,7 +642,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
       {/* Save Dialog */}
       {showSaveDialog && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="glass-card p-6 max-w-md w-full">
+            <SurfaceCard className="p-6 max-w-md w-full">
               <h3 className="text-xl font-display font-bold text-star-white mb-4">Save Lineup</h3>
               <input
                 type="text"
@@ -670,14 +671,14 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                   Cancel
                 </button>
               </div>
-            </div>
+            </SurfaceCard>
           </div>
       )}
 
       {/* Import Dialog */}
       {showImportDialog && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="glass-card p-6 max-w-md w-full">
+            <SurfaceCard className="p-6 max-w-md w-full">
               <h3 className="text-xl font-display font-bold text-star-white mb-4">Import Lineup</h3>
               <textarea
                 value={importText}
@@ -704,7 +705,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
                   Cancel
                 </button>
               </div>
-            </div>
+            </SurfaceCard>
           </div>
       )}
 

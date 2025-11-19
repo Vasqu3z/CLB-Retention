@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import SurfaceCard from '@/components/SurfaceCard';
+import { cn } from '@/lib/utils';
 
 interface PlayerMultiSelectProps {
   players: string[];
@@ -137,8 +139,8 @@ export default function PlayerMultiSelect({
   );
 
   return (
-    <div
-      className={`glass-card p-6 ${className}`.trim()}
+    <SurfaceCard
+      className={cn('p-6', className)}
       ref={containerRef}
       style={{ overflow: 'visible' }}
     >
@@ -215,6 +217,6 @@ export default function PlayerMultiSelect({
           Start typing to search and select up to {maxSelections} players
         </p>
       )}
-    </div>
+    </SurfaceCard>
   );
 }

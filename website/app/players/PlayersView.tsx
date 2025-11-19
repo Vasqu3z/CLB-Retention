@@ -9,6 +9,7 @@ import DataTable, { Column } from '@/components/DataTable';
 import { Search } from 'lucide-react';
 import { playerNameToSlug } from '@/lib/utils';
 import StatTooltip from '@/components/StatTooltip';
+import SurfaceCard from '@/components/SurfaceCard';
 
 type Tab = 'hitting' | 'pitching' | 'fielding';
 
@@ -205,7 +206,7 @@ export default function PlayersView({
       </div>
 
       {/* Tab Navigation */}
-      <div className="glass-card p-2">
+      <SurfaceCard className="p-2">
         <nav className="flex space-x-2" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('hitting')}
@@ -238,10 +239,10 @@ export default function PlayersView({
             Fielding & Running
           </button>
         </nav>
-      </div>
+      </SurfaceCard>
 
       {/* Search Bar */}
-      <div className="glass-card p-4">
+      <SurfaceCard className="p-4">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-star-gray" />
@@ -262,7 +263,7 @@ export default function PlayersView({
             </button>
           )}
         </div>
-      </div>
+      </SurfaceCard>
 
       {/* Tables */}
       {/* Hitting Table */}

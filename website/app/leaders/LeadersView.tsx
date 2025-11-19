@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SeasonToggle from "@/components/SeasonToggle";
 import StatTooltip from "@/components/StatTooltip";
+import SurfaceCard from "@/components/SurfaceCard";
 
 interface LeadersViewProps {
   initialBattingLeaders: any;
@@ -44,7 +45,7 @@ export default function LeadersView({
       </div>
 
       {/* Tab Navigation */}
-      <div className="glass-card p-2">
+      <SurfaceCard className="p-2">
         <nav className="flex space-x-2" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('batting')}
@@ -77,7 +78,7 @@ export default function LeadersView({
             Fielding & Running
           </button>
         </nav>
-      </div>
+      </SurfaceCard>
 
       {/* Batting Leaders */}
       {activeTab === 'batting' && (
@@ -118,7 +119,7 @@ export default function LeadersView({
 
 function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; leaders: LeaderEntry[] }) {
   return (
-    <div className="glass-card p-6 hover:scale-[1.02] transition-all duration-300">
+    <SurfaceCard className="p-6 hover:scale-[1.02] transition-all duration-300">
       <div className="flex items-baseline justify-between mb-4 pb-3 border-b border-star-gray/20">
         <h3 className="text-lg font-display font-semibold text-star-white">
           {title}
@@ -183,6 +184,6 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
           );
         })}
       </div>
-    </div>
+    </SurfaceCard>
   );
 }

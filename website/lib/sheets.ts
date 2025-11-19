@@ -14,6 +14,7 @@
 //   Character Name Mapping is no longer needed - merged into Player Registry
 
 import { google } from 'googleapis';
+import type { Auth } from 'googleapis';
 import { unstable_cache } from 'next/cache';
 import {
   STANDINGS_SHEET,
@@ -33,16 +34,31 @@ import {
 
 const sheets = google.sheets('v4');
 
+let parsedGoogleCredentials: Record<string, any> | undefined;
+
+try {
+  parsedGoogleCredentials = process.env.GOOGLE_CREDENTIALS
+    ? JSON.parse(process.env.GOOGLE_CREDENTIALS)
+    : undefined;
+} catch (error) {
+  console.error('Unable to parse GOOGLE_CREDENTIALS', error);
+  parsedGoogleCredentials = undefined;
+}
+
+const googleAuth = new google.auth.GoogleAuth({
+  credentials: parsedGoogleCredentials,
+  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+});
+
+let authClientPromise: Promise<Auth.OAuth2Client> | null = null;
+
 // Initialize Google Sheets API client
-async function getAuthClient() {
-  const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}');
+async function getAuthClient(): Promise<Auth.OAuth2Client> {
+  if (!authClientPromise) {
+    authClientPromise = googleAuth.getClient();
+  }
 
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-  });
-
-  return await auth.getClient();
+  return authClientPromise;
 }
 
 // Generic function to read data from a sheet range (uncached)
@@ -116,40 +132,10 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
       STANDINGS_SHEET.START_COL,
       STANDINGS_SHEET.END_COL
     );
-    const data = await getSheetData(range);
+    const dataPromise = getSheetData(range);
+    const notesPromise = fetchStandingsNotes(sheetName);
 
-    // Also fetch cell notes for H2H records (column B = team names)
-    const auth = await getAuthClient();
-    const sheetId = process.env.SHEETS_SPREADSHEET_ID;
-
-    let notes: string[] = [];
-    try {
-      const notesRange = buildSheetRange(
-        sheetName,
-        STANDINGS_SHEET.DATA_START_ROW,
-        STANDINGS_SHEET.DATA_END_ROW,
-        STANDINGS_SHEET.NOTES_COL,
-        STANDINGS_SHEET.NOTES_COL
-      );
-      const response = await sheets.spreadsheets.get({
-        auth: auth as any,
-        spreadsheetId: sheetId,
-        ranges: [notesRange],
-        includeGridData: true,
-      });
-
-      // Extract notes from the response
-      if (response.data.sheets && response.data.sheets[0].data) {
-        const rowData = response.data.sheets[0].data[0].rowData || [];
-        notes = rowData.map((row) => {
-          const cell = row.values?.[0];
-          return cell?.note || '';
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching cell notes:', error);
-      // Continue without notes if there's an error
-    }
+    const [data, notes] = await Promise.all([dataPromise, notesPromise]);
 
     return data.map((row, idx) => ({
       rank: String(row[STANDINGS_SHEET.COLUMNS.RANK] || ''),
@@ -164,6 +150,44 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
     }));
   } catch (error) {
     console.error(`Error fetching standings:`, error);
+    return [];
+  }
+}
+
+async function fetchStandingsNotes(sheetName: string): Promise<string[]> {
+  try {
+    const sheetId = process.env.SHEETS_SPREADSHEET_ID;
+    if (!sheetId) {
+      return [];
+    }
+
+    const notesRange = buildSheetRange(
+      sheetName,
+      STANDINGS_SHEET.DATA_START_ROW,
+      STANDINGS_SHEET.DATA_END_ROW,
+      STANDINGS_SHEET.NOTES_COL,
+      STANDINGS_SHEET.NOTES_COL
+    );
+
+    const auth = await getAuthClient();
+    const response = await sheets.spreadsheets.get({
+      auth: auth as any,
+      spreadsheetId: sheetId,
+      ranges: [notesRange],
+      includeGridData: true,
+    });
+
+    if (response.data.sheets && response.data.sheets[0].data) {
+      const rowData = response.data.sheets[0].data[0].rowData || [];
+      return rowData.map((row) => {
+        const cell = row.values?.[0];
+        return cell?.note || '';
+      });
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error fetching cell notes:', error);
     return [];
   }
 }

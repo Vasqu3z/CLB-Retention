@@ -1,4 +1,6 @@
 import { Loader2 } from 'lucide-react';
+import SurfaceCard from '@/components/SurfaceCard';
+import TableSkeleton from '@/components/skeletons/TableSkeleton';
 
 interface LoadingStateProps {
   message?: string;
@@ -43,11 +45,7 @@ export default function LoadingState({
     );
   }
 
-  return (
-    <div className="glass-card py-16 px-4">
-      {content}
-    </div>
-  );
+  return <SurfaceCard className="py-16 px-4">{content}</SurfaceCard>;
 }
 
 // Cosmic Spinner - Centered loading indicator
@@ -72,11 +70,8 @@ export function CosmicSpinner({ message = 'Loading data...' }: { message?: strin
   );
 }
 
-// Legacy exports for backwards compatibility
-export function TableSkeleton() {
-  return <CosmicSpinner message="Loading data..." />;
-}
-
 export function CardSkeleton() {
   return <CosmicSpinner message="Loading data..." />;
 }
+
+export { TableSkeleton };

@@ -7,7 +7,7 @@ import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 
 export interface Column<T> {
   key: string;
-  label: string;
+  label: string | ReactNode;
   render?: (row: T) => ReactNode;
   sortable?: boolean;
   align?: 'left' | 'center' | 'right';

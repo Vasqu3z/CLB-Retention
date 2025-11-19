@@ -8,6 +8,7 @@ import SeasonToggle from '@/components/SeasonToggle';
 import DataTable, { Column } from '@/components/DataTable';
 import { Search } from 'lucide-react';
 import { playerNameToSlug } from '@/lib/utils';
+import StatTooltip from '@/components/StatTooltip';
 
 type Tab = 'hitting' | 'pitching' | 'fielding';
 
@@ -91,24 +92,24 @@ export default function PlayersView({
       ),
     },
     { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
-    { key: 'ab', label: 'AB', align: 'center' },
-    { key: 'h', label: 'H', align: 'center' },
-    { key: 'hr', label: 'HR', align: 'center' },
-    { key: 'rbi', label: 'RBI', align: 'center' },
+    { key: 'ab', label: <StatTooltip stat="AB">AB</StatTooltip>, align: 'center' },
+    { key: 'h', label: <StatTooltip stat="H">H</StatTooltip>, align: 'center' },
+    { key: 'hr', label: <StatTooltip stat="HR">HR</StatTooltip>, align: 'center' },
+    { key: 'rbi', label: <StatTooltip stat="RBI">RBI</StatTooltip>, align: 'center' },
     { key: 'dp', label: 'DP', align: 'center', condensed: true },
-    { key: 'rob', label: 'ROB', align: 'center', condensed: true },
-    { key: 'avg', label: 'AVG', align: 'center', className: 'text-nebula-cyan' },
-    { key: 'obp', label: 'OBP', align: 'center', className: 'text-nebula-cyan', condensed: true },
+    { key: 'rob', label: <StatTooltip stat="ROB">ROB</StatTooltip>, align: 'center', condensed: true },
+    { key: 'avg', label: <StatTooltip stat="AVG">AVG</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
+    { key: 'obp', label: <StatTooltip stat="OBP">OBP</StatTooltip>, align: 'center', className: 'text-nebula-cyan', condensed: true },
     {
       key: 'slg',
-      label: 'SLG',
+      label: <StatTooltip stat="SLG">SLG</StatTooltip>,
       align: 'center',
       className: 'text-nebula-cyan',
       render: (player) => player.slg || '.000'
     },
     {
       key: 'ops',
-      label: 'OPS',
+      label: <StatTooltip stat="OPS">OPS</StatTooltip>,
       align: 'center',
       className: 'text-nebula-cyan',
       render: (player) => player.ops || '0.000'
@@ -146,17 +147,17 @@ export default function PlayersView({
     { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
     {
       key: 'ip',
-      label: 'IP',
+      label: <StatTooltip stat="IP">IP</StatTooltip>,
       align: 'center',
       render: (player) => player.ip?.toFixed(2) || '0.00'
     },
-    { key: 'w', label: 'W', align: 'center', condensed: true },
-    { key: 'l', label: 'L', align: 'center', condensed: true },
-    { key: 'sv', label: 'SV', align: 'center', condensed: true },
-    { key: 'hAllowed', label: 'H', align: 'center' },
-    { key: 'hrAllowed', label: 'HR', align: 'center' },
-    { key: 'era', label: 'ERA', align: 'center', className: 'font-bold text-nebula-teal' },
-    { key: 'whip', label: 'WHIP', align: 'center', className: 'text-nebula-cyan' },
+    { key: 'w', label: <StatTooltip stat="W">W</StatTooltip>, align: 'center', condensed: true },
+    { key: 'l', label: <StatTooltip stat="L">L</StatTooltip>, align: 'center', condensed: true },
+    { key: 'sv', label: <StatTooltip stat="SV">SV</StatTooltip>, align: 'center', condensed: true },
+    { key: 'hAllowed', label: <StatTooltip stat="H">H</StatTooltip>, align: 'center' },
+    { key: 'hrAllowed', label: <StatTooltip stat="HR">HR</StatTooltip>, align: 'center' },
+    { key: 'era', label: <StatTooltip stat="ERA">ERA</StatTooltip>, align: 'center', className: 'font-bold text-nebula-teal' },
+    { key: 'whip', label: <StatTooltip stat="WHIP">WHIP</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
     { key: 'baa', label: 'BAA', align: 'center', className: 'text-nebula-cyan' },
   ];
 
@@ -189,9 +190,9 @@ export default function PlayersView({
       ),
     },
     { key: 'gp', label: 'GP', align: 'center', className: 'text-star-gray' },
-    { key: 'np', label: 'NP', align: 'center', className: 'font-bold text-solar-gold' },
-    { key: 'e', label: 'E', align: 'center' },
-    { key: 'sb', label: 'SB', align: 'center' },
+    { key: 'np', label: <StatTooltip stat="NP">NP</StatTooltip>, align: 'center', className: 'font-bold text-solar-gold' },
+    { key: 'e', label: <StatTooltip stat="E">E</StatTooltip>, align: 'center' },
+    { key: 'sb', label: <StatTooltip stat="SB">SB</StatTooltip>, align: 'center' },
     { key: 'cs', label: 'CS', align: 'center', className: 'text-nebula-cyan' },
   ];
 

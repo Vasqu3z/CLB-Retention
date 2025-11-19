@@ -117,8 +117,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Title with distinctive gradient - avoiding generic orange */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight bg-gradient-to-r from-field-green via-nebula-teal to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
+            {/* Title with distinctive gradient */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight bg-gradient-to-r from-nebula-orange via-nebula-coral to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
               {LEAGUE_CONFIG.name}
             </h1>
 

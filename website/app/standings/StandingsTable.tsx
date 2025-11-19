@@ -6,6 +6,7 @@ import { StandingsRow } from "@/lib/sheets";
 import { getTeamByName } from "@/config/league";
 import { getTeamLogoPaths } from "@/lib/teamLogos";
 import DataTable, { Column } from "@/components/DataTable";
+import StatTooltip from "@/components/StatTooltip";
 
 interface StandingsRowWithColor extends StandingsRow {
   teamColor?: string;
@@ -81,37 +82,37 @@ export default function StandingsTable({ standings }: StandingsTableProps) {
     },
     {
       key: 'wins',
-      label: 'W',
+      label: <StatTooltip stat="W">W</StatTooltip>,
       align: 'center',
       className: 'font-semibold',
     },
     {
       key: 'losses',
-      label: 'L',
+      label: <StatTooltip stat="L">L</StatTooltip>,
       align: 'center',
       className: 'font-semibold',
     },
     {
       key: 'winPct',
-      label: 'Win %',
+      label: <StatTooltip stat="PCT">Win %</StatTooltip>,
       align: 'center',
       className: 'font-bold text-comet-yellow',
     },
     {
       key: 'runsScored',
-      label: 'RS',
+      label: <StatTooltip stat="RS">RS</StatTooltip>,
       align: 'center',
       condensed: true,
     },
     {
       key: 'runsAllowed',
-      label: 'RA',
+      label: <StatTooltip stat="RA">RA</StatTooltip>,
       align: 'center',
       condensed: true,
     },
     {
       key: 'runDiff',
-      label: 'Diff',
+      label: <StatTooltip stat="DIFF">Diff</StatTooltip>,
       align: 'center',
       className: 'font-semibold',
       render: (row) => (

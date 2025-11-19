@@ -8,6 +8,7 @@ import { playerNameToSlug } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import SeasonToggle from "@/components/SeasonToggle";
+import StatTooltip from "@/components/StatTooltip";
 
 interface LeadersViewProps {
   initialBattingLeaders: any;
@@ -123,7 +124,9 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
           {title}
         </h3>
         <span className="text-xs font-mono text-nebula-orange font-bold">
-          {abbr}
+          <StatTooltip stat={abbr} showIcon>
+            {abbr}
+          </StatTooltip>
         </span>
       </div>
       <div className="space-y-2">

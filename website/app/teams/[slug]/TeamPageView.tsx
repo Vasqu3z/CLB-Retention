@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { Team } from '@/config/league';
 import { PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
+import { playerNameToSlug } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import SeasonToggle from '@/components/SeasonToggle';
 import FadeIn from '@/components/animations/FadeIn';
+import StatTooltip from '@/components/StatTooltip';
 
 interface TeamPageViewProps {
   team: Team;
@@ -281,41 +283,48 @@ export default function TeamPageView({
                   GP
                 </SortableHeader>
                 <SortableHeader field="ab" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  AB
+                  <StatTooltip stat="AB">AB</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="h" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  H
+                  <StatTooltip stat="H">H</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="hr" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  HR
+                  <StatTooltip stat="HR">HR</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="rbi" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  RBI
+                  <StatTooltip stat="RBI">RBI</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="dp" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   DP
                 </SortableHeader>
                 <SortableHeader field="rob" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  ROB
+                  <StatTooltip stat="ROB">ROB</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="avg" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  AVG
+                  <StatTooltip stat="AVG">AVG</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="obp" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  OBP
+                  <StatTooltip stat="OBP">OBP</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="slg" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  SLG
+                  <StatTooltip stat="SLG">SLG</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="ops" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  OPS
+                  <StatTooltip stat="OPS">OPS</StatTooltip>
                 </SortableHeader>
               </tr>
             </thead>
             <tbody>
               {sortedHitters.map((player, idx) => (
                 <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
-                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/players/${playerNameToSlug(player.name)}`}
+                      className="font-semibold text-star-white hover:text-nebula-orange transition-colors"
+                    >
+                      {player.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.ab}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.h}</td>
@@ -369,28 +378,28 @@ export default function TeamPageView({
                   GP
                 </SortableHeader>
                 <SortableHeader field="ip" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  IP
+                  <StatTooltip stat="IP">IP</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="w" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  W
+                  <StatTooltip stat="W">W</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="l" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  L
+                  <StatTooltip stat="L">L</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="sv" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  SV
+                  <StatTooltip stat="SV">SV</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="era" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  ERA
+                  <StatTooltip stat="ERA">ERA</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="hAllowed" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  H
+                  <StatTooltip stat="H">H</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="hrAllowed" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  HR
+                  <StatTooltip stat="HR">HR</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="whip" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  WHIP
+                  <StatTooltip stat="WHIP">WHIP</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="baa" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   BAA
@@ -400,7 +409,14 @@ export default function TeamPageView({
             <tbody>
               {sortedPitchers.map((player, idx) => (
                 <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
-                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/players/${playerNameToSlug(player.name)}`}
+                      className="font-semibold text-star-white hover:text-nebula-orange transition-colors"
+                    >
+                      {player.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.ip?.toFixed(2) || '0.00'}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.w}</td>
@@ -452,16 +468,16 @@ export default function TeamPageView({
                   GP
                 </SortableHeader>
                 <SortableHeader field="np" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  NP
+                  <StatTooltip stat="NP">NP</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="e" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  E
+                  <StatTooltip stat="E">E</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="oaa" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   OAA
                 </SortableHeader>
                 <SortableHeader field="sb" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
-                  SB
+                  <StatTooltip stat="SB">SB</StatTooltip>
                 </SortableHeader>
                 <SortableHeader field="cs" sortField={sortField} sortDirection={sortDirection} onSort={handleSort}>
                   CS
@@ -471,7 +487,14 @@ export default function TeamPageView({
             <tbody>
               {sortedFielders.map((player, idx) => (
                 <tr key={player.name} className="border-b border-star-gray/10 hover:bg-space-blue/30 transition-colors duration-300">
-                  <td className="px-4 py-3 font-semibold text-star-white">{player.name}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/players/${playerNameToSlug(player.name)}`}
+                      className="font-semibold text-star-white hover:text-nebula-orange transition-colors"
+                    >
+                      {player.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-center text-star-gray">{player.gp}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.np || 0}</td>
                   <td className="px-4 py-3 text-center text-star-white">{player.e || 0}</td>

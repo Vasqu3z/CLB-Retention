@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
 import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
 import MobileNav from "./MobileNav";
@@ -18,18 +18,46 @@ const navItems = [
 ];
 
 const toolsItems = [
-  { href: "/tools/attributes", label: "⚾ Attribute Comparison" },
-  { href: "/tools/stats", label: "📊 Stats Comparison" },
-  { href: "/tools/chemistry", label: "⚡ Chemistry Tool" },
-  { href: "/tools/lineup", label: "🏟️ Lineup Builder" },
+  { href: "/tools/attributes", label: "Attribute Comparison" },
+  { href: "/tools/stats", label: "Stats Comparison" },
+  { href: "/tools/chemistry", label: "Chemistry Tool" },
+  { href: "/tools/lineup", label: "Lineup Builder" },
 ];
 
 export default function Header() {
   const pathname = usePathname();
   const teams = getActiveTeams();
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isToolsActive = pathname.startsWith('/tools');
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowToolsDropdown(false);
+      }
+    };
+
+    if (showToolsDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showToolsDropdown]);
+
+  // Handle keyboard navigation
+  const handleDropdownKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowToolsDropdown(false);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setShowToolsDropdown(!showToolsDropdown);
+    }
+  };
 
   return (
     <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30" role="banner">
@@ -84,6 +112,7 @@ export default function Header() {
                       alt={team.name}
                       width={32}
                       height={32}
+                      loading="lazy"
                       className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
                     />
                   </div>
@@ -117,11 +146,16 @@ export default function Header() {
 
             {/* Tools Dropdown */}
             <div
+              ref={dropdownRef}
               className="relative"
               onMouseEnter={() => setShowToolsDropdown(true)}
               onMouseLeave={() => setShowToolsDropdown(false)}
             >
               <button
+                onClick={() => setShowToolsDropdown(!showToolsDropdown)}
+                onKeyDown={handleDropdownKeyDown}
+                aria-expanded={showToolsDropdown}
+                aria-haspopup="true"
                 className={`
                   px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 border-b-2
                   focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
@@ -137,13 +171,15 @@ export default function Header() {
               {/* Dropdown Menu */}
               {showToolsDropdown && (
                 <div className="absolute top-full right-0 pt-2 w-56">
-                  <div className="glass-card bg-space-navy/90 border border-cosmic-border/80 shadow-2xl overflow-hidden">
+                  <div className="glass-card bg-space-navy/90 border border-cosmic-border/80 shadow-2xl overflow-hidden" role="menu">
                     {toolsItems.map((tool) => {
                       const isActive = pathname === tool.href;
                       return (
                         <Link
                           key={tool.href}
                           href={tool.href}
+                          role="menuitem"
+                          onClick={() => setShowToolsDropdown(false)}
                           className={`
                             block px-4 py-3 text-sm transition-all duration-200
                             ${isActive

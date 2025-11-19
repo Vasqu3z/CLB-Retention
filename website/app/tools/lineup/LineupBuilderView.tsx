@@ -3,6 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ChemistryMatrix } from '@/lib/sheets';
 import PlayerSelectModal from '@/components/PlayerSelectModal';
+import FadeIn from '@/components/animations/FadeIn';
+import LiveStatsIndicator from '@/components/LiveStatsIndicator';
 
 interface Props {
   chemistryMatrix: ChemistryMatrix;
@@ -375,19 +377,23 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
 
   return (
     <div className="space-y-8">
-      <div className="relative">
-        {/* Baseball stitching accent */}
-        <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-solar-gold/50 to-transparent rounded-full" />
+      <FadeIn delay={0.1} direction="up">
+        <div className="relative">
+          {/* Baseball stitching accent */}
+          <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-solar-gold/50 to-transparent rounded-full" />
 
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-solar-gold via-comet-yellow to-nebula-orange bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-          ⚾ Lineup Builder
-        </h1>
-        <p className="text-star-gray font-mono text-lg">
-          Click on positions to select players and build your optimal lineup with chemistry visualization
-        </p>
-      </div>
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-solar-gold via-comet-yellow to-nebula-orange bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            Lineup Builder
+          </h1>
+          <p className="text-star-gray font-mono text-lg mb-3">
+            Click on positions to select players and build your optimal lineup with chemistry visualization
+          </p>
+          <LiveStatsIndicator />
+        </div>
+      </FadeIn>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <FadeIn delay={0.2} direction="up">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Baseball Field */}
           <div className="xl:col-span-2 space-y-6">
             <div className="glass-card p-6">
@@ -630,6 +636,7 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
             </div>
           </div>
         </div>
+      </FadeIn>
 
       {/* Save Dialog */}
       {showSaveDialog && (

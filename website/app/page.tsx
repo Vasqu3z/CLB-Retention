@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LEAGUE_CONFIG } from "@/config/league";
 import { getLeagueLogo } from "@/lib/teamLogos";
-import { Trophy, TrendingUp, Calendar, Users, Target, BarChart3, Zap, Award } from "lucide-react";
+import { Trophy, TrendingUp, Calendar, Users, Target, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import Tilt from "@/components/animations/Tilt";
 
@@ -37,6 +37,16 @@ const mainNavCards = [
     iconColor: "text-cosmic-purple",
     size: "medium" as const,
   },
+  {
+    href: "/playoffs",
+    title: "Playoffs",
+    description: "Postseason bracket",
+    icon: Award,
+    gradient: "from-infield-dirt/30 to-leather-brown/10",
+    borderColor: "border-infield-dirt/60",
+    iconColor: "text-infield-dirt",
+    size: "medium" as const,
+  },
 ];
 
 const secondaryNavCards = [
@@ -57,24 +67,6 @@ const secondaryNavCards = [
     gradient: "from-nebula-cyan/20 to-nebula-teal/10",
     borderColor: "border-nebula-cyan/50",
     iconColor: "text-nebula-cyan",
-  },
-  {
-    href: "/playoffs",
-    title: "Playoffs",
-    description: "Postseason bracket",
-    icon: Award,
-    gradient: "from-infield-dirt/30 to-leather-brown/10",
-    borderColor: "border-infield-dirt/60",
-    iconColor: "text-infield-dirt",
-  },
-  {
-    href: "/tools",
-    title: "Tools",
-    description: "Advanced analytics",
-    icon: BarChart3,
-    gradient: "from-royal-purple/20 to-cosmic-purple/10",
-    borderColor: "border-royal-purple/50",
-    iconColor: "text-royal-purple",
   },
 ];
 
@@ -117,20 +109,21 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Title with distinctive gradient - avoiding generic orange */}
-            <h1 className="text-6xl lg:text-8xl font-display font-bold mb-6 bg-gradient-to-r from-field-green via-nebula-teal to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
+            {/* Title with distinctive gradient */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight bg-gradient-to-r from-nebula-orange via-nebula-coral to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
               {LEAGUE_CONFIG.name}
             </h1>
 
             <div className="flex flex-col items-center gap-4">
               <p className="text-2xl text-vintage-cream font-display font-semibold tracking-wide text-shadow-strong">
-                ⚾ Season {LEAGUE_CONFIG.currentSeason} ⚾
+                Season {LEAGUE_CONFIG.currentSeason}
               </p>
 
-              <div className="flex items-center gap-3">
-                <Zap className="w-5 h-5 text-nebula-teal animate-pulse" />
-                <span className="font-mono text-star-gray">Live Statistics • Real-Time Updates</span>
-                <Zap className="w-5 h-5 text-nebula-teal animate-pulse" />
+              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-field-green/10 border border-field-green/30">
+                <div className="w-3 h-3 rounded-full bg-nebula-teal animate-pulse shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
+                <span className="font-display font-semibold text-nebula-teal tracking-wide">
+                  SYSTEM OPERATIONAL
+                </span>
               </div>
             </div>
           </div>
@@ -210,14 +203,14 @@ export default function Home() {
           })}
         </div>
 
-        {/* Secondary nav - 4 column grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Secondary nav - 2 column grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {secondaryNavCards.map((card, idx) => {
             const Icon = card.icon;
             return (
               <FadeIn
                 key={card.href}
-                delay={0.7 + idx * 0.1}
+                delay={0.85 + idx * 0.1}
                 direction="up"
                 duration={0.6}
               >
@@ -225,23 +218,24 @@ export default function Home() {
                   <Link
                     href={card.href}
                     className={`
-                      group relative p-6 rounded-xl border ${card.borderColor}
+                      group relative p-8 rounded-xl border-2 ${card.borderColor}
                       bg-gradient-to-br ${card.gradient}
                       transition-all duration-300
                       backdrop-blur-sm
                       hover:shadow-[0_8px_24px_rgba(255,255,255,0.1)]
                       hover:scale-105
                       block h-full
+                      min-h-[180px]
                     `}
                   >
                     <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
 
                     <div className="relative z-10 text-center">
-                      <Icon className={`w-8 h-8 ${card.iconColor} mx-auto mb-3 group-hover:scale-125 transition-transform duration-300`} />
-                      <h3 className="text-lg font-display font-semibold mb-1 text-star-white">
+                      <Icon className={`w-12 h-12 ${card.iconColor} mx-auto mb-4 group-hover:scale-125 transition-transform duration-300`} />
+                      <h3 className="text-2xl font-display font-bold mb-2 text-star-white">
                         {card.title}
                       </h3>
-                      <p className="text-xs text-star-gray font-body">
+                      <p className="text-sm text-star-gray font-body">
                         {card.description}
                       </p>
                     </div>
@@ -266,14 +260,7 @@ export default function Home() {
             }}
           />
 
-          <div className="relative z-10 space-y-3">
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-field-green/10 border border-field-green/30">
-              <div className="w-3 h-3 rounded-full bg-nebula-teal animate-pulse shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
-              <span className="font-display font-semibold text-nebula-teal tracking-wide">
-                SYSTEM OPERATIONAL
-              </span>
-            </div>
-
+          <div className="relative z-10">
             <p className="text-sm text-star-dim font-mono">
               Powered by Google Sheets • Next.js • Real-time sync every 60s
             </p>

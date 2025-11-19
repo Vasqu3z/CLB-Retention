@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react';
 import { ChemistryMatrix } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
+import FadeIn from '@/components/animations/FadeIn';
+import LiveStatsIndicator from '@/components/LiveStatsIndicator';
 
 interface Props {
   chemistryMatrix: ChemistryMatrix;
@@ -154,31 +156,37 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
 
   return (
     <div className="space-y-8">
-      <div className="relative">
-        {/* Baseball stitching accent */}
-        <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-nebula-teal/50 to-transparent rounded-full" />
+      <FadeIn delay={0.1} direction="up">
+        <div className="relative">
+          {/* Baseball stitching accent */}
+          <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-nebula-teal/50 to-transparent rounded-full" />
 
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-teal via-nebula-cyan to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-          ⚡ Player Chemistry Tool
-        </h1>
-        <p className="text-star-gray font-mono text-lg">
-          Analyze chemistry relationships and team compatibility for up to 5 players
-        </p>
-      </div>
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-teal via-nebula-cyan to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            Player Chemistry Tool
+          </h1>
+          <p className="text-star-gray font-mono text-lg mb-3">
+            Analyze chemistry relationships and team compatibility for up to 5 players
+          </p>
+          <LiveStatsIndicator />
+        </div>
+      </FadeIn>
 
       {/* Player Selection */}
-      <PlayerMultiSelect
-        className="mb-2"
-        players={playerNames}
-        selectedPlayers={selectedPlayerNames}
-        onSelectionChange={setSelectedPlayerNames}
-        maxSelections={5}
-        placeholder="Search players..."
-      />
+      <FadeIn delay={0.2} direction="up">
+        <PlayerMultiSelect
+          className="mb-2"
+          players={playerNames}
+          selectedPlayers={selectedPlayerNames}
+          onSelectionChange={setSelectedPlayerNames}
+          maxSelections={5}
+          placeholder="Search players..."
+        />
+      </FadeIn>
 
       {/* Chemistry Display */}
       {selectedPlayersData.length > 0 && (
-        <div className="space-y-6">
+        <FadeIn delay={0.3} direction="up">
+          <div className="space-y-6">
           {/* Individual Player Chemistry */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {selectedPlayersData.map(player => (
@@ -348,7 +356,8 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
               </div>
             )}
           </div>
-        )}
+        </FadeIn>
+      )}
     </div>
   );
 }

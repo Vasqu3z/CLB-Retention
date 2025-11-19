@@ -185,9 +185,15 @@ export default function PlayerMultiSelect({
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
-            setIsOpen(true);
+            if (e.target.value.trim()) {
+              setIsOpen(true);
+            }
           }}
-          onFocus={() => setIsOpen(true)}
+          onFocus={() => {
+            if (searchQuery.trim()) {
+              setIsOpen(true);
+            }
+          }}
           placeholder={selectedPlayers.length >= maxSelections ? `Maximum ${maxSelections} players selected` : placeholder}
           disabled={selectedPlayers.length >= maxSelections}
           className={`w-full px-4 py-3 bg-space-blue/50 border-2 border-cosmic-border rounded-lg text-star-white font-mono placeholder-star-dim focus:outline-none focus:border-nebula-orange transition-all duration-300 ${
@@ -196,10 +202,10 @@ export default function PlayerMultiSelect({
         />
 
         {/* Dropdown menu */}
-        {isMounted && isOpen && selectedPlayers.length < maxSelections && filteredPlayers.length > 0 &&
+        {isMounted && isOpen && searchQuery.trim() && selectedPlayers.length < maxSelections && filteredPlayers.length > 0 &&
           createPortal(dropdownList, document.body)}
 
-        {isMounted && isOpen && filteredPlayers.length === 0 && searchQuery && selectedPlayers.length < maxSelections &&
+        {isMounted && isOpen && filteredPlayers.length === 0 && searchQuery.trim() && selectedPlayers.length < maxSelections &&
           createPortal(emptyDropdown, document.body)}
       </div>
 

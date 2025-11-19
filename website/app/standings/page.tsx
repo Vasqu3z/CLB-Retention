@@ -5,6 +5,7 @@ import StatCard from "@/components/StatCard";
 import StandingsTable from "./StandingsTable";
 import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
+import LiveStatsIndicator from "@/components/LiveStatsIndicator";
 import Image from "next/image";
 
 export const revalidate = 60;
@@ -59,13 +60,11 @@ export default async function StandingsPage() {
     <div className="space-y-8">
       {/* Page Header */}
       <FadeIn delay={0} direction="down">
-        <div>
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+        <div className="text-center sm:text-left">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
             League Standings
           </h1>
-          <p className="text-star-gray font-mono text-shadow">
-            Regular Season • Updated in real-time
-          </p>
+          <LiveStatsIndicator />
         </div>
       </FadeIn>
 

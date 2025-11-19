@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useState, useMemo, memo } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import EmptyState from './EmptyState';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
@@ -91,6 +92,13 @@ export default function DataTable<T>({
     });
   }, [data, sortKey, sortDirection, getNestedValue]);
 
+  const rowVirtualizer = useVirtualizer({
+    count: sortedData.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => 56,
+    overscan: 8,
+  });
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -143,8 +151,11 @@ export default function DataTable<T>({
             className="relative overflow-x-auto overflow-y-auto max-h-[70vh]"
             data-lenis-prevent
           >
-            <table className="w-full font-mono text-sm">
-              <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
+            <table className="w-full font-mono text-sm table-fixed">
+              <thead
+                className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10"
+                style={{ display: 'table', width: '100%', tableLayout: 'fixed' }}
+              >
                 <tr>
                   {visibleColumns.map((column) => (
                     <th
@@ -187,20 +198,37 @@ export default function DataTable<T>({
                   ))}
                 </tr>
               </thead>
-              <tbody>
-                {sortedData.map((row, idx) => {
+              <tbody
+                style={{
+                  display: 'block',
+                  position: 'relative',
+                  width: '100%',
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const row = sortedData[virtualRow.index];
                   const isHighlighted = highlightRow?.(row);
                   const customClassName = rowClassName?.(row);
 
                   return (
                     <tr
                       key={getRowKey(row)}
+                      data-index={virtualRow.index}
                       className={`
                         border-b border-cosmic-border/30 transition-all duration-300
-                        ${idx % 2 === 0 ? 'bg-space-navy/5' : 'bg-space-navy/15'}
+                        ${virtualRow.index % 2 === 0 ? 'bg-space-navy/5' : 'bg-space-navy/15'}
                         ${isHighlighted ? 'bg-nebula-orange/10 border-l-4 border-l-nebula-orange' : 'hover:bg-space-blue/30 hover:border-l-2 hover:border-l-nebula-orange/50'}
                         ${customClassName || ''}
+                        table w-full table-fixed
                       `}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
                     >
                       {visibleColumns.map((column) => (
                         <td

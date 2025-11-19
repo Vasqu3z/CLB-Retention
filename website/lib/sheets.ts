@@ -51,6 +51,9 @@ const googleAuth = new google.auth.GoogleAuth({
 
 type SheetsAuthClient = Awaited<ReturnType<typeof googleAuth.getClient>>;
 
+const DEFAULT_SHEET_REVALIDATE_SECONDS = 60;
+const LOW_CHURN_SHEET_REVALIDATE_SECONDS = 300;
+
 let authClientPromise: Promise<SheetsAuthClient> | null = null;
 
 // Initialize Google Sheets API client
@@ -85,17 +88,42 @@ async function getSheetDataUncached(range: string, spreadsheetId?: string): Prom
   }
 }
 
-// Cached version with 60-second revalidation
-export const getSheetData = unstable_cache(
-  async (range: string, spreadsheetId?: string) => {
-    return getSheetDataUncached(range, spreadsheetId);
-  },
-  ['sheet-data'],
-  {
-    revalidate: 60, // Cache for 60 seconds
-    tags: ['sheets'],
+type SheetDataFetcher = (range: string, spreadsheetId?: string) => Promise<any[][]>;
+
+// Cache instances keyed by their revalidation duration (in seconds)
+const sheetDataCacheByDuration = new Map<number, SheetDataFetcher>();
+
+function getCachedSheetFetcher(revalidate: number): SheetDataFetcher {
+  const normalizedRevalidate = Number.isFinite(revalidate) && revalidate > 0
+    ? revalidate
+    : DEFAULT_SHEET_REVALIDATE_SECONDS;
+
+  if (!sheetDataCacheByDuration.has(normalizedRevalidate)) {
+    const cachedFetcher = unstable_cache(
+      async (range: string, spreadsheetId?: string) => {
+        return getSheetDataUncached(range, spreadsheetId);
+      },
+      ['sheet-data', String(normalizedRevalidate)],
+      {
+        revalidate: normalizedRevalidate,
+        tags: ['sheets'],
+      }
+    );
+
+    sheetDataCacheByDuration.set(normalizedRevalidate, cachedFetcher);
   }
-);
+
+  return sheetDataCacheByDuration.get(normalizedRevalidate)!;
+}
+
+// Cached sheet fetcher with configurable revalidation (defaults to 60s)
+export function getSheetData(
+  range: string,
+  spreadsheetId?: string,
+  revalidate: number = DEFAULT_SHEET_REVALIDATE_SECONDS
+): Promise<any[][]> {
+  return getCachedSheetFetcher(revalidate)(range, spreadsheetId);
+}
 
 // ===== STANDINGS =====
 export interface StandingsRow {
@@ -381,7 +409,7 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
     SCHEDULE_SHEET.START_COL,
     SCHEDULE_SHEET.END_COL
   );
-  const scheduleData = await getSheetData(range);
+  const scheduleData = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
   const schedule: ScheduleGame[] = [];
 
@@ -461,7 +489,7 @@ export async function getPlayoffSchedule(): Promise<PlayoffGame[]> {
     SCHEDULE_SHEET.START_COL,
     SCHEDULE_SHEET.END_COL
   );
-  const scheduleData = await getSheetData(range);
+  const scheduleData = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
   const schedule: PlayoffGame[] = [];
 
@@ -1134,14 +1162,14 @@ export interface PlayerRegistryEntry {
  */
 export async function getPlayerRegistry(): Promise<PlayerRegistryEntry[]> {
   try {
-    const range = buildFullRange(
-      PLAYER_REGISTRY_SHEET.NAME,
-      PLAYER_REGISTRY_SHEET.DATA_START_ROW,
-      PLAYER_REGISTRY_SHEET.MAX_ROWS,
-      PLAYER_REGISTRY_SHEET.START_COL,
-      PLAYER_REGISTRY_SHEET.END_COL
-    );
-    const data = await getSheetData(range);
+  const range = buildFullRange(
+    PLAYER_REGISTRY_SHEET.NAME,
+    PLAYER_REGISTRY_SHEET.DATA_START_ROW,
+    PLAYER_REGISTRY_SHEET.MAX_ROWS,
+    PLAYER_REGISTRY_SHEET.START_COL,
+    PLAYER_REGISTRY_SHEET.END_COL
+  );
+  const data = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return data
       .filter((row) => row[PLAYER_REGISTRY_SHEET.COLUMNS.PLAYER_NAME])
@@ -1177,14 +1205,14 @@ export interface TeamRegistryEntry {
  */
 export async function getTeamRegistry(): Promise<TeamRegistryEntry[]> {
   try {
-    const range = buildFullRange(
-      TEAM_REGISTRY_SHEET.NAME,
-      TEAM_REGISTRY_SHEET.DATA_START_ROW,
-      TEAM_REGISTRY_SHEET.MAX_ROWS,
-      TEAM_REGISTRY_SHEET.START_COL,
-      TEAM_REGISTRY_SHEET.END_COL
-    );
-    const data = await getSheetData(range);
+  const range = buildFullRange(
+    TEAM_REGISTRY_SHEET.NAME,
+    TEAM_REGISTRY_SHEET.DATA_START_ROW,
+    TEAM_REGISTRY_SHEET.MAX_ROWS,
+    TEAM_REGISTRY_SHEET.START_COL,
+    TEAM_REGISTRY_SHEET.END_COL
+  );
+  const data = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return data
       .filter((row) => row[TEAM_REGISTRY_SHEET.COLUMNS.TEAM_NAME])
@@ -1359,7 +1387,7 @@ export async function getPlayerAttributes(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const attributeData = await getSheetData(range, dbId);
+    const attributeData = await getSheetData(range, dbId, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     const players = parsePlayerAttributes(attributeData, playerName);
     return players.length > 0 ? players[0] : null;
@@ -1388,7 +1416,7 @@ export async function getAllPlayerAttributes(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const attributeData = await getSheetData(range, dbId);
+    const attributeData = await getSheetData(range, dbId, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return parsePlayerAttributes(attributeData);
   } catch (error) {
@@ -1464,7 +1492,7 @@ export async function getChemistryMatrix(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const lookupData = await getSheetData(range, dbId);
+    const lookupData = await getSheetData(range, dbId, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return buildChemistryMatrix(lookupData);
   } catch (error) {

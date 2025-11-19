@@ -1,5 +1,5 @@
-import { CosmicSpinner } from '@/components/LoadingState';
+import LoadingState from '@/components/LoadingState';
 
 export default function PlayersLoading() {
-  return <CosmicSpinner message="Loading player statistics..." />;
+  return <LoadingState variant="table" message="Loading player statistics..." />;
 }

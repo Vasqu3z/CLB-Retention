@@ -6,13 +6,33 @@ interface LoadingStateProps {
   message?: string;
   size?: 'sm' | 'md' | 'lg';
   fullScreen?: boolean;
+  variant?: 'spinner' | 'table';
+  tableColumns?: number;
+  tableRows?: number;
 }
 
 export default function LoadingState({
   message = 'Loading...',
   size = 'md',
-  fullScreen = false
+  fullScreen = false,
+  variant = 'spinner',
+  tableColumns,
+  tableRows,
 }: LoadingStateProps) {
+  if (variant === 'table') {
+    const skeleton = <TableSkeleton columns={tableColumns} rows={tableRows} />;
+
+    if (fullScreen) {
+      return (
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <div className="w-full max-w-5xl">{skeleton}</div>
+        </div>
+      );
+    }
+
+    return skeleton;
+  }
+
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-10 h-10',

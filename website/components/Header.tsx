@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
 import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
 import MobileNav from "./MobileNav";
+import SurfaceCard from "@/components/SurfaceCard";
 
 const navItems = [
   { href: "/teams", label: "Teams" },
@@ -171,7 +172,7 @@ export default function Header() {
               {/* Dropdown Menu */}
               {showToolsDropdown && (
                 <div className="absolute top-full right-0 pt-2 w-56">
-                  <div className="glass-card bg-space-navy/90 border border-cosmic-border/80 shadow-2xl overflow-hidden" role="menu">
+                  <SurfaceCard className="bg-space-navy/90 border border-cosmic-border/80 shadow-2xl overflow-hidden" role="menu">
                     {toolsItems.map((tool) => {
                       const isActive = pathname === tool.href;
                       return (
@@ -192,7 +193,7 @@ export default function Header() {
                         </Link>
                       );
                     })}
-                  </div>
+                  </SurfaceCard>
                 </div>
               )}
             </div>

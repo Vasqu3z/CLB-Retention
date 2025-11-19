@@ -10,6 +10,7 @@ import Image from 'next/image';
 import SeasonToggle from '@/components/SeasonToggle';
 import FadeIn from '@/components/animations/FadeIn';
 import StatTooltip from '@/components/StatTooltip';
+import SurfaceCard from '@/components/SurfaceCard';
 
 interface TeamPageViewProps {
   team: Team;
@@ -135,7 +136,7 @@ export default function TeamPageView({
     <div className="space-y-8">
       {/* Team Header */}
       <FadeIn delay={0} direction="down">
-        <div className="glass-card p-6 relative" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
+        <SurfaceCard className="p-6 relative" style={{ borderLeft: `4px solid ${team.primaryColor}` }}>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div className="w-64 h-24 relative">
               <Image
@@ -216,12 +217,12 @@ export default function TeamPageView({
         <p className="text-star-gray text-sm font-mono">
           {team.mascot} • {roster.length} Players
         </p>
-        </div>
+        </SurfaceCard>
       </FadeIn>
 
       {/* Navigation Tabs */}
       <FadeIn delay={0.15} direction="up">
-        <div className="glass-card p-2">
+        <SurfaceCard className="p-2">
           <nav className="flex space-x-2 overflow-x-auto" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('hitting')}
@@ -264,7 +265,7 @@ export default function TeamPageView({
               Schedule
             </button>
           </nav>
-        </div>
+        </SurfaceCard>
       </FadeIn>
 
       {/* Hitting Stats */}
@@ -272,7 +273,7 @@ export default function TeamPageView({
         <FadeIn delay={0.25} direction="up">
           <section id="hitting">
           <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-orange to-nebula-coral bg-clip-text text-transparent">Hitting Statistics</h2>
-        <div className="glass-card overflow-x-auto">
+        <SurfaceCard className="overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
@@ -357,7 +358,7 @@ export default function TeamPageView({
               )}
             </tbody>
           </table>
-        </div>
+        </SurfaceCard>
         </section>
       </FadeIn>
       )}
@@ -367,7 +368,7 @@ export default function TeamPageView({
         <FadeIn delay={0.25} direction="up">
           <section id="pitching">
           <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-nebula-teal bg-clip-text text-transparent">Pitching Statistics</h2>
-        <div className="glass-card overflow-x-auto">
+        <SurfaceCard className="overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
@@ -447,7 +448,7 @@ export default function TeamPageView({
               )}
             </tbody>
           </table>
-        </div>
+        </SurfaceCard>
         </section>
       </FadeIn>
       )}
@@ -457,7 +458,7 @@ export default function TeamPageView({
         <FadeIn delay={0.25} direction="up">
           <section id="fielding">
           <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-solar-gold to-comet-yellow bg-clip-text text-transparent">Fielding & Baserunning Statistics</h2>
-        <div className="glass-card overflow-x-auto">
+        <SurfaceCard className="overflow-x-auto">
           <table className="w-full font-mono text-sm">
             <thead className="bg-space-blue/50 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-10">
               <tr>
@@ -519,7 +520,7 @@ export default function TeamPageView({
               )}
             </tbody>
           </table>
-        </div>
+        </SurfaceCard>
         </section>
       </FadeIn>
       )}
@@ -529,13 +530,13 @@ export default function TeamPageView({
         <FadeIn delay={0.25} direction="up">
           <section id="schedule">
           <h2 className="text-2xl font-display font-bold mb-4 bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">Team Schedule</h2>
-        <div className="glass-card">
+        <SurfaceCard>
           <div className="divide-y divide-star-gray/10">
             {schedule.map((game, idx) => (
               <TeamGameRow key={idx} game={game} teamName={team.name} />
             ))}
           </div>
-        </div>
+        </SurfaceCard>
         </section>
       </FadeIn>
       )}

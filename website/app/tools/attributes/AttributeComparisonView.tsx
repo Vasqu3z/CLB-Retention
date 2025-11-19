@@ -6,6 +6,7 @@ import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 import FadeIn from '@/components/animations/FadeIn';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
+import SurfaceCard from '@/components/SurfaceCard';
 
 type AttributeTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -44,7 +45,7 @@ export default function AttributeComparisonView({ players }: Props) {
 
       {/* Attribute Category Tabs */}
       <FadeIn delay={0.2} direction="up">
-        <div className="glass-card p-4">
+        <SurfaceCard className="p-4">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('hitting')}
@@ -77,7 +78,7 @@ export default function AttributeComparisonView({ players }: Props) {
               Fielding & Running
             </button>
           </div>
-        </div>
+        </SurfaceCard>
       </FadeIn>
 
       {/* Player Selection */}
@@ -95,7 +96,7 @@ export default function AttributeComparisonView({ players }: Props) {
       {/* Comparison Table */}
       {selectedPlayers.length >= 2 && (
         <FadeIn delay={0.4} direction="up">
-          <div className="glass-card">
+          <SurfaceCard>
           <div
             ref={tableScrollRef}
             className="relative overflow-auto max-h-[70vh]"
@@ -196,7 +197,7 @@ export default function AttributeComparisonView({ players }: Props) {
               </tbody>
             </table>
           </div>
-          </div>
+          </SurfaceCard>
         </FadeIn>
       )}
     </div>

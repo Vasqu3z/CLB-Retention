@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import SurfaceCard from '@/components/SurfaceCard';
 
 interface PlayerSelectModalProps {
   isOpen: boolean;
@@ -63,8 +64,8 @@ export default function PlayerSelectModal({
       className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div
-        className="glass-card p-6 max-w-md w-full max-h-[80vh] flex flex-col"
+      <SurfaceCard
+        className="p-6 max-w-md w-full max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-xl font-display font-bold text-star-white mb-4">{title}</h3>
@@ -110,7 +111,7 @@ export default function PlayerSelectModal({
         >
           Cancel
         </button>
-      </div>
+      </SurfaceCard>
     </div>
   );
 }

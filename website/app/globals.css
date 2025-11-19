@@ -19,7 +19,7 @@
   /* Cool Accents (supporting) */
   --nebula-cyan: #00D4FF;
   --nebula-teal: #00FFC6;
-  --nebula-purple: #A78BFA;      /* Subtle purple for skeleton states */
+  --nebula-purple: 167 139 250;  /* RGB channels for Tailwind opacity utilities */
 
   /* Baseball-Specific Colors - NEW */
   --field-green: #2D5F3F;        /* Baseball field grass */

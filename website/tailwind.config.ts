@@ -26,6 +26,19 @@ const config: Config = {
         'nebula-cyan': 'var(--nebula-cyan)',
         'nebula-teal': 'var(--nebula-teal)',
 
+        // Baseball-Specific Colors
+        'field-green': 'var(--field-green)',
+        'infield-dirt': 'var(--infield-dirt)',
+        'vintage-cream': 'var(--vintage-cream)',
+        'leather-brown': 'var(--leather-brown)',
+        'chalk-white': 'var(--chalk-white)',
+        'dugout-blue': 'var(--dugout-blue)',
+
+        // Enhanced Purple Palette
+        'cosmic-purple': 'var(--cosmic-purple)',
+        'deep-violet': 'var(--deep-violet)',
+        'royal-purple': 'var(--royal-purple)',
+
         // Atmosphere/Text
         'star-white': 'var(--star-white)',
         'star-gray': 'var(--star-gray)',
@@ -40,10 +53,10 @@ const config: Config = {
         warning: 'var(--warning)',
       },
       fontFamily: {
-        'display': ['Chakra Petch', 'sans-serif'],
-        'body': ['Azeret Mono', 'monospace'],
-        'mono': ['JetBrains Mono', 'monospace'],
-        'stat': ['Orbitron', 'sans-serif'],
+        'display': ['var(--font-barlow)', 'sans-serif'],
+        'body': ['var(--font-azeret-mono)', 'monospace'],
+        'mono': ['var(--font-jetbrains-mono)', 'monospace'],
+        'stat': ['var(--font-syne)', 'sans-serif'],
       },
       backdropBlur: {
         'glass': '10px',

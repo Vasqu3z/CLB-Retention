@@ -66,16 +66,24 @@ export default function TeamStatsView({
   const enhancedTeamData: EnhancedTeam[] = teamData
     .filter(team => activeTeamNames.includes(team.teamName))
     .map(team => {
-      // Get runs scored from standings
+      // Get runs scored from standings (regular season) or use RBI as proxy (playoffs)
+      // Note: Playoffs don't have standings, so we use RBI as a reasonable approximation
       const standingsEntry = standings.find(s => s.team === team.teamName);
-      const runsScored = standingsEntry?.runsScored || 0;
+      const runsScored = standingsEntry?.runsScored || team.hitting.rbi;
 
     // Calculate rate stats
     const avg = team.hitting.ab > 0 ? (team.hitting.h / team.hitting.ab).toFixed(3).substring(1) : '.000';
-    const obp = (team.hitting.ab + team.hitting.bb) > 0
-      ? ((team.hitting.h + team.hitting.bb) / (team.hitting.ab + team.hitting.bb)).toFixed(3).substring(1)
-      : '.000';
-    const slg = team.hitting.ab > 0 ? (team.hitting.tb / team.hitting.ab).toFixed(3).substring(1) : '.000';
+
+    // OBP can be >= 1.000 in rare cases, handle accordingly
+    const obpValue = (team.hitting.ab + team.hitting.bb) > 0
+      ? (team.hitting.h + team.hitting.bb) / (team.hitting.ab + team.hitting.bb)
+      : 0;
+    const obp = obpValue >= 1 ? obpValue.toFixed(3) : (obpValue > 0 ? obpValue.toFixed(3).substring(1) : '.000');
+
+    // SLG can be >= 1.000, so only remove leading zero if < 1
+    const slgValue = team.hitting.ab > 0 ? team.hitting.tb / team.hitting.ab : 0;
+    const slg = slgValue >= 1 ? slgValue.toFixed(3) : (slgValue > 0 ? slgValue.toFixed(3).substring(1) : '.000');
+
     const ops = team.hitting.ab > 0 && (team.hitting.ab + team.hitting.bb) > 0
       ? ((team.hitting.h + team.hitting.bb) / (team.hitting.ab + team.hitting.bb) +
          team.hitting.tb / team.hitting.ab).toFixed(3)

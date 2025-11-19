@@ -34,9 +34,12 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-          Player Stats Comparison
+      <div className="relative">
+        {/* Baseball stitching accent */}
+        <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-field-green/50 to-transparent rounded-full" />
+
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-field-green via-nebula-teal to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+          📊 Player Stats Comparison
         </h1>
         <p className="text-star-gray font-mono text-lg">
           Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics
@@ -73,7 +76,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
               onClick={() => setActiveTab('fielding')}
               className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
                 activeTab === 'fielding'
-                  ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg'
+                  ? 'bg-gradient-to-r from-field-green to-nebula-teal text-white shadow-lg'
                   : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
               }`}
             >

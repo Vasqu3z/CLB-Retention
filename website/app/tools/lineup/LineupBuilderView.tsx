@@ -375,9 +375,12 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent">
-          Lineup Builder
+      <div className="relative">
+        {/* Baseball stitching accent */}
+        <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-solar-gold/50 to-transparent rounded-full" />
+
+        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-solar-gold via-comet-yellow to-nebula-orange bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+          ⚾ Lineup Builder
         </h1>
         <p className="text-star-gray font-mono text-lg">
           Click on positions to select players and build your optimal lineup with chemistry visualization

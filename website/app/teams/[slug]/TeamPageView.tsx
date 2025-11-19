@@ -251,7 +251,7 @@ export default function TeamPageView({
                   : 'text-star-gray hover:text-star-white hover:bg-space-black/30'
               }`}
             >
-              Fielding
+              Fielding & Running
             </button>
             <button
               onClick={() => setActiveTab('schedule')}

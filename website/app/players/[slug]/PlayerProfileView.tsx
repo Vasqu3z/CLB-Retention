@@ -202,7 +202,7 @@ export default function PlayerProfileView({
 
                 {/* Fielding Stats */}
                 <div className="glass-card p-6 hover:border-emerald-500/50">
-                  <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding</h3>
+                  <h3 className="text-xl font-display font-bold text-emerald-500 mb-4 text-shadow">Fielding & Running</h3>
                   <div className="space-y-2 font-mono text-sm">
                     <StatRowWithLabel label="Number of Plays (NP)" value={currentStats.np} />
                     <StatRowWithLabel label="Errors (E)" value={currentStats.e} />

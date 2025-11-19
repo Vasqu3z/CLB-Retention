@@ -20,7 +20,7 @@ const navItems = [
 const toolsItems = [
   { href: "/tools/attributes", label: "Attribute Comparison" },
   { href: "/tools/stats", label: "Stats Comparison" },
-  { href: "/tools/chemistry", label: "Chemistry Tool" },
+  { href: "/tools/chemistry", label: "Chemistry Comparison" },
   { href: "/tools/lineup", label: "Lineup Builder" },
 ];
 
@@ -165,7 +165,7 @@ export default function Header() {
                   }
                 `}
               >
-                Tools ▾
+                References ▾
               </button>
 
               {/* Dropdown Menu */}

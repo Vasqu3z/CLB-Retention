@@ -88,7 +88,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                   : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
               }`}
             >
-              Fielding
+              Fielding & Running
             </button>
           </div>
         </div>
@@ -114,7 +114,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
           {activeTab === 'hitting' && (
             <div className="glass-card overflow-hidden">
               <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-nebula-orange text-shadow">⚾ Hitting Statistics</h3>
+                <h3 className="text-lg font-display font-bold text-nebula-orange text-shadow">Hitting Statistics</h3>
               </div>
               <ScrollableTable>
                 <table className="w-full text-sm">
@@ -154,14 +154,14 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
           {/* Pitching Stats */}
           {activeTab === 'pitching' && (
             <div className="glass-card overflow-hidden">
-              <div className="bg-gradient-to-r from-green-500/30 to-green-400/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-green-400 text-shadow">🎯 Pitching Statistics</h3>
+              <div className="bg-gradient-to-r from-solar-gold/30 to-comet-yellow/30 px-4 py-3 border-b border-cosmic-border">
+                <h3 className="text-lg font-display font-bold text-solar-gold text-shadow">Pitching Statistics</h3>
               </div>
               <ScrollableTable>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                      <th className="px-4 py-3 text-left font-display font-bold text-green-400 sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
+                      <th className="px-4 py-3 text-left font-display font-bold text-solar-gold sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
                         Stat
                       </th>
                       {selectedPlayers.map(player => (
@@ -193,14 +193,14 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
           {/* Fielding Stats */}
           {activeTab === 'fielding' && (
             <div className="glass-card overflow-hidden">
-              <div className="bg-gradient-to-r from-comet-yellow/30 to-nebula-orange/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-comet-yellow text-shadow">🧤 Fielding Statistics</h3>
+              <div className="bg-gradient-to-r from-field-green/30 to-nebula-teal/30 px-4 py-3 border-b border-cosmic-border">
+                <h3 className="text-lg font-display font-bold text-field-green text-shadow">Fielding & Running Statistics</h3>
               </div>
               <ScrollableTable>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                      <th className="px-4 py-3 text-left font-display font-bold text-comet-yellow sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
+                      <th className="px-4 py-3 text-left font-display font-bold text-field-green sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
                         Stat
                       </th>
                       {selectedPlayers.map(player => (
@@ -276,7 +276,7 @@ function ScrollableTable({ children }: { children: ReactNode }) {
   const ref = useLenisScrollLock<HTMLDivElement>();
 
   return (
-    <div ref={ref} className="relative overflow-auto max-h-[70vh]">
+    <div ref={ref} className="relative overflow-auto max-h-[70vh]" onWheel={(e) => e.stopPropagation()}>
       {children}
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import FadeIn from '@/components/animations/FadeIn';
 import SeasonToggle from '@/components/SeasonToggle';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
 import { PlayerStats, PlayerAttributes, PlayerChemistry, PlayerRegistryEntry } from '@/lib/sheets';
@@ -53,7 +54,8 @@ export default function PlayerProfileView({
   return (
     <div className="space-y-6">
       {/* Player Header */}
-      <div className="glass-card p-6 relative">
+      <FadeIn delay={0} direction="down" useViewport={false}>
+        <div className="glass-card p-6 relative">
           <div className="flex items-start gap-6">
             {/* Player Image */}
             {registryEntry?.imageUrl && (
@@ -111,10 +113,11 @@ export default function PlayerProfileView({
             </div>
           )}
         </div>
-      </div>
+      </FadeIn>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-cosmic-border">
+      <FadeIn delay={0.1} direction="up" useViewport={false}>
+        <div className="flex gap-2 border-b border-cosmic-border">
           <button
             onClick={() => setActiveTab('stats')}
             className={`px-6 py-3 font-display font-semibold transition-all duration-300 ${
@@ -150,11 +153,12 @@ export default function PlayerProfileView({
             </button>
           )}
         </div>
-      </div>
+      </FadeIn>
 
       {/* Stats Tab */}
       {activeTab === 'stats' && (
-        <div className="space-y-6">
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
+          <div className="space-y-6">
             {/* Season Toggle */}
             {hasPlayoffStats && (
               <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
@@ -216,12 +220,13 @@ export default function PlayerProfileView({
               </div>
             )}
           </div>
-        </div>
+        </FadeIn>
       )}
 
       {/* Attributes Tab */}
       {activeTab === 'attributes' && attributes && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Pitching Attributes */}
             <div className="glass-card p-6 hover:border-solar-gold/50">
               <h3 className="text-xl font-display font-bold text-solar-gold mb-4 text-shadow">Pitching</h3>
@@ -264,12 +269,13 @@ export default function PlayerProfileView({
               </div>
             </div>
           </div>
-        </div>
+        </FadeIn>
       )}
 
       {/* Chemistry Tab */}
       {activeTab === 'chemistry' && chemistry && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <FadeIn delay={0.15} direction="up" useViewport={false}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Positive Chemistry */}
             <div className="glass-card p-6 border-green-400/30 hover:border-green-400/50">
               <h3 className="text-xl font-display font-bold text-green-400 mb-4 text-shadow">
@@ -314,7 +320,7 @@ export default function PlayerProfileView({
               )}
             </div>
           </div>
-        </div>
+        </FadeIn>
       )}
     </div>
   );

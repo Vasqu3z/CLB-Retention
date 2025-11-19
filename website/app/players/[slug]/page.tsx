@@ -2,7 +2,6 @@ import { getAllPlayers, getPlayerAttributes, getPlayerChemistry, getPlayerRegist
 import { playerNameToSlug } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import PlayerProfileView from './PlayerProfileView';
-import FadeIn from '@/components/animations/FadeIn';
 
 // Use Incremental Static Regeneration with 60-second revalidation
 export const revalidate = 60;
@@ -112,15 +111,13 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
   }
 
   return (
-    <FadeIn delay={0.15} direction="up">
-      <PlayerProfileView
-        playerName={playerName}
-        regularStats={regularStats || null}
-        playoffStats={playoffStats || null}
-        attributes={attributes}
-        chemistry={chemistry}
-        registryEntry={registryEntry || null}
-      />
-    </FadeIn>
+    <PlayerProfileView
+      playerName={playerName}
+      regularStats={regularStats || null}
+      playoffStats={playoffStats || null}
+      attributes={attributes}
+      chemistry={chemistry}
+      registryEntry={registryEntry || null}
+    />
   );
 }

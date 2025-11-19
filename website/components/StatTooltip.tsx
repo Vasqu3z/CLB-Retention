@@ -182,6 +182,7 @@ interface StatTooltipProps {
 export default function StatTooltip({ stat, children, showIcon = false, iconOnly = false }: StatTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<'top' | 'bottom'>('top');
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
   const tooltipRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLSpanElement>(null);
 
@@ -195,11 +196,16 @@ export default function StatTooltip({ stat, children, showIcon = false, iconOnly
       const spaceBelow = window.innerHeight - triggerRect.bottom;
 
       // Position tooltip based on available space
-      if (spaceAbove < tooltipRect.height + 10 && spaceBelow > spaceAbove) {
-        setPosition('bottom');
-      } else {
-        setPosition('top');
-      }
+      const shouldShowBelow = spaceAbove < tooltipRect.height + 10 && spaceBelow > spaceAbove;
+      setPosition(shouldShowBelow ? 'bottom' : 'top');
+
+      // Calculate fixed position coordinates
+      const left = triggerRect.left + triggerRect.width / 2;
+      const top = shouldShowBelow
+        ? triggerRect.bottom + 8
+        : triggerRect.top - tooltipRect.height - 8;
+
+      setCoords({ top, left });
     }
   }, [isVisible]);
 
@@ -236,14 +242,11 @@ export default function StatTooltip({ stat, children, showIcon = false, iconOnly
           ref={tooltipRef}
           id={`tooltip-${stat}`}
           role="tooltip"
-          className={`
-            absolute left-1/2 -translate-x-1/2 z-50 w-64 px-3 py-2.5
-            bg-space-navy/95 backdrop-blur-md
-            border border-cosmic-border/80 rounded-lg shadow-2xl
-            pointer-events-none
-            ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}
-            animate-in fade-in duration-200
-          `}
+          className="fixed z-[9999] w-64 px-3 py-2.5 -translate-x-1/2 bg-space-navy/95 backdrop-blur-md border border-cosmic-border/80 rounded-lg shadow-2xl pointer-events-none animate-in fade-in duration-200"
+          style={{
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+          }}
         >
           {/* Arrow */}
           <div

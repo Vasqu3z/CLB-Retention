@@ -37,6 +37,26 @@ const mainNavCards = [
     iconColor: "text-cosmic-purple",
     size: "medium" as const,
   },
+  {
+    href: "/playoffs",
+    title: "Playoffs",
+    description: "Postseason bracket",
+    icon: Award,
+    gradient: "from-infield-dirt/30 to-leather-brown/10",
+    borderColor: "border-infield-dirt/60",
+    iconColor: "text-infield-dirt",
+    size: "medium" as const,
+  },
+  {
+    href: "/tools",
+    title: "Tools",
+    description: "Advanced analytics",
+    icon: BarChart3,
+    gradient: "from-royal-purple/20 to-cosmic-purple/10",
+    borderColor: "border-royal-purple/50",
+    iconColor: "text-royal-purple",
+    size: "medium" as const,
+  },
 ];
 
 const secondaryNavCards = [
@@ -57,24 +77,6 @@ const secondaryNavCards = [
     gradient: "from-nebula-cyan/20 to-nebula-teal/10",
     borderColor: "border-nebula-cyan/50",
     iconColor: "text-nebula-cyan",
-  },
-  {
-    href: "/playoffs",
-    title: "Playoffs",
-    description: "Postseason bracket",
-    icon: Award,
-    gradient: "from-infield-dirt/30 to-leather-brown/10",
-    borderColor: "border-infield-dirt/60",
-    iconColor: "text-infield-dirt",
-  },
-  {
-    href: "/tools",
-    title: "Tools",
-    description: "Advanced analytics",
-    icon: BarChart3,
-    gradient: "from-royal-purple/20 to-cosmic-purple/10",
-    borderColor: "border-royal-purple/50",
-    iconColor: "text-royal-purple",
   },
 ];
 
@@ -211,14 +213,14 @@ export default function Home() {
           })}
         </div>
 
-        {/* Secondary nav - 4 column grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Secondary nav - 2 column grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {secondaryNavCards.map((card, idx) => {
             const Icon = card.icon;
             return (
               <FadeIn
                 key={card.href}
-                delay={0.7 + idx * 0.1}
+                delay={0.85 + idx * 0.1}
                 direction="up"
                 duration={0.6}
               >
@@ -226,23 +228,24 @@ export default function Home() {
                   <Link
                     href={card.href}
                     className={`
-                      group relative p-6 rounded-xl border ${card.borderColor}
+                      group relative p-8 rounded-xl border-2 ${card.borderColor}
                       bg-gradient-to-br ${card.gradient}
                       transition-all duration-300
                       backdrop-blur-sm
                       hover:shadow-[0_8px_24px_rgba(255,255,255,0.1)]
                       hover:scale-105
                       block h-full
+                      min-h-[180px]
                     `}
                   >
                     <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
 
                     <div className="relative z-10 text-center">
-                      <Icon className={`w-8 h-8 ${card.iconColor} mx-auto mb-3 group-hover:scale-125 transition-transform duration-300`} />
-                      <h3 className="text-lg font-display font-semibold mb-1 text-star-white">
+                      <Icon className={`w-12 h-12 ${card.iconColor} mx-auto mb-4 group-hover:scale-125 transition-transform duration-300`} />
+                      <h3 className="text-2xl font-display font-bold mb-2 text-star-white">
                         {card.title}
                       </h3>
-                      <p className="text-xs text-star-gray font-body">
+                      <p className="text-sm text-star-gray font-body">
                         {card.description}
                       </p>
                     </div>

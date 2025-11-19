@@ -96,6 +96,7 @@ export default function DataTable<T>({
     count: sortedData.length,
     getScrollElement: () => scrollContainerRef.current,
     estimateSize: () => 56,
+    measureElement: (el) => el?.getBoundingClientRect().height || 56,
     overscan: 8,
   });
 
@@ -215,6 +216,7 @@ export default function DataTable<T>({
                     <tr
                       key={getRowKey(row)}
                       data-index={virtualRow.index}
+                      ref={rowVirtualizer.measureElement}
                       className={`
                         border-b border-cosmic-border/30 transition-all duration-300
                         ${virtualRow.index % 2 === 0 ? 'bg-space-navy/5' : 'bg-space-navy/15'}
@@ -235,6 +237,7 @@ export default function DataTable<T>({
                           key={column.key}
                           className={`
                             px-4 py-3 text-${column.align || 'left'} text-star-white
+                            whitespace-nowrap truncate
                             ${column.className || ''}
                           `}
                         >

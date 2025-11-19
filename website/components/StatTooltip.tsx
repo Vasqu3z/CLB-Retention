@@ -91,6 +91,10 @@ const statDefinitions: Record<string, StatDefinition> = {
     name: 'Plate Appearances',
     description: 'Total number of times a batter completes a turn batting.',
   },
+  DP: {
+    name: 'Double Plays Hit Into',
+    description: 'Number of times a batter hit into a double play.',
+  },
 
   // Pitching Stats
   ERA: {

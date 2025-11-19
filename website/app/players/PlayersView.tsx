@@ -63,8 +63,8 @@ export default function PlayersView({
     [filteredPlayers]
   );
 
-  // Define hitting columns
-  const hittingColumns: Column<PlayerStats>[] = [
+  // Define hitting columns - memoize to prevent re-creation
+  const hittingColumns: Column<PlayerStats>[] = useMemo(() => [
     {
       key: 'name',
       label: 'Player',
@@ -96,7 +96,7 @@ export default function PlayersView({
     { key: 'h', label: <StatTooltip stat="H">H</StatTooltip>, align: 'center' },
     { key: 'hr', label: <StatTooltip stat="HR">HR</StatTooltip>, align: 'center' },
     { key: 'rbi', label: <StatTooltip stat="RBI">RBI</StatTooltip>, align: 'center' },
-    { key: 'dp', label: 'DP', align: 'center', condensed: true },
+    { key: 'dp', label: <StatTooltip stat="DP">DP</StatTooltip>, align: 'center', condensed: true },
     { key: 'rob', label: <StatTooltip stat="ROB">ROB</StatTooltip>, align: 'center', condensed: true },
     { key: 'avg', label: <StatTooltip stat="AVG">AVG</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
     { key: 'obp', label: <StatTooltip stat="OBP">OBP</StatTooltip>, align: 'center', className: 'text-nebula-cyan', condensed: true },
@@ -114,10 +114,10 @@ export default function PlayersView({
       className: 'text-nebula-cyan',
       render: (player) => player.ops || '0.000'
     },
-  ];
+  ], [getTeamColor]);
 
-  // Define pitching columns
-  const pitchingColumns: Column<PlayerStats>[] = [
+  // Define pitching columns - memoize to prevent re-creation
+  const pitchingColumns: Column<PlayerStats>[] = useMemo(() => [
     {
       key: 'name',
       label: 'Player',
@@ -159,10 +159,10 @@ export default function PlayersView({
     { key: 'era', label: <StatTooltip stat="ERA">ERA</StatTooltip>, align: 'center', className: 'font-bold text-nebula-teal' },
     { key: 'whip', label: <StatTooltip stat="WHIP">WHIP</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
     { key: 'baa', label: <StatTooltip stat="BAA">BAA</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
-  ];
+  ], [getTeamColor]);
 
-  // Define fielding columns
-  const fieldingColumns: Column<PlayerStats>[] = [
+  // Define fielding columns - memoize to prevent re-creation
+  const fieldingColumns: Column<PlayerStats>[] = useMemo(() => [
     {
       key: 'name',
       label: 'Player',
@@ -194,7 +194,7 @@ export default function PlayersView({
     { key: 'e', label: <StatTooltip stat="E">E</StatTooltip>, align: 'center' },
     { key: 'sb', label: <StatTooltip stat="SB">SB</StatTooltip>, align: 'center' },
     { key: 'cs', label: <StatTooltip stat="CS">CS</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
-  ];
+  ], [getTeamColor]);
 
   return (
     <div className="space-y-8">

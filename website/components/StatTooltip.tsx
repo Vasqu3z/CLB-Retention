@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { HelpCircle } from 'lucide-react';
 
 interface StatDefinition {
@@ -181,40 +182,80 @@ interface StatTooltipProps {
 
 export default function StatTooltip({ stat, children, showIcon = false, iconOnly = false }: StatTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [position, setPosition] = useState<'top' | 'bottom'>('top');
-  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const triggerRef = useRef<HTMLSpanElement>(null);
 
   const statInfo = statDefinitions[stat.toUpperCase()];
 
   useEffect(() => {
-    if (isVisible && triggerRef.current && tooltipRef.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      const spaceAbove = triggerRect.top;
-      const spaceBelow = window.innerHeight - triggerRect.bottom;
-
-      // Position tooltip based on available space
-      const shouldShowBelow = spaceAbove < tooltipRect.height + 10 && spaceBelow > spaceAbove;
-      setPosition(shouldShowBelow ? 'bottom' : 'top');
-
-      // Calculate fixed position coordinates
-      const left = triggerRect.left + triggerRect.width / 2;
-      const top = shouldShowBelow
-        ? triggerRect.bottom + 8
-        : triggerRect.top - tooltipRect.height - 8;
-
-      setCoords({ top, left });
-    } else if (!isVisible) {
-      setCoords(null);
-    }
-  }, [isVisible]);
+    setMounted(true);
+  }, []);
 
   if (!statInfo) {
     // If stat definition doesn't exist, just render the stat without tooltip
     return <>{children || stat}</>;
   }
+
+  const renderTooltip = () => {
+    if (!isVisible || !mounted || !triggerRef.current) return null;
+
+    const triggerRect = triggerRef.current.getBoundingClientRect();
+    const tooltipWidth = 256; // w-64 = 16rem = 256px
+    const tooltipHeight = 120; // approximate height
+    const gap = 8;
+
+    const spaceAbove = triggerRect.top;
+    const spaceBelow = window.innerHeight - triggerRect.bottom;
+    const showBelow = spaceAbove < tooltipHeight + gap && spaceBelow > spaceAbove;
+
+    const left = triggerRect.left + triggerRect.width / 2;
+    const top = showBelow
+      ? triggerRect.bottom + gap
+      : triggerRect.top - tooltipHeight - gap;
+
+    return createPortal(
+      <div
+        id={`tooltip-${stat}`}
+        role="tooltip"
+        className="fixed z-[9999] w-64 px-3 py-2.5 -translate-x-1/2 bg-space-navy/95 backdrop-blur-md border border-cosmic-border/80 rounded-lg shadow-2xl pointer-events-none animate-in fade-in duration-200"
+        style={{
+          top: `${top}px`,
+          left: `${left}px`,
+        }}
+      >
+        {/* Arrow */}
+        <div
+          className={`
+            absolute left-1/2 -translate-x-1/2 w-2 h-2
+            bg-space-navy/95 border-cosmic-border/80
+            rotate-45
+            ${showBelow
+              ? 'top-[-4px] border-l border-t'
+              : 'bottom-[-4px] border-r border-b'
+            }
+          `}
+        />
+
+        {/* Content */}
+        <div className="relative z-10">
+          <div className="font-display font-semibold text-nebula-orange text-sm mb-1">
+            {statInfo.name} ({stat.toUpperCase()})
+          </div>
+
+          {statInfo.formula && (
+            <div className="font-mono text-xs text-nebula-teal mb-1.5 bg-space-blue/30 px-2 py-1 rounded">
+              {statInfo.formula}
+            </div>
+          )}
+
+          <div className="text-xs text-star-gray leading-relaxed">
+            {statInfo.description}
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
 
   return (
     <span
@@ -239,50 +280,7 @@ export default function StatTooltip({ stat, children, showIcon = false, iconOnly
         <HelpCircle className="w-3.5 h-3.5 text-star-gray/60 group-hover:text-nebula-orange transition-colors cursor-help" />
       )}
 
-      {isVisible && (
-        <div
-          ref={tooltipRef}
-          id={`tooltip-${stat}`}
-          role="tooltip"
-          className="fixed z-[9999] w-64 px-3 py-2.5 -translate-x-1/2 bg-space-navy/95 backdrop-blur-md border border-cosmic-border/80 rounded-lg shadow-2xl pointer-events-none"
-          style={{
-            top: coords ? `${coords.top}px` : '-9999px',
-            left: coords ? `${coords.left}px` : '-9999px',
-            opacity: coords ? 1 : 0,
-            transition: coords ? 'opacity 200ms' : 'none',
-          }}
-        >
-          {/* Arrow */}
-          <div
-            className={`
-              absolute left-1/2 -translate-x-1/2 w-2 h-2
-              bg-space-navy/95 border-cosmic-border/80
-              rotate-45
-              ${position === 'top'
-                ? 'bottom-[-4px] border-r border-b'
-                : 'top-[-4px] border-l border-t'
-              }
-            `}
-          />
-
-          {/* Content */}
-          <div className="relative z-10">
-            <div className="font-display font-semibold text-nebula-orange text-sm mb-1">
-              {statInfo.name} ({stat.toUpperCase()})
-            </div>
-
-            {statInfo.formula && (
-              <div className="font-mono text-xs text-nebula-teal mb-1.5 bg-space-blue/30 px-2 py-1 rounded">
-                {statInfo.formula}
-              </div>
-            )}
-
-            <div className="text-xs text-star-gray leading-relaxed">
-              {statInfo.description}
-            </div>
-          </div>
-        </div>
-      )}
+      {renderTooltip()}
     </span>
   );
 }

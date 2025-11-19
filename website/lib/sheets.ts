@@ -134,7 +134,7 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
       STANDINGS_SHEET.END_COL
     );
     const dataPromise = getSheetData(range);
-    const notesPromise = fetchStandingsNotes(sheetName);
+    const notesPromise = getStandingsNotes(sheetName);
 
     const [data, notes] = await Promise.all([dataPromise, notesPromise]);
 
@@ -192,6 +192,11 @@ async function fetchStandingsNotes(sheetName: string): Promise<string[]> {
     return [];
   }
 }
+
+const getStandingsNotes = unstable_cache(fetchStandingsNotes, ['standings-notes'], {
+  revalidate: 60,
+  tags: ['sheets', 'standings-notes'],
+});
 
 // ===== TEAM ROSTER =====
 export interface PlayerStats {

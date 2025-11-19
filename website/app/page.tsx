@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LEAGUE_CONFIG } from "@/config/league";
 import { getLeagueLogo } from "@/lib/teamLogos";
+import { cn } from "@/lib/utils";
 import { Trophy, TrendingUp, Calendar, Users, Target, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import Tilt from "@/components/animations/Tilt";
@@ -78,6 +79,11 @@ const ICON_COLOR_VALUES: Record<string, string> = {
   'text-nebula-orange': '#FF6B35',
   'text-nebula-cyan': '#00D4FF',
 };
+
+const navCardBaseClass =
+  "group relative block h-full overflow-hidden rounded-2xl border-2 px-8 py-8 bg-gradient-to-br " +
+  "backdrop-blur-md transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 " +
+  "focus-visible:ring-nebula-teal focus-visible:ring-offset-2 focus-visible:ring-offset-space-black";
 
 export default function Home() {
   return (
@@ -166,16 +172,13 @@ export default function Home() {
                 <Tilt tiltAngle={8}>
                   <Link
                     href={card.href}
-                    className={`
-                      group relative p-8 rounded-2xl border-2 ${card.borderColor}
-                      bg-gradient-to-br ${card.gradient}
-                      transition-all duration-500
-                      backdrop-blur-md
-                      hover:shadow-[0_12px_40px_rgba(45,95,63,0.4)]
-                      hover:scale-[1.02]
-                      block h-full
-                      ${isLarge ? 'min-h-[280px]' : 'min-h-[220px]'}
-                    `}
+                    className={cn(
+                      navCardBaseClass,
+                      card.borderColor,
+                      card.gradient,
+                      "hover:shadow-[0_12px_40px_rgba(45,95,63,0.4)] hover:scale-[1.02]",
+                      isLarge ? "min-h-[280px]" : "min-h-[220px]"
+                    )}
                   >
                     {/* Baseball stitch decoration */}
                     <div className="absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -229,18 +232,14 @@ export default function Home() {
                 <Tilt tiltAngle={6}>
                   <Link
                     href={card.href}
-                    className={`
-                      group relative p-8 rounded-xl border-2 ${card.borderColor}
-                      bg-gradient-to-br ${card.gradient}
-                      transition-all duration-300
-                      backdrop-blur-sm
-                      hover:shadow-[0_8px_24px_rgba(255,255,255,0.1)]
-                      hover:scale-105
-                      block h-full
-                      min-h-[180px]
-                    `}
+                    className={cn(
+                      navCardBaseClass,
+                      card.borderColor,
+                      card.gradient,
+                      "backdrop-blur-sm hover:shadow-[0_8px_24px_rgba(255,255,255,0.1)] hover:scale-105 min-h-[180px]"
+                    )}
                   >
-                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
+                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
 
                     <div className="relative z-10 text-center">
                       <Icon className={`w-12 h-12 ${card.iconColor} mx-auto mb-4 group-hover:scale-125 transition-transform duration-300`} />

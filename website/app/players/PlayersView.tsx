@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { PlayerStats } from '@/lib/sheets';
 import { getActiveTeams } from '@/config/league';
@@ -24,15 +24,9 @@ export default function PlayersView({
   const [isPlayoffs, setIsPlayoffs] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('hitting');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isHydrated, setIsHydrated] = useState(false);
 
   // Use appropriate data based on toggle
   const players = isPlayoffs ? playoffPlayers : regularPlayers;
-
-  // Ensure we're hydrated before showing tables
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   const teams = getActiveTeams();
 
@@ -202,6 +196,18 @@ export default function PlayersView({
     { key: 'cs', label: <StatTooltip stat="CS">CS</StatTooltip>, align: 'center', className: 'text-nebula-cyan' },
   ];
 
+  // Don't render until we have data
+  if (!regularPlayers || !playoffPlayers || regularPlayers.length === 0) {
+    return (
+      <div className="glass-card py-16 px-4">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="w-10 h-10 border-4 border-nebula-orange border-t-transparent rounded-full animate-spin" />
+          <p className="text-star-gray font-mono animate-pulse">Loading player statistics...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Season Toggle */}
@@ -270,52 +276,40 @@ export default function PlayersView({
         </div>
       </div>
 
-      {/* Tables - Only render after hydration to prevent white box flash */}
-      {!isHydrated ? (
-        <div className="glass-card py-16 px-4">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <div className="w-10 h-10 border-4 border-nebula-orange border-t-transparent rounded-full animate-spin" />
-            <p className="text-star-gray font-mono animate-pulse">Loading data...</p>
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* Hitting Table */}
-          {activeTab === 'hitting' && (
-            <DataTable
-              columns={hittingColumns}
-              data={hitters}
-              getRowKey={(player) => `${player.name}-${player.team}`}
-              defaultSortKey="ab"
-              defaultSortDirection="desc"
-              enableCondensed={true}
-            />
-          )}
+      {/* Hitting Table */}
+      {activeTab === 'hitting' && (
+        <DataTable
+          columns={hittingColumns}
+          data={hitters}
+          getRowKey={(player) => `${player.name}-${player.team}`}
+          defaultSortKey="ab"
+          defaultSortDirection="desc"
+          enableCondensed={true}
+        />
+      )}
 
-          {/* Pitching Table */}
-          {activeTab === 'pitching' && (
-            <DataTable
-              columns={pitchingColumns}
-              data={pitchers}
-              getRowKey={(player) => `${player.name}-${player.team}`}
-              defaultSortKey="ip"
-              defaultSortDirection="desc"
-              enableCondensed={true}
-            />
-          )}
+      {/* Pitching Table */}
+      {activeTab === 'pitching' && (
+        <DataTable
+          columns={pitchingColumns}
+          data={pitchers}
+          getRowKey={(player) => `${player.name}-${player.team}`}
+          defaultSortKey="ip"
+          defaultSortDirection="desc"
+          enableCondensed={true}
+        />
+      )}
 
-          {/* Fielding Table */}
-          {activeTab === 'fielding' && (
-            <DataTable
-              columns={fieldingColumns}
-              data={fielders}
-              getRowKey={(player) => `${player.name}-${player.team}`}
-              defaultSortKey="np"
-              defaultSortDirection="desc"
-              enableCondensed={true}
-            />
-          )}
-        </>
+      {/* Fielding Table */}
+      {activeTab === 'fielding' && (
+        <DataTable
+          columns={fieldingColumns}
+          data={fielders}
+          getRowKey={(player) => `${player.name}-${player.team}`}
+          defaultSortKey="np"
+          defaultSortDirection="desc"
+          enableCondensed={true}
+        />
       )}
     </div>
   );

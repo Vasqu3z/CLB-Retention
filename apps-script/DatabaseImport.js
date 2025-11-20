@@ -551,7 +551,7 @@ function ensureTrajectorySheet(ss, config) {
     sheet = ss.insertSheet(sheetName);
   }
 
-  const header = ['Row'];
+  const header = ['Behavior'];
   for (let i = 1; i <= 25; i++) {
     header.push(i);
   }
@@ -564,20 +564,36 @@ function ensureTrajectorySheet(ss, config) {
   headerRange.setHorizontalAlignment('center');
 
   sheet.setFrozenRows(1);
+  sheet.setColumnWidth(1, 220);
 
   return sheet;
 }
 
+function buildTrajectoryRowLabels(trajectoryNames) {
+  const behaviorOrder = ['Human Slap', 'AI Slap', 'Human Charge', 'AI Charge'];
+  const labels = [];
+
+  for (let trajIndex = 0; trajIndex < 6; trajIndex++) {
+    const baseName = trajectoryNames[trajIndex] || `Trajectory ${trajIndex + 1}`;
+    for (let behaviorIndex = 0; behaviorIndex < behaviorOrder.length; behaviorIndex++) {
+      labels.push(baseName + ' - ' + behaviorOrder[behaviorIndex]);
+    }
+  }
+
+  return labels.slice(0, 24);
+}
+
 function writeTrajectorySheet(sheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage) {
-  const header = ['Row'];
+  const header = ['Behavior'];
   for (let i = 1; i <= 25; i++) {
     header.push(i);
   }
 
   sheet.getRange(1, 1, 1, 26).setValues([header]);
 
+  const rowLabels = buildTrajectoryRowLabels(trajectoryNames);
   const matrixRows = trajectoryMatrix.map((row, idx) => {
-    return [idx + 1, ...row];
+    return [rowLabels[idx] || idx + 1, ...row];
   });
   sheet.getRange(2, 1, 24, 26).setValues(matrixRows);
 

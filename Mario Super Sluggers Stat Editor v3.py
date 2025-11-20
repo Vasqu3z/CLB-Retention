@@ -8,34 +8,6 @@ import re
 import os
 clipboard_cache = ""
 
-
-def parse_stats_file_content(text):
-    lines = [line.rstrip("\r") for line in text.splitlines()]
-    while lines and lines[-1] == "":
-        lines.pop()
-    if len(lines) != 228:
-        raise ValueError("Unexpected line count in stats preset")
-    return (
-        lines[:101],
-        lines[101:202],
-        lines[202:226],
-        lines[226],
-        lines[227],
-    )
-
-
-def serialize_stats_payload():
-    parts = []
-    for i in range(101):
-        parts.append(",".join(str(changedChem[i][j]) for j in range(101)))
-    for i in range(101):
-        parts.append(",".join(str(changedStat[i][j]) for j in range(30)))
-    for i in range(24):
-        parts.append(",".join(str(changedTraj[i][j]) for j in range(25)))
-    parts.append(",".join(trajAllList))
-    parts.append(",".join(str(v) for v in trajUsed))
-    return "\n".join(parts)
-
 #Big Lists
 
 charList = ["Mario", "Luigi", "Donkey Kong", "Diddy Kong", "Peach", "Daisy", 
@@ -2408,6 +2380,35 @@ def on_close():
             pass
     root.withdraw()
     root.after(200, root.destroy)
+
+
+def parse_stats_file_content(text):
+    lines = [line.rstrip("\r") for line in text.splitlines()]
+    while lines and lines[-1] == "":
+        lines.pop()
+    if len(lines) != 228:
+        raise ValueError("Unexpected line count in stats preset")
+    return (
+        lines[:101],
+        lines[101:202],
+        lines[202:226],
+        lines[226],
+        lines[227],
+    )
+
+
+def serialize_stats_payload():
+    parts = []
+    for i in range(101):
+        parts.append(",".join(str(changedChem[i][j]) for j in range(101)))
+    for i in range(101):
+        parts.append(",".join(str(changedStat[i][j]) for j in range(30)))
+    for i in range(24):
+        parts.append(",".join(str(changedTraj[i][j]) for j in range(25)))
+    parts.append(",".join(trajAllList))
+    parts.append(",".join(str(v) for v in trajUsed))
+    return "\n".join(parts)
+
 
 def loadChanges():
     if not os.path.exists("saves"):

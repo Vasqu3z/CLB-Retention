@@ -132,6 +132,36 @@ var DATABASE_CONFIG_DEFAULTS = {
   DEBUG: {
     ENABLE_LOGGING: true
   },
+
+  // Trajectory Sheet Layout Configuration
+  TRAJECTORY_SHEET_CONFIG: {
+    MATRIX: {
+      START_ROW: 2,
+      START_COLUMN: 1,
+      ROWS: 24,
+      COLUMNS: 27,
+      LABEL_COLUMNS: 2
+    },
+    NAMES: {
+      START_ROW: 27,
+      START_COLUMN: 1,
+      TOTAL_COLUMNS: 8,
+      VALUE_COUNT: 6,
+      LABEL: 'Names'
+    },
+    USAGE: {
+      START_ROW: 28,
+      START_COLUMN: 1,
+      TOTAL_COLUMNS: 8,
+      VALUE_COUNT: 6,
+      LABEL: 'Usage'
+    },
+    WRITE_HEADER: false,
+    COLUMN_WIDTHS: {
+      TRAJECTORY: 175,
+      BEHAVIOR: 145
+    }
+  },
   
   // Tool Display Names
   TOOL_NAMES: {

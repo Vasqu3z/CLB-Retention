@@ -548,24 +548,36 @@ function combineStarPitchField(starPitchIndex, starPitchTypeIndex) {
 
 function ensureTrajectorySheet(ss, config) {
   const sheetName = config.SHEETS.TRAJECTORY;
+  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
   let sheet = ss.getSheetByName(sheetName);
 
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
   }
 
-  const header = buildTrajectoryHeaderLabels();
-
-  const headerRange = sheet.getRange(1, 1, 1, 27);
-  headerRange.setValues([header]);
-  headerRange.setBackground(config.COLORS.HEADER_BACKGROUND);
-  headerRange.setFontColor(config.COLORS.HEADER_TEXT);
-  headerRange.setFontWeight('bold');
-  headerRange.setHorizontalAlignment('center');
+  if (trajectoryLayout.WRITE_HEADER) {
+    const header = buildTrajectoryHeaderLabels();
+    const headerRange = sheet.getRange(
+      1,
+      trajectoryLayout.MATRIX.START_COLUMN,
+      1,
+      trajectoryLayout.MATRIX.COLUMNS
+    );
+    headerRange.setValues([header]);
+    headerRange.setBackground(config.COLORS.HEADER_BACKGROUND);
+    headerRange.setFontColor(config.COLORS.HEADER_TEXT);
+    headerRange.setFontWeight('bold');
+    headerRange.setHorizontalAlignment('center');
+  }
 
   sheet.setFrozenRows(1);
-  sheet.setColumnWidth(1, 175);
-  sheet.setColumnWidth(2, 145);
+  const columnWidths = trajectoryLayout.COLUMN_WIDTHS || {};
+  if (columnWidths.TRAJECTORY) {
+    sheet.setColumnWidth(trajectoryLayout.MATRIX.START_COLUMN, columnWidths.TRAJECTORY);
+  }
+  if (columnWidths.BEHAVIOR) {
+    sheet.setColumnWidth(trajectoryLayout.MATRIX.START_COLUMN + 1, columnWidths.BEHAVIOR);
+  }
 
   return sheet;
 }
@@ -598,26 +610,38 @@ function buildTrajectoryRowLabels(trajectoryNames) {
 }
 
 function writeTrajectorySheet(sheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage) {
-  const header = buildTrajectoryHeaderLabels();
-  sheet.getRange(1, 1, 1, 27).setValues([header]);
-
+  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
+  const matrixLayout = trajectoryLayout.MATRIX;
   const rowLabels = buildTrajectoryRowLabels(trajectoryNames);
   const matrixRows = trajectoryMatrix.map((row, idx) => {
     const label = rowLabels[idx] || { trajectory: idx + 1, behavior: '' };
-    return [label.trajectory, label.behavior, ...row];
+    const paddedRow = [label.trajectory, label.behavior, ...row];
+    while (paddedRow.length < matrixLayout.COLUMNS) {
+      paddedRow.push('');
+    }
+    return paddedRow;
   });
-  sheet.getRange(2, 1, 24, 27).setValues(matrixRows);
+  sheet
+    .getRange(
+      matrixLayout.START_ROW,
+      matrixLayout.START_COLUMN,
+      matrixLayout.ROWS,
+      matrixLayout.COLUMNS
+    )
+    .setValues(matrixRows);
 
-  const padRow = (label, values) => {
-    const row = [label, '', ...values];
-    while (row.length < 27) {
+  const writeRow = (layout, label, values) => {
+    const row = [label, ...values];
+    while (row.length < layout.TOTAL_COLUMNS) {
       row.push('');
     }
-    return row;
+    sheet
+      .getRange(layout.START_ROW, layout.START_COLUMN, 1, layout.TOTAL_COLUMNS)
+      .setValues([row]);
   };
 
-  sheet.getRange(26, 1, 1, 27).setValues([padRow('Names', trajectoryNames)]);
-  sheet.getRange(27, 1, 1, 27).setValues([padRow('Usage', trajectoryUsage)]);
+  writeRow(trajectoryLayout.NAMES, trajectoryLayout.NAMES.LABEL, trajectoryNames);
+  writeRow(trajectoryLayout.USAGE, trajectoryLayout.USAGE.LABEL, trajectoryUsage);
 }
 
 /**
@@ -1015,6 +1039,8 @@ function splitStarPitchField(starPitchValue) {
 function exportTrajectorySection(ss, config) {
   const props = PropertiesService.getScriptProperties();
   const sheetName = config.SHEETS.TRAJECTORY;
+  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
+  const matrixLayout = trajectoryLayout.MATRIX;
   let trajectorySheet = ss.getSheetByName(sheetName);
 
   const trajectoryDataJson = props.getProperty('TRAJECTORY_DATA');
@@ -1035,24 +1061,47 @@ function exportTrajectorySection(ss, config) {
     throw new Error('Trajectory data not found. Please import a stats preset first.');
   }
 
-  const matrixValues = trajectorySheet.getRange(2, 3, 24, 25).getValues();
-  const namesValues = trajectorySheet.getRange(26, 3, 1, 6).getValues();
-  const usageValues = trajectorySheet.getRange(27, 3, 1, 6).getValues();
+  const matrixValues = trajectorySheet
+    .getRange(
+      matrixLayout.START_ROW,
+      matrixLayout.START_COLUMN + matrixLayout.LABEL_COLUMNS,
+      matrixLayout.ROWS,
+      matrixLayout.COLUMNS - matrixLayout.LABEL_COLUMNS
+    )
+    .getValues();
+  const namesValues = trajectorySheet
+    .getRange(
+      trajectoryLayout.NAMES.START_ROW,
+      trajectoryLayout.NAMES.START_COLUMN + 1,
+      1,
+      trajectoryLayout.NAMES.VALUE_COUNT
+    )
+    .getValues();
+  const usageValues = trajectorySheet
+    .getRange(
+      trajectoryLayout.USAGE.START_ROW,
+      trajectoryLayout.USAGE.START_COLUMN + 1,
+      1,
+      trajectoryLayout.USAGE.VALUE_COUNT
+    )
+    .getValues();
 
-  if (matrixValues.length !== 24 || matrixValues[0].length !== 25) {
-    throw new Error('Trajectory matrix must be 24 rows by 25 columns.');
+  if (matrixValues.length !== matrixLayout.ROWS || matrixValues[0].length !== matrixLayout.COLUMNS - matrixLayout.LABEL_COLUMNS) {
+    throw new Error(
+      `Trajectory matrix must be ${matrixLayout.ROWS} rows by ${matrixLayout.COLUMNS - matrixLayout.LABEL_COLUMNS} columns.`
+    );
   }
 
   const trajectoryMatrix = matrixValues.map(row => row.map(value => parseInt(value, 10) || 0));
   const trajectoryNames = namesValues[0].map(value => String(value || '').trim());
   const trajectoryUsage = usageValues[0].map(value => parseInt(value, 10) || 0);
 
-  if (trajectoryNames.length !== 6) {
-    throw new Error('Trajectory names row must include exactly 6 entries.');
+  if (trajectoryNames.length !== trajectoryLayout.NAMES.VALUE_COUNT) {
+    throw new Error(`Trajectory names row must include exactly ${trajectoryLayout.NAMES.VALUE_COUNT} entries.`);
   }
 
-  if (trajectoryUsage.length !== 6) {
-    throw new Error('Trajectory usage row must include exactly 6 entries.');
+  if (trajectoryUsage.length !== trajectoryLayout.USAGE.VALUE_COUNT) {
+    throw new Error(`Trajectory usage row must include exactly ${trajectoryLayout.USAGE.VALUE_COUNT} entries.`);
   }
 
   props.setProperty(

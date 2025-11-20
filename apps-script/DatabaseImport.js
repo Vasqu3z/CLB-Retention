@@ -65,6 +65,9 @@ const ARM_SIDES = ["Right","Left"];
 // Default trajectory names - overridden by imported config if available
 const DEFAULT_TRAJECTORY_TYPES = ["Medium","High","Low"];
 
+const TRAJECTORY_LOCATIONS = ['Far Inside', 'Inside', 'Sweet Spot', 'Outside', 'Far Outside'];
+const TRAJECTORY_HEIGHTS = ['Highest', 'High', 'Middle', 'Low', 'Lowest'];
+
 const HIT_CURVE_TYPES = ["Disabled","Enabled"];
 
 /**
@@ -551,10 +554,7 @@ function ensureTrajectorySheet(ss, config) {
     sheet = ss.insertSheet(sheetName);
   }
 
-  const header = ['Trajectory', 'Behavior'];
-  for (let i = 1; i <= 25; i++) {
-    header.push(i);
-  }
+  const header = buildTrajectoryHeaderLabels();
 
   const headerRange = sheet.getRange(1, 1, 1, 27);
   headerRange.setValues([header]);
@@ -568,6 +568,16 @@ function ensureTrajectorySheet(ss, config) {
   sheet.setColumnWidth(2, 145);
 
   return sheet;
+}
+
+function buildTrajectoryHeaderLabels() {
+  const header = ['Trajectory', 'Behavior'];
+  for (let heightIndex = 0; heightIndex < TRAJECTORY_HEIGHTS.length; heightIndex++) {
+    for (let locationIndex = 0; locationIndex < TRAJECTORY_LOCATIONS.length; locationIndex++) {
+      header.push(`${TRAJECTORY_HEIGHTS[heightIndex]} - ${TRAJECTORY_LOCATIONS[locationIndex]}`);
+    }
+  }
+  return header;
 }
 
 function buildTrajectoryRowLabels(trajectoryNames) {
@@ -588,11 +598,7 @@ function buildTrajectoryRowLabels(trajectoryNames) {
 }
 
 function writeTrajectorySheet(sheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage) {
-  const header = ['Trajectory', 'Behavior'];
-  for (let i = 1; i <= 25; i++) {
-    header.push(i);
-  }
-
+  const header = buildTrajectoryHeaderLabels();
   sheet.getRange(1, 1, 1, 27).setValues([header]);
 
   const rowLabels = buildTrajectoryRowLabels(trajectoryNames);

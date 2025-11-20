@@ -551,12 +551,12 @@ function ensureTrajectorySheet(ss, config) {
     sheet = ss.insertSheet(sheetName);
   }
 
-  const header = ['Behavior'];
+  const header = ['Trajectory', 'Behavior'];
   for (let i = 1; i <= 25; i++) {
     header.push(i);
   }
 
-  const headerRange = sheet.getRange(1, 1, 1, 26);
+  const headerRange = sheet.getRange(1, 1, 1, 27);
   headerRange.setValues([header]);
   headerRange.setBackground(config.COLORS.HEADER_BACKGROUND);
   headerRange.setFontColor(config.COLORS.HEADER_TEXT);
@@ -564,7 +564,8 @@ function ensureTrajectorySheet(ss, config) {
   headerRange.setHorizontalAlignment('center');
 
   sheet.setFrozenRows(1);
-  sheet.setColumnWidth(1, 220);
+  sheet.setColumnWidth(1, 175);
+  sheet.setColumnWidth(2, 145);
 
   return sheet;
 }
@@ -576,7 +577,10 @@ function buildTrajectoryRowLabels(trajectoryNames) {
   for (let trajIndex = 0; trajIndex < 6; trajIndex++) {
     const baseName = trajectoryNames[trajIndex] || `Trajectory ${trajIndex + 1}`;
     for (let behaviorIndex = 0; behaviorIndex < behaviorOrder.length; behaviorIndex++) {
-      labels.push(baseName + ' - ' + behaviorOrder[behaviorIndex]);
+      labels.push({
+        trajectory: baseName,
+        behavior: behaviorOrder[behaviorIndex]
+      });
     }
   }
 
@@ -584,29 +588,30 @@ function buildTrajectoryRowLabels(trajectoryNames) {
 }
 
 function writeTrajectorySheet(sheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage) {
-  const header = ['Behavior'];
+  const header = ['Trajectory', 'Behavior'];
   for (let i = 1; i <= 25; i++) {
     header.push(i);
   }
 
-  sheet.getRange(1, 1, 1, 26).setValues([header]);
+  sheet.getRange(1, 1, 1, 27).setValues([header]);
 
   const rowLabels = buildTrajectoryRowLabels(trajectoryNames);
   const matrixRows = trajectoryMatrix.map((row, idx) => {
-    return [rowLabels[idx] || idx + 1, ...row];
+    const label = rowLabels[idx] || { trajectory: idx + 1, behavior: '' };
+    return [label.trajectory, label.behavior, ...row];
   });
-  sheet.getRange(2, 1, 24, 26).setValues(matrixRows);
+  sheet.getRange(2, 1, 24, 27).setValues(matrixRows);
 
   const padRow = (label, values) => {
-    const row = [label, ...values];
-    while (row.length < 26) {
+    const row = [label, '', ...values];
+    while (row.length < 27) {
       row.push('');
     }
     return row;
   };
 
-  sheet.getRange(26, 1, 1, 26).setValues([padRow('Names', trajectoryNames)]);
-  sheet.getRange(27, 1, 1, 26).setValues([padRow('Usage', trajectoryUsage)]);
+  sheet.getRange(26, 1, 1, 27).setValues([padRow('Names', trajectoryNames)]);
+  sheet.getRange(27, 1, 1, 27).setValues([padRow('Usage', trajectoryUsage)]);
 }
 
 /**
@@ -1024,9 +1029,9 @@ function exportTrajectorySection(ss, config) {
     throw new Error('Trajectory data not found. Please import a stats preset first.');
   }
 
-  const matrixValues = trajectorySheet.getRange(2, 2, 24, 25).getValues();
-  const namesValues = trajectorySheet.getRange(26, 2, 1, 6).getValues();
-  const usageValues = trajectorySheet.getRange(27, 2, 1, 6).getValues();
+  const matrixValues = trajectorySheet.getRange(2, 3, 24, 25).getValues();
+  const namesValues = trajectorySheet.getRange(26, 3, 1, 6).getValues();
+  const usageValues = trajectorySheet.getRange(27, 3, 1, 6).getValues();
 
   if (matrixValues.length !== 24 || matrixValues[0].length !== 25) {
     throw new Error('Trajectory matrix must be 24 rows by 25 columns.');

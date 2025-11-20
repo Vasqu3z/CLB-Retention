@@ -1,5 +1,5 @@
-import LoadingState from '@/components/LoadingState';
+import CardGridSkeleton from '@/components/skeletons/CardGridSkeleton';
 
 export default function PlayersLoading() {
-  return <LoadingState variant="table" message="Loading player statistics..." />;
+  return <CardGridSkeleton itemCount={8} />;
 }

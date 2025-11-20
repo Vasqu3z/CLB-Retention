@@ -1,5 +1,5 @@
-import { CardSkeleton } from '@/components/LoadingState';
+import TeamSkeleton from '@/components/skeletons/TeamSkeleton';
 
 export default function TeamsLoading() {
-  return <CardSkeleton />;
+  return <TeamSkeleton />;
 }

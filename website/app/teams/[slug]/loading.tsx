@@ -1,5 +1,5 @@
-import { CosmicSpinner } from '@/components/LoadingState';
+import TeamSkeleton from '@/components/skeletons/TeamSkeleton';
 
 export default function TeamLoading() {
-  return <CosmicSpinner message="Loading team data..." />;
+  return <TeamSkeleton />;
 }

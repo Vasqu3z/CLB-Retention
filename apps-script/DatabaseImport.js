@@ -65,6 +65,9 @@ const ARM_SIDES = ["Right","Left"];
 // Default trajectory names - overridden by imported config if available
 const DEFAULT_TRAJECTORY_TYPES = ["Medium","High","Low"];
 
+const TRAJECTORY_LOCATIONS = ['Far Inside', 'Inside', 'Sweet Spot', 'Outside', 'Far Outside'];
+const TRAJECTORY_HEIGHTS = ['Highest', 'High', 'Middle', 'Low', 'Lowest'];
+
 const HIT_CURVE_TYPES = ["Disabled","Enabled"];
 
 /**
@@ -267,11 +270,16 @@ function importChemistryFromStatsPreset() {
  */
 function parseFullStatsPreset(fileContent) {
   try {
-    const lines = fileContent.split('\n');
+    const lines = fileContent
+      .split(/\r?\n/)
+      .map(line => line.replace(/\r$/, ''));
 
-    // Validate we have enough lines for a complete preset
-    if (lines.length < 228) {
-      throw new Error(`Invalid preset file: Expected at least 228 lines, found ${lines.length}`);
+    while (lines.length && lines[lines.length - 1] === '') {
+      lines.pop();
+    }
+
+    if (lines.length !== 228) {
+      throw new Error(`Invalid preset file: Expected exactly 228 lines, found ${lines.length}`);
     }
 
     const config = getConfig();
@@ -283,11 +291,18 @@ function parseFullStatsPreset(fileContent) {
     // ===== SECTION 1: CHEMISTRY (Lines 0-100) =====
     const chemistryResult = parseChemistrySection(lines.slice(0, 101), ss, config, nameMappings);
 
-    // ===== SECTION 2: STATS (Lines 101-201) =====
-    const statsResult = parseStatsSection(lines.slice(101, 202), ss, config, nameMappings);
+    // ===== SECTION 2: TRAJECTORY (Lines 202-227) =====
+    const trajectoryLines = lines.slice(202, 228);
+    const trajectoryResult = parseTrajectorySection(trajectoryLines, ss, config);
 
-    // ===== SECTION 3: TRAJECTORY (Lines 202-227) =====
-    const trajectoryResult = parseTrajectorySection(lines.slice(202, 228), ss, config);
+    // ===== SECTION 3: STATS (Lines 101-201) =====
+    const statsResult = parseStatsSection(
+      lines.slice(101, 202),
+      ss,
+      config,
+      nameMappings,
+      trajectoryResult.usedTrajectoryTypes
+    );
 
     // Log the import event
     logImportEvent({
@@ -389,7 +404,7 @@ function parseChemistrySection(chemistryLines, ss, config, nameMappings) {
 /**
  * Parse stats section (lines 101-201, 101x30 matrix)
  */
-function parseStatsSection(statsLines, ss, config, nameMappings) {
+function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypesOverride) {
   const statsMatrix = [];
   for (let i = 0; i < 101; i++) {
     const row = statsLines[i].split(',').map(v => parseInt(v.trim()));
@@ -443,8 +458,9 @@ function parseStatsSection(statsLines, ss, config, nameMappings) {
     }
   }
 
-  // Load trajectory names from imported config
-  const trajectoryTypes = getTrajectoryTypes();
+  const trajectoryTypes = Array.isArray(trajectoryTypesOverride) && trajectoryTypesOverride.length >= 3
+    ? trajectoryTypesOverride
+    : getTrajectoryTypes();
 
   const sheetData = [];
 
@@ -530,6 +546,104 @@ function combineStarPitchField(starPitchIndex, starPitchTypeIndex) {
   return STAR_PITCH_TYPES[starPitchTypeIndex] || 'None';
 }
 
+function ensureTrajectorySheet(ss, config) {
+  const sheetName = config.SHEETS.TRAJECTORY;
+  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
+  let sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+  }
+
+  if (trajectoryLayout.WRITE_HEADER) {
+    const header = buildTrajectoryHeaderLabels();
+    const headerRange = sheet.getRange(
+      1,
+      trajectoryLayout.MATRIX.START_COLUMN,
+      1,
+      trajectoryLayout.MATRIX.COLUMNS
+    );
+    headerRange.setValues([header]);
+    headerRange.setBackground(config.COLORS.HEADER_BACKGROUND);
+    headerRange.setFontColor(config.COLORS.HEADER_TEXT);
+    headerRange.setFontWeight('bold');
+    headerRange.setHorizontalAlignment('center');
+  }
+
+  sheet.setFrozenRows(1);
+  const columnWidths = trajectoryLayout.COLUMN_WIDTHS || {};
+  if (columnWidths.TRAJECTORY) {
+    sheet.setColumnWidth(trajectoryLayout.MATRIX.START_COLUMN, columnWidths.TRAJECTORY);
+  }
+  if (columnWidths.BEHAVIOR) {
+    sheet.setColumnWidth(trajectoryLayout.MATRIX.START_COLUMN + 1, columnWidths.BEHAVIOR);
+  }
+
+  return sheet;
+}
+
+function buildTrajectoryHeaderLabels() {
+  const header = ['Trajectory', 'Behavior'];
+  for (let heightIndex = 0; heightIndex < TRAJECTORY_HEIGHTS.length; heightIndex++) {
+    for (let locationIndex = 0; locationIndex < TRAJECTORY_LOCATIONS.length; locationIndex++) {
+      header.push(`${TRAJECTORY_HEIGHTS[heightIndex]} - ${TRAJECTORY_LOCATIONS[locationIndex]}`);
+    }
+  }
+  return header;
+}
+
+function buildTrajectoryRowLabels(trajectoryNames) {
+  const behaviorOrder = ['Human Slap', 'AI Slap', 'Human Charge', 'AI Charge'];
+  const labels = [];
+
+  for (let trajIndex = 0; trajIndex < 6; trajIndex++) {
+    const baseName = trajectoryNames[trajIndex] || `Trajectory ${trajIndex + 1}`;
+    for (let behaviorIndex = 0; behaviorIndex < behaviorOrder.length; behaviorIndex++) {
+      labels.push({
+        trajectory: baseName,
+        behavior: behaviorOrder[behaviorIndex]
+      });
+    }
+  }
+
+  return labels.slice(0, 24);
+}
+
+function writeTrajectorySheet(sheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage) {
+  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
+  const matrixLayout = trajectoryLayout.MATRIX;
+  const rowLabels = buildTrajectoryRowLabels(trajectoryNames);
+  const matrixRows = trajectoryMatrix.map((row, idx) => {
+    const label = rowLabels[idx] || { trajectory: idx + 1, behavior: '' };
+    const paddedRow = [label.trajectory, label.behavior, ...row];
+    while (paddedRow.length < matrixLayout.COLUMNS) {
+      paddedRow.push('');
+    }
+    return paddedRow;
+  });
+  sheet
+    .getRange(
+      matrixLayout.START_ROW,
+      matrixLayout.START_COLUMN,
+      matrixLayout.ROWS,
+      matrixLayout.COLUMNS
+    )
+    .setValues(matrixRows);
+
+  const writeRow = (layout, label, values) => {
+    const row = [label, ...values];
+    while (row.length < layout.TOTAL_COLUMNS) {
+      row.push('');
+    }
+    sheet
+      .getRange(layout.START_ROW, layout.START_COLUMN, 1, layout.TOTAL_COLUMNS)
+      .setValues([row]);
+  };
+
+  writeRow(trajectoryLayout.NAMES, trajectoryLayout.NAMES.LABEL, trajectoryNames);
+  writeRow(trajectoryLayout.USAGE, trajectoryLayout.USAGE.LABEL, trajectoryUsage);
+}
+
 /**
  * Parse trajectory section (lines 202-227) and store in script properties
  */
@@ -566,11 +680,22 @@ function parseTrajectorySection(trajectoryLines, ss, config) {
   const props = PropertiesService.getScriptProperties();
   props.setProperty('TRAJECTORY_DATA', JSON.stringify(trajectoryData));
 
+  const trajectorySheet = ensureTrajectorySheet(ss, config);
+  writeTrajectorySheet(trajectorySheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage);
+
+  const usedTrajectoryTypes = [];
+  for (let i = 0; i < trajectoryNames.length; i++) {
+    if (trajectoryUsage[i] === 1) {
+      usedTrajectoryTypes.push(trajectoryNames[i]);
+    }
+  }
+
   return {
     stored: true,
     matrixRows: 24,
     names: 6,
-    usage: 6
+    usage: 6,
+    usedTrajectoryTypes
   };
 }
 
@@ -913,22 +1038,80 @@ function splitStarPitchField(starPitchValue) {
  */
 function exportTrajectorySection(ss, config) {
   const props = PropertiesService.getScriptProperties();
+  const sheetName = config.SHEETS.TRAJECTORY;
+  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
+  const matrixLayout = trajectoryLayout.MATRIX;
+  let trajectorySheet = ss.getSheetByName(sheetName);
+
   const trajectoryDataJson = props.getProperty('TRAJECTORY_DATA');
 
-  if (!trajectoryDataJson) {
+  if (!trajectorySheet && trajectoryDataJson) {
+    const cachedData = JSON.parse(trajectoryDataJson);
+    trajectorySheet = ensureTrajectorySheet(ss, config);
+    writeTrajectorySheet(
+      trajectorySheet,
+      config,
+      cachedData.matrix,
+      cachedData.names,
+      cachedData.usage
+    );
+  }
+
+  if (!trajectorySheet) {
     throw new Error('Trajectory data not found. Please import a stats preset first.');
   }
 
-  const trajectoryData = JSON.parse(trajectoryDataJson);
+  const matrixValues = trajectorySheet
+    .getRange(
+      matrixLayout.START_ROW,
+      matrixLayout.START_COLUMN + matrixLayout.LABEL_COLUMNS,
+      matrixLayout.ROWS,
+      matrixLayout.COLUMNS - matrixLayout.LABEL_COLUMNS
+    )
+    .getValues();
+  const namesValues = trajectorySheet
+    .getRange(
+      trajectoryLayout.NAMES.START_ROW,
+      trajectoryLayout.NAMES.START_COLUMN + 1,
+      1,
+      trajectoryLayout.NAMES.VALUE_COUNT
+    )
+    .getValues();
+  const usageValues = trajectorySheet
+    .getRange(
+      trajectoryLayout.USAGE.START_ROW,
+      trajectoryLayout.USAGE.START_COLUMN + 1,
+      1,
+      trajectoryLayout.USAGE.VALUE_COUNT
+    )
+    .getValues();
 
-  // Lines 202-225: 24x25 matrix
-  const matrixLines = trajectoryData.matrix.map(row => row.join(','));
+  if (matrixValues.length !== matrixLayout.ROWS || matrixValues[0].length !== matrixLayout.COLUMNS - matrixLayout.LABEL_COLUMNS) {
+    throw new Error(
+      `Trajectory matrix must be ${matrixLayout.ROWS} rows by ${matrixLayout.COLUMNS - matrixLayout.LABEL_COLUMNS} columns.`
+    );
+  }
 
-  // Line 226: 6 trajectory names
-  const namesLine = trajectoryData.names.join(',');
+  const trajectoryMatrix = matrixValues.map(row => row.map(value => parseInt(value, 10) || 0));
+  const trajectoryNames = namesValues[0].map(value => String(value || '').trim());
+  const trajectoryUsage = usageValues[0].map(value => parseInt(value, 10) || 0);
 
-  // Line 227: 6 trajectory usage flags
-  const usageLine = trajectoryData.usage.join(',');
+  if (trajectoryNames.length !== trajectoryLayout.NAMES.VALUE_COUNT) {
+    throw new Error(`Trajectory names row must include exactly ${trajectoryLayout.NAMES.VALUE_COUNT} entries.`);
+  }
+
+  if (trajectoryUsage.length !== trajectoryLayout.USAGE.VALUE_COUNT) {
+    throw new Error(`Trajectory usage row must include exactly ${trajectoryLayout.USAGE.VALUE_COUNT} entries.`);
+  }
+
+  props.setProperty(
+    'TRAJECTORY_DATA',
+    JSON.stringify({ matrix: trajectoryMatrix, names: trajectoryNames, usage: trajectoryUsage })
+  );
+
+  const matrixLines = trajectoryMatrix.map(row => row.join(','));
+  const namesLine = trajectoryNames.join(',');
+  const usageLine = trajectoryUsage.join(',');
 
   return [...matrixLines, namesLine, usageLine];
 }

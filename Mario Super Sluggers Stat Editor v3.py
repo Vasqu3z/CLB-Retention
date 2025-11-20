@@ -2,7 +2,11 @@ import tkinter as tk
 from tkinter import ttk
 from random import random,randint,normalvariate,choice
 from functools import partial
+from tkinter import filedialog
+import tkinter.messagebox as messagebox
 import re
+import os
+clipboard_cache = ""
 
 #Big Lists
 
@@ -2353,126 +2357,232 @@ def geckoPartExclude():
         geckoWarning.configure(text="")
         
 def geckoCopy():
-    root.clipboard_clear()
-    root.clipboard_append(geckoDisplay.get("1.0", tk.END).strip())
-    root.update()
+    global clipboard_cache
+    text = geckoDisplay.get("1.0", tk.END).strip()
+    try:
+        root.clipboard_clear()
+        root.clipboard_append(text)
+        root.update()
+        root.update_idletasks()
+        root.after(100, lambda: root.update_idletasks())
+        clipboard_cache = text
+    except tk.TclError:
+        clipboard_cache = ""
+        messagebox.showerror("Clipboard Error", "Unable to copy the Gecko code to the clipboard.")
+
+def on_close():
+    if clipboard_cache:
+        try:
+            root.clipboard_clear()
+            root.clipboard_append(clipboard_cache)
+            root.update()
+        except tk.TclError:
+            pass
+    root.withdraw()
+    root.after(200, root.destroy)
+
+
+def parse_stats_file_content(text):
+    lines = [line.rstrip("\r") for line in text.splitlines()]
+    while lines and lines[-1] == "":
+        lines.pop()
+    if len(lines) != 228:
+        raise ValueError("Unexpected line count in stats preset")
+    return (
+        lines[:101],
+        lines[101:202],
+        lines[202:226],
+        lines[226],
+        lines[227],
+    )
+
+
+def serialize_stats_payload():
+    parts = []
+    for i in range(101):
+        parts.append(",".join(str(changedChem[i][j]) for j in range(101)))
+    for i in range(101):
+        parts.append(",".join(str(changedStat[i][j]) for j in range(30)))
+    for i in range(24):
+        parts.append(",".join(str(changedTraj[i][j]) for j in range(25)))
+    parts.append(",".join(trajAllList))
+    parts.append(",".join(str(v) for v in trajUsed))
+    return "\n".join(parts)
+
 
 def loadChanges():
-    recapList.configure(state="normal")
-    name=geckoFile.get()
-    if not name.isalnum():
-        if name=="":
-            recapList.insert(tk.END,"No file name\n")
-            recapList.configure(state="disabled")
-            return
-        recapList.insert(tk.END,"File name can't contain spaces or special characters\n")
+    if not os.path.exists("saves"):
+        os.makedirs("saves")
+    path = filedialog.askopenfilename(initialdir=os.path.abspath("saves"), title="Load Stats Preset", filetypes=[("Text Presets", "*.txt"), ("All Files", "*.*")])
+    if not path:
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, "Load operation cancelled.\n")
+        recapList.configure(state="disabled")
+        return
+    if path.endswith("_selection.txt") or path.endswith(".csv"):
+        messagebox.showwarning("Wrong File Type", "This appears to be a Character Selection file, not a Stats Preset file.")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, "Load failed: Cannot load a selection file as a stats preset.\n")
         recapList.configure(state="disabled")
         return
     try:
-        with open(name+".txt","r") as file:
-            chem=""
-            stat=""
-            traj=""
-            for i in range(100):
-                chem=chem+file.readline().rstrip("\n")+";"
-            chem=chem+file.readline()
-            for i in range(100):
-                stat=stat+file.readline().rstrip("\n")+";"
-            stat=stat+file.readline()
-            for i in range(23):
-                traj=traj+file.readline().rstrip("\n")+";"
-            traj=traj+file.readline().rstrip("\n")
-            name=file.readline().rstrip("\n")
-            used=file.readline().rstrip("\n")
-            error=0
-            if not re.search("^(([012],){100}[012];){100}([012],){100}[012]$",chem):
-                recapList.insert(tk.END,"corrupted chem data\n")
-                error=1
-            if not re.search("^(([0-9]+,){29}[0-9]+;){100}([0-9]+,){29}[0-9]+$",stat):
-                recapList.insert(tk.END,"corrupted stat data\n")
-                error=1
-            if not re.search("^(([0-9]+,){24}[0-9]+;){23}([0-9]+,){24}[0-9]+$",traj):
-                recapList.insert(tk.END,"corrupted traj data\n")
-                error=1
-            if not re.search("^([a-zA-Z0-9\s]+,){5}[a-zA-Z0-9\s]+$",name):
-                recapList.insert(tk.END,"corrupted traj data\n")
-                error=1
-            if not re.search("^([01],){5}[01]$",used):
-                recapList.insert(tk.END,"corrupted traj data\n")
-                error=1
-            if error==1:
+        with open(path, "r", encoding="utf-8") as file:
+            content = file.read()
+            chem_lines, stat_lines, traj_lines, name_line, used_line = parse_stats_file_content(content)
+            chem = ";".join(chem_lines)
+            stat = ";".join(stat_lines)
+            traj = ";".join(traj_lines)
+            error = 0
+            if not re.search("^(([012],){100}[012];){100}([012],){100}[012]$", chem):
+                recapList.insert(tk.END, "Corrupted chem data\n")
+                error = 1
+            if not re.search("^(([0-9]+,){29}[0-9]+;){100}([0-9]+,){29}[0-9]+$", stat):
+                recapList.insert(tk.END, "Corrupted stat data\n")
+                error = 1
+            if not re.search("^(([0-9]+,){24}[0-9]+;){23}([0-9]+,){24}[0-9]+$", traj):
+                recapList.insert(tk.END, "Corrupted traj data\n")
+                error = 1
+            if not re.search("^([a-zA-Z0-9\\s]+,){5}[a-zA-Z0-9\\s]+$", name_line):
+                recapList.insert(tk.END, "Corrupted trajectory names\n")
+                error = 1
+            if not re.search("^([01],){5}[01]$", used_line):
+                recapList.insert(tk.END, "Corrupted trajectory usage\n")
+                error = 1
+            if error == 1:
+                messagebox.showerror("Load Error", "The file is corrupted or not a valid stats preset.")
                 recapList.configure(state="disabled")
                 return
-            chems=chem.split(";")
-            stats=stat.split(";")
-            trajs=traj.split(";")
-            names=name.split(",")
-            useds=used.split(",")
+            chems = [row.split(",") for row in chem_lines]
+            stats = [row.split(",") for row in stat_lines]
+            trajs = [row.split(",") for row in traj_lines]
+            names = name_line.split(",")
+            useds = used_line.split(",")
             for i in range(101):
-                c=chems[i].split(",")
-                s=stats[i].split(",")
+                c = chems[i]
+                s = stats[i]
+                if len(c) != 101 or len(s) != 30:
+                    raise ValueError("Mismatched column count in stats preset")
                 for j in range(101):
-                    changedChem[i][j]=int(c[j])
+                    changedChem[i][j] = int(c[j])
                 for j in range(30):
-                    changedStat[i][j]=int(s[j])
-                if i<24:
-                    t=trajs[i].split(",")
+                    changedStat[i][j] = int(s[j])
+                if i < 24:
+                    t = trajs[i]
+                    if len(t) != 25:
+                        raise ValueError("Mismatched trajectory column count in stats preset")
                     for j in range(25):
-                        changedTraj[i][j]=int(t[j])
-                if i<6:
-                    trajAllList[i]=names[i]
-                    trajUsed[i]=int(useds[i])
+                        changedTraj[i][j] = int(t[j])
+                if i < 6:
+                    trajAllList[i] = names[i]
+                    trajUsed[i] = int(useds[i])
             changedTrajListUsed()
+            trajGroup.config(values=trajAllList)
+            trajGroup.set("Pick a trajectory")
             trajDisplay(1)
             chemColor()
-            recapList.insert(tk.END,"Data loaded\n")
+            trajDisplay(1)
+            chemColor()
+            if cbPlayer.get() != "Pick a character/group":
+                statDisplay(0)
+            messagebox.showinfo("Load Successful", f"Stats loaded from '{os.path.basename(path)}'")
+            recapList.configure(state="normal")
+            recapList.insert(tk.END, f"Stats loaded from '{path}'\n")
             recapList.configure(state="disabled")
     except FileNotFoundError:
-        recapList.insert(tk.END,"File not found\n")
+        messagebox.showerror("Load Error", f"File '{os.path.basename(path)}' not found.")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"File not found: {path}\n")
         recapList.configure(state="disabled")
-        return
+    except Exception as e:
+        messagebox.showerror("Load Error", f"An error occurred while loading:\n{e}")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"Error loading stats: {e}\n")
+        recapList.configure(state="disabled")
 
 def saveChanges():
-    recapList.configure(state="normal")
-    name=geckoFile.get()
-    if not name.isalnum():
-        if name=="":
-            recapList.insert(tk.END,"No file name\n")
-            recapList.configure(state="disabled")
-            return
-        recapList.insert(tk.END,"File name can't contain spaces or special characters\n")
+    if not os.path.exists("saves"):
+        os.makedirs("saves")
+    path = filedialog.asksaveasfilename(initialdir=os.path.abspath("saves"), title="Save Stats Preset", defaultextension=".txt", filetypes=[("Text Presets", "*.txt"), ("All Files", "*.*")])
+    if not path:
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, "Save operation cancelled.\n")
         recapList.configure(state="disabled")
         return
-    if geckoSecurityVar.get()==1:
-        mode="w"
-    else:
-        mode="x"
     try:
-        with open(name+".txt",mode) as file:
-            for i in range(101):
-                for j in range(100):
-                    file.write(str(changedChem[i][j])+",")
-                file.write(str(changedChem[i][100])+"\n")
-            for i in range(101):
-                for j in range(29):
-                    file.write(str(changedStat[i][j])+",")
-                file.write(str(changedStat[i][29])+"\n")
-            for i in range(24):
-                for j in range(24):
-                    file.write(str(changedTraj[i][j])+",")
-                file.write(str(changedTraj[i][24])+"\n")
-            for i in range(5):
-                file.write(trajAllList[i]+",")
-            file.write(trajAllList[5]+"\n")
-            for i in range(5):
-                file.write(str(trajUsed[i])+",")
-            file.write(str(trajUsed[5]))
-            recapList.insert(tk.END,"Data saved\n")
-            recapList.configure(state="disabled")
-    except FileExistsError:
-        recapList.insert(tk.END,"File already exists\n")
+        with open(path, "w", encoding="utf-8") as file:
+            file.write(serialize_stats_payload())
+        messagebox.showinfo("Save Successful", f"Stats saved to '{os.path.basename(path)}'")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"Stats saved to '{path}'\n")
+        recapList.configure(state="disabled")
+    except Exception as e:
+        messagebox.showerror("Save Error", f"An error occurred while saving:\n{e}")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"Error saving stats: {e}\n")
+        recapList.configure(state="disabled")
+
+def saveSelection():
+    if not os.path.exists("saves"):
+        os.makedirs("saves")
+    path = filedialog.asksaveasfilename(initialdir=os.path.abspath("saves"), title="Save Character Selection", defaultextension=".csv", filetypes=[("Selection Presets", "*.csv"), ("All Files", "*.*")])
+    if not path:
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, "Save operation cancelled.\n")
         recapList.configure(state="disabled")
         return
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(",".join(map(str, geckoPlayerList)))
+        messagebox.showinfo("Save Successful", f"Selection saved to '{os.path.basename(path)}'")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"Selection saved to '{path}'\n")
+        recapList.configure(state="disabled")
+    except Exception as e:
+        messagebox.showerror("Save Error", f"An error occurred while saving selection:\n{e}")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"Error saving selection: {e}\n")
+        recapList.configure(state="disabled")
+
+def loadSelection():
+    if not os.path.exists("saves"):
+        os.makedirs("saves")
+    path = filedialog.askopenfilename(initialdir=os.path.abspath("saves"), title="Load Character Selection", filetypes=[("Selection Presets", "*.csv"), ("All Files", "*.*")])
+    if not path:
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, "Load operation cancelled.\n")
+        recapList.configure(state="disabled")
+        return
+    if not path.endswith(".csv"):
+        if path.endswith(".txt"):
+            messagebox.showwarning("Wrong File Type", "This appears to be a Stats Preset file, not a Character Selection file.")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, "Load failed: Invalid file type. Please select a .csv file.\n")
+        recapList.configure(state="disabled")
+        return
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = f.read().strip()
+        geckoPlayerList.clear()
+        if data:
+            for val in data.split(","):
+                if val.strip().isdigit():
+                    geckoPlayerList.append(int(val.strip()))
+        geckoPlayerList.sort()
+        refreshGeckoText()
+        messagebox.showinfo("Load Successful", f"Selection loaded from '{os.path.basename(path)}'")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"Selection loaded from '{path}'\n")
+        recapList.configure(state="disabled")
+    except FileNotFoundError:
+        messagebox.showerror("Load Error", f"File '{os.path.basename(path)}' not found.")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"Selection file not found: {path}\n")
+        recapList.configure(state="disabled")
+    except Exception as e:
+        messagebox.showerror("Load Error", f"An error occurred while loading selection:\n{e}")
+        recapList.configure(state="normal")
+        recapList.insert(tk.END, f"Error loading selection: {e}\n")
+        recapList.configure(state="disabled")
 
 def refreshGeckoText():
     geckoPlayers.configure(state="normal")
@@ -2632,6 +2742,7 @@ def wackySFO():
 #main loop
 root = tk.Tk()
 root.geometry("1200x720")
+root.protocol("WM_DELETE_WINDOW", on_close)
 
 #recap setup
 
@@ -3309,21 +3420,26 @@ geckoWarningFrame.grid(row=1, column=0, columnspan=4)
 geckoWarning = tk.Label(geckoWarningFrame, text="")
 geckoWarning.pack()
 
-geckoFileFrame = tk.LabelFrame(geckoFrame, text="Saved changes manager (file name can't contain spaces or special characters)")
-geckoFileFrame.grid(row=2, column=0, columnspan=4)
-geckoFile = tk.Entry(geckoFileFrame, width=80)
-geckoFile.pack(padx=5)
-geckoFile.insert("0","File Name")
-geckoLoad = tk.Button(geckoFileFrame, text="Load changes", width=10, command=loadChanges)
-geckoLoad.pack(side=tk.LEFT, padx=5, pady=5)
-geckoSave = tk.Button(geckoFileFrame, text="Save changes", width=10, command=saveChanges)
-geckoSave.pack(side=tk.LEFT, padx=5)
-geckoSecurityVar = tk.IntVar()
-geckoSecurity = tk.Checkbutton(geckoFileFrame, text="Override savefile", variable=geckoSecurityVar)
-geckoSecurity.pack(side=tk.LEFT)
+geckoFileFrame = tk.LabelFrame(geckoFrame, text="Stats and Chemistry Presets")
+geckoFileFrame.grid(row=2, column=0, columnspan=4, sticky="ew", padx=5)
+
+geckoLoadStatsButton = tk.Button(geckoFileFrame, text="Load Stats Preset...", width=20, command=loadChanges)
+geckoLoadStatsButton.pack(side=tk.LEFT, padx=5, pady=5)
+
+geckoSaveStatsButton = tk.Button(geckoFileFrame, text="Save Stats Preset As...", width=20, command=saveChanges)
+geckoSaveStatsButton.pack(side=tk.LEFT, padx=5, pady=5)
+
+geckoSelectionTools = tk.LabelFrame(geckoFrame, text="Character Selection Presets")
+geckoSelectionTools.grid(row=3, column=0, columnspan=4, sticky="ew", padx=5, pady=(5, 10))
+
+geckoLoadSelectionButton = tk.Button(geckoSelectionTools, text="Load Selection...", width=20, command=loadSelection)
+geckoLoadSelectionButton.pack(side=tk.LEFT, padx=5, pady=5)
+
+geckoSaveSelectionButton = tk.Button(geckoSelectionTools, text="Save Selection As...", width=20, command=saveSelection)
+geckoSaveSelectionButton.pack(side=tk.LEFT, padx=5, pady=5)
 
 geckoPlayersFrame = tk.LabelFrame(geckoFrame, text="Characters selection")
-geckoPlayersFrame.grid(row=3, column=0, columnspan=4)
+geckoPlayersFrame.grid(row=4, column=0, columnspan=4)
 geckoRecapFrame = tk.Frame(geckoPlayersFrame)
 geckoRecapFrame.pack(side=tk.RIGHT, padx=5, pady=5)
 geckoPlayersScrollbar = tk.Scrollbar(geckoRecapFrame)

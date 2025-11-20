@@ -11,7 +11,8 @@ var DATABASE_CONFIG_DEFAULTS = {
     MII_COLOR_CHEMISTRY: 'Mii Chemistry Matrix',
     CHEMISTRY_LOOKUP: '🎮 Chemistry',
     CHARACTER_NAME_MAPPING: '📋 Player Registry', // Merged into Player Registry (DATABASE_ID column A)
-    CHEMISTRY_CHANGE_LOG: 'Chemistry Change Log'
+    CHEMISTRY_CHANGE_LOG: 'Chemistry Change Log',
+    TRAJECTORY: '↗️ Trajectory'
   },
   
   // Attribute Sheet Configuration
@@ -131,6 +132,36 @@ var DATABASE_CONFIG_DEFAULTS = {
   DEBUG: {
     ENABLE_LOGGING: true
   },
+
+  // Trajectory Sheet Layout Configuration
+  TRAJECTORY_SHEET_CONFIG: {
+    MATRIX: {
+      START_ROW: 2,
+      START_COLUMN: 1,
+      ROWS: 24,
+      COLUMNS: 27,
+      LABEL_COLUMNS: 2
+    },
+    NAMES: {
+      START_ROW: 27,
+      START_COLUMN: 1,
+      TOTAL_COLUMNS: 8,
+      VALUE_COUNT: 6,
+      LABEL: 'Names'
+    },
+    USAGE: {
+      START_ROW: 28,
+      START_COLUMN: 1,
+      TOTAL_COLUMNS: 8,
+      VALUE_COUNT: 6,
+      LABEL: 'Usage'
+    },
+    WRITE_HEADER: false,
+    COLUMN_WIDTHS: {
+      TRAJECTORY: 175,
+      BEHAVIOR: 145
+    }
+  },
   
   // Tool Display Names
   TOOL_NAMES: {
@@ -158,6 +189,7 @@ var DATABASE_CONFIG_OVERRIDES = {
   'SHEETS.CHEMISTRY_LOOKUP': ['CLB_CHEMISTRY_LOOKUP_SHEET_NAME'],
   'SHEETS.CHARACTER_NAME_MAPPING': ['CLB_PLAYER_REGISTRY_SHEET_NAME'],
   'SHEETS.CHEMISTRY_CHANGE_LOG': ['CLB_CHEMISTRY_CHANGE_LOG_SHEET_NAME'],
+  'SHEETS.TRAJECTORY': ['CLB_TRAJECTORY_SHEET_NAME'],
   'DEBUG.ENABLE_LOGGING': ['CLB_DEBUG_LOGGING_ENABLED', 'DATABASE_DEBUG_LOGGING']
 };
 

@@ -10,6 +10,7 @@ Modern web interface for Comets League Baseball statistics and standings.
 - 🧢 **Team Pages** - Team rosters and statistics
 - 📱 **Mobile-Friendly** - Responsive design for all devices
 - ⚡ **Fast Loading** - Server-side rendering with Next.js
+- 🎯 **Consistent Motion** - Shared animation tokens with reduced-motion support
 
 ## Tech Stack
 
@@ -108,8 +109,14 @@ comets-league-baseball/
 ├── lib/                   # Utility libraries
 │   └── sheets.ts          # Google Sheets API integration
 ├── public/                # Static files
+├── docs/                  # Design and animation checklists
 └── README.md              # This file
 ```
+
+## Animation Standards
+
+Motion should use the shared tokens and variants defined in `components/animations`.
+Before shipping any animation changes, review the [Animation Pre-Ship Checklist](./docs/animation-checklist.md).
 
 ## Deployment
 

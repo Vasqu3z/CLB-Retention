@@ -1,5 +1,5 @@
-import CardGridSkeleton from '@/components/skeletons/CardGridSkeleton';
+import TeamSkeleton from '@/components/skeletons/TeamSkeleton';
 
 export default function TeamsLoading() {
-  return <CardGridSkeleton itemCount={8} />;
+  return <TeamSkeleton />;
 }

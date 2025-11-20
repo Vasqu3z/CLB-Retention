@@ -543,6 +543,56 @@ function combineStarPitchField(starPitchIndex, starPitchTypeIndex) {
   return STAR_PITCH_TYPES[starPitchTypeIndex] || 'None';
 }
 
+function ensureTrajectorySheet(ss, config) {
+  const sheetName = config.SHEETS.TRAJECTORY;
+  let sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+  }
+
+  const header = ['Row'];
+  for (let i = 1; i <= 25; i++) {
+    header.push(i);
+  }
+
+  const headerRange = sheet.getRange(1, 1, 1, 26);
+  headerRange.setValues([header]);
+  headerRange.setBackground(config.COLORS.HEADER_BACKGROUND);
+  headerRange.setFontColor(config.COLORS.HEADER_TEXT);
+  headerRange.setFontWeight('bold');
+  headerRange.setHorizontalAlignment('center');
+
+  sheet.setFrozenRows(1);
+
+  return sheet;
+}
+
+function writeTrajectorySheet(sheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage) {
+  const header = ['Row'];
+  for (let i = 1; i <= 25; i++) {
+    header.push(i);
+  }
+
+  sheet.getRange(1, 1, 1, 26).setValues([header]);
+
+  const matrixRows = trajectoryMatrix.map((row, idx) => {
+    return [idx + 1, ...row];
+  });
+  sheet.getRange(2, 1, 24, 26).setValues(matrixRows);
+
+  const padRow = (label, values) => {
+    const row = [label, ...values];
+    while (row.length < 26) {
+      row.push('');
+    }
+    return row;
+  };
+
+  sheet.getRange(26, 1, 1, 26).setValues([padRow('Names', trajectoryNames)]);
+  sheet.getRange(27, 1, 1, 26).setValues([padRow('Usage', trajectoryUsage)]);
+}
+
 /**
  * Parse trajectory section (lines 202-227) and store in script properties
  */
@@ -578,6 +628,9 @@ function parseTrajectorySection(trajectoryLines, ss, config) {
 
   const props = PropertiesService.getScriptProperties();
   props.setProperty('TRAJECTORY_DATA', JSON.stringify(trajectoryData));
+
+  const trajectorySheet = ensureTrajectorySheet(ss, config);
+  writeTrajectorySheet(trajectorySheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage);
 
   const usedTrajectoryTypes = [];
   for (let i = 0; i < trajectoryNames.length; i++) {
@@ -934,22 +987,55 @@ function splitStarPitchField(starPitchValue) {
  */
 function exportTrajectorySection(ss, config) {
   const props = PropertiesService.getScriptProperties();
+  const sheetName = config.SHEETS.TRAJECTORY;
+  let trajectorySheet = ss.getSheetByName(sheetName);
+
   const trajectoryDataJson = props.getProperty('TRAJECTORY_DATA');
 
-  if (!trajectoryDataJson) {
+  if (!trajectorySheet && trajectoryDataJson) {
+    const cachedData = JSON.parse(trajectoryDataJson);
+    trajectorySheet = ensureTrajectorySheet(ss, config);
+    writeTrajectorySheet(
+      trajectorySheet,
+      config,
+      cachedData.matrix,
+      cachedData.names,
+      cachedData.usage
+    );
+  }
+
+  if (!trajectorySheet) {
     throw new Error('Trajectory data not found. Please import a stats preset first.');
   }
 
-  const trajectoryData = JSON.parse(trajectoryDataJson);
+  const matrixValues = trajectorySheet.getRange(2, 2, 24, 25).getValues();
+  const namesValues = trajectorySheet.getRange(26, 2, 1, 6).getValues();
+  const usageValues = trajectorySheet.getRange(27, 2, 1, 6).getValues();
 
-  // Lines 202-225: 24x25 matrix
-  const matrixLines = trajectoryData.matrix.map(row => row.join(','));
+  if (matrixValues.length !== 24 || matrixValues[0].length !== 25) {
+    throw new Error('Trajectory matrix must be 24 rows by 25 columns.');
+  }
 
-  // Line 226: 6 trajectory names
-  const namesLine = trajectoryData.names.join(',');
+  const trajectoryMatrix = matrixValues.map(row => row.map(value => parseInt(value, 10) || 0));
+  const trajectoryNames = namesValues[0].map(value => String(value || '').trim());
+  const trajectoryUsage = usageValues[0].map(value => parseInt(value, 10) || 0);
 
-  // Line 227: 6 trajectory usage flags
-  const usageLine = trajectoryData.usage.join(',');
+  if (trajectoryNames.length !== 6) {
+    throw new Error('Trajectory names row must include exactly 6 entries.');
+  }
+
+  if (trajectoryUsage.length !== 6) {
+    throw new Error('Trajectory usage row must include exactly 6 entries.');
+  }
+
+  props.setProperty(
+    'TRAJECTORY_DATA',
+    JSON.stringify({ matrix: trajectoryMatrix, names: trajectoryNames, usage: trajectoryUsage })
+  );
+
+  const matrixLines = trajectoryMatrix.map(row => row.join(','));
+  const namesLine = trajectoryNames.join(',');
+  const usageLine = trajectoryUsage.join(',');
 
   return [...matrixLines, namesLine, usageLine];
 }

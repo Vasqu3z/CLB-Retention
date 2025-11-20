@@ -236,7 +236,7 @@ export default async function Sidebar() {
                   {/* Team Name (abbreviated on small screens) */}
                   <span
                     className="text-sm font-medium flex-1 truncate group-hover:text-nebula-orange transition-colors"
-                    style={{ color: teamConfig?.primaryColor || 'var(--star-white)' }}
+                    style={{ color: teamConfig?.primaryColor || '#E8EDF5' }}
                   >
                     {teamConfig?.shortName || team.team}
                   </span>

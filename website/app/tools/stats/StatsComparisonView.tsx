@@ -7,6 +7,7 @@ import SeasonToggle from '@/components/SeasonToggle';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
 import FadeIn from '@/components/animations/FadeIn';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
+import SurfaceCard from '@/components/SurfaceCard';
 
 type StatTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -58,7 +59,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
 
       {/* Stat Category Tabs */}
       <FadeIn delay={0.3} direction="up">
-        <div className="glass-card p-4">
+        <SurfaceCard className="p-4">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('hitting')}
@@ -91,7 +92,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
               Fielding & Running
             </button>
           </div>
-        </div>
+        </SurfaceCard>
       </FadeIn>
 
       {/* Player Selection */}
@@ -112,7 +113,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
           <div className="space-y-6">
           {/* Hitting Stats */}
           {activeTab === 'hitting' && (
-            <div className="glass-card overflow-hidden">
+            <SurfaceCard className="overflow-hidden">
               <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-nebula-orange text-shadow">Hitting Statistics</h3>
               </div>
@@ -148,12 +149,12 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                   </tbody>
                 </table>
               </ScrollableTable>
-            </div>
+            </SurfaceCard>
           )}
 
           {/* Pitching Stats */}
           {activeTab === 'pitching' && (
-            <div className="glass-card overflow-hidden">
+            <SurfaceCard className="overflow-hidden">
               <div className="bg-gradient-to-r from-solar-gold/30 to-comet-yellow/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-solar-gold text-shadow">Pitching Statistics</h3>
               </div>
@@ -187,12 +188,12 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                   </tbody>
                 </table>
               </ScrollableTable>
-            </div>
+            </SurfaceCard>
           )}
 
           {/* Fielding Stats */}
           {activeTab === 'fielding' && (
-            <div className="glass-card overflow-hidden">
+            <SurfaceCard className="overflow-hidden">
               <div className="bg-gradient-to-r from-field-green/30 to-nebula-teal/30 px-4 py-3 border-b border-cosmic-border">
                 <h3 className="text-lg font-display font-bold text-field-green text-shadow">Fielding & Running Statistics</h3>
               </div>
@@ -222,7 +223,7 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                   </tbody>
                 </table>
               </ScrollableTable>
-            </div>
+            </SurfaceCard>
           )}
           </div>
         </FadeIn>

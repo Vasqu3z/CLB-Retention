@@ -2,9 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { LEAGUE_CONFIG } from "@/config/league";
 import { getLeagueLogo } from "@/lib/teamLogos";
+import { cn } from "@/lib/utils";
 import { Trophy, TrendingUp, Calendar, Users, Target, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
-import Tilt from "@/components/animations/Tilt";
 
 const mainNavCards = [
   {
@@ -70,6 +70,20 @@ const secondaryNavCards = [
   },
 ];
 
+const ICON_COLOR_VALUES: Record<string, string> = {
+  'text-field-green': '#2D5F3F',
+  'text-solar-gold': '#FFA62B',
+  'text-cosmic-purple': '#8B5CF6',
+  'text-infield-dirt': '#A0826D',
+  'text-nebula-orange': '#FF6B35',
+  'text-nebula-cyan': '#00D4FF',
+};
+
+const navCardBaseClass =
+  "group relative block h-full cursor-pointer overflow-hidden rounded-2xl border-2 px-8 py-8 bg-gradient-to-br " +
+  "backdrop-blur-md transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 transform-gpu will-change-transform " +
+  "focus-visible:ring-nebula-teal focus-visible:ring-offset-2 focus-visible:ring-offset-space-black";
+
 export default function Home() {
   return (
     <div className="space-y-16">
@@ -86,7 +100,7 @@ export default function Home() {
               currentColor 10px,
               currentColor 12px
             )`,
-            color: 'var(--field-green)'
+            color: '#2D5F3F'
           }}
         />
 
@@ -154,50 +168,48 @@ export default function Home() {
                 duration={0.7}
                 className={isLarge ? "lg:col-span-2" : ""}
               >
-                <Tilt tiltAngle={8}>
-                  <Link
-                    href={card.href}
-                    className={`
-                      group relative p-8 rounded-2xl border-2 ${card.borderColor}
-                      bg-gradient-to-br ${card.gradient}
-                      transition-all duration-500
-                      backdrop-blur-md
-                      hover:shadow-[0_12px_40px_rgba(45,95,63,0.4)]
-                      hover:scale-[1.02]
-                      block h-full
-                      ${isLarge ? 'min-h-[280px]' : 'min-h-[220px]'}
-                    `}
-                  >
-                    {/* Baseball stitch decoration */}
-                    <div className="absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
-                      <div className="w-full h-full border-4 border-current rounded-full border-dashed" style={{ borderColor: card.iconColor.replace('text-', 'var(--') + ')' }} />
-                    </div>
+                <Link
+                  href={card.href}
+                  className={cn(
+                    navCardBaseClass,
+                    card.borderColor,
+                    card.gradient,
+                    "hover:shadow-[0_12px_40px_rgba(45,95,63,0.4)] hover:scale-[1.02]",
+                    isLarge ? "min-h-[280px]" : "min-h-[220px]"
+                  )}
+                >
+                  {/* Baseball stitch decoration */}
+                  <div className="pointer-events-none absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <div
+                      className="w-full h-full border-4 border-current rounded-full border-dashed"
+                      style={{ borderColor: ICON_COLOR_VALUES[card.iconColor] || '#E8EDF5' }}
+                    />
+                  </div>
 
-                    {/* Hover gradient overlay */}
-                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/5 via-transparent to-transparent" />
+                  {/* Hover gradient overlay */}
+                  <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/5 via-transparent to-transparent" />
 
-                    <div className="relative z-10 flex flex-col h-full">
-                      <Icon className={`w-12 h-12 ${card.iconColor} mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`} />
+                  <div className="relative z-10 flex flex-col h-full">
+                    <Icon className={`w-12 h-12 ${card.iconColor} mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`} />
 
-                      <h3 className="text-3xl font-display font-bold mb-2 text-star-white group-hover:text-vintage-cream transition-colors">
-                        {card.title}
-                      </h3>
+                    <h3 className="text-3xl font-display font-bold mb-2 text-star-white group-hover:text-vintage-cream transition-colors">
+                      {card.title}
+                    </h3>
 
-                      <p className="text-lg text-star-gray font-body group-hover:text-star-white transition-colors">
-                        {card.description}
-                      </p>
+                    <p className="text-lg text-star-gray font-body group-hover:text-star-white transition-colors">
+                      {card.description}
+                    </p>
 
-                      {isLarge && (
-                        <div className="mt-auto pt-6">
-                          <div className="inline-flex items-center gap-2 text-sm font-display font-semibold text-field-green group-hover:gap-4 transition-all">
-                            View Details
-                            <span className="group-hover:translate-x-1 transition-transform">→</span>
-                          </div>
+                    {isLarge && (
+                      <div className="mt-auto pt-6">
+                        <div className="inline-flex items-center gap-2 text-sm font-display font-semibold text-field-green group-hover:gap-4 transition-all">
+                          View Details
+                          <span className="group-hover:translate-x-1 transition-transform">→</span>
                         </div>
-                      )}
-                    </div>
-                  </Link>
-                </Tilt>
+                      </div>
+                    )}
+                  </div>
+                </Link>
               </FadeIn>
             );
           })}
@@ -214,33 +226,27 @@ export default function Home() {
                 direction="up"
                 duration={0.6}
               >
-                <Tilt tiltAngle={6}>
-                  <Link
-                    href={card.href}
-                    className={`
-                      group relative p-8 rounded-xl border-2 ${card.borderColor}
-                      bg-gradient-to-br ${card.gradient}
-                      transition-all duration-300
-                      backdrop-blur-sm
-                      hover:shadow-[0_8px_24px_rgba(255,255,255,0.1)]
-                      hover:scale-105
-                      block h-full
-                      min-h-[180px]
-                    `}
-                  >
-                    <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
+                <Link
+                  href={card.href}
+                  className={cn(
+                    navCardBaseClass,
+                    card.borderColor,
+                    card.gradient,
+                    "backdrop-blur-sm hover:shadow-[0_8px_24px_rgba(255,255,255,0.1)] hover:scale-105 min-h-[180px]"
+                  )}
+                >
+                  <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent via-white/5 to-transparent" />
 
-                    <div className="relative z-10 text-center">
-                      <Icon className={`w-12 h-12 ${card.iconColor} mx-auto mb-4 group-hover:scale-125 transition-transform duration-300`} />
-                      <h3 className="text-2xl font-display font-bold mb-2 text-star-white">
-                        {card.title}
-                      </h3>
-                      <p className="text-sm text-star-gray font-body">
-                        {card.description}
-                      </p>
-                    </div>
-                  </Link>
-                </Tilt>
+                  <div className="relative z-10 text-center">
+                    <Icon className={`w-12 h-12 ${card.iconColor} mx-auto mb-4 group-hover:scale-125 transition-transform duration-300`} />
+                    <h3 className="text-2xl font-display font-bold mb-2 text-star-white">
+                      {card.title}
+                    </h3>
+                    <p className="text-sm text-star-gray font-body">
+                      {card.description}
+                    </p>
+                  </div>
+                </Link>
               </FadeIn>
             );
           })}
@@ -256,7 +262,7 @@ export default function Home() {
             style={{
               backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
               backgroundSize: '20px 20px',
-              color: 'var(--infield-dirt)'
+              color: '#A0826D'
             }}
           />
 

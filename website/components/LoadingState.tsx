@@ -1,16 +1,38 @@
 import { Loader2 } from 'lucide-react';
+import SurfaceCard from '@/components/SurfaceCard';
+import TableSkeleton from '@/components/skeletons/TableSkeleton';
 
 interface LoadingStateProps {
   message?: string;
   size?: 'sm' | 'md' | 'lg';
   fullScreen?: boolean;
+  variant?: 'spinner' | 'table';
+  tableColumns?: number;
+  tableRows?: number;
 }
 
 export default function LoadingState({
   message = 'Loading...',
   size = 'md',
-  fullScreen = false
+  fullScreen = false,
+  variant = 'spinner',
+  tableColumns,
+  tableRows,
 }: LoadingStateProps) {
+  if (variant === 'table') {
+    const skeleton = <TableSkeleton columns={tableColumns} rows={tableRows} />;
+
+    if (fullScreen) {
+      return (
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <div className="w-full max-w-5xl">{skeleton}</div>
+        </div>
+      );
+    }
+
+    return skeleton;
+  }
+
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-10 h-10',
@@ -43,11 +65,7 @@ export default function LoadingState({
     );
   }
 
-  return (
-    <div className="glass-card py-16 px-4">
-      {content}
-    </div>
-  );
+  return <SurfaceCard className="py-16 px-4">{content}</SurfaceCard>;
 }
 
 // Cosmic Spinner - Centered loading indicator
@@ -72,11 +90,8 @@ export function CosmicSpinner({ message = 'Loading data...' }: { message?: strin
   );
 }
 
-// Legacy exports for backwards compatibility
-export function TableSkeleton() {
-  return <CosmicSpinner message="Loading data..." />;
-}
-
 export function CardSkeleton() {
   return <CosmicSpinner message="Loading data..." />;
 }
+
+export { TableSkeleton };

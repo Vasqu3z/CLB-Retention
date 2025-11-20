@@ -33,16 +33,37 @@ import {
 
 const sheets = google.sheets('v4');
 
+let parsedGoogleCredentials: Record<string, any> | undefined;
+
+try {
+  parsedGoogleCredentials = process.env.GOOGLE_CREDENTIALS
+    ? JSON.parse(process.env.GOOGLE_CREDENTIALS)
+    : undefined;
+} catch (error) {
+  console.error('Unable to parse GOOGLE_CREDENTIALS', error);
+  parsedGoogleCredentials = undefined;
+}
+
+const googleAuth = new google.auth.GoogleAuth({
+  credentials: parsedGoogleCredentials,
+  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+});
+
+type SheetsAuthClient = Awaited<ReturnType<typeof googleAuth.getClient>>;
+
+const DEFAULT_SHEET_REVALIDATE_SECONDS = 60;
+const LOW_CHURN_SHEET_REVALIDATE_SECONDS = 300;
+const STANDINGS_REVALIDATE_SECONDS = 300;
+
+let authClientPromise: Promise<SheetsAuthClient> | null = null;
+
 // Initialize Google Sheets API client
-async function getAuthClient() {
-  const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS || '{}');
+async function getAuthClient(): Promise<SheetsAuthClient> {
+  if (!authClientPromise) {
+    authClientPromise = googleAuth.getClient();
+  }
 
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-  });
-
-  return await auth.getClient();
+  return authClientPromise;
 }
 
 // Generic function to read data from a sheet range (uncached)
@@ -68,17 +89,42 @@ async function getSheetDataUncached(range: string, spreadsheetId?: string): Prom
   }
 }
 
-// Cached version with 60-second revalidation
-export const getSheetData = unstable_cache(
-  async (range: string, spreadsheetId?: string) => {
-    return getSheetDataUncached(range, spreadsheetId);
-  },
-  ['sheet-data'],
-  {
-    revalidate: 60, // Cache for 60 seconds
-    tags: ['sheets'],
+type SheetDataFetcher = (range: string, spreadsheetId?: string) => Promise<any[][]>;
+
+// Cache instances keyed by their revalidation duration (in seconds)
+const sheetDataCacheByDuration = new Map<number, SheetDataFetcher>();
+
+function getCachedSheetFetcher(revalidate: number): SheetDataFetcher {
+  const normalizedRevalidate = Number.isFinite(revalidate) && revalidate > 0
+    ? revalidate
+    : DEFAULT_SHEET_REVALIDATE_SECONDS;
+
+  if (!sheetDataCacheByDuration.has(normalizedRevalidate)) {
+    const cachedFetcher = unstable_cache(
+      async (range: string, spreadsheetId?: string) => {
+        return getSheetDataUncached(range, spreadsheetId);
+      },
+      ['sheet-data', String(normalizedRevalidate)],
+      {
+        revalidate: normalizedRevalidate,
+        tags: ['sheets'],
+      }
+    );
+
+    sheetDataCacheByDuration.set(normalizedRevalidate, cachedFetcher);
   }
-);
+
+  return sheetDataCacheByDuration.get(normalizedRevalidate)!;
+}
+
+// Cached sheet fetcher with configurable revalidation (defaults to 60s)
+export function getSheetData(
+  range: string,
+  spreadsheetId?: string,
+  revalidate: number = DEFAULT_SHEET_REVALIDATE_SECONDS
+): Promise<any[][]> {
+  return getCachedSheetFetcher(revalidate)(range, spreadsheetId);
+}
 
 // ===== STANDINGS =====
 export interface StandingsRow {
@@ -116,40 +162,10 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
       STANDINGS_SHEET.START_COL,
       STANDINGS_SHEET.END_COL
     );
-    const data = await getSheetData(range);
+    const dataPromise = getSheetData(range, undefined, STANDINGS_REVALIDATE_SECONDS);
+    const notesPromise = getStandingsNotes(sheetName);
 
-    // Also fetch cell notes for H2H records (column B = team names)
-    const auth = await getAuthClient();
-    const sheetId = process.env.SHEETS_SPREADSHEET_ID;
-
-    let notes: string[] = [];
-    try {
-      const notesRange = buildSheetRange(
-        sheetName,
-        STANDINGS_SHEET.DATA_START_ROW,
-        STANDINGS_SHEET.DATA_END_ROW,
-        STANDINGS_SHEET.NOTES_COL,
-        STANDINGS_SHEET.NOTES_COL
-      );
-      const response = await sheets.spreadsheets.get({
-        auth: auth as any,
-        spreadsheetId: sheetId,
-        ranges: [notesRange],
-        includeGridData: true,
-      });
-
-      // Extract notes from the response
-      if (response.data.sheets && response.data.sheets[0].data) {
-        const rowData = response.data.sheets[0].data[0].rowData || [];
-        notes = rowData.map((row) => {
-          const cell = row.values?.[0];
-          return cell?.note || '';
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching cell notes:', error);
-      // Continue without notes if there's an error
-    }
+    const [data, notes] = await Promise.all([dataPromise, notesPromise]);
 
     return data.map((row, idx) => ({
       rank: String(row[STANDINGS_SHEET.COLUMNS.RANK] || ''),
@@ -167,6 +183,49 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
     return [];
   }
 }
+
+async function fetchStandingsNotes(sheetName: string): Promise<string[]> {
+  try {
+    const sheetId = process.env.SHEETS_SPREADSHEET_ID;
+    if (!sheetId) {
+      return [];
+    }
+
+    const notesRange = buildSheetRange(
+      sheetName,
+      STANDINGS_SHEET.DATA_START_ROW,
+      STANDINGS_SHEET.DATA_END_ROW,
+      STANDINGS_SHEET.NOTES_COL,
+      STANDINGS_SHEET.NOTES_COL
+    );
+
+    const auth = await getAuthClient();
+    const response = await sheets.spreadsheets.get({
+      auth: auth as any,
+      spreadsheetId: sheetId,
+      ranges: [notesRange],
+      includeGridData: true,
+    });
+
+    if (response.data.sheets && response.data.sheets[0].data) {
+      const rowData = response.data.sheets[0].data[0].rowData || [];
+      return rowData.map((row) => {
+        const cell = row.values?.[0];
+        return cell?.note || '';
+      });
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error fetching cell notes:', error);
+    return [];
+  }
+}
+
+const getStandingsNotes = unstable_cache(fetchStandingsNotes, ['standings-notes'], {
+  revalidate: STANDINGS_REVALIDATE_SECONDS,
+  tags: ['sheets', 'standings-notes'],
+});
 
 // ===== TEAM ROSTER =====
 export interface PlayerStats {
@@ -351,7 +410,7 @@ export async function getSchedule(): Promise<ScheduleGame[]> {
     SCHEDULE_SHEET.START_COL,
     SCHEDULE_SHEET.END_COL
   );
-  const scheduleData = await getSheetData(range);
+  const scheduleData = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
   const schedule: ScheduleGame[] = [];
 
@@ -431,7 +490,7 @@ export async function getPlayoffSchedule(): Promise<PlayoffGame[]> {
     SCHEDULE_SHEET.START_COL,
     SCHEDULE_SHEET.END_COL
   );
-  const scheduleData = await getSheetData(range);
+  const scheduleData = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
   const schedule: PlayoffGame[] = [];
 
@@ -1104,14 +1163,14 @@ export interface PlayerRegistryEntry {
  */
 export async function getPlayerRegistry(): Promise<PlayerRegistryEntry[]> {
   try {
-    const range = buildFullRange(
-      PLAYER_REGISTRY_SHEET.NAME,
-      PLAYER_REGISTRY_SHEET.DATA_START_ROW,
-      PLAYER_REGISTRY_SHEET.MAX_ROWS,
-      PLAYER_REGISTRY_SHEET.START_COL,
-      PLAYER_REGISTRY_SHEET.END_COL
-    );
-    const data = await getSheetData(range);
+  const range = buildFullRange(
+    PLAYER_REGISTRY_SHEET.NAME,
+    PLAYER_REGISTRY_SHEET.DATA_START_ROW,
+    PLAYER_REGISTRY_SHEET.MAX_ROWS,
+    PLAYER_REGISTRY_SHEET.START_COL,
+    PLAYER_REGISTRY_SHEET.END_COL
+  );
+  const data = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return data
       .filter((row) => row[PLAYER_REGISTRY_SHEET.COLUMNS.PLAYER_NAME])
@@ -1147,14 +1206,14 @@ export interface TeamRegistryEntry {
  */
 export async function getTeamRegistry(): Promise<TeamRegistryEntry[]> {
   try {
-    const range = buildFullRange(
-      TEAM_REGISTRY_SHEET.NAME,
-      TEAM_REGISTRY_SHEET.DATA_START_ROW,
-      TEAM_REGISTRY_SHEET.MAX_ROWS,
-      TEAM_REGISTRY_SHEET.START_COL,
-      TEAM_REGISTRY_SHEET.END_COL
-    );
-    const data = await getSheetData(range);
+  const range = buildFullRange(
+    TEAM_REGISTRY_SHEET.NAME,
+    TEAM_REGISTRY_SHEET.DATA_START_ROW,
+    TEAM_REGISTRY_SHEET.MAX_ROWS,
+    TEAM_REGISTRY_SHEET.START_COL,
+    TEAM_REGISTRY_SHEET.END_COL
+  );
+  const data = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return data
       .filter((row) => row[TEAM_REGISTRY_SHEET.COLUMNS.TEAM_NAME])
@@ -1329,7 +1388,7 @@ export async function getPlayerAttributes(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const attributeData = await getSheetData(range, dbId);
+    const attributeData = await getSheetData(range, dbId, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     const players = parsePlayerAttributes(attributeData, playerName);
     return players.length > 0 ? players[0] : null;
@@ -1358,7 +1417,7 @@ export async function getAllPlayerAttributes(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const attributeData = await getSheetData(range, dbId);
+    const attributeData = await getSheetData(range, dbId, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return parsePlayerAttributes(attributeData);
   } catch (error) {
@@ -1434,7 +1493,7 @@ export async function getChemistryMatrix(
     );
 
     const dbId = databaseSpreadsheetId || process.env.DATABASE_SPREADSHEET_ID;
-    const lookupData = await getSheetData(range, dbId);
+    const lookupData = await getSheetData(range, dbId, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return buildChemistryMatrix(lookupData);
   } catch (error) {

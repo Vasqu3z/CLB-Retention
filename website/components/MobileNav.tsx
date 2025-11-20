@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FocusTrap from 'focus-trap-react';
 
 const navItems = [
   { href: "/teams", label: "Teams" },
@@ -83,17 +84,25 @@ export default function MobileNav() {
       {/* Slide-in Menu */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            id="mobile-menu"
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-80 bg-space-navy/95 backdrop-blur-xl border-l border-cosmic-border z-50 md:hidden"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Mobile navigation menu"
+          <FocusTrap
+            active={isOpen}
+            focusTrapOptions={{
+              clickOutsideDeactivates: true,
+              escapeDeactivates: false,
+              onDeactivate: closeMenu,
+            }}
           >
+            <motion.div
+              id="mobile-menu"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-80 bg-space-navy/95 backdrop-blur-xl border-l border-cosmic-border z-50 md:hidden"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Mobile navigation menu"
+            >
             {/* Menu Header */}
             <div className="flex items-center justify-between p-6 border-b border-cosmic-border">
               <h2 className="text-xl font-display font-bold text-star-white">
@@ -186,7 +195,8 @@ export default function MobileNav() {
                 Season 1
               </p>
             </div>
-          </motion.div>
+            </motion.div>
+          </FocusTrap>
         )}
       </AnimatePresence>
     </>

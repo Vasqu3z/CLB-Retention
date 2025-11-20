@@ -4,6 +4,7 @@ import { ScheduleGame } from '@/lib/sheets';
 import { Team, getTeamByName } from '@/config/league';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import Image from 'next/image';
+import SurfaceCard from '@/components/SurfaceCard';
 
 interface ScheduleViewProps {
   schedule: ScheduleGame[];
@@ -35,7 +36,7 @@ export default function ScheduleView({ schedule }: ScheduleViewProps) {
           const weekGames = gamesByWeek[weekKey];
 
           return (
-            <div key={weekKey} className="glass-card p-6">
+            <SurfaceCard key={weekKey} className="p-6">
               {/* Week Header */}
               <div className="mb-6 pb-3 border-b border-star-gray/20">
                 <h2 className="text-2xl font-display font-bold bg-gradient-to-r from-nebula-cyan to-star-pink bg-clip-text text-transparent">
@@ -49,13 +50,13 @@ export default function ScheduleView({ schedule }: ScheduleViewProps) {
                   <GameCard key={`${weekKey}-${idx}`} game={game} />
                 ))}
               </div>
-            </div>
+            </SurfaceCard>
           );
         })}
       </div>
 
       {/* Legend */}
-      <div className="glass-card p-6">
+      <SurfaceCard className="p-6">
         <p className="font-display font-semibold text-nebula-orange mb-3 text-sm uppercase tracking-wider">
           How to Read the Schedule
         </p>
@@ -64,7 +65,7 @@ export default function ScheduleView({ schedule }: ScheduleViewProps) {
           <li>• Click a game card to view the full box score</li>
           <li>• Italic text shows upcoming games</li>
         </ul>
-      </div>
+      </SurfaceCard>
     </div>
   );
 }
@@ -78,7 +79,7 @@ function GameCard({ game }: { game: ScheduleGame }) {
   if (!game.played) {
     // Upcoming game
     return (
-      <div className="glass-card p-0 overflow-hidden hover:border-nebula-cyan/50 transition-all duration-300">
+      <SurfaceCard className="p-0 overflow-hidden hover:border-nebula-cyan/50 transition-all duration-300">
         <div className="bg-space-blue/30 backdrop-blur-sm px-4 py-2 border-b border-cosmic-border">
           <span className="text-xs font-display font-semibold text-star-gray uppercase tracking-wider">Upcoming Game</span>
         </div>
@@ -117,7 +118,7 @@ function GameCard({ game }: { game: ScheduleGame }) {
             </div>
           </div>
         </div>
-      </div>
+      </SurfaceCard>
     );
   }
 

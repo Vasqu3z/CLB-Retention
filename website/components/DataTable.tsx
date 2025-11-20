@@ -4,6 +4,7 @@ import { ReactNode, useState, useMemo, memo } from 'react';
 import { ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import EmptyState from './EmptyState';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
+import SurfaceCard from '@/components/SurfaceCard';
 
 export interface Column<T> {
   key: string;
@@ -136,7 +137,7 @@ export default function DataTable<T>({
           message="There are currently no entries to display. Check back later or try adjusting your filters."
         />
       ) : (
-        <div className="glass-card rounded-xl">
+        <SurfaceCard className="rounded-xl">
           <div
             ref={scrollContainerRef}
             className="relative overflow-x-auto overflow-y-auto max-h-[70vh]"
@@ -218,7 +219,7 @@ export default function DataTable<T>({
               </tbody>
             </table>
           </div>
-        </div>
+        </SurfaceCard>
       )}
 
       {/* Row count */}

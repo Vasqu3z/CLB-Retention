@@ -9,6 +9,7 @@ import { getTeamLogoPaths } from '@/lib/teamLogos';
 import SeasonToggle from '@/components/SeasonToggle';
 import DataTable, { Column } from '@/components/DataTable';
 import StatTooltip from '@/components/StatTooltip';
+import SurfaceCard from '@/components/SurfaceCard';
 
 type Tab = 'hitting' | 'pitching' | 'fielding';
 
@@ -248,7 +249,7 @@ export default function TeamStatsView({
       </div>
 
       {/* Tab Navigation */}
-      <div className="glass-card p-2">
+      <SurfaceCard className="p-2">
         <nav className="flex space-x-2" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('hitting')}
@@ -281,7 +282,7 @@ export default function TeamStatsView({
             Fielding & Running
           </button>
         </nav>
-      </div>
+      </SurfaceCard>
 
       {/* Hitting Table */}
       {activeTab === 'hitting' && (

@@ -3,60 +3,10 @@
 @tailwind utilities;
 
 :root {
-  /* Deep Space Base */
-  --space-black: #0B0D1E;
-  --space-navy: #151829;
-  --space-blue: #1E2442;
-  --space-purple: #2A1F3D;
-
-  /* Warm Nebula Accents */
-  --nebula-orange: #FF6B35;
-  --nebula-coral: #FF8C61;
-  --comet-yellow: #FFD23F;
-  --solar-gold: #FFA62B;
-  --star-pink: #FF6F91;
-
-  /* Cool Accents (supporting) */
-  --nebula-cyan: #00D4FF;
-  --nebula-teal: #00FFC6;
-  --nebula-purple: 167 139 250;  /* RGB channels for Tailwind opacity utilities */
-
-  /* Baseball-Specific Colors - NEW */
-  --field-green: #2D5F3F;        /* Baseball field grass */
-  --infield-dirt: #A0826D;       /* Infield dirt/clay */
-  --vintage-cream: #FFF8DC;      /* Vintage baseball aesthetic */
-  --leather-brown: #8B4513;      /* Baseball leather */
-  --chalk-white: #FAFAF9;        /* Baseline chalk */
-  --dugout-blue: #1E3A5F;        /* Dugout blue */
-
-  /* Enhanced Purple Palette - for variety */
-  --cosmic-purple: #8B5CF6;      /* Violet accent */
-  --deep-violet: #6D28D9;        /* Rich purple */
-  --royal-purple: #7C3AED;       /* Royal purple */
-
-  /* Atmosphere/Text */
-  --star-white: #E8EDF5;
-  --star-gray: #9BA5C0;
-  --star-dim: #4A5270;
-  --cosmic-border: #2D3348;
-
-  /* Functional Colors */
-  --success: #00FFC6;
-  --danger: #FF6B35;
-  --warning: #FFD23F;
-
-  /* Glass-morphism */
-  --glass-bg: rgba(11, 13, 30, 0.75);
-  --glass-bg-light: rgba(11, 13, 30, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.1);
-
-  /* Performance: CSS Containment for complex elements */
-  --contain-layout: layout;
-  --contain-paint: paint;
-  --contain-strict: strict;
+  color-scheme: dark;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
@@ -64,80 +14,12 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-azeret-mono), monospace;
-  color: var(--star-white);
-  background: var(--space-black);
+  color: #e8edf5;
+  background-color: #0b0d1e;
   overflow-x: hidden;
   position: relative;
 }
 
-/* Starfield Background - DISABLED: Using animated shader background instead */
-/*
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image:
-    radial-gradient(2px 2px at 20px 30px, white, transparent),
-    radial-gradient(2px 2px at 60px 70px, white, transparent),
-    radial-gradient(1px 1px at 50px 50px, white, transparent),
-    radial-gradient(1px 1px at 130px 80px, white, transparent),
-    radial-gradient(2px 2px at 90px 10px, white, transparent),
-    radial-gradient(1px 1px at 10px 90px, white, transparent),
-    radial-gradient(1px 1px at 150px 150px, white, transparent),
-    radial-gradient(2px 2px at 110px 130px, white, transparent);
-  background-size: 200px 200px;
-  background-repeat: repeat;
-  opacity: 0.18;
-  pointer-events: none;
-  z-index: 0;
-  animation: twinkle 8s ease-in-out infinite;
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 0.18; }
-  50% { opacity: 0.28; }
-}
-*/
-
-/* Nebula Glow Background - DISABLED: Using animated shader background instead */
-/*
-body::after {
-  content: '';
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    ellipse at 30% 20%,
-    rgba(255, 107, 53, 0.05) 0%,
-    transparent 50%
-  ),
-  radial-gradient(
-    ellipse at 70% 80%,
-    rgba(255, 162, 43, 0.04) 0%,
-    transparent 50%
-  ),
-  radial-gradient(
-    ellipse at 50% 50%,
-    rgba(255, 210, 63, 0.02) 0%,
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 0;
-  animation: nebula-drift 60s ease-in-out infinite alternate;
-}
-
-@keyframes nebula-drift {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  100% { transform: translate(-5%, 5%) rotate(1deg); }
-}
-*/
-
-/* Ensure content appears above backgrounds */
 #__next,
 main,
 header,
@@ -146,122 +28,10 @@ footer {
   z-index: 1;
 }
 
-/* Headings use Barlow - distinctive, athletic, geometric */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-barlow), sans-serif;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-/* Large numbers and stats use Syne - bold, distinctive, NOT overused */
-.stat-number {
-  font-family: var(--font-syne), sans-serif;
-  font-weight: 700;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-/* Data tables use JetBrains Mono */
 table {
   font-family: var(--font-jetbrains-mono), monospace;
 }
 
-/* Text shadow utilities for better readability */
-.text-shadow {
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-.text-shadow-strong {
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
-}
-
-.text-shadow-glow {
-  text-shadow:
-    0 0 20px rgba(0, 0, 0, 0.8),
-    0 2px 8px rgba(0, 0, 0, 0.6);
-}
-
-.text-shadow-glow-orange {
-  text-shadow:
-    0 0 30px rgba(255, 107, 53, 0.6),
-    0 2px 8px rgba(0, 0, 0, 0.8);
-}
-
-/* Fix gradient text cutoff - adds padding to prevent clipping descenders */
-.bg-clip-text {
-  padding-bottom: 0.3rem;
-  line-height: 1.1;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--space-navy);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--space-blue);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--nebula-orange);
-}
-
-/* Override browser autofill styles to maintain dark theme */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px rgba(30, 36, 66, 0.3) inset !important;
-  -webkit-text-fill-color: var(--star-white) !important;
-  caret-color: var(--star-white) !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
-/* Glow effect utility */
-.glow-orange {
-  box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
-}
-
-.glow-gold {
-  box-shadow: 0 0 20px rgba(255, 162, 43, 0.3);
-}
-
-.glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-}
-
-/* Glass-morphism card with performance optimizations */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  /* CSS Containment for performance - prevents recalc of entire tree */
-  contain: layout style paint;
-  will-change: transform;
-}
-
-.glass-card:hover {
-  border-color: rgba(255, 107, 53, 0.5);
-  box-shadow: 0 8px 32px rgba(255, 107, 53, 0.25), 0 4px 16px rgba(0, 0, 0, 0.4);
-  transform: translateY(-2px);
-}
-
-/* Selection color */
-::selection {
-  background: var(--nebula-orange);
-  color: var(--space-black);
-}
-
-/* Glitch effect for hero heading */
 .glitch {
   position: relative;
   animation: glitch-skew 3s infinite linear alternate-reverse;
@@ -279,14 +49,14 @@ input:-webkit-autofill:active {
 
 .glitch::before {
   left: 2px;
-  text-shadow: -2px 0 var(--nebula-cyan);
+  text-shadow: -2px 0 #00d4ff;
   clip: rect(44px, 450px, 56px, 0);
   animation: glitch-anim 5s infinite linear alternate-reverse;
 }
 
 .glitch::after {
   left: -2px;
-  text-shadow: -2px 0 var(--nebula-orange), 2px 2px var(--nebula-cyan);
+  text-shadow: -2px 0 #ff6b35, 2px 2px #00d4ff;
   animation: glitch-anim2 3s infinite linear alternate-reverse;
 }
 
@@ -498,59 +268,4 @@ input:-webkit-autofill:active {
   100% {
     transform: skew(0deg);
   }
-}
-
-/* Select/Dropdown styling - Glass-morphism */
-select {
-  background-color: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  color: var(--star-white);
-  border: 1px solid var(--glass-border);
-  border-radius: 8px;
-  padding: 8px 12px;
-  transition: all 0.3s ease;
-}
-
-select:hover {
-  border-color: rgba(255, 107, 53, 0.4);
-  background-color: rgba(11, 13, 30, 0.65);
-}
-
-select:focus {
-  outline: none;
-  border-color: rgba(255, 107, 53, 0.6);
-  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
-}
-
-select option {
-  background-color: rgba(11, 13, 30, 0.98);
-  backdrop-filter: blur(12px);
-  color: var(--star-white);
-  padding: 8px;
-}
-
-select option:hover,
-select option:focus,
-select option:checked {
-  background-color: rgba(30, 36, 66, 0.98);
-  color: var(--nebula-orange);
-}
-
-/* Input styling - Force dark theme */
-input[type="text"],
-input[type="search"],
-input[type="email"],
-input[type="password"] {
-  background-color: rgba(30, 36, 66, 0.3) !important;
-  color: var(--star-white) !important;
-  border: 1px solid var(--cosmic-border);
-  transition: all 0.3s ease;
-}
-
-input[type="text"]::placeholder,
-input[type="search"]::placeholder,
-input[type="email"]::placeholder,
-input[type="password"]::placeholder {
-  color: var(--star-gray);
-  opacity: 0.5;
 }

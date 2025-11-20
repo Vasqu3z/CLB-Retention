@@ -267,11 +267,16 @@ function importChemistryFromStatsPreset() {
  */
 function parseFullStatsPreset(fileContent) {
   try {
-    const lines = fileContent.split('\n');
+    const lines = fileContent
+      .split(/\r?\n/)
+      .map(line => line.replace(/\r$/, ''));
 
-    // Validate we have enough lines for a complete preset
-    if (lines.length < 228) {
-      throw new Error(`Invalid preset file: Expected at least 228 lines, found ${lines.length}`);
+    while (lines.length && lines[lines.length - 1] === '') {
+      lines.pop();
+    }
+
+    if (lines.length !== 228) {
+      throw new Error(`Invalid preset file: Expected exactly 228 lines, found ${lines.length}`);
     }
 
     const config = getConfig();
@@ -283,11 +288,18 @@ function parseFullStatsPreset(fileContent) {
     // ===== SECTION 1: CHEMISTRY (Lines 0-100) =====
     const chemistryResult = parseChemistrySection(lines.slice(0, 101), ss, config, nameMappings);
 
-    // ===== SECTION 2: STATS (Lines 101-201) =====
-    const statsResult = parseStatsSection(lines.slice(101, 202), ss, config, nameMappings);
+    // ===== SECTION 2: TRAJECTORY (Lines 202-227) =====
+    const trajectoryLines = lines.slice(202, 228);
+    const trajectoryResult = parseTrajectorySection(trajectoryLines, ss, config);
 
-    // ===== SECTION 3: TRAJECTORY (Lines 202-227) =====
-    const trajectoryResult = parseTrajectorySection(lines.slice(202, 228), ss, config);
+    // ===== SECTION 3: STATS (Lines 101-201) =====
+    const statsResult = parseStatsSection(
+      lines.slice(101, 202),
+      ss,
+      config,
+      nameMappings,
+      trajectoryResult.usedTrajectoryTypes
+    );
 
     // Log the import event
     logImportEvent({
@@ -389,7 +401,7 @@ function parseChemistrySection(chemistryLines, ss, config, nameMappings) {
 /**
  * Parse stats section (lines 101-201, 101x30 matrix)
  */
-function parseStatsSection(statsLines, ss, config, nameMappings) {
+function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypesOverride) {
   const statsMatrix = [];
   for (let i = 0; i < 101; i++) {
     const row = statsLines[i].split(',').map(v => parseInt(v.trim()));
@@ -443,8 +455,9 @@ function parseStatsSection(statsLines, ss, config, nameMappings) {
     }
   }
 
-  // Load trajectory names from imported config
-  const trajectoryTypes = getTrajectoryTypes();
+  const trajectoryTypes = Array.isArray(trajectoryTypesOverride) && trajectoryTypesOverride.length >= 3
+    ? trajectoryTypesOverride
+    : getTrajectoryTypes();
 
   const sheetData = [];
 
@@ -566,11 +579,19 @@ function parseTrajectorySection(trajectoryLines, ss, config) {
   const props = PropertiesService.getScriptProperties();
   props.setProperty('TRAJECTORY_DATA', JSON.stringify(trajectoryData));
 
+  const usedTrajectoryTypes = [];
+  for (let i = 0; i < trajectoryNames.length; i++) {
+    if (trajectoryUsage[i] === 1) {
+      usedTrajectoryTypes.push(trajectoryNames[i]);
+    }
+  }
+
   return {
     stored: true,
     matrixRows: 24,
     names: 6,
-    usage: 6
+    usage: 6,
+    usedTrajectoryTypes
   };
 }
 

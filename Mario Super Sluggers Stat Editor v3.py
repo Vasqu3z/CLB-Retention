@@ -8,6 +8,34 @@ import re
 import os
 clipboard_cache = ""
 
+
+def parse_stats_file_content(text):
+    lines = [line.rstrip("\r") for line in text.splitlines()]
+    while lines and lines[-1] == "":
+        lines.pop()
+    if len(lines) != 228:
+        raise ValueError("Unexpected line count in stats preset")
+    return (
+        lines[:101],
+        lines[101:202],
+        lines[202:226],
+        lines[226],
+        lines[227],
+    )
+
+
+def serialize_stats_payload():
+    parts = []
+    for i in range(101):
+        parts.append(",".join(str(changedChem[i][j]) for j in range(101)))
+    for i in range(101):
+        parts.append(",".join(str(changedStat[i][j]) for j in range(30)))
+    for i in range(24):
+        parts.append(",".join(str(changedTraj[i][j]) for j in range(25)))
+    parts.append(",".join(trajAllList))
+    parts.append(",".join(str(v) for v in trajUsed))
+    return "\n".join(parts)
+
 #Big Lists
 
 charList = ["Mario", "Luigi", "Donkey Kong", "Diddy Kong", "Peach", "Daisy", 
@@ -2398,20 +2426,11 @@ def loadChanges():
         return
     try:
         with open(path, "r", encoding="utf-8") as file:
-            chem = ""
-            stat = ""
-            traj = ""
-            for i in range(100):
-                chem = chem + file.readline().rstrip("\n") + ";"
-            chem = chem + file.readline()
-            for i in range(100):
-                stat = stat + file.readline().rstrip("\n") + ";"
-            stat = stat + file.readline()
-            for i in range(23):
-                traj = traj + file.readline().rstrip("\n") + ";"
-            traj = traj + file.readline().rstrip("\n")
-            name_line = file.readline().rstrip("\n")
-            used_line = file.readline().rstrip("\n")
+            content = file.read()
+            chem_lines, stat_lines, traj_lines, name_line, used_line = parse_stats_file_content(content)
+            chem = ";".join(chem_lines)
+            stat = ";".join(stat_lines)
+            traj = ";".join(traj_lines)
             error = 0
             if not re.search("^(([012],){100}[012];){100}([012],){100}[012]$", chem):
                 recapList.insert(tk.END, "Corrupted chem data\n")
@@ -2432,20 +2451,24 @@ def loadChanges():
                 messagebox.showerror("Load Error", "The file is corrupted or not a valid stats preset.")
                 recapList.configure(state="disabled")
                 return
-            chems = chem.split(";")
-            stats = stat.split(";")
-            trajs = traj.split(";")
+            chems = [row.split(",") for row in chem_lines]
+            stats = [row.split(",") for row in stat_lines]
+            trajs = [row.split(",") for row in traj_lines]
             names = name_line.split(",")
             useds = used_line.split(",")
             for i in range(101):
-                c = chems[i].split(",")
-                s = stats[i].split(",")
+                c = chems[i]
+                s = stats[i]
+                if len(c) != 101 or len(s) != 30:
+                    raise ValueError("Mismatched column count in stats preset")
                 for j in range(101):
                     changedChem[i][j] = int(c[j])
                 for j in range(30):
                     changedStat[i][j] = int(s[j])
                 if i < 24:
-                    t = trajs[i].split(",")
+                    t = trajs[i]
+                    if len(t) != 25:
+                        raise ValueError("Mismatched trajectory column count in stats preset")
                     for j in range(25):
                         changedTraj[i][j] = int(t[j])
                 if i < 6:
@@ -2458,6 +2481,8 @@ def loadChanges():
             chemColor()
             trajDisplay(1)
             chemColor()
+            if cbPlayer.get() != "Pick a character/group":
+                statDisplay(0)
             messagebox.showinfo("Load Successful", f"Stats loaded from '{os.path.basename(path)}'")
             recapList.configure(state="normal")
             recapList.insert(tk.END, f"Stats loaded from '{path}'\n")
@@ -2484,24 +2509,7 @@ def saveChanges():
         return
     try:
         with open(path, "w", encoding="utf-8") as file:
-            for i in range(101):
-                for j in range(100):
-                    file.write(str(changedChem[i][j]) + ",")
-                file.write(str(changedChem[i][100]) + "\n")
-            for i in range(101):
-                for j in range(29):
-                    file.write(str(changedStat[i][j]) + ",")
-                file.write(str(changedStat[i][29]) + "\n")
-            for i in range(24):
-                for j in range(24):
-                    file.write(str(changedTraj[i][j]) + ",")
-                file.write(str(changedTraj[i][24]) + "\n")
-            for i in range(5):
-                file.write(trajAllList[i] + ",")
-            file.write(trajAllList[5] + "\n")
-            for i in range(5):
-                file.write(str(trajUsed[i]) + ",")
-            file.write(str(trajUsed[5]))
+            file.write(serialize_stats_payload())
         messagebox.showinfo("Save Successful", f"Stats saved to '{os.path.basename(path)}'")
         recapList.configure(state="normal")
         recapList.insert(tk.END, f"Stats saved to '{path}'\n")

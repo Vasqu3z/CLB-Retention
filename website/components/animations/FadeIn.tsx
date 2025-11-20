@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
+import useReducedMotion from '@/hooks/useReducedMotion';
+import { motionTokens } from './motionTokens';
 
 interface FadeInProps {
   children: ReactNode;
@@ -16,12 +18,14 @@ interface FadeInProps {
 export default function FadeIn({
   children,
   delay = 0,
-  duration = 0.6,
+  duration = motionTokens.durations.extended,
   direction = 'up',
   className = '',
   useViewport = true,
   viewportMargin = '-100px',
 }: FadeInProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   const directions = {
     up: { y: 40, x: 0 },
     down: { y: -40, x: 0 },
@@ -40,17 +44,17 @@ export default function FadeIn({
     <motion.div
       className={className}
       initial={{
-        opacity: 0,
-        ...directions[direction],
+        opacity: prefersReducedMotion ? 1 : 0,
+        ...(prefersReducedMotion ? directions.none : directions[direction]),
       }}
-      {...(useViewport
+      {...(useViewport && !prefersReducedMotion
         ? { whileInView: animateProps, viewport: { once: true, margin: viewportMargin } }
         : { animate: animateProps }
       )}
       transition={{
-        duration,
-        delay,
-        ease: [0.25, 0.4, 0.25, 1],
+        duration: prefersReducedMotion ? 0 : duration,
+        delay: prefersReducedMotion ? 0 : delay,
+        ease: motionTokens.easings.smoothEaseOut,
       }}
     >
       {children}

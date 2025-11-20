@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
+import useReducedMotion from '@/hooks/useReducedMotion';
+import { motionTokens } from './motionTokens';
 
 interface TiltProps {
   children: ReactNode;
@@ -14,18 +16,21 @@ export default function Tilt({
   className = '',
   tiltAngle = 5,
 }: TiltProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <motion.div
       className={className}
-      whileHover={{
-        rotateX: tiltAngle,
-        rotateY: tiltAngle,
-        scale: 1.02,
-      }}
-      transition={{
-        duration: 0.3,
-        ease: 'easeOut',
-      }}
+      whileHover={
+        prefersReducedMotion
+          ? { rotateX: 0, rotateY: 0, scale: 1 }
+          : { rotateX: tiltAngle, rotateY: tiltAngle, scale: 1.02 }
+      }
+      transition={
+        prefersReducedMotion
+          ? { duration: 0 }
+          : { duration: motionTokens.durations.fast, ease: motionTokens.easings.fastResponse }
+      }
       style={{
         transformStyle: 'preserve-3d',
         perspective: '1000px',

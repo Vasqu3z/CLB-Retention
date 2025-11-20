@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FocusTrap from 'focus-trap-react';
+import useReducedMotion from '@/hooks/useReducedMotion';
+import { drawerVariants, navItemVariants, overlayVariants } from './animations/motionVariants';
 
 const navItems = [
   { href: "/teams", label: "Teams" },
@@ -26,6 +28,7 @@ const toolsItems = [
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const prefersReducedMotion = useReducedMotion();
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
@@ -81,10 +84,10 @@ export default function MobileNav() {
           >
             <div className="md:hidden">
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                variants={overlayVariants(prefersReducedMotion)}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
                 className="fixed inset-0 bg-space-black/80 backdrop-blur-sm z-40"
                 onClick={closeMenu}
               />
@@ -92,10 +95,10 @@ export default function MobileNav() {
               {/* Slide-in Menu */}
               <motion.div
                 id="mobile-menu"
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                variants={drawerVariants(prefersReducedMotion)}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
                 className="fixed top-0 right-0 h-full w-80 bg-space-navy/95 backdrop-blur-xl border-l border-cosmic-border z-50"
                 role="dialog"
                 aria-modal="true"
@@ -120,12 +123,14 @@ export default function MobileNav() {
                   <ul className="space-y-2">
                     {navItems.map((item, idx) => {
                       const isActive = pathname === item.href;
+                      const itemVariants = navItemVariants(prefersReducedMotion);
                       return (
                         <motion.li
                           key={item.href}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05, duration: 0.3 }}
+                          variants={itemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          custom={idx * 0.05}
                         >
                           <Link
                             href={item.href}
@@ -136,7 +141,7 @@ export default function MobileNav() {
                               focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
                               ${isActive
                                 ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                                : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 hover:translate-x-1'
+                                : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 hover:translate-x-1 motion-reduce:hover:translate-x-0 motion-reduce:transition-none'
                               }
                             `}
                           >
@@ -155,12 +160,14 @@ export default function MobileNav() {
                     <ul className="space-y-2">
                       {toolsItems.map((item, idx) => {
                         const isActive = pathname === item.href;
+                        const itemVariants = navItemVariants(prefersReducedMotion);
                         return (
                           <motion.li
                             key={item.href}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: (navItems.length + idx) * 0.05, duration: 0.3 }}
+                            variants={itemVariants}
+                            initial="hidden"
+                            animate="visible"
+                            custom={(navItems.length + idx) * 0.05}
                           >
                             <Link
                               href={item.href}
@@ -171,7 +178,7 @@ export default function MobileNav() {
                                 focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
                                 ${isActive
                                   ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 hover:translate-x-1'
+                                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 hover:translate-x-1 motion-reduce:hover:translate-x-0 motion-reduce:transition-none'
                                 }
                               `}
                             >

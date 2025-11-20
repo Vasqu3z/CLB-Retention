@@ -7,6 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
 import SmoothScroll from "@/components/SmoothScroll";
 import AnimatedBackground from "@/components/AnimatedBackground";
+import PageTransition from "@/components/animations/PageTransition";
 
 // Optimize font loading with display: 'swap' and limited weights
 const barlow = Barlow({
@@ -65,7 +66,7 @@ export default function RootLayout({
           {/* Main Content */}
           <main id="main-content" className="flex-1 px-4 lg:px-8 py-6 lg:py-8 overflow-x-hidden lg:ml-80" role="main">
             <div className="max-w-7xl mx-auto">
-              {children}
+              <PageTransition>{children}</PageTransition>
             </div>
           </main>
         </div>

@@ -564,32 +564,41 @@ function ensureTrajectorySheet(ss, config) {
       trajectoryLayout.MATRIX.COLUMNS
     );
     headerRange.setValues([header]);
-    headerRange.setBackground(config.COLORS.HEADER_BACKGROUND);
-    headerRange.setFontColor(config.COLORS.HEADER_TEXT);
-    headerRange.setFontWeight('bold');
-    headerRange.setHorizontalAlignment('center');
-  }
-
-  sheet.setFrozenRows(1);
-  const columnWidths = trajectoryLayout.COLUMN_WIDTHS || {};
-  if (columnWidths.TRAJECTORY) {
-    sheet.setColumnWidth(trajectoryLayout.MATRIX.START_COLUMN, columnWidths.TRAJECTORY);
-  }
-  if (columnWidths.BEHAVIOR) {
-    sheet.setColumnWidth(trajectoryLayout.MATRIX.START_COLUMN + 1, columnWidths.BEHAVIOR);
   }
 
   return sheet;
 }
 
 function buildTrajectoryHeaderLabels() {
-  const header = ['Trajectory', 'Behavior'];
-  for (let heightIndex = 0; heightIndex < TRAJECTORY_HEIGHTS.length; heightIndex++) {
-    for (let locationIndex = 0; locationIndex < TRAJECTORY_LOCATIONS.length; locationIndex++) {
-      header.push(`${TRAJECTORY_HEIGHTS[heightIndex]} - ${TRAJECTORY_LOCATIONS[locationIndex]}`);
-    }
-  }
-  return header;
+  return [
+    'Trajectory',
+    'Behavior',
+    'GB: F-IN',
+    'LL: F-IN',
+    'HL: F-IN',
+    'FB: F-IN',
+    'DF: F-IN',
+    'GB: IN',
+    'LL: IN',
+    'HL: IN',
+    'FB: IN',
+    'DF: IN',
+    'GB: SS',
+    'LL: SS',
+    'HL: SS',
+    'FB: SS',
+    'DF: SS',
+    'GB: OUT',
+    'LL: OUT',
+    'HL: OUT',
+    'FB: OUT',
+    'DF: OUT',
+    'GB: F-OUT',
+    'LL: F-OUT',
+    'HL: F-OUT',
+    'FB: F-OUT',
+    'DF: F-OUT'
+  ];
 }
 
 function buildTrajectoryRowLabels(trajectoryNames) {

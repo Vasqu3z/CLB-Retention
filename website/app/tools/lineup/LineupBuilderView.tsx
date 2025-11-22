@@ -175,14 +175,17 @@ export default function LineupBuilderView({ chemistryMatrix, playerNames }: Prop
 
     const newLineup = [...lineup];
     const newBattingOrder = [...battingOrder];
+    const targetPlayer = newBattingOrder[position];
 
     // If dragging from field position, clear that position
     if (draggedFromPosition !== null) {
       newLineup[draggedFromPosition] = null;
     }
 
-    // If dragging from another batting order slot, clear that slot
-    if (draggedFromBattingOrder !== null) {
+    // If dragging from another batting order slot, swap players
+    if (draggedFromBattingOrder !== null && draggedFromBattingOrder !== position) {
+      newBattingOrder[draggedFromBattingOrder] = targetPlayer ?? null;
+    } else if (draggedFromBattingOrder !== null) {
       newBattingOrder[draggedFromBattingOrder] = null;
     }
 

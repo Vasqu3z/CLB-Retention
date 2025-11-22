@@ -229,7 +229,7 @@ export const TEAM_REGISTRY_SHEET = {
 export const DATABASE_ATTRIBUTES_SHEET = {
   NAME: "'🎮 Attributes'",
   DATA_START_ROW: 2,
-  MAX_ROWS: 100,
+  MAX_ROWS: 500,
   START_COL: 'A',
   END_COL: 'AD',
 

@@ -17,7 +17,9 @@ export default async function LineupBuilderPage() {
   ]);
 
   // Get sorted list of player names
-  const playerNames = allPlayers.map(p => p.name).sort();
+  const playerNames = allPlayers
+    .map(p => p.name)
+    .sort((a, b) => a.localeCompare(b));
 
   return <LineupBuilderView chemistryMatrix={chemistryMatrix} playerNames={playerNames} />;
 }

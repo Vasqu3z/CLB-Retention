@@ -58,10 +58,11 @@ export default function RootLayout({
         <SmoothScroll />
         <Header />
         <div className="flex flex-1">
-          {/* Sidebar - Responsive */}
-          <SidebarMobile>
-            <Sidebar />
-          </SidebarMobile>
+          {/* Mobile Sidebar Drawer */}
+          <SidebarMobile />
+
+          {/* Desktop Sidebar */}
+          <Sidebar />
 
           {/* Main Content */}
           <main id="main-content" className="flex-1 px-4 lg:px-8 py-6 lg:py-8 overflow-x-hidden lg:ml-80" role="main">

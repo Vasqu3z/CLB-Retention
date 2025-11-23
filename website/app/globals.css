@@ -3,13 +3,14 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-
-  /* === BETA CSS VARIABLES (for new Retro components) === */
+  /* --- The "Neon Void" Theme --- */
   --background: #050505;
   --foreground: #ffffff;
+  
   --surface-dark: #0a0a0a;
   --surface-light: #121212;
+
+  /* --- Arcade Palette --- */
   --comets-yellow: #F4D03F;
   --comets-red: #FF4D4D;
   --comets-blue: #2E86DE;
@@ -17,125 +18,18 @@
   --comets-purple: #BD00FF;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+@layer base {
+  body {
+    @apply bg-background text-foreground font-body antialiased selection:bg-comets-cyan selection:text-black overflow-x-hidden;
+  }
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-azeret-mono), monospace;
-  color: #e8edf5;
-  background-color: #0b0d1e;
-  overflow-x: hidden;
-  position: relative;
-}
-
-#__next,
-main,
-header,
-footer {
-  position: relative;
-  z-index: 1;
-}
-
-table {
-  font-family: var(--font-jetbrains-mono), monospace;
-}
-
-/* === ORIGINAL GLITCH EFFECTS === */
-.glitch {
-  position: relative;
-  animation: glitch-skew 3s infinite linear alternate-reverse;
-}
-
-.glitch::before,
-.glitch::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.glitch::before {
-  left: 2px;
-  text-shadow: -2px 0 #00d4ff;
-  clip: rect(44px, 450px, 56px, 0);
-  animation: glitch-anim 5s infinite linear alternate-reverse;
-}
-
-.glitch::after {
-  left: -2px;
-  text-shadow: -2px 0 #ff6b35, 2px 2px #00d4ff;
-  animation: glitch-anim2 3s infinite linear alternate-reverse;
-}
-
-@keyframes glitch-anim {
-  0% { clip: rect(31px, 9999px, 94px, 0); transform: skew(0.8deg); }
-  5% { clip: rect(70px, 9999px, 71px, 0); transform: skew(0.4deg); }
-  10% { clip: rect(70px, 9999px, 24px, 0); transform: skew(0.5deg); }
-  15% { clip: rect(67px, 9999px, 61px, 0); transform: skew(0.3deg); }
-  20% { clip: rect(27px, 9999px, 99px, 0); transform: skew(0.9deg); }
-  25% { clip: rect(55px, 9999px, 76px, 0); transform: skew(0.6deg); }
-  30% { clip: rect(8px, 9999px, 61px, 0); transform: skew(0.2deg); }
-  35% { clip: rect(10px, 9999px, 27px, 0); transform: skew(0.7deg); }
-  40% { clip: rect(84px, 9999px, 42px, 0); transform: skew(0.4deg); }
-  45% { clip: rect(48px, 9999px, 99px, 0); transform: skew(0.3deg); }
-  50% { clip: rect(61px, 9999px, 15px, 0); transform: skew(0.5deg); }
-  55% { clip: rect(15px, 9999px, 26px, 0); transform: skew(0.8deg); }
-  60% { clip: rect(87px, 9999px, 98px, 0); transform: skew(0.2deg); }
-  65% { clip: rect(89px, 9999px, 33px, 0); transform: skew(0.6deg); }
-  70% { clip: rect(34px, 9999px, 96px, 0); transform: skew(0.4deg); }
-  75% { clip: rect(51px, 9999px, 62px, 0); transform: skew(0.7deg); }
-  80% { clip: rect(6px, 9999px, 81px, 0); transform: skew(0.3deg); }
-  85% { clip: rect(95px, 9999px, 49px, 0); transform: skew(0.5deg); }
-  90% { clip: rect(21px, 9999px, 7px, 0); transform: skew(0.9deg); }
-  95% { clip: rect(73px, 9999px, 55px, 0); transform: skew(0.2deg); }
-  100% { clip: rect(39px, 9999px, 20px, 0); transform: skew(0.6deg); }
-}
-
-@keyframes glitch-anim2 {
-  0% { clip: rect(65px, 9999px, 100px, 0); transform: skew(0.5deg); }
-  5% { clip: rect(52px, 9999px, 74px, 0); transform: skew(0.7deg); }
-  10% { clip: rect(79px, 9999px, 85px, 0); transform: skew(0.3deg); }
-  15% { clip: rect(12px, 9999px, 94px, 0); transform: skew(0.8deg); }
-  20% { clip: rect(47px, 9999px, 54px, 0); transform: skew(0.4deg); }
-  25% { clip: rect(32px, 9999px, 17px, 0); transform: skew(0.6deg); }
-  30% { clip: rect(99px, 9999px, 37px, 0); transform: skew(0.2deg); }
-  35% { clip: rect(25px, 9999px, 66px, 0); transform: skew(0.5deg); }
-  40% { clip: rect(58px, 9999px, 29px, 0); transform: skew(0.9deg); }
-  45% { clip: rect(41px, 9999px, 82px, 0); transform: skew(0.3deg); }
-  50% { clip: rect(3px, 9999px, 91px, 0); transform: skew(0.7deg); }
-  55% { clip: rect(76px, 9999px, 46px, 0); transform: skew(0.4deg); }
-  60% { clip: rect(18px, 9999px, 63px, 0); transform: skew(0.6deg); }
-  65% { clip: rect(92px, 9999px, 11px, 0); transform: skew(0.2deg); }
-  70% { clip: rect(44px, 9999px, 88px, 0); transform: skew(0.8deg); }
-  75% { clip: rect(59px, 9999px, 23px, 0); transform: skew(0.5deg); }
-  80% { clip: rect(14px, 9999px, 97px, 0); transform: skew(0.3deg); }
-  85% { clip: rect(71px, 9999px, 35px, 0); transform: skew(0.7deg); }
-  90% { clip: rect(36px, 9999px, 69px, 0); transform: skew(0.4deg); }
-  95% { clip: rect(83px, 9999px, 50px, 0); transform: skew(0.6deg); }
-  100% { clip: rect(9px, 9999px, 77px, 0); transform: skew(0.2deg); }
-}
-
-@keyframes glitch-skew {
-  0% { transform: skew(0deg); }
-  10% { transform: skew(1deg); }
-  20% { transform: skew(-1deg); }
-  30% { transform: skew(2deg); }
-  40% { transform: skew(0deg); }
-  50% { transform: skew(-2deg); }
-  60% { transform: skew(1deg); }
-  70% { transform: skew(-1deg); }
-  80% { transform: skew(0deg); }
-  90% { transform: skew(1deg); }
-  100% { transform: skew(0deg); }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
 }
 
 @layer utilities {
-  /* === BETA TEXT EFFECTS === */
+  /* ===== TEXT EFFECTS ===== */
   .text-stroke-1 { -webkit-text-stroke: 1px currentColor; }
   .text-stroke-2 { -webkit-text-stroke: 2px currentColor; }
   .text-stroke-white-20 { -webkit-text-stroke-color: rgba(255, 255, 255, 0.2); }
@@ -148,8 +42,16 @@ table {
     text-shadow: 0 0 10px var(--comets-cyan), 0 0 20px var(--comets-cyan);
   }
 
+  .glow-cyan-strong {
+    text-shadow: 0 0 10px var(--comets-cyan), 0 0 20px var(--comets-cyan), 0 0 30px var(--comets-cyan);
+  }
+
   .glow-yellow {
     text-shadow: 0 0 10px var(--comets-yellow), 0 0 20px var(--comets-yellow);
+  }
+
+  .glow-yellow-strong {
+    text-shadow: 0 0 10px var(--comets-yellow), 0 0 20px var(--comets-yellow), 0 0 30px var(--comets-yellow);
   }
 
   .glow-red {
@@ -160,7 +62,7 @@ table {
     text-shadow: 0 0 10px var(--comets-purple), 0 0 20px var(--comets-purple);
   }
 
-  /* === BOX EFFECTS === */
+  /* ===== BOX EFFECTS ===== */
   .box-glow-cyan {
     box-shadow: 0 0 20px rgba(0, 243, 255, 0.3), inset 0 0 20px rgba(0, 243, 255, 0.1);
   }
@@ -169,7 +71,11 @@ table {
     box-shadow: 0 0 20px rgba(244, 208, 63, 0.3), inset 0 0 20px rgba(244, 208, 63, 0.1);
   }
 
-  /* === SCANLINES === */
+  .box-glow-red {
+    box-shadow: 0 0 20px rgba(255, 77, 77, 0.3), inset 0 0 20px rgba(255, 77, 77, 0.1);
+  }
+
+  /* ===== SCANLINES ===== */
   .scanlines {
     background: linear-gradient(
       to bottom,
@@ -182,41 +88,54 @@ table {
     pointer-events: none;
   }
 
-  /* === ARCADE BUTTON PRESS === */
+  /* ===== ARCADE BUTTON PRESS ===== */
   .arcade-press {
     transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-
+  
   .arcade-press:hover {
     transform: translateY(-2px) scale(1.02);
   }
-
+  
   .arcade-press:active {
     transform: translateY(1px) scale(0.98);
     opacity: 0.9;
   }
 
-  /* === ANIMATIONS === */
+  /* ===== ANIMATIONS ===== */
+  
+  /* Power-up pulse for indicators */
   @keyframes powerUp {
     0% { transform: scale(1); opacity: 0.5; }
     50% { transform: scale(1.3); opacity: 1; }
     100% { transform: scale(1); opacity: 0.5; }
   }
-
+  
   .power-indicator {
     animation: powerUp 2s ease-in-out infinite;
   }
 
+  /* Spring bounce entrance */
   @keyframes springBounce {
     0% { transform: scale(0.8); opacity: 0; }
     60% { transform: scale(1.1); }
     100% { transform: scale(1); opacity: 1; }
   }
-
+  
   .spring-in {
     animation: springBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   }
 
+  /* Stat bar fill animation */
+  @keyframes fillBar {
+    from { width: 0; }
+  }
+  
+  .stat-fill {
+    animation: fillBar 1.5s ease-out forwards;
+  }
+
+  /* Shimmer effect */
   @keyframes shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
@@ -231,10 +150,42 @@ table {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
     animation: shimmer 2s infinite;
   }
 
+  /* Pulse glow */
+  @keyframes pulseGlow {
+    0%, 100% { 
+      box-shadow: 0 0 20px currentColor; 
+      opacity: 0.8;
+    }
+    50% { 
+      box-shadow: 0 0 40px currentColor; 
+      opacity: 1;
+    }
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  /* Rotate slow for loaders */
+  @keyframes rotateSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .rotate-slow {
+    animation: rotateSlow 12s linear infinite;
+  }
+
+  /* Float animation */
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
@@ -244,14 +195,62 @@ table {
     animation: float 3s ease-in-out infinite;
   }
 
-  /* === ACCESSIBILITY FOCUS STATES === */
+  /* Slide in from bottom */
+  @keyframes slideInBottom {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .slide-in-bottom {
+    animation: slideInBottom 0.5s ease-out forwards;
+  }
+
+  /* ===== ACCESSIBILITY FOCUS STATES ===== */
   .focus-arcade:focus-visible {
     outline: 2px solid var(--comets-cyan);
     outline-offset: 4px;
     box-shadow: 0 0 0 4px rgba(0, 243, 255, 0.2);
   }
 
-  /* === LOADING SKELETONS === */
+  .focus-yellow:focus-visible {
+    outline: 2px solid var(--comets-yellow);
+    outline-offset: 4px;
+    box-shadow: 0 0 0 4px rgba(244, 208, 63, 0.2);
+  }
+
+  /* ===== PERSPECTIVE FOR 3D EFFECTS ===== */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .perspective-2000 {
+    perspective: 2000px;
+  }
+
+  /* ===== GRADIENT BACKGROUNDS ===== */
+  .bg-gradient-arcade {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 243, 255, 0.1) 0%,
+      rgba(189, 0, 255, 0.1) 50%,
+      rgba(244, 208, 63, 0.1) 100%
+    );
+  }
+
+  /* ===== GRID PATTERNS ===== */
+  .grid-pattern {
+    background-image: 
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(0, 243, 255, 0.1) 39px, rgba(0, 243, 255, 0.1) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0, 243, 255, 0.1) 39px, rgba(0, 243, 255, 0.1) 40px);
+  }
+
+  /* ===== LOADING SKELETONS ===== */
   @keyframes skeleton-loading {
     0% { background-position: -200px 0; }
     100% { background-position: calc(200px + 100%) 0; }
@@ -259,47 +258,57 @@ table {
 
   .skeleton {
     background-color: rgba(255, 255, 255, 0.05);
-    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0px, rgba(255, 255, 255, 0.1) 40px, rgba(255, 255, 255, 0.05) 80px);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0px,
+      rgba(255, 255, 255, 0.1) 40px,
+      rgba(255, 255, 255, 0.05) 80px
+    );
     background-size: 200px 100%;
     background-repeat: no-repeat;
     animation: skeleton-loading 1.5s ease-in-out infinite;
   }
 }
 
-/* === SCROLLBAR STYLING === */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar { 
+  width: 10px; 
+  height: 10px; 
 }
 
-::-webkit-scrollbar-track {
-  background: #0b0d1e;
+::-webkit-scrollbar-track { 
+  background: var(--background);
   border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #00D4FF, #2E86DE);
+::-webkit-scrollbar-thumb { 
+  background: linear-gradient(180deg, var(--comets-cyan), var(--comets-blue));
   border-radius: 4px;
   border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #F4D03F;
-  box-shadow: 0 0 10px #F4D03F;
+::-webkit-scrollbar-thumb:hover { 
+  background: var(--comets-yellow);
+  box-shadow: 0 0 10px var(--comets-yellow);
 }
 
-/* === SELECTION STYLING === */
+/* ===== SELECTION STYLING ===== */
 ::selection {
-  background-color: #00D4FF;
+  background-color: var(--comets-cyan);
   color: black;
 }
 
 ::-moz-selection {
-  background-color: #00D4FF;
+  background-color: var(--comets-cyan);
   color: black;
 }
 
-/* === DISABLED STATES === */
+/* ===== TRANSITIONS ===== */
+* {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ===== DISABLED STATES ===== */
 button:disabled,
 [disabled] {
   opacity: 0.5;
@@ -307,7 +316,7 @@ button:disabled,
   pointer-events: none;
 }
 
-/* === REDUCE MOTION SUPPORT === */
+/* ===== REDUCE MOTION SUPPORT ===== */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -9,37 +9,37 @@ You have **almost everything** needed to complete the main page redesign! Here's
 ## ✅ WHAT YOU HAVE (Ready to Use)
 
 ### 📁 Foundation Files (3/3) ✅ COMPLETE
-- ✅ **Globals.css** - In project files
-- ✅ **tailwind_config.ts** - In project files  
-- ✅ **utils.ts** - In project files
+- ✅ **Globals.css** - In /site-beta
+- ✅ **tailwind_config.ts** - In /site-beta  
+- ✅ **utils.ts** - In /site-beta
 
 ### 🎨 Core UI Components (6/6) ✅ COMPLETE
-- ✅ **RetroButton.tsx** - In project files
-- ✅ **RetroCard.tsx** - In project files
-- ✅ **RetroTable.tsx** - In project files
-- ✅ **RetroLoader.tsx** - In project files
-- ✅ **TeamSelectCard.tsx** - In project files
-- ✅ **VersusCard.tsx** - In project files
+- ✅ **RetroButton.tsx** - In /site-beta
+- ✅ **RetroCard.tsx** - In /site-beta
+- ✅ **RetroTable.tsx** - In /site-beta
+- ✅ **RetroLoader.tsx** - In /site-beta
+- ✅ **TeamSelectCard.tsx** - In /site-beta
+- ✅ **VersusCard.tsx** - In /site-beta
 
 ### 🏗️ Layout Components (3/3) ✅ COMPLETE
-- ✅ **Header.tsx** - In project files (with mobile menu!)
-- ✅ **Footer.tsx** - In project files
-- ✅ **Sidebar.tsx** - In project files
-- ✅ **SidebarMobile.tsx** - In project files (bonus!)
+- ✅ **Header.tsx** - In /site-beta (with mobile menu!)
+- ✅ **Footer.tsx** - In /site-beta
+- ✅ **Sidebar.tsx** - In /site-beta
+- ✅ **SidebarMobile.tsx** - In /site-beta (bonus!)
 
 ### 🎯 Feature Components (4/4) ✅ COMPLETE
-- ✅ **HolographicField.tsx** - In project files
-- ✅ **StatHighlight.tsx** - In project files
-- ✅ **Compare.tsx** - In project files
-- ✅ **LineupBuilder** - Not yet created, but we can make it!
+- ✅ **HolographicField.tsx** - In /site-beta
+- ✅ **StatHighlight.tsx** - In /site-beta
+- ✅ **Compare.tsx** - In /site-beta
+- ✅ **LineupBuilder** - In /site-beta
 
 ### 📄 Page Files (6/6) ✅ COMPLETE
-- ✅ **Homepage.tsx** - UPDATED in /outputs (uses RetroButton now)
-- ✅ **Schedule.tsx** - UPDATED in /outputs (animated week selector)
-- ✅ **PlayersPage.tsx** - UPDATED in /outputs (filter panel)
-- ✅ **TeamDetails.tsx** - UPDATED in /outputs (animated banner)
-- ✅ **404.tsx** - UPDATED in /outputs (fully animated)
-- ✅ **LoadingPatterns.tsx** - NEW guide in /outputs
+- ✅ **Homepage.tsx** - UPDATED in /site-beta (uses RetroButton now)
+- ✅ **Schedule.tsx** - UPDATED in /site-beta (animated week selector)
+- ✅ **PlayersPage.tsx** - UPDATED in /site-beta (filter panel)
+- ✅ **TeamDetails.tsx** - UPDATED in /site-beta (animated banner)
+- ✅ **404.tsx** - UPDATED in /site-beta (fully animated)
+- ✅ **LoadingPatterns.tsx** - NEW guide in /site-beta
 
 ---
 
@@ -48,73 +48,58 @@ You have **almost everything** needed to complete the main page redesign! Here's
 ### Foundation (Day 1) ✅
 | File | Status | Location | Action Needed |
 |------|--------|----------|---------------|
-| globals.css | ✅ Ready | `/mnt/project/` | Copy to your `app/globals.css` |
-| tailwind.config.ts | ✅ Ready | `/mnt/project/` | Copy to your root |
-| lib/utils.ts | ✅ Ready | `/mnt/project/` | Copy to your `lib/` folder |
+| globals.css | ✅ Ready | `site-beta` | Copy to your `app/globals.css` |
+| tailwind.config.ts | ✅ Ready | `site-beta` | Copy to your root |
+| lib/utils.ts | ✅ Ready | `site-beta` | Copy to your `lib/` folder |
 
 ### Core UI Components (Day 2) ✅
 | File | Status | Location | Action Needed |
 |------|--------|----------|---------------|
-| RetroButton.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/ui/` |
-| RetroCard.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/ui/` |
-| RetroTable.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/ui/` |
-| RetroLoader.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/ui/` |
-| TeamSelectCard.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/ui/` |
-| VersusCard.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/ui/` |
+| RetroButton.tsx | ✅ Ready | `site-beta` | Copy to `components/ui/` |
+| RetroCard.tsx | ✅ Ready | `site-beta` | Copy to `components/ui/` |
+| RetroTable.tsx | ✅ Ready | `site-beta` | Copy to `components/ui/` |
+| RetroLoader.tsx | ✅ Ready | `site-beta` | Copy to `components/ui/` |
+| TeamSelectCard.tsx | ✅ Ready | `site-beta` | Copy to `components/ui/` |
+| VersusCard.tsx | ✅ Ready | `site-beta` | Copy to `components/ui/` |
 
 ### Layout Components (Day 3) ✅
 | File | Status | Location | Action Needed |
 |------|--------|----------|---------------|
-| Header.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/` |
-| Footer.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/` |
-| Sidebar.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/` |
-| SidebarMobile.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/` |
+| Header.tsx | ✅ Ready | `site-beta` | Copy to `components/` |
+| Footer.tsx | ✅ Ready | `site-beta` | Copy to `components/` |
+| Sidebar.tsx | ✅ Ready | `site-beta` | Copy to `components/` |
+| SidebarMobile.tsx | ✅ Ready | `site-beta` | Copy to `components/` |
 
 ### Feature Components (Day 4) ✅
 | File | Status | Location | Action Needed |
 |------|--------|----------|---------------|
-| HolographicField.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/ui/` |
-| StatHighlight.tsx | ✅ Ready | `/mnt/project/` | Copy to `components/ui/` |
-| Compare.tsx | ✅ Ready | `/mnt/project/` | Copy to `app/tools/compare/page.tsx` |
+| HolographicField.tsx | ✅ Ready | `site-beta` | Copy to `components/ui/` |
+| StatHighlight.tsx | ✅ Ready | `site-beta` | Copy to `components/ui/` |
+| Compare.tsx | ✅ Ready | `site-beta` | Copy to `app/tools/compare/page.tsx` |
 
 ### Page Files (Day 5+) ✅
 | File | Status | Location | Action Needed |
 |------|--------|----------|---------------|
-| Homepage.tsx | ✅ **UPDATED** | `/mnt/user-data/outputs/` | Copy to `app/page.tsx` |
-| Schedule.tsx | ✅ **UPDATED** | `/mnt/user-data/outputs/` | Copy to `app/schedule/page.tsx` |
-| PlayersPage.tsx | ✅ **UPDATED** | `/mnt/user-data/outputs/` | Copy to `app/players/page.tsx` |
-| TeamDetails.tsx | ✅ **UPDATED** | `/mnt/user-data/outputs/` | Copy to `app/teams/[slug]/page.tsx` |
-| 404.tsx | ✅ **UPDATED** | `/mnt/user-data/outputs/` | Copy to `app/not-found.tsx` |
-| LoadingPatterns.tsx | ✅ NEW | `/mnt/user-data/outputs/` | Reference guide (optional file) |
+| Homepage.tsx | ✅ **UPDATED** | `/site-beta` | Copy to `app/page.tsx` |
+| Schedule.tsx | ✅ **UPDATED** | `/site-beta` | Copy to `app/schedule/page.tsx` |
+| PlayersPage.tsx | ✅ **UPDATED** | `/site-beta` | Copy to `app/players/page.tsx` |
+| TeamDetails.tsx | ✅ **UPDATED** | `/site-beta` | Copy to `app/teams/[slug]/page.tsx` |
+| 404.tsx | ✅ **UPDATED** | `/site-beta` | Copy to `app/not-found.tsx` |
+| LineupBuilder.tsx | ✅ **UPDATED** | `/site-beta` | Copy to `app/tools/lineup/page.tsx` 
+| LoadingPatterns.tsx | ✅ NEW | `/site-beta` | Reference guide (optional file) |
 
 ### Supporting Pages ✅
 | File | Status | Location | Notes |
 |------|--------|----------|-------|
-| TeamsIndex.tsx | ✅ Ready | `/mnt/project/` | Uses TeamSelectCard - already good! |
-| StandingsTable.tsx | ✅ Ready | `/mnt/project/` | Uses RetroTable - already good! |
-| PlayerProfile.tsx | ✅ Ready | `/mnt/project/` | Uses StatHighlight - already good! |
-| Layout.tsx | ✅ Ready | `/mnt/project/` | Root layout - already configured! |
-
----
-
-## ⚠️ WHAT'S MISSING (Optional)
-
-### LineupBuilder Page - Not Critical ⚡
-**Status:** Can be created but not required for main page redesign
-
-**Why it's optional:**
-- It's a NEW feature (not a redesign of existing page)
-- Main pages work without it
-- Can be added later as enhancement
-
-**If you want it:**
-We can create it in 5 minutes - just let me know!
+| TeamsIndex.tsx | ✅ Ready | `/site-beta` | Uses TeamSelectCard - already good! |
+| StandingsTable.tsx | ✅ Ready | `/site-beta` | Uses RetroTable - already good! |
+| PlayerProfile.tsx | ✅ Ready | `/site-beta` | Uses StatHighlight - already good! |
+| Layout.tsx | ✅ Ready | `/site-beta` | Root layout - already configured! |
 
 ---
 
 ## 🎯 YOUR IMPLEMENTATION PATH
 
-### Option A: Quick Deploy (2 hours) 🚀 RECOMMENDED
 **Goal:** Get the redesign live ASAP
 
 ```bash
@@ -137,11 +122,11 @@ cp /mnt/project/Sidebar.tsx components/
 cp /mnt/project/SidebarMobile.tsx components/
 
 # 4. Copy updated page files (10 min)
-cp /mnt/user-data/outputs/Homepage.tsx app/page.tsx
-cp /mnt/user-data/outputs/Schedule.tsx app/schedule/page.tsx
-cp /mnt/user-data/outputs/PlayersPage.tsx app/players/page.tsx
-cp /mnt/user-data/outputs/TeamDetails.tsx app/teams/[slug]/page.tsx
-cp /mnt/user-data/outputs/404.tsx app/not-found.tsx
+cp /mnt/user-data/site-beta/Homepage.tsx app/page.tsx
+cp /mnt/user-data/site-beta/Schedule.tsx app/schedule/page.tsx
+cp /mnt/user-data/site-beta/PlayersPage.tsx app/players/page.tsx
+cp /mnt/user-data/site-beta/TeamDetails.tsx app/teams/[slug]/page.tsx
+cp /mnt/user-data/site-beta/404.tsx app/not-found.tsx
 
 # 5. Test (30 min)
 npm run dev
@@ -154,19 +139,6 @@ git add .
 git commit -m "feat: complete beta redesign"
 git push origin beta-redesign
 ```
-
-**Result:** Fully redesigned site in 2 hours!
-
-### Option B: Thorough Integration (1 day)
-**Goal:** Carefully integrate with full testing
-
-Follow the Migration Checklist day-by-day:
-- Day 1: Foundation (done - 5 min to copy)
-- Day 2: UI Components (done - 10 min to copy)
-- Day 3: Layout (done - 5 min to copy)
-- Day 4: Features (done - 5 min to copy)
-- Day 5: Pages (done - 10 min to copy)
-- Rest of time: Testing, data integration, polish
 
 ---
 
@@ -189,7 +161,7 @@ After copying files, you'll need to connect to Google Sheets:
 
 ### Low Priority (New Features)
 - [ ] **Compare** - Add player selection UI
-- [ ] **LineupBuilder** - If you create it, add player fetch
+- [ ] **LineupBuilder** - Add player fetch
 
 ---
 
@@ -204,6 +176,8 @@ Before pushing to beta:
 - [ ] Homepage loads
 - [ ] Navigation works (desktop + mobile)
 - [ ] No console errors
+- [ ] Connect Google Sheets data
+- [ ] Test all animations
 
 ### Recommended ⚡
 - [ ] Test mobile menu opens/closes
@@ -213,48 +187,15 @@ Before pushing to beta:
 - [ ] Check 404 page (`/fake-url`)
 
 ### Optional 💡
-- [ ] Connect Google Sheets data
-- [ ] Test all animations
 - [ ] Run `npm run build` (check TypeScript)
 - [ ] Test on actual mobile device
 
 ---
 
-## 🎉 WHAT YOU'LL GET
-
-After implementing all files:
-
-### Visual Improvements ✨
-- ✅ Consistent arcade aesthetic throughout
-- ✅ Smooth animations and transitions
-- ✅ Professional mobile menu
-- ✅ Interactive filter panels
-- ✅ Animated team pages
-- ✅ Engaging loading states
-- ✅ Memorable 404 page
-
-### Technical Improvements ⚙️
-- ✅ Consistent component architecture
-- ✅ Reusable UI primitives
-- ✅ TypeScript-safe props
-- ✅ Accessible keyboard navigation
-- ✅ Mobile-responsive layouts
-- ✅ Performance-optimized animations
-
-### New Features 🎁
-- ✅ Mobile menu with animations
-- ✅ Week selector on Schedule
-- ✅ Filter panel on Players
-- ✅ Team badges and streaks
-- ✅ Sortable tables
-- ✅ Animated page transitions
-
----
-
 ## 🚨 IMPORTANT NOTES
 
-### What's Already Enhanced in Project Files
-The files in `/mnt/project/` are **production-ready** enhanced versions from the previous chat. They already include:
+### What's Already Enhanced in /site-beta
+The files in `/site-beta` are **production-ready** enhanced versions from the previous chat. They already include:
 - Better animations
 - Improved hover states
 - Enhanced accessibility
@@ -262,24 +203,22 @@ The files in `/mnt/project/` are **production-ready** enhanced versions from the
 - Consistent styling
 
 ### What's New in Outputs
-The files in `/mnt/user-data/outputs/` are **page-level updates** that:
+The files in `/site-beta` are **page-level updates** that:
 - Use the enhanced components
 - Add new features (filters, week selector)
 - Fix minor issues (button styling)
 - Include inline documentation
 
 ### You Don't Need Both Versions
-For most files, use the version from `/mnt/project/`. Only use `/outputs/` for the 6 updated pages.
+For most files, use the version from `/site-beta`. Only use `website` for the google sheets integrations & sites that don't have a site-beta equivalent.
 
 ---
 
 ## 🎯 RECOMMENDATION
 
-**You're 95% done!** Here's what I recommend:
-
 ### Right Now (30 minutes):
-1. Copy all files from `/mnt/project/` to your project
-2. Copy the 6 updated pages from `/outputs/` to your project
+1. Copy all files from `site-beta` to your project
+2. Copy the 6 updated pages from `/site-beta/` to your project
 3. Run `npm run dev` and test
 
 ### This Week (2-3 hours):
@@ -289,10 +228,9 @@ For most files, use the version from `/mnt/project/`. Only use `/outputs/` for t
 4. Share preview URL with stakeholders
 
 ### Next Sprint (optional):
-1. Create LineupBuilder if desired
-2. Add more advanced features
-3. Optimize data fetching
-4. Add more page animations
+1. Add more advanced features
+2. Optimize data fetching
+3. Add more page animations
 
 ---
 
@@ -307,24 +245,4 @@ All 16 core files are ready:
 - ✅ 3 feature components
 - ✅ 6 updated pages (with enhancements)
 
-**Total files ready: 22** (including updated pages)
-
-The only "missing" piece is LineupBuilder, which is:
-- A NEW feature (not required for redesign)
-- Can be added anytime
-- Takes 30 minutes to create if needed
-
-**You can deploy the complete redesign TODAY!** 🚀
-
----
-
-## 💬 NEXT STEPS?
-
-Would you like me to:
-1. ✅ **Create the LineupBuilder page** (30 min) - Complete the set
-2. 📝 **Generate a copy/paste command script** - Automate the file copying
-3. 🔍 **Review any specific component** - Deep dive into one file
-4. 🚀 **Create deployment instructions** - Step-by-step deploy guide
-5. 🎯 **Something else?**
-
-Let me know what would be most helpful!
+**Total files ready: 23** (including updated pages)

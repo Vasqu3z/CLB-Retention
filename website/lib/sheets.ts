@@ -841,7 +841,7 @@ export async function getAverageTeamGP(isPlayoffs: boolean = false): Promise<num
  * @returns Array of exactly 5 LeaderEntry objects with proper tie labeling (T-1, T-2, etc.)
  */
 function formatLeaders(
-  players: { player: string; team: string; value: number; formatted: string }[],
+  players: { player: string; team: string; value: number; formatted?: string }[],
   isAscending: boolean = false
 ): LeaderEntry[] {
   if (players.length === 0) return [];
@@ -882,24 +882,26 @@ function formatLeaders(
       // Add all players individually
       for (const player of group.players) {
         const rankLabel = group.players.length > 1 ? `T-${group.rank}` : String(group.rank);
+        const formattedValue = player.formatted ?? String(player.value);
         leaders.push({
           rank: rankLabel,
           player: player.player,
           team: player.team,
-          formatted: player.formatted,
-          value: player.formatted,
+          formatted: formattedValue,
+          value: formattedValue,
           rawValue: player.value,
         });
       }
     } else {
       // Add tie summary (takes 1 slot)
       const rankLabel = group.players.length > 1 ? `T-${group.rank}` : String(group.rank);
+      const formattedValue = group.players[0].formatted ?? String(group.players[0].value);
       leaders.push({
         rank: rankLabel,
         player: `${group.players.length} players tied`,
         team: '',
-        formatted: group.players[0].formatted,
-        value: group.players[0].formatted,
+        formatted: formattedValue,
+        value: formattedValue,
         rawValue: group.players[0].value,
         isTieSummary: true,
       });

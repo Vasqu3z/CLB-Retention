@@ -107,11 +107,12 @@ export default function RetroTable<T extends { id?: string | number }>({
                   }}
                   tabIndex={col.sortable ? 0 : undefined}
                   role={col.sortable ? "button" : undefined}
-                  aria-sort={
-                    sortConfig?.key === col.accessorKey 
-                      ? sortConfig.direction === 'asc' ? 'ascending' : 'descending'
-                      : undefined
-                  }
+                  aria-sort={(() => {
+                    if (!sortConfig || sortConfig.key !== col.accessorKey) {
+                      return undefined;
+                    }
+                    return sortConfig.direction === 'asc' ? 'ascending' : 'descending';
+                  })()}
                 >
                   <div className="flex items-center gap-2">
                     {col.header}

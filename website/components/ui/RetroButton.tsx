@@ -4,8 +4,9 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import type { HTMLMotionProps } from "framer-motion";
 
-interface RetroButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface RetroButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?: "primary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   href?: string;
@@ -13,15 +14,15 @@ interface RetroButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   isLoading?: boolean;
 }
 
-export function RetroButton({ 
-  variant = "primary", 
+export function RetroButton({
+  variant = "primary",
   size = "md",
-  href, 
-  className, 
+  href,
+  className,
   children,
   isLoading,
   disabled,
-  ...props 
+  ...motionProps
 }: RetroButtonProps) {
   
   const baseStyles = "group relative font-display uppercase tracking-wide overflow-hidden transition-all duration-200 rounded-sm inline-flex items-center justify-center cursor-pointer select-none focus-arcade";
@@ -80,20 +81,21 @@ export function RetroButton({
   );
 
   if (href && !disabled && !isLoading) {
+    const { onClick } = motionProps;
     return (
-      <Link href={href} className={buttonClasses}>
+      <Link href={href} className={buttonClasses} onClick={onClick}>
         {content}
       </Link>
     );
   }
 
   return (
-    <motion.button 
-      className={buttonClasses} 
+    <motion.button
+      className={buttonClasses}
       disabled={disabled || isLoading}
       whileHover={!disabled && !isLoading ? { scale: 1.05 } : {}}
       whileTap={!disabled && !isLoading ? { scale: 0.95 } : {}}
-      {...props}
+      {...motionProps}
     >
       {content}
     </motion.button>

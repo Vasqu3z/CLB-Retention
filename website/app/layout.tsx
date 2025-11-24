@@ -1,49 +1,41 @@
 import type { Metadata } from "next";
-import { Barlow, Syne, Azeret_Mono, JetBrains_Mono } from 'next/font/google';
+import { Dela_Gothic_One, Chivo, Rajdhani, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
-import SmoothScroll from "@/components/SmoothScroll";
-import AnimatedBackground from "@/components/AnimatedBackground";
-import PageTransition from "@/components/animations/PageTransition";
 
-// Optimize font loading with display: 'swap' and limited weights
-const barlow = Barlow({
-  weight: ['400', '500', '600', '700'],
+const delaGothic = Dela_Gothic_One({
+  weight: '400',
   subsets: ['latin'],
+  variable: '--font-display',
   display: 'swap',
-  variable: '--font-barlow',
-  preload: true,
 });
 
-const syne = Syne({
-  weight: ['400', '600', '700', '800'],
+const chivo = Chivo({
   subsets: ['latin'],
+  variable: '--font-body',
   display: 'swap',
-  variable: '--font-syne',
-  preload: true,
 });
 
-const azeretMono = Azeret_Mono({
-  weight: ['400', '500', '600'],
+const rajdhani = Rajdhani({
+  weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
+  variable: '--font-ui',
   display: 'swap',
-  variable: '--font-azeret-mono',
-  preload: true,
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  weight: ['400', '500', '600'],
+const spaceMono = Space_Mono({
+  weight: ['400', '700'],
   subsets: ['latin'],
+  variable: '--font-mono',
   display: 'swap',
-  variable: '--font-jetbrains-mono',
 });
 
 export const metadata: Metadata = {
-  title: "Comets League Baseball | CLB Stats",
-  description: "Official statistics and standings for Comets League Baseball",
+  title: "Comets League Baseball",
+  description: "The premier Mario Super Sluggers analytics hub.",
 };
 
 export default function RootLayout({
@@ -52,25 +44,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${barlow.variable} ${syne.variable} ${azeretMono.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen flex flex-col">
-        <AnimatedBackground />
-        <SmoothScroll />
-        <Header />
-        <div className="flex flex-1">
-          {/* Sidebar - Responsive */}
-          <SidebarMobile>
-            <Sidebar />
-          </SidebarMobile>
-
-          {/* Main Content */}
-          <main id="main-content" className="flex-1 px-4 lg:px-8 py-6 lg:py-8 overflow-x-hidden lg:ml-80" role="main">
-            <div className="max-w-7xl mx-auto">
-              <PageTransition>{children}</PageTransition>
-            </div>
-          </main>
+    <html lang="en" className={`${delaGothic.variable} ${chivo.variable} ${rajdhani.variable} ${spaceMono.variable}`}>
+      <body className="bg-background text-white min-h-screen flex flex-col md:flex-row overflow-x-hidden font-body">
+        <div className="md:hidden z-50">
+          <SidebarMobile />
         </div>
-        <Footer />
+        <div className="hidden md:block w-64 shrink-0 h-screen sticky top-0 border-r border-white/10 bg-surface-dark/50 backdrop-blur-md z-40">
+          <Sidebar />
+        </div>
+        <div className="flex-1 flex flex-col min-w-0 relative">
+          <Header />
+          <main className="flex-1 relative z-0">
+            {children}
+          </main>
+          <Footer />
+        </div>
       </body>
     </html>
   );

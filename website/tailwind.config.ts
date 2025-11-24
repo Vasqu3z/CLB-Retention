@@ -10,6 +10,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        surface: {
+          DEFAULT: "var(--surface-dark)",
+          dark: "var(--surface-dark)",
+          light: "var(--surface-light)",
+        },
+        comets: {
+          yellow: "var(--comets-yellow)",
+          red: "var(--comets-red)",
+          blue: "var(--comets-blue)",
+          cyan: "var(--comets-cyan)",
+          purple: "var(--comets-purple)",
+        },
         'space-black': '#0B0D1E',
         'space-navy': '#151829',
         'space-blue': '#1E2442',
@@ -49,13 +63,14 @@ const config: Config = {
         'glow-cyan': '0 0 20px rgba(0, 212, 255, 0.3)',
       },
       fontFamily: {
-        'display': ['var(--font-barlow)', 'sans-serif'],
-        'body': ['var(--font-azeret-mono)', 'monospace'],
-        'mono': ['var(--font-jetbrains-mono)', 'monospace'],
-        'stat': ['var(--font-syne)', 'sans-serif'],
+        display: ['var(--font-display)', 'var(--font-barlow)', 'cursive', 'sans-serif'],
+        body: ['var(--font-body)', 'var(--font-azeret-mono)', 'sans-serif', 'monospace'],
+        ui: ['var(--font-ui)', 'var(--font-barlow)', 'sans-serif'],
+        mono: ['var(--font-mono)', 'var(--font-jetbrains-mono)', 'monospace'],
+        stat: ['var(--font-syne)', 'sans-serif'],
       },
       backdropBlur: {
-        'glass': '10px',
+        glass: '10px',
       },
       textShadow: {
         sm: '0 1px 2px rgba(0, 0, 0, 0.35)',
@@ -63,6 +78,16 @@ const config: Config = {
         strong: '0 2px 12px rgba(0, 0, 0, 0.8)',
         glow: '0 0 20px rgba(0, 0, 0, 0.8), 0 2px 8px rgba(0, 0, 0, 0.6)',
         'glow-orange': '0 0 30px rgba(255, 107, 53, 0.6), 0 2px 8px rgba(0, 0, 0, 0.8)',
+      },
+      animation: {
+        'spin-slow': 'spin 12s linear infinite',
+        'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        shimmer: {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(100%)' },
+        },
       },
     },
   },

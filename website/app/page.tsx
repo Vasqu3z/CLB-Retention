@@ -1,308 +1,168 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { LEAGUE_CONFIG } from "@/config/league";
-import { getLeagueLogo } from "@/lib/teamLogos";
-import { cn } from "@/lib/utils";
-import { Trophy, TrendingUp, Calendar, Users, Target, Award } from "lucide-react";
-import FadeIn from "@/components/animations/FadeIn";
+import React from "react";
 import { motion } from "framer-motion";
-import { cardHoverVariants, sectionEntranceVariants } from "@/components/animations/motionVariants";
-import { motionTokens } from "@/components/animations/motionTokens";
-import useReducedMotion from "@/hooks/useReducedMotion";
+import Link from "next/link";
+import { Trophy, Calendar, Users, Activity, Star } from "lucide-react";
+import StatHighlight from "@/components/ui/StatHighlight";
+import RetroCard from "@/components/ui/RetroCard";
+import { RetroButton } from "@/components/ui/RetroButton";
 
-const mainNavCards = [
-  {
-    href: "/standings",
-    title: "Standings",
-    description: "Current season rankings",
-    icon: Trophy,
-    gradient: "from-field-green/30 via-nebula-teal/20 to-transparent",
-    borderColor: "border-field-green/60",
-    iconColor: "text-field-green",
-    size: "large" as const,
-  },
-  {
-    href: "/leaders",
-    title: "Leaders",
-    description: "Top performers",
-    icon: TrendingUp,
-    gradient: "from-solar-gold/25 via-comet-yellow/15 to-transparent",
-    borderColor: "border-solar-gold/60",
-    iconColor: "text-solar-gold",
-    size: "medium" as const,
-  },
-  {
-    href: "/schedule",
-    title: "Schedule",
-    description: "Games & results",
-    icon: Calendar,
-    gradient: "from-cosmic-purple/25 via-deep-violet/15 to-transparent",
-    borderColor: "border-cosmic-purple/60",
-    iconColor: "text-cosmic-purple",
-    size: "medium" as const,
-  },
-  {
-    href: "/playoffs",
-    title: "Playoffs",
-    description: "Postseason bracket",
-    icon: Award,
-    gradient: "from-infield-dirt/30 to-leather-brown/10",
-    borderColor: "border-infield-dirt/60",
-    iconColor: "text-infield-dirt",
-    size: "medium" as const,
-  },
-];
+const HeroSection = () => {
+  return (
+    <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden pt-20">
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-comets-blue/20 blur-[120px] rounded-full mix-blend-screen animate-pulse-slow" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-comets-purple/10 blur-[100px] rounded-full mix-blend-screen" />
+        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]" />
+      </div>
 
-const secondaryNavCards = [
-  {
-    href: "/teams",
-    title: "Teams",
-    description: "Team rosters & stats",
-    icon: Users,
-    gradient: "from-nebula-orange/20 to-nebula-coral/10",
-    borderColor: "border-nebula-orange/50",
-    iconColor: "text-nebula-orange",
-  },
-  {
-    href: "/players",
-    title: "Players",
-    description: "Individual statistics",
-    icon: Target,
-    gradient: "from-nebula-cyan/20 to-nebula-teal/10",
-    borderColor: "border-nebula-cyan/50",
-    iconColor: "text-nebula-cyan",
-  },
-];
+      <div className="z-10 container mx-auto px-4 flex flex-col items-center text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative"
+        >
+          <h1 className="font-display text-6xl md:text-[9rem] uppercase leading-[0.85] tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+            Comets
+            <br />
+            {/* FIXED: Removed text-stroke for better readability */}
+            <span className="md:ml-24 block">League</span>
+          </h1>
+          
+          <motion.div 
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.4, duration: 0.8, type: "spring" }}
+            className="absolute -top-8 -right-4 md:-top-12 md:-right-16 text-comets-yellow"
+          >
+            <Star size={64} fill="currentColor" className="animate-spin-slow" />
+          </motion.div>
+        </motion.div>
 
-const ICON_COLOR_VALUES: Record<string, string> = {
-  'text-field-green': '#2D5F3F',
-  'text-solar-gold': '#FFA62B',
-  'text-cosmic-purple': '#8B5CF6',
-  'text-infield-dirt': '#A0826D',
-  'text-nebula-orange': '#FF6B35',
-  'text-nebula-cyan': '#00D4FF',
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="mt-8 text-xl md:text-2xl font-ui text-comets-cyan uppercase tracking-widest max-w-2xl"
+        >
+          The Premier Mario Baseball Statistics Hub
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="mt-12 flex flex-wrap gap-4 justify-center"
+        >
+          {/* UPDATED: Using RetroButton component instead of inline styles */}
+          <RetroButton variant="primary" size="lg" href="/standings">
+            View Standings
+          </RetroButton>
+          <RetroButton variant="outline" size="lg" href="/schedule">
+            Latest Scores
+          </RetroButton>
+        </motion.div>
+      </div>
+      
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 1 }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/30"
+      >
+        <span className="text-[10px] uppercase tracking-[0.3em]">Scroll to Start</span>
+        <div className="w-[1px] h-12 bg-gradient-to-b from-white/30 to-transparent" />
+      </motion.div>
+    </section>
+  );
 };
 
-const navCardBaseClass =
-  "group relative block h-full cursor-pointer overflow-hidden rounded-2xl border-2 px-8 py-8 bg-gradient-to-br " +
-  "backdrop-blur-md transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 transform-gpu will-change-transform " +
-  "focus-visible:ring-nebula-teal focus-visible:ring-offset-2 focus-visible:ring-offset-space-black motion-reduce:transition-none motion-reduce:transform-none";
-
-export default function Home() {
-  const prefersReducedMotion = useReducedMotion();
-  const sectionVariants = sectionEntranceVariants(prefersReducedMotion);
-  const cardHover = cardHoverVariants(prefersReducedMotion);
+const LiveTicker = () => {
+  const items = [
+    "🔥 MARIO HITS 3 HR IN OPENER",
+    "📊 YOSHI LEADS AVG (.750)",
+    "🏆 BOWSER MONSTERS 3-0 STREAK",
+    "⚡ WEEK 4 SCHEDULE UPDATED",
+    "👀 TRADE RUMORS: WALUIGI?"
+  ];
 
   return (
-    <div className="space-y-16">
-      {/* Hero Section - Baseball Diamond Inspired */}
-      <motion.section
-        className="relative py-16"
-        variants={sectionVariants}
-        initial="hidden"
-        animate="visible"
+    <div className="w-full bg-comets-yellow text-black py-3 overflow-hidden flex relative z-20 border-y-4 border-black transform -skew-y-1 mb-24">
+      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-comets-yellow to-transparent z-10" />
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-comets-yellow to-transparent z-10" />
+      
+      <motion.div 
+        className="flex gap-16 whitespace-nowrap font-ui font-bold text-lg uppercase tracking-wider items-center"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
       >
-        {/* Baseball stitching pattern background */}
-        <div
-          className="absolute inset-0 opacity-5 pointer-events-none"
-          style={{
-            backgroundImage: `repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 10px,
-              currentColor 10px,
-              currentColor 12px
-            )`,
-            color: '#2D5F3F'
-          }}
-        />
-        <div className="relative z-10 text-center">
-          {/* Logo with baseball-inspired glow */}
-          <div className="mb-8 flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-field-green/20 rounded-full blur-3xl" />
-              <div className="relative w-40 h-40">
-                <Image
-                  src={getLeagueLogo()}
-                  alt="CLB Logo"
-                  width={160}
-                  height={160}
-                  className="object-contain drop-shadow-[0_0_30px_rgba(45,95,63,0.8)]"
-                  priority
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Title with distinctive gradient */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-6 pb-1 leading-[1.15] sm:leading-[1.12] bg-gradient-to-r from-nebula-orange via-nebula-coral to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
-            {LEAGUE_CONFIG.name}
-          </h1>
-
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-2xl text-vintage-cream font-display font-semibold tracking-wide text-shadow-strong">
-              Season {LEAGUE_CONFIG.currentSeason}
-            </p>
-
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-field-green/10 border border-field-green/30">
-              <div className="w-3 h-3 rounded-full bg-nebula-teal animate-pulse shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
-              <span className="font-display font-semibold text-nebula-teal tracking-wide">
-                SYSTEM OPERATIONAL
-              </span>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Main Navigation - Asymmetric Baseball Diamond Layout */}
-      <motion.section
-        variants={sectionVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-120px" }}
-      >
-        <motion.h2
-          variants={sectionVariants}
-          className="text-3xl font-display font-bold mb-8 text-center"
-        >
-          <span className="bg-gradient-to-r from-field-green to-nebula-teal bg-clip-text text-transparent">
-            Game Center
+        {[...items, ...items, ...items].map((item, i) => (
+          <span key={i} className="flex items-center gap-3">
+            <span className="w-2 h-2 bg-black rounded-full" />
+            {item}
           </span>
-        </motion.h2>
-
-        {/* Asymmetric grid - NOT the boring 3x2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {mainNavCards.map((card, idx) => {
-            const Icon = card.icon;
-            const isLarge = card.size === 'large';
-
-            return (
-              <FadeIn
-                key={card.href}
-                delay={motionTokens.durations.fast + idx * 0.06}
-                direction="up"
-                duration={motionTokens.durations.extended}
-                className={isLarge ? "lg:col-span-2" : ""}
-              >
-                <Link href={card.href} className="block h-full">
-                  <motion.div
-                    className={cn(
-                      navCardBaseClass,
-                      card.borderColor,
-                      card.gradient,
-                      "shadow-[0_12px_40px_rgba(45,95,63,0.15)] transition-shadow duration-200",
-                      isLarge ? "min-h-[280px]" : "min-h-[220px]"
-                    )}
-                    variants={cardHover}
-                    initial="rest"
-                    animate="rest"
-                    whileHover="hover"
-                    whileFocus="hover"
-                  >
-                    {/* Baseball stitch decoration */}
-                    <div className="pointer-events-none absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity motion-reduce:transition-none">
-                      <div
-                        className="w-full h-full border-4 border-current rounded-full border-dashed"
-                        style={{ borderColor: ICON_COLOR_VALUES[card.iconColor] || '#E8EDF5' }}
-                      />
-                    </div>
-
-                    {/* Hover gradient overlay */}
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 motion-reduce:opacity-0 motion-reduce:transition-none bg-gradient-to-br from-white/5 via-transparent to-transparent" />
-
-                    <div className="relative z-10 flex flex-col h-full">
-                      <Icon className={`w-12 h-12 ${card.iconColor} mb-4 transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none`} />
-
-                      <h3 className="text-3xl font-display font-bold mb-2 text-star-white group-hover:text-vintage-cream transition-colors duration-200">
-                        {card.title}
-                      </h3>
-
-                      <p className="text-lg text-star-gray font-body group-hover:text-star-white transition-colors duration-200">
-                        {card.description}
-                      </p>
-
-                      {isLarge && (
-                        <div className="mt-auto pt-6">
-                          <div className="inline-flex items-center gap-2 text-sm font-display font-semibold text-field-green transition-all duration-200 motion-reduce:transition-none">
-                            View Details
-                            <span className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:translate-x-0 motion-reduce:transition-none">→</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                </Link>
-              </FadeIn>
-            );
-          })}
-        </div>
-
-        {/* Secondary nav - 2 column grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {secondaryNavCards.map((card, idx) => {
-            const Icon = card.icon;
-            return (
-              <FadeIn
-                key={card.href}
-                delay={motionTokens.durations.extended + idx * 0.05}
-                direction="up"
-                duration={motionTokens.durations.base}
-              >
-                <Link href={card.href} className="block h-full">
-                  <motion.div
-                    className={cn(
-                      navCardBaseClass,
-                      card.borderColor,
-                      card.gradient,
-                      "backdrop-blur-sm shadow-[0_8px_24px_rgba(255,255,255,0.08)] min-h-[180px]"
-                    )}
-                    variants={cardHover}
-                    initial="rest"
-                    animate="rest"
-                    whileHover="hover"
-                    whileFocus="hover"
-                  >
-                    <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 motion-reduce:transition-none bg-gradient-to-br from-transparent via-white/5 to-transparent" />
-
-                    <div className="relative z-10 text-center">
-                      <Icon className={`w-12 h-12 ${card.iconColor} mx-auto mb-4 transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none`} />
-                      <h3 className="text-2xl font-display font-bold mb-2 text-star-white">
-                        {card.title}
-                      </h3>
-                      <p className="text-sm text-star-gray font-body">
-                        {card.description}
-                      </p>
-                    </div>
-                  </motion.div>
-                </Link>
-              </FadeIn>
-            );
-          })}
-        </div>
-      </motion.section>
-
-      {/* Status Footer with Baseball Theme */}
-      <FadeIn delay={motionTokens.durations.extended} direction="up">
-        <section className="text-center py-12 border-t-2 border-field-green/30 relative">
-          {/* Infield dirt pattern */}
-          <div
-            className="absolute inset-0 opacity-5 pointer-events-none"
-            style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
-              backgroundSize: '20px 20px',
-              color: '#A0826D'
-            }}
-          />
-
-          <div className="relative z-10">
-            <p className="text-sm text-star-dim font-mono">
-              Powered by Google Sheets • Next.js • Real-time sync every 60s
-            </p>
-          </div>
-        </section>
-      </FadeIn>
+        ))}
+      </motion.div>
     </div>
+  );
+};
+
+export default function HomePage() {
+  const features = [
+    {
+      title: "League Standings",
+      subtitle: "Track team performance and playoff races.",
+      icon: Trophy,
+      href: "/standings",
+      color: "#F4D03F"
+    },
+    {
+      title: "Player Stats",
+      subtitle: "Comprehensive database of every slugger.",
+      icon: Users,
+      href: "/players",
+      color: "#00F3FF"
+    },
+    {
+      title: "Full Schedule",
+      subtitle: "Upcoming matches and historical results.",
+      icon: Calendar,
+      href: "/schedule",
+      color: "#FF4D4D"
+    },
+    {
+      title: "Lineup Builder",
+      subtitle: "Optimize your team chemistry and stats.",
+      icon: Activity,
+      href: "/tools/lineup",
+      color: "#BD00FF"
+    }
+  ];
+
+  return (
+    <main className="bg-background text-foreground overflow-x-hidden selection:bg-comets-cyan selection:text-black">
+      <HeroSection />
+      <LiveTicker />
+      
+      <div className="container mx-auto px-4 py-24 relative z-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
+            <RetroCard key={feature.title} {...feature} delay={index * 0.1} />
+          ))}
+        </div>
+      </div>
+
+      <StatHighlight />
+
+      <div className="py-24 text-center">
+        <Link href="/signup" className="inline-block">
+            <div className="font-display text-4xl md:text-6xl text-white/20 hover:text-white/100 transition-colors duration-500 uppercase select-none tracking-widest cursor-pointer">
+                Join The League
+            </div>
+        </Link>
+      </div>
+    </main>
   );
 }

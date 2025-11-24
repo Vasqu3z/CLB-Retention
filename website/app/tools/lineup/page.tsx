@@ -1,27 +1,30 @@
-import { getChemistryMatrix, getAllPlayerAttributes } from '@/lib/sheets';
-import LineupBuilderView from './LineupBuilderView';
+import { getAllPlayerAttributes } from '@/lib/sheets';
+import LineupBuilder, { LineupPlayer } from './LineupBuilder';
 
-// Use Incremental Static Regeneration with 60-second revalidation
 export const revalidate = 60;
 
-/**
- * Lineup Builder Tool
- * Interactive baseball field with drag-and-drop player placement,
- * real-time chemistry visualization, and lineup saving
- */
+function toHexColor(color?: string) {
+  if (!color) return '#00F3FF';
+  if (color.startsWith('#')) return color;
+  return '#00F3FF';
+}
+
 export default async function LineupBuilderPage() {
-  // Fetch chemistry matrix and player list
-  const [chemistryMatrix, allPlayers] = await Promise.all([
-    getChemistryMatrix(),
-    getAllPlayerAttributes(),
-  ]);
+  const attributes = await getAllPlayerAttributes();
 
-  // Get sorted list of player names
-  const playerNames = allPlayers
-    .map(p => p.name)
-    .sort((a, b) => a.localeCompare(b));
+  const lineupPlayers: LineupPlayer[] = attributes.map((attr) => ({
+    name: attr.name,
+    teamColor: toHexColor(attr.miiColor),
+    position: 'UTIL',
+    stats: {
+      avg: attr.battingAverage ? (attr.battingAverage / 100).toFixed(3).slice(1) : '.300',
+      power: Math.round(attr.chargeHitPower ?? attr.battingOverall ?? 70),
+      speed: Math.round(attr.speed ?? attr.speedOverall ?? 70),
+      chemistry: [],
+    },
+  }));
 
-  return <LineupBuilderView chemistryMatrix={chemistryMatrix} playerNames={playerNames} />;
+  return <LineupBuilder players={lineupPlayers} />;
 }
 
 export const metadata = {

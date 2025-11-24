@@ -789,6 +789,7 @@ export interface LeaderEntry {
   rank: string;
   player: string;
   team: string;
+  formatted: string;
   value: string;
   rawValue: number; // For sorting
   isTieSummary?: boolean;

@@ -13,19 +13,16 @@ interface RetroButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   isLoading?: boolean;
 }
 
-export function RetroButton({
-  variant = "primary",
+export function RetroButton({ 
+  variant = "primary", 
   size = "md",
-  href,
-  className,
+  href, 
+  className, 
   children,
   isLoading,
   disabled,
-  onClick,
-  type = "button",
-  ...rest
+  ...props 
 }: RetroButtonProps) {
-  // Extract only safe props to avoid conflicts with framer-motion event handlers
   
   const baseStyles = "group relative font-display uppercase tracking-wide overflow-hidden transition-all duration-200 rounded-sm inline-flex items-center justify-center cursor-pointer select-none focus-arcade";
   
@@ -91,13 +88,12 @@ export function RetroButton({
   }
 
   return (
-    <motion.button
-      className={buttonClasses}
+    <motion.button 
+      className={buttonClasses} 
       disabled={disabled || isLoading}
-      onClick={onClick}
-      type={type}
       whileHover={!disabled && !isLoading ? { scale: 1.05 } : {}}
       whileTap={!disabled && !isLoading ? { scale: 0.95 } : {}}
+      {...props}
     >
       {content}
     </motion.button>

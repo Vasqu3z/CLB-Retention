@@ -10,7 +10,6 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // === BETA DESIGN SYSTEM (primary) ===
         background: "var(--background)",
         foreground: "var(--foreground)",
         surface: {
@@ -59,16 +58,21 @@ const config: Config = {
         warning: '#FFD23F',
       },
       fontFamily: {
-        // Map current fonts to beta variable names
-        display: ["var(--font-barlow)", "sans-serif"],
-        body: ["var(--font-azeret-mono)", "monospace"],
-        ui: ["var(--font-barlow)", "sans-serif"],
-        mono: ["var(--font-jetbrains-mono)", "monospace"],
+        display: ["var(--font-display)", "cursive"],
+        body: ["var(--font-body)", "sans-serif"],
+        ui: ["var(--font-ui)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
         stat: ["var(--font-syne)", "sans-serif"],
       },
       animation: {
         "spin-slow": "spin 12s linear infinite",
         "pulse-slow": "pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      keyframes: {
+        shimmer: {
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(100%)" },
+        },
       },
       boxShadow: {
         panel: '0 4px 16px rgba(0, 0, 0, 0.3)',

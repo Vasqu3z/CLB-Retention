@@ -1,41 +1,43 @@
 import type { Metadata } from "next";
-import { Barlow, Syne, Azeret_Mono, JetBrains_Mono } from 'next/font/google';
+import { Dela_Gothic_One, Chivo, Rajdhani, Space_Mono, Syne } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
 
-// Optimize font loading with display: 'swap' and limited weights
-const barlow = Barlow({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-barlow',
-  preload: true,
+const delaGothic = Dela_Gothic_One({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const chivo = Chivo({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const rajdhani = Rajdhani({
+  weight: ["300", "400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-ui",
+  display: "swap",
+});
+
+const spaceMono = Space_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
 });
 
 const syne = Syne({
-  weight: ['400', '600', '700', '800'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-syne',
-  preload: true,
-});
-
-const azeretMono = Azeret_Mono({
-  weight: ['400', '500', '600'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-azeret-mono',
-  preload: true,
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  weight: ['400', '500', '600'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-jetbrains-mono',
+  weight: ["400", "600", "700", "800"],
+  subsets: ["latin"],
+  variable: "--font-syne",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -49,7 +51,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${barlow.variable} ${syne.variable} ${azeretMono.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      className={`${delaGothic.variable} ${chivo.variable} ${rajdhani.variable} ${spaceMono.variable} ${syne.variable}`}
+    >
       <body className="bg-background text-white min-h-screen flex flex-col md:flex-row overflow-x-hidden font-body">
         {/* Mobile Sidebar Drawer */}
         <div className="md:hidden z-50">

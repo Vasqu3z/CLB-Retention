@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 export interface Column<T> {
-  header: string;
+  header: React.ReactNode;
   accessorKey?: keyof T;
   cell?: (item: T, index: number) => React.ReactNode;
   className?: string;

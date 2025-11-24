@@ -1,13 +1,10 @@
 import { getStandings } from "@/lib/sheets";
 import { getTeamByName } from "@/config/league";
-import { getTeamLogoPaths, getLeagueLogo } from "@/lib/teamLogos";
-import StatCard from "@/components/StatCard";
+import { getTeamLogoPaths } from "@/lib/teamLogos";
 import StandingsTable from "./StandingsTable";
-import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
 import FadeIn from "@/components/animations/FadeIn";
 import LiveStatsIndicator from "@/components/LiveStatsIndicator";
-import Image from "next/image";
-import SurfaceCard from "@/components/SurfaceCard";
+import StatHighlight from "@/components/ui/StatHighlight";
 
 export const revalidate = 60;
 
@@ -72,91 +69,33 @@ export default async function StandingsPage() {
       {/* Stat Cards */}
       <FadeIn delay={0.15} direction="up">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
+          <StatHighlight
             label="League Leader"
             value={topTeam ? `${topTeam.wins}-${topTeam.losses}` : 'N/A'}
-            icon={Trophy}
-            sublabel={topTeam ? `Win %: ${topTeam.winPct}` : 'No data available'}
-            color="orange"
-          >
-            {topTeam?.fullLogoPath && (
-              <div className="flex items-center justify-center pt-2">
-                <div className="w-40 h-20 relative">
-                  <Image
-                    src={topTeam.fullLogoPath}
-                    alt={topTeam.team}
-                    width={160}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-            )}
-          </StatCard>
+            subtext={topTeam ? `Win %: ${topTeam.winPct}` : 'No data available'}
+            glowColor="#F4D03F"
+          />
 
-          <StatCard
+          <StatHighlight
             label="Games Played"
             value={totalGames}
-            icon={Award}
-            sublabel="Total games this season"
-            color="gold"
-          >
-            <div className="flex items-center justify-center pt-2">
-              <div className="w-30 h-20 relative">
-                <Image
-                  src={getLeagueLogo()}
-                  alt="CLB Logo"
-                  width={120}
-                  height={80}
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          </StatCard>
+            subtext="Total games this season"
+            glowColor="#00F3FF"
+          />
 
-          <StatCard
+          <StatHighlight
             label="Highest Scoring"
             value={highestRunsPerGameTeam ? highestRunsPerGameTeam.runsPerGame.toFixed(2) : 'N/A'}
-            icon={TrendingUp}
-            sublabel="Runs scored per game"
-            color="cyan"
-          >
-            {highestRunsPerGameTeam?.fullLogoPath && (
-              <div className="flex items-center justify-center pt-2">
-                <div className="w-40 h-20 relative">
-                  <Image
-                    src={highestRunsPerGameTeam.fullLogoPath}
-                    alt={highestRunsPerGameTeam.team}
-                    width={160}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-            )}
-          </StatCard>
+            subtext={highestRunsPerGameTeam ? highestRunsPerGameTeam.team : undefined}
+            glowColor="#6EE7FF"
+          />
 
-          <StatCard
+          <StatHighlight
             label="Lowest ERA"
             value={lowestERATeam ? (lowestERATeam.gamesPlayed > 0 ? lowestERATeam.runsAllowed / lowestERATeam.gamesPlayed : 0).toFixed(2) : 'N/A'}
-            icon={TrendingDown}
-            sublabel="Runs allowed per game"
-            color="teal"
-          >
-            {lowestERATeam?.fullLogoPath && (
-              <div className="flex items-center justify-center pt-2">
-                <div className="w-40 h-20 relative">
-                  <Image
-                    src={lowestERATeam.fullLogoPath}
-                    alt={lowestERATeam.team}
-                    width={160}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-            )}
-          </StatCard>
+            subtext={lowestERATeam ? lowestERATeam.team : undefined}
+            glowColor="#7C3AED"
+          />
         </div>
       </FadeIn>
 
@@ -167,37 +106,37 @@ export default async function StandingsPage() {
 
       {/* Legend */}
       <FadeIn delay={0.45} direction="up">
-        <SurfaceCard className="p-6">
-          <h3 className="text-sm font-display font-semibold text-nebula-orange mb-4 uppercase tracking-wider">
+        <div className="p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm">
+          <h3 className="text-sm font-display font-semibold text-comets-orange mb-4 uppercase tracking-wider">
             Legend
           </h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm font-mono">
-            <div>
-              <span className="text-star-gray">W</span>
-              <span className="text-star-white ml-2">Wins</span>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm font-mono text-white/80">
+            <div className="flex items-center gap-2">
+              <span className="text-comets-yellow font-semibold">W</span>
+              <span className="text-white/70">Wins</span>
             </div>
-            <div>
-              <span className="text-star-gray">L</span>
-              <span className="text-star-white ml-2">Losses</span>
+            <div className="flex items-center gap-2">
+              <span className="text-comets-yellow font-semibold">L</span>
+              <span className="text-white/70">Losses</span>
             </div>
-            <div>
-              <span className="text-star-gray">Win %</span>
-              <span className="text-star-white ml-2">Winning Percentage</span>
+            <div className="flex items-center gap-2">
+              <span className="text-comets-cyan font-semibold">Win %</span>
+              <span className="text-white/70">Winning Percentage</span>
             </div>
-            <div>
-              <span className="text-star-gray">Diff</span>
-              <span className="text-star-white ml-2">Run Differential</span>
+            <div className="flex items-center gap-2">
+              <span className="text-comets-cyan font-semibold">Diff</span>
+              <span className="text-white/70">Run Differential</span>
             </div>
-            <div>
-              <span className="text-star-gray">RS</span>
-              <span className="text-star-white ml-2">Runs Scored</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white/80">RS</span>
+              <span className="text-white/70">Runs Scored</span>
             </div>
-            <div>
-              <span className="text-star-gray">RA</span>
-              <span className="text-star-white ml-2">Runs Allowed</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white/80">RA</span>
+              <span className="text-white/70">Runs Allowed</span>
             </div>
           </div>
-        </SurfaceCard>
+        </div>
       </FadeIn>
     </div>
   );

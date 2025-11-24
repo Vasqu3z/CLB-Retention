@@ -886,6 +886,7 @@ function formatLeaders(
           rank: rankLabel,
           player: player.player,
           team: player.team,
+          formatted: player.formatted,
           value: player.formatted,
           rawValue: player.value,
         });
@@ -897,6 +898,7 @@ function formatLeaders(
         rank: rankLabel,
         player: `${group.players.length} players tied`,
         team: '',
+        formatted: group.players[0].formatted,
         value: group.players[0].formatted,
         rawValue: group.players[0].value,
         isTieSummary: true,

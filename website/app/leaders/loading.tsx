@@ -1,5 +1,5 @@
-import { TableSkeleton } from '@/components/LoadingState';
+import RetroTableSkeleton from "@/components/ui/RetroTableSkeleton";
 
 export default function LeadersLoading() {
-  return <TableSkeleton />;
+  return <RetroTableSkeleton rows={9} />;
 }

@@ -5,9 +5,8 @@ import { PlayerStats } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 import SeasonToggle from '@/components/SeasonToggle';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
-import FadeIn from '@/components/animations/FadeIn';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
-import SurfaceCard from '@/components/SurfaceCard';
+import { RetroButton } from '@/components/ui/RetroButton';
 
 type StatTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -27,76 +26,61 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
     .map(name => activePlayers.find(p => p.name === name))
     .filter((p): p is PlayerStats => p !== undefined);
 
-  // Get unique player names from both datasets
-  const allPlayerNames = Array.from(
-    new Set([...regularPlayers.map(p => p.name), ...playoffPlayers.map(p => p.name)])
-  ).sort();
-
   // Get players available in the active season
   const availablePlayerNames = activePlayers.map(p => p.name).sort();
 
-  return (
-    <div className="space-y-8">
-      <FadeIn delay={0.1} direction="up">
-        <div className="relative">
-          {/* Baseball stitching accent */}
-          <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-field-green/50 to-transparent rounded-full" />
+  const panelClass =
+    'relative rounded-xl border border-white/10 bg-black/60 backdrop-blur-sm overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.45)]';
 
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-field-green via-nebula-teal to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-            Player Stats Comparison
-          </h1>
-          <p className="text-star-gray font-mono text-lg mb-3">
-            Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics
-          </p>
+  return (
+    <div className="space-y-6">
+      <div className={`${panelClass} p-6 lg:p-8`}>
+        <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(circle at 15% 20%, #22d1ee 0%, transparent 45%)' }} />
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 rounded-sm bg-white/10 border border-white/10 text-[11px] font-mono uppercase tracking-[0.2em] text-white/70">Tool</span>
+            <h1 className="text-3xl lg:text-4xl font-display font-black uppercase tracking-tight text-shadow-neon">
+              <span className="bg-gradient-to-r from-field-green via-nebula-teal to-solar-gold bg-clip-text text-transparent">Stats Comparator</span>
+            </h1>
+          </div>
+          <p className="text-white/70 font-mono text-sm lg:text-base">Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics.</p>
           <LiveStatsIndicator />
         </div>
-      </FadeIn>
+      </div>
 
       {/* Season Toggle */}
-      <FadeIn delay={0.2} direction="up">
-        <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-      </FadeIn>
+      <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
 
       {/* Stat Category Tabs */}
-      <FadeIn delay={0.3} direction="up">
-        <SurfaceCard className="p-4">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('hitting')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'hitting'
-                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Hitting
-            </button>
-            <button
-              onClick={() => setActiveTab('pitching')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'pitching'
-                  ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Pitching
-            </button>
-            <button
-              onClick={() => setActiveTab('fielding')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'fielding'
-                  ? 'bg-gradient-to-r from-field-green to-nebula-teal text-white shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Fielding & Running
-            </button>
-          </div>
-        </SurfaceCard>
-      </FadeIn>
+      <div className={`${panelClass} p-4 flex flex-wrap gap-3`}>
+        <RetroButton
+          onClick={() => setActiveTab('hitting')}
+          variant={activeTab === 'hitting' ? 'primary' : 'outline'}
+          size="sm"
+          className="flex-1"
+        >
+          Hitting
+        </RetroButton>
+        <RetroButton
+          onClick={() => setActiveTab('pitching')}
+          variant={activeTab === 'pitching' ? 'primary' : 'outline'}
+          size="sm"
+          className="flex-1"
+        >
+          Pitching
+        </RetroButton>
+        <RetroButton
+          onClick={() => setActiveTab('fielding')}
+          variant={activeTab === 'fielding' ? 'primary' : 'outline'}
+          size="sm"
+          className="flex-1"
+        >
+          Fielding & Running
+        </RetroButton>
+      </div>
 
       {/* Player Selection */}
-      <FadeIn delay={0.4} direction="up">
+      <div className={`${panelClass} p-4 lg:p-6`}>
         <PlayerMultiSelect
           className="mb-2"
           players={availablePlayerNames}
@@ -105,29 +89,29 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
           maxSelections={5}
           placeholder={`Search ${isPlayoffs ? 'playoff' : 'regular season'} players...`}
         />
-      </FadeIn>
+        <p className="text-white/60 font-mono text-xs uppercase tracking-[0.14em]">Select at least 2 players to view the retro comparison grid.</p>
+      </div>
 
       {/* Comparison Tables */}
       {selectedPlayers.length >= 2 && (
-        <FadeIn delay={0.5} direction="up">
-          <div className="space-y-6">
+        <div className="space-y-6">
           {/* Hitting Stats */}
           {activeTab === 'hitting' && (
-            <SurfaceCard className="overflow-hidden">
-              <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-nebula-orange text-shadow">Hitting Statistics</h3>
+            <div className={`${panelClass} overflow-hidden`}>
+              <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-white/10">
+                <h3 className="text-lg font-display font-black uppercase tracking-[0.18em] text-nebula-orange">Hitting Statistics</h3>
               </div>
               <ScrollableTable>
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                      <th className="px-4 py-3 text-left font-display font-bold text-nebula-orange sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
+                    <tr className="border-b border-white/10 bg-black/60">
+                      <th className="px-4 py-3 text-left font-display font-bold text-nebula-orange sticky left-0 bg-black/80 backdrop-blur-md z-10 border-r border-white/10">
                         Stat
                       </th>
                       {selectedPlayers.map(player => (
                         <th
                           key={player.name}
-                          className="px-4 py-3 text-center font-display font-bold text-star-white min-w-[120px]"
+                          className="px-4 py-3 text-center font-display font-semibold text-star-white min-w-[120px] uppercase tracking-[0.14em]"
                         >
                           {player.name}
                         </th>
@@ -149,26 +133,26 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                   </tbody>
                 </table>
               </ScrollableTable>
-            </SurfaceCard>
+            </div>
           )}
 
           {/* Pitching Stats */}
           {activeTab === 'pitching' && (
-            <SurfaceCard className="overflow-hidden">
-              <div className="bg-gradient-to-r from-solar-gold/30 to-comet-yellow/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-solar-gold text-shadow">Pitching Statistics</h3>
+            <div className={`${panelClass} overflow-hidden`}>
+              <div className="bg-gradient-to-r from-solar-gold/30 to-comet-yellow/30 px-4 py-3 border-b border-white/10">
+                <h3 className="text-lg font-display font-black uppercase tracking-[0.18em] text-solar-gold">Pitching Statistics</h3>
               </div>
               <ScrollableTable>
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                      <th className="px-4 py-3 text-left font-display font-bold text-solar-gold sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
+                    <tr className="border-b border-white/10 bg-black/60">
+                      <th className="px-4 py-3 text-left font-display font-bold text-solar-gold sticky left-0 bg-black/80 backdrop-blur-md z-10 border-r border-white/10">
                         Stat
                       </th>
                       {selectedPlayers.map(player => (
                         <th
                           key={player.name}
-                          className="px-4 py-3 text-center font-display font-bold text-star-white min-w-[120px]"
+                          className="px-4 py-3 text-center font-display font-semibold text-star-white min-w-[120px] uppercase tracking-[0.14em]"
                         >
                           {player.name}
                         </th>
@@ -188,26 +172,26 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                   </tbody>
                 </table>
               </ScrollableTable>
-            </SurfaceCard>
+            </div>
           )}
 
           {/* Fielding Stats */}
           {activeTab === 'fielding' && (
-            <SurfaceCard className="overflow-hidden">
-              <div className="bg-gradient-to-r from-field-green/30 to-nebula-teal/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-field-green text-shadow">Fielding & Running Statistics</h3>
+            <div className={`${panelClass} overflow-hidden`}>
+              <div className="bg-gradient-to-r from-field-green/30 to-nebula-teal/30 px-4 py-3 border-b border-white/10">
+                <h3 className="text-lg font-display font-black uppercase tracking-[0.18em] text-field-green">Fielding & Running Statistics</h3>
               </div>
               <ScrollableTable>
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                      <th className="px-4 py-3 text-left font-display font-bold text-field-green sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
+                    <tr className="border-b border-white/10 bg-black/60">
+                      <th className="px-4 py-3 text-left font-display font-bold text-field-green sticky left-0 bg-black/80 backdrop-blur-md z-10 border-r border-white/10">
                         Stat
                       </th>
                       {selectedPlayers.map(player => (
                         <th
                           key={player.name}
-                          className="px-4 py-3 text-center font-display font-bold text-star-white min-w-[120px]"
+                          className="px-4 py-3 text-center font-display font-semibold text-star-white min-w-[120px] uppercase tracking-[0.14em]"
                         >
                           {player.name}
                         </th>
@@ -223,10 +207,9 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
                   </tbody>
                 </table>
               </ScrollableTable>
-            </SurfaceCard>
+            </div>
           )}
-          </div>
-        </FadeIn>
+        </div>
       )}
     </div>
   );

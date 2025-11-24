@@ -1,69 +1,85 @@
-import { getTeamBySlug } from '@/config/league';
-import { getTeamRoster, getSchedule, getStandings, getTeamData, getPlayoffSchedule } from '@/lib/sheets';
-import { notFound } from 'next/navigation';
-import TeamPageView from './TeamPageView';
+import { notFound } from "next/navigation";
+import { getTeamBySlug } from "@/config/league";
+import { getSchedule, getStandings, getTeamRegistry, getTeamRoster } from "@/lib/sheets";
+import TeamDetailClient from "./TeamDetailClient";
 
-// Use Incremental Static Regeneration with 60-second revalidation
-// Pages are generated on-demand (first request) to avoid API quota during build
 export const revalidate = 60;
-export const dynamicParams = true; // Allow dynamic params without pre-generation
 
-export default async function TeamPage({ params }: { params: Promise<{ slug: string }> }) {
+function formatOrdinal(rank: string | number | undefined) {
+  if (!rank) return "Pending";
+  const num = Number(rank);
+  if (Number.isNaN(num)) return String(rank);
+  const suffix = ["th", "st", "nd", "rd"][(((num + 90) % 100) - 10) % 10] || "th";
+  return `${num}${suffix}`;
+}
+
+export default async function TeamDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const team = getTeamBySlug(slug);
+  const teamConfig = getTeamBySlug(slug);
 
-  if (!team) {
-    notFound();
+  if (!teamConfig) {
+    return notFound();
   }
 
-  // Fetch both regular season and playoff data
-  const [
-    regularRoster,
-    regularFullSchedule,
-    regularStandings,
-    regularTeamDataList,
-    playoffRoster,
-    playoffFullSchedule,
-    playoffStandings,
-    playoffTeamDataList,
-  ] = await Promise.all([
-    getTeamRoster(team.name, false),
+  const [standings, schedule, teamRegistry, roster] = await Promise.all([
+    getStandings(),
     getSchedule(),
-    getStandings(false),
-    getTeamData(team.name, false),
-    getTeamRoster(team.name, true),
-    getPlayoffSchedule(),
-    getStandings(true),
-    getTeamData(team.name, true),
+    getTeamRegistry(),
+    getTeamRoster(teamConfig.name),
   ]);
 
-  // Filter schedules for this team
-  const regularTeamSchedule = regularFullSchedule.filter(
-    (game) => game.homeTeam === team.name || game.awayTeam === team.name
-  );
-  const playoffTeamSchedule = playoffFullSchedule.filter(
-    (game) => game.homeTeam === team.name || game.awayTeam === team.name
-  );
+  const registryEntry = teamRegistry.find((t) => t.teamName === teamConfig.name);
+  const standingRow = standings.find((s) => s.team === teamConfig.name);
 
-  // Find team's standings records
-  const regularTeamStanding = regularStandings.find((s) => s.team === team.name);
-  const playoffTeamStanding = playoffStandings.find((s) => s.team === team.name);
+  const team = {
+    name: teamConfig.name,
+    code: registryEntry?.abbr || teamConfig.shortName || teamConfig.name.slice(0, 3).toUpperCase(),
+    logoColor: registryEntry?.color || teamConfig.primaryColor,
+    record: standingRow ? `${standingRow.wins}-${standingRow.losses}` : "0-0",
+    standing: formatOrdinal(standingRow?.rank),
+    streak: standingRow?.h2hNote || "N/A",
+  };
 
-  // Get team data (should only be one result when filtered by team name)
-  const regularTeamData = regularTeamDataList.length > 0 ? regularTeamDataList[0] : undefined;
-  const playoffTeamData = playoffTeamDataList.length > 0 ? playoffTeamDataList[0] : undefined;
+  const filteredSchedule = schedule
+    .filter((game) => game.homeTeam === teamConfig.name || game.awayTeam === teamConfig.name)
+    .map((game, index) => {
+      const homeMeta = teamRegistry.find((t) => t.teamName === game.homeTeam);
+      const awayMeta = teamRegistry.find((t) => t.teamName === game.awayTeam);
+
+      return {
+        id: `${game.week}-${index}`,
+        home: {
+          name: game.homeTeam,
+          code: homeMeta?.abbr || game.homeTeam.slice(0, 3).toUpperCase(),
+          logoColor: homeMeta?.color || teamConfig.primaryColor,
+          score: game.homeScore,
+        },
+        away: {
+          name: game.awayTeam,
+          code: awayMeta?.abbr || game.awayTeam.slice(0, 3).toUpperCase(),
+          logoColor: awayMeta?.color || teamConfig.primaryColor,
+          score: game.awayScore,
+        },
+        date: `Week ${game.week}`,
+        time: game.played ? "FINAL" : "TBD",
+        isFinished: game.played,
+      };
+    });
+
+  const rosterRows = roster.map((player, index) => ({
+    id: `${player.name}-${index}`,
+    name: player.name,
+    position: "UTIL",
+    avg: player.avg || ".000",
+    hr: player.hr || 0,
+    ops: player.ops || "0.000",
+  }));
 
   return (
-    <TeamPageView
+    <TeamDetailClient
       team={team}
-      regularRoster={regularRoster}
-      regularSchedule={regularTeamSchedule}
-      regularStanding={regularTeamStanding}
-      regularTeamData={regularTeamData}
-      playoffRoster={playoffRoster}
-      playoffSchedule={playoffTeamSchedule}
-      playoffStanding={playoffTeamStanding}
-      playoffTeamData={playoffTeamData}
+      roster={rosterRows}
+      schedule={filteredSchedule}
     />
   );
 }

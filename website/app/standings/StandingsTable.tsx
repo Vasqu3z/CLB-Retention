@@ -5,13 +5,15 @@ import Image from "next/image";
 import { StandingsRow } from "@/lib/sheets";
 import { getTeamByName } from "@/config/league";
 import { getTeamLogoPaths } from "@/lib/teamLogos";
-import DataTable, { Column } from "@/components/DataTable";
+import RetroTable, { type Column } from "@/components/ui/RetroTable";
 import StatTooltip from "@/components/StatTooltip";
 
 interface StandingsRowWithColor extends StandingsRow {
+  id: string;
   teamColor?: string;
   teamSlug?: string;
   emblemPath?: string;
+  numericRank: number;
 }
 
 interface StandingsTableProps {
@@ -26,31 +28,30 @@ export default function StandingsTable({ standings }: StandingsTableProps) {
 
     return {
       ...team,
+      id: team.team,
       teamColor: teamConfig?.primaryColor,
       teamSlug: teamConfig?.slug,
       emblemPath: logos?.emblem,
+      numericRank: Number(team.rank) || 0,
     };
   });
 
-  // Define columns for DataTable
+  // Define columns for RetroTable
   const columns: Column<StandingsRowWithColor>[] = [
     {
-      key: 'rank',
-      label: 'Rank',
-      align: 'center',
-      className: 'font-bold text-solar-gold',
-      render: (row) => (
-        <span className={row.rank === '1' ? 'text-nebula-orange' : ''}>
+      header: '#',
+      accessorKey: 'numericRank',
+      sortable: true,
+      className: 'text-center font-bold text-comets-yellow',
+      cell: (row) => (
+        <span className={row.rank === '1' ? 'text-comets-orange' : ''}>
           {row.rank}
         </span>
       ),
     },
     {
-      key: 'team',
-      label: 'Team',
-      align: 'left',
-      sortable: false,
-      render: (row) => (
+      header: 'Team',
+      cell: (row) => (
         <div className="flex items-center gap-3">
           {row.emblemPath && (
             <div className="w-6 h-6 relative flex-shrink-0">
@@ -66,7 +67,7 @@ export default function StandingsTable({ standings }: StandingsTableProps) {
           {row.teamSlug ? (
             <Link
               href={`/teams/${row.teamSlug}`}
-              className="hover:text-nebula-orange transition-colors font-semibold"
+              className="hover:text-comets-yellow transition-colors font-semibold"
               style={{ color: row.teamColor }}
               title={row.h2hNote}
             >
@@ -81,42 +82,42 @@ export default function StandingsTable({ standings }: StandingsTableProps) {
       ),
     },
     {
-      key: 'wins',
-      label: <StatTooltip stat="W_TEAM">W</StatTooltip>,
-      align: 'center',
-      className: 'font-semibold',
+      header: <StatTooltip stat="W_TEAM">W</StatTooltip>,
+      accessorKey: 'wins',
+      sortable: true,
+      className: 'text-center font-semibold',
     },
     {
-      key: 'losses',
-      label: <StatTooltip stat="L_TEAM">L</StatTooltip>,
-      align: 'center',
-      className: 'font-semibold',
+      header: <StatTooltip stat="L_TEAM">L</StatTooltip>,
+      accessorKey: 'losses',
+      sortable: true,
+      className: 'text-center font-semibold',
     },
     {
-      key: 'winPct',
-      label: <StatTooltip stat="PCT">Win %</StatTooltip>,
-      align: 'center',
-      className: 'font-bold text-comet-yellow',
+      header: <StatTooltip stat="PCT">Win %</StatTooltip>,
+      accessorKey: 'winPct',
+      sortable: true,
+      className: 'text-center font-bold text-comets-yellow',
     },
     {
-      key: 'runsScored',
-      label: <StatTooltip stat="RS">RS</StatTooltip>,
-      align: 'center',
-      condensed: true,
+      header: <StatTooltip stat="RS">RS</StatTooltip>,
+      accessorKey: 'runsScored',
+      sortable: true,
+      className: 'text-center',
     },
     {
-      key: 'runsAllowed',
-      label: <StatTooltip stat="RA">RA</StatTooltip>,
-      align: 'center',
-      condensed: true,
+      header: <StatTooltip stat="RA">RA</StatTooltip>,
+      accessorKey: 'runsAllowed',
+      sortable: true,
+      className: 'text-center',
     },
     {
-      key: 'runDiff',
-      label: <StatTooltip stat="DIFF">Diff</StatTooltip>,
-      align: 'center',
-      className: 'font-semibold',
-      render: (row) => (
-        <span className={row.runDiff > 0 ? 'text-nebula-teal' : row.runDiff < 0 ? 'text-nebula-coral' : 'text-star-gray'}>
+      header: <StatTooltip stat="DIFF">Diff</StatTooltip>,
+      accessorKey: 'runDiff',
+      sortable: true,
+      className: 'text-center font-semibold',
+      cell: (row) => (
+        <span className={row.runDiff > 0 ? 'text-comets-cyan' : row.runDiff < 0 ? 'text-comets-red' : 'text-white/70'}>
           {row.runDiff > 0 ? '+' : ''}{row.runDiff}
         </span>
       ),
@@ -124,14 +125,9 @@ export default function StandingsTable({ standings }: StandingsTableProps) {
   ];
 
   return (
-    <DataTable
+    <RetroTable
       columns={columns}
       data={enhancedStandings}
-      getRowKey={(row) => row.team}
-      defaultSortKey="rank"
-      defaultSortDirection="asc"
-      highlightRow={(row) => row.rank === '1'}
-      enableCondensed={true}
     />
   );
 }

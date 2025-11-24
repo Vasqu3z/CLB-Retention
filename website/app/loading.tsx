@@ -1,5 +1,9 @@
-import LoadingState from '@/components/LoadingState';
+import RetroLoader from "@/components/ui/RetroLoader";
 
 export default function Loading() {
-  return <LoadingState message="Loading page..." size="lg" />;
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-background">
+      <RetroLoader />
+    </div>
+  );
 }

@@ -1,5 +1,15 @@
 # 🎮 Comets League Beta Redesign - Migration Checklist
 
+## 🔒 Read This First
+
+The migration goal is **full replacement** with the provided beta assets:
+- **Swap to the new designs for every page** (no legacy layouts left behind).
+- **Use the shipped page/component files as-is**—do **not** rebuild from scratch or mix in old UI.
+- **Drop the new typography and formatting everywhere**; keep legacy styling only if no beta equivalent exists.
+- **Defer Google Sheets wiring until after the visual swap**; first land the exact beta pages, then connect data.
+- See **MIGRATION_GUARDRAILS.md** for the mandatory rules and per-route expectations.
+- See **MIGRATION_LLM_PLAYBOOK.md** for per-file actions and the exact copy/replace targets.
+
 ## ⚡ Quick Start (30 minutes)
 
 ### Prerequisites
@@ -126,16 +136,16 @@ npm install framer-motion lucide-react clsx tailwind-merge
 
 ### Phase 5A: Lineup Builder (NEW!)
 - [ ] Create `app/tools/lineup/page.tsx`
-- [ ] Copy LineupBuilder component
-- [ ] **DATA HOOK:** Fetch available players from Google Sheets
+- [ ] Copy LineupBuilder component **exactly as provided** (no rewrites)
+- [ ] **DATA HOOK:** Fetch available players from Google Sheets **after** the UI matches the beta file
 - [ ] Add route to navigation
 - [ ] Test full functionality
 - [ ] Commit: `git commit -m "feat: add LineupBuilder tool page"`
 
 ### Phase 5B: Compare Page
 - [ ] Update `app/tools/compare/page.tsx` (or create if new)
-- [ ] Copy Compare component
-- [ ] **DATA HOOK:** Add player selection UI connected to Google Sheets
+- [ ] Copy Compare component **exactly as provided** (no rewrites)
+- [ ] **DATA HOOK:** Add player selection UI connected to Google Sheets **after** the visual swap
 - [ ] Test head-to-head comparison
 - [ ] Commit: `git commit -m "feat: upgrade Compare page"`
 

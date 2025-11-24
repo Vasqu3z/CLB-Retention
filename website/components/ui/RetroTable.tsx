@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
-interface Column<T> {
+export interface Column<T> {
   header: string;
   accessorKey?: keyof T;
   cell?: (item: T, index: number) => React.ReactNode;

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import RetroTable from "@/components/ui/RetroTable";
+import RetroTable, { type Column } from "@/components/ui/RetroTable";
 import { Search, SlidersHorizontal, X, TrendingUp, Filter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,8 @@ const PLAYERS = [
   { id: 5, name: "Yoshi", team: "Eggs", position: "RF", avg: ".298", hr: 15, ops: ".875", stamina: 80 },
   { id: 6, name: "Wario", team: "Muscles", position: "LF", avg: ".245", hr: 28, ops: ".820", stamina: 88 },
 ];
+
+type Player = typeof PLAYERS[number];
 
 const TEAMS = ["All Teams", "Fireballs", "Monsters", "Monarchs", "Eggs", "Muscles"];
 const POSITIONS = ["All Positions", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"];
@@ -45,12 +47,12 @@ export default function PlayersPage() {
     setSearchQuery("");
   };
 
-  const columns = [
-    { 
-      header: "Player", 
-      cell: (item: any) => (
+  const columns: Column<Player>[] = [
+    {
+      header: "Player",
+      cell: (item) => (
         <div className="flex items-center gap-3">
-          <motion.div 
+          <motion.div
             className="w-8 h-8 bg-surface-light rounded flex items-center justify-center font-display text-white/80"
             whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
           >
@@ -65,11 +67,11 @@ export default function PlayersPage() {
     { header: "AVG", accessorKey: "avg", className: "text-comets-cyan font-mono", sortable: true },
     { header: "HR", accessorKey: "hr", className: "text-comets-red font-mono", sortable: true },
     { header: "OPS", accessorKey: "ops", className: "text-comets-yellow font-mono font-bold", sortable: true },
-    { 
-      header: "Stamina", 
-      cell: (item: any) => (
+    {
+      header: "Stamina",
+      cell: (item) => (
         <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
-          <motion.div 
+          <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${item.stamina}%` }}
             transition={{ duration: 1, ease: "easeOut" }}

@@ -1,5 +1,9 @@
-import { CardSkeleton } from '@/components/LoadingState';
+import RetroLoader from "@/components/ui/RetroLoader";
 
 export default function PlayoffsLoading() {
-  return <CardSkeleton />;
+  return (
+    <div className="py-24">
+      <RetroLoader />
+    </div>
+  );
 }

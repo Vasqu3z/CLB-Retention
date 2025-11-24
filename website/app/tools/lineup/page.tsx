@@ -1,30 +1,65 @@
-import { getChemistryMatrix, getAllPlayerAttributes } from '@/lib/sheets';
-import LineupBuilderView from './LineupBuilderView';
+import LineupBuilderClient, { BuilderPlayer } from "./LineupBuilderClient";
+import { getAllPlayerAttributes, getAllPlayers, getPlayerRegistry } from "@/lib/sheets";
+import { getTeamByName } from "@/config/league";
 
-// Use Incremental Static Regeneration with 60-second revalidation
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
-/**
- * Lineup Builder Tool
- * Interactive baseball field with drag-and-drop player placement,
- * real-time chemistry visualization, and lineup saving
- */
-export default async function LineupBuilderPage() {
-  // Fetch chemistry matrix and player list
-  const [chemistryMatrix, allPlayers] = await Promise.all([
-    getChemistryMatrix(),
+function formatAvg(value?: string) {
+  if (!value) return ".000";
+  return value.startsWith(".") ? value : value.padStart(5, "0");
+}
+
+export default async function LineupPage() {
+  const [registry, playerStats, playerAttributes] = await Promise.all([
+    getPlayerRegistry(),
+    getAllPlayers(),
     getAllPlayerAttributes(),
   ]);
 
-  // Get sorted list of player names
-  const playerNames = allPlayers
-    .map(p => p.name)
-    .sort((a, b) => a.localeCompare(b));
+  const statsByName = new Map(playerStats.map((p) => [p.name, p]));
+  const attributesByName = new Map(playerAttributes.map((p) => [p.name, p]));
 
-  return <LineupBuilderView chemistryMatrix={chemistryMatrix} playerNames={playerNames} />;
+  const availablePlayers: BuilderPlayer[] = registry.map((entry) => {
+    const stat = statsByName.get(entry.playerName);
+    const attributes = attributesByName.get(entry.playerName);
+    const teamConfig = getTeamByName(entry.team);
+
+    return {
+      id: entry.databaseId || entry.playerName,
+      name: entry.playerName,
+      team: entry.team || "Free Agent",
+      teamColor: teamConfig?.primaryColor || "#00F3FF",
+      position: "P/C/1B/2B/3B/SS/LF/CF/RF",
+      stats: {
+        avg: formatAvg(stat?.avg),
+        power: attributes?.chargeHitPower ?? attributes?.battingOverall ?? 50,
+        speed: attributes?.speed ?? attributes?.speedOverall ?? 50,
+        chemistry: attributes?.ability ? [attributes.ability] : [],
+      },
+    };
+  });
+
+  // Fallback to stat sheet in case registry is empty
+  const fallbackPlayers: BuilderPlayer[] =
+    availablePlayers.length > 0
+      ? availablePlayers
+      : playerStats.slice(0, 12).map((p) => {
+          const teamConfig = getTeamByName(p.team);
+          return {
+            id: p.name,
+            name: p.name,
+            team: p.team,
+            teamColor: teamConfig?.primaryColor || "#00F3FF",
+            position: "P/C/1B/2B/3B/SS/LF/CF/RF",
+            stats: {
+              avg: formatAvg(p.avg),
+              power: 50,
+              speed: 50,
+              chemistry: [],
+            },
+          };
+        });
+
+  return <LineupBuilderClient availablePlayers={fallbackPlayers} />;
 }
-
-export const metadata = {
-  title: 'Lineup Builder - Comets League Baseball',
-  description: 'Build and optimize your lineup with interactive chemistry visualization',
-};

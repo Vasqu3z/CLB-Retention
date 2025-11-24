@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { LeaderEntry } from "@/lib/sheets";
 import { getTeamByName } from "@/config/league";
 import { getTeamLogoPaths } from "@/lib/teamLogos";
@@ -8,8 +8,7 @@ import { playerNameToSlug } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import SeasonToggle from "@/components/SeasonToggle";
-import StatTooltip from "@/components/StatTooltip";
-import SurfaceCard from "@/components/SurfaceCard";
+import RetroTable, { type Column } from "@/components/ui/RetroTable";
 
 interface LeadersViewProps {
   initialBattingLeaders: any;
@@ -21,6 +20,86 @@ interface LeadersViewProps {
 }
 
 type Tab = 'batting' | 'pitching' | 'fielding';
+
+type LeaderRow = {
+  id: string;
+  rank: string;
+  player: string;
+  team?: string;
+  value: string;
+  teamSlug?: string;
+  teamColor?: string;
+  isTieSummary?: boolean;
+  emblem?: string;
+};
+
+function buildLeaderRows(leaders: LeaderEntry[]): LeaderRow[] {
+  return leaders.map((leader, idx) => {
+    const teamConfig = leader.team ? getTeamByName(leader.team) : null;
+    const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
+
+    return {
+      id: `${leader.player}-${idx}`,
+      rank: leader.rank,
+      player: leader.player,
+      team: leader.team,
+      value: leader.value,
+      teamSlug: teamConfig?.slug,
+      teamColor: teamConfig?.primaryColor,
+      isTieSummary: leader.isTieSummary,
+      ...(logos ? { emblem: logos.emblem } : {}),
+    };
+  });
+}
+
+const leaderColumns: Column<LeaderRow>[] = [
+  {
+    header: '#',
+    accessorKey: 'rank',
+    sortable: true,
+    className: 'text-center text-comets-yellow font-bold',
+  },
+  {
+    header: 'Player',
+    cell: (leader) => leader.isTieSummary ? (
+      <span className="font-mono text-white/70">{leader.player}</span>
+    ) : (
+      <div className="flex items-center gap-2">
+        {leader.emblem && (
+          <div className="w-5 h-5 relative flex-shrink-0">
+            <Image src={leader.emblem} alt={leader.team || leader.player} width={20} height={20} className="object-contain" />
+          </div>
+        )}
+        <Link
+          href={`/players/${playerNameToSlug(leader.player)}`}
+          className="font-semibold text-white hover:text-comets-yellow transition-colors"
+        >
+          {leader.player}
+        </Link>
+      </div>
+    ),
+  },
+  {
+    header: 'Team',
+    cell: (leader) => leader.isTieSummary ? (
+      <span className="text-white/60 font-mono">—</span>
+    ) : (
+      <Link
+        href={leader.teamSlug ? `/teams/${leader.teamSlug}` : '#'}
+        className="text-sm font-semibold"
+        style={{ color: leader.teamColor || '#E8EDF5' }}
+      >
+        {leader.team}
+      </Link>
+    ),
+  },
+  {
+    header: 'Stat',
+    accessorKey: 'value',
+    sortable: true,
+    className: 'text-right font-mono text-comets-cyan',
+  },
+];
 
 export default function LeadersView({
   initialBattingLeaders,
@@ -37,15 +116,46 @@ export default function LeadersView({
   const pitchingLeaders = isPlayoffs ? playoffPitchingLeaders : initialPitchingLeaders;
   const fieldingLeaders = isPlayoffs ? playoffFieldingLeaders : initialFieldingLeaders;
 
+  const battingRows = useMemo(() => ({
+    avg: buildLeaderRows(battingLeaders.avg),
+    hits: buildLeaderRows(battingLeaders.hits),
+    hr: buildLeaderRows(battingLeaders.hr),
+    rbi: buildLeaderRows(battingLeaders.rbi),
+    slg: buildLeaderRows(battingLeaders.slg),
+    ops: buildLeaderRows(battingLeaders.ops),
+  }), [battingLeaders]);
+
+  const pitchingRows = useMemo(() => ({
+    ip: buildLeaderRows(pitchingLeaders.ip),
+    wins: buildLeaderRows(pitchingLeaders.wins),
+    losses: buildLeaderRows(pitchingLeaders.losses),
+    saves: buildLeaderRows(pitchingLeaders.saves),
+    era: buildLeaderRows(pitchingLeaders.era),
+    whip: buildLeaderRows(pitchingLeaders.whip),
+    baa: buildLeaderRows(pitchingLeaders.baa),
+  }), [pitchingLeaders]);
+
+  const fieldingRows = useMemo(() => ({
+    nicePlays: buildLeaderRows(fieldingLeaders.nicePlays),
+    errors: buildLeaderRows(fieldingLeaders.errors),
+    stolenBases: buildLeaderRows(fieldingLeaders.stolenBases),
+  }), [fieldingLeaders]);
+
+  const renderCategory = (label: string, rows: LeaderRow[]) => (
+    <div className="space-y-2">
+      <div className="font-ui text-xs tracking-[0.2em] uppercase text-white/60">{label}</div>
+      <RetroTable data={rows} columns={leaderColumns} />
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex-1" /> {/* Spacer */}
+        <div className="flex-1" />
         <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
       </div>
 
-      {/* Tab Navigation */}
-      <SurfaceCard className="p-2">
+      <div className="p-2 rounded-xl border border-white/10 bg-white/5">
         <nav className="flex space-x-2" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('batting')}
@@ -78,112 +188,38 @@ export default function LeadersView({
             Fielding & Running
           </button>
         </nav>
-      </SurfaceCard>
+      </div>
 
-      {/* Batting Leaders */}
       {activeTab === 'batting' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <LeaderCard title="Batting Average" abbr="AVG" leaders={battingLeaders.avg} />
-          <LeaderCard title="Hits" abbr="H" leaders={battingLeaders.hits} />
-          <LeaderCard title="Home Runs" abbr="HR" leaders={battingLeaders.hr} />
-          <LeaderCard title="Runs Batted In" abbr="RBI" leaders={battingLeaders.rbi} />
-          <LeaderCard title="Slugging Percentage" abbr="SLG" leaders={battingLeaders.slg} />
-          <LeaderCard title="On-Base Plus Slugging" abbr="OPS" leaders={battingLeaders.ops} />
+          {renderCategory('AVG', battingRows.avg)}
+          {renderCategory('Hits', battingRows.hits)}
+          {renderCategory('HR', battingRows.hr)}
+          {renderCategory('RBI', battingRows.rbi)}
+          {renderCategory('SLG', battingRows.slg)}
+          {renderCategory('OPS', battingRows.ops)}
         </div>
       )}
 
-      {/* Pitching Leaders */}
       {activeTab === 'pitching' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <LeaderCard title="Innings Pitched" abbr="IP" leaders={pitchingLeaders.ip} />
-          <LeaderCard title="Wins" abbr="W" leaders={pitchingLeaders.wins} />
-          <LeaderCard title="Losses" abbr="L" leaders={pitchingLeaders.losses} />
-          <LeaderCard title="Saves" abbr="SV" leaders={pitchingLeaders.saves} />
-          <LeaderCard title="Earned Run Average" abbr="ERA" leaders={pitchingLeaders.era} />
-          <LeaderCard title="Walks & Hits per IP" abbr="WHIP" leaders={pitchingLeaders.whip} />
-          <LeaderCard title="Batting Average Against" abbr="BAA" leaders={pitchingLeaders.baa} />
+          {renderCategory('IP', pitchingRows.ip)}
+          {renderCategory('Wins', pitchingRows.wins)}
+          {renderCategory('Losses', pitchingRows.losses)}
+          {renderCategory('Saves', pitchingRows.saves)}
+          {renderCategory('ERA', pitchingRows.era)}
+          {renderCategory('WHIP', pitchingRows.whip)}
+          {renderCategory('BAA', pitchingRows.baa)}
         </div>
       )}
 
-      {/* Fielding Leaders */}
       {activeTab === 'fielding' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <LeaderCard title="Nice Plays" abbr="NP" leaders={fieldingLeaders.nicePlays} />
-          <LeaderCard title="Errors" abbr="E" leaders={fieldingLeaders.errors} />
-          <LeaderCard title="Stolen Bases" abbr="SB" leaders={fieldingLeaders.stolenBases} />
+          {renderCategory('Nice Plays', fieldingRows.nicePlays)}
+          {renderCategory('Errors', fieldingRows.errors)}
+          {renderCategory('Stolen Bases', fieldingRows.stolenBases)}
         </div>
       )}
     </div>
-  );
-}
-
-function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; leaders: LeaderEntry[] }) {
-  return (
-    <SurfaceCard className="p-6 hover:scale-[1.02] transition-all duration-300">
-      <div className="flex items-baseline justify-between mb-4 pb-3 border-b border-star-gray/20">
-        <h3 className="text-lg font-display font-semibold text-star-white">
-          {title}
-        </h3>
-        <span className="text-xs font-mono text-nebula-orange font-bold">
-          <StatTooltip stat={abbr} showIcon>
-            {abbr}
-          </StatTooltip>
-        </span>
-      </div>
-      <div className="space-y-2">
-        {leaders.length === 0 && (
-          <p className="text-star-gray text-sm italic font-mono">No leaders yet</p>
-        )}
-        {leaders.map((leader, idx) => {
-          const teamConfig = leader.team ? getTeamByName(leader.team) : null;
-          const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
-
-          return (
-            <div
-              key={idx}
-              className="py-2.5 px-3 rounded-lg bg-space-black/20 hover:bg-space-blue/30 transition-all duration-300 border border-star-gray/10 hover:border-nebula-orange/30"
-            >
-              <div className="flex justify-between items-center gap-2">
-                <div className="flex-1 min-w-0 flex items-center gap-2">
-                  <span className="text-solar-gold font-bold font-mono text-sm">{leader.rank}.</span>
-                  {leader.isTieSummary ? (
-                    <span className="font-medium italic text-star-gray font-mono text-sm">{leader.player}</span>
-                  ) : (
-                    <>
-                      {logos && teamConfig && (
-                        <Link
-                          href={`/teams/${teamConfig.slug}`}
-                          className="flex-shrink-0 hover:opacity-80 transition-opacity"
-                          title={leader.team}
-                        >
-                          <div className="w-5 h-5 relative">
-                            <Image
-                              src={logos.emblem}
-                              alt={leader.team}
-                              width={20}
-                              height={20}
-                              className="object-contain"
-                            />
-                          </div>
-                        </Link>
-                      )}
-                      <Link
-                        href={`/players/${playerNameToSlug(leader.player)}`}
-                        className="font-semibold text-star-white text-sm hover:text-nebula-orange transition-colors"
-                      >
-                        {leader.player}
-                      </Link>
-                    </>
-                  )}
-                </div>
-                <span className="text-nebula-cyan font-bold font-mono text-base flex-shrink-0">
-                  {leader.value}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </SurfaceCard>
   );
 }

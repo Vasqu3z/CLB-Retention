@@ -11,16 +11,16 @@ export default function CardGridSkeleton({ itemCount = 8, className }: CardGridS
       {Array.from({ length: itemCount }).map((_, i) => (
         <div
           key={i}
-          className="glass-card p-6 rounded-xl border border-cosmic-border/50 h-48 flex flex-col justify-between bg-space-navy/40 animate-pulse"
+          className="p-6 rounded-2xl border border-white/10 h-48 flex flex-col justify-between bg-surface-dark/80 shadow-[0_0_24px_rgba(0,243,255,0.12)] animate-pulse"
         >
           <div className="flex justify-between items-start">
-            <div className="h-16 w-16 rounded-full bg-space-navy" />
-            <div className="h-6 w-16 rounded bg-space-navy/50" />
+            <div className="h-16 w-16 rounded-full bg-white/10" />
+            <div className="h-6 w-16 rounded-full bg-white/10" />
           </div>
 
           <div className="space-y-3 mt-4">
-            <div className="h-6 w-3/4 rounded bg-space-navy" />
-            <div className="h-4 w-1/2 rounded bg-space-navy/50" />
+            <div className="h-6 w-3/4 rounded-full bg-white/10" />
+            <div className="h-4 w-1/2 rounded-full bg-white/5" />
           </div>
         </div>
       ))}

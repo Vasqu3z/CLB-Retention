@@ -4,13 +4,16 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import type { HTMLMotionProps } from "framer-motion";
 
-interface RetroButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface RetroButtonProps
+  extends Omit<HTMLMotionProps<"button">, "ref" | "onClick"> {
   variant?: "primary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   href?: string;
   children: React.ReactNode;
   isLoading?: boolean;
+  onClick?: React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
 }
 
 export function RetroButton({
@@ -21,11 +24,8 @@ export function RetroButton({
   children,
   isLoading,
   disabled,
-  onClick,
-  type = "button",
-  ...rest
+  ...motionProps
 }: RetroButtonProps) {
-  // Extract only safe props to avoid conflicts with framer-motion event handlers
   
   const baseStyles = "group relative font-display uppercase tracking-wide overflow-hidden transition-all duration-200 rounded-sm inline-flex items-center justify-center cursor-pointer select-none focus-arcade";
   
@@ -83,8 +83,9 @@ export function RetroButton({
   );
 
   if (href && !disabled && !isLoading) {
+    const { onClick } = motionProps;
     return (
-      <Link href={href} className={buttonClasses}>
+      <Link href={href} className={buttonClasses} onClick={onClick}>
         {content}
       </Link>
     );
@@ -94,10 +95,9 @@ export function RetroButton({
     <motion.button
       className={buttonClasses}
       disabled={disabled || isLoading}
-      onClick={onClick}
-      type={type}
       whileHover={!disabled && !isLoading ? { scale: 1.05 } : {}}
       whileTap={!disabled && !isLoading ? { scale: 0.95 } : {}}
+      {...motionProps}
     >
       {content}
     </motion.button>

@@ -1,20 +1,18 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
-import { PlayerStats } from '@/lib/sheets';
+import React, { useMemo, useState } from 'react';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
+import RetroButton from '@/components/ui/RetroButton';
 import SeasonToggle from '@/components/SeasonToggle';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
-import FadeIn from '@/components/animations/FadeIn';
-import LiveStatsIndicator from '@/components/LiveStatsIndicator';
-import SurfaceCard from '@/components/SurfaceCard';
+import { PlayerStats } from '@/lib/sheets';
 
 type StatTab = 'hitting' | 'pitching' | 'fielding';
 
-interface Props {
+type Props = {
   regularPlayers: PlayerStats[];
   playoffPlayers: PlayerStats[];
-}
+};
 
 export default function StatsComparisonView({ regularPlayers, playoffPlayers }: Props) {
   const [selectedPlayerNames, setSelectedPlayerNames] = useState<string[]>([]);
@@ -23,262 +21,209 @@ export default function StatsComparisonView({ regularPlayers, playoffPlayers }: 
 
   const activePlayers = isPlayoffs ? playoffPlayers : regularPlayers;
 
-  const selectedPlayers = selectedPlayerNames
-    .map(name => activePlayers.find(p => p.name === name))
-    .filter((p): p is PlayerStats => p !== undefined);
+  const selectedPlayers = useMemo(
+    () =>
+      selectedPlayerNames
+        .map((name) => activePlayers.find((p) => p.name === name))
+        .filter((p): p is PlayerStats => p !== undefined),
+    [selectedPlayerNames, activePlayers]
+  );
 
-  // Get unique player names from both datasets
-  const allPlayerNames = Array.from(
-    new Set([...regularPlayers.map(p => p.name), ...playoffPlayers.map(p => p.name)])
-  ).sort();
+  const availablePlayerNames = useMemo(() => activePlayers.map((p) => p.name).sort(), [activePlayers]);
 
-  // Get players available in the active season
-  const availablePlayerNames = activePlayers.map(p => p.name).sort();
+  const tableScrollRef = useLenisScrollLock<HTMLDivElement>();
 
   return (
     <div className="space-y-8">
-      <FadeIn delay={0.1} direction="up">
-        <div className="relative">
-          {/* Baseball stitching accent */}
-          <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-field-green/50 to-transparent rounded-full" />
+      <header className="rounded-3xl border border-white/10 bg-gradient-to-r from-black/60 via-surface-dark/80 to-black/60 p-6 shadow-[0_0_24px_rgba(0,243,255,0.12)]">
+        <p className="font-mono text-sm uppercase text-white/60">Tools / Stats</p>
+        <h1 className="text-4xl lg:text-5xl font-display font-bold text-white mb-3">Player Stats Comparison</h1>
+        <p className="text-white/70 font-mono text-base">
+          Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics with the retro UI kit.
+        </p>
+      </header>
 
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-field-green via-nebula-teal to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-            Player Stats Comparison
-          </h1>
-          <p className="text-star-gray font-mono text-lg mb-3">
-            Compare 2-5 players side-by-side for hitting, pitching, and fielding statistics
-          </p>
-          <LiveStatsIndicator />
+      <div className="flex flex-wrap gap-3 items-center">
+        <RetroButton
+          size="sm"
+          variant={activeTab === 'hitting' ? 'primary' : 'outline'}
+          onClick={() => setActiveTab('hitting')}
+        >
+          Hitting
+        </RetroButton>
+        <RetroButton
+          size="sm"
+          variant={activeTab === 'pitching' ? 'primary' : 'outline'}
+          onClick={() => setActiveTab('pitching')}
+        >
+          Pitching
+        </RetroButton>
+        <RetroButton
+          size="sm"
+          variant={activeTab === 'fielding' ? 'primary' : 'outline'}
+          onClick={() => setActiveTab('fielding')}
+        >
+          Fielding & Running
+        </RetroButton>
+
+        <div className="ml-auto">
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
         </div>
-      </FadeIn>
+      </div>
 
-      {/* Season Toggle */}
-      <FadeIn delay={0.2} direction="up">
-        <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
-      </FadeIn>
+      <PlayerMultiSelect
+        className="mb-2"
+        players={availablePlayerNames}
+        selectedPlayers={selectedPlayerNames}
+        onSelectionChange={setSelectedPlayerNames}
+        maxSelections={5}
+        placeholder={`Search ${isPlayoffs ? 'playoff' : 'regular season'} players...`}
+      />
 
-      {/* Stat Category Tabs */}
-      <FadeIn delay={0.3} direction="up">
-        <SurfaceCard className="p-4">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('hitting')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'hitting'
-                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Hitting
-            </button>
-            <button
-              onClick={() => setActiveTab('pitching')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'pitching'
-                  ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Pitching
-            </button>
-            <button
-              onClick={() => setActiveTab('fielding')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'fielding'
-                  ? 'bg-gradient-to-r from-field-green to-nebula-teal text-white shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Fielding & Running
-            </button>
-          </div>
-        </SurfaceCard>
-      </FadeIn>
-
-      {/* Player Selection */}
-      <FadeIn delay={0.4} direction="up">
-        <PlayerMultiSelect
-          className="mb-2"
-          players={availablePlayerNames}
-          selectedPlayers={selectedPlayerNames}
-          onSelectionChange={setSelectedPlayerNames}
-          maxSelections={5}
-          placeholder={`Search ${isPlayoffs ? 'playoff' : 'regular season'} players...`}
-        />
-      </FadeIn>
-
-      {/* Comparison Tables */}
       {selectedPlayers.length >= 2 && (
-        <FadeIn delay={0.5} direction="up">
-          <div className="space-y-6">
-          {/* Hitting Stats */}
-          {activeTab === 'hitting' && (
-            <SurfaceCard className="overflow-hidden">
-              <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-nebula-orange text-shadow">Hitting Statistics</h3>
-              </div>
-              <ScrollableTable>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                      <th className="px-4 py-3 text-left font-display font-bold text-nebula-orange sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
-                        Stat
-                      </th>
-                      {selectedPlayers.map(player => (
-                        <th
-                          key={player.name}
-                          className="px-4 py-3 text-center font-display font-bold text-star-white min-w-[120px]"
-                        >
-                          {player.name}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="font-mono">
-                    <StatRow label="GP" players={selectedPlayers} getValue={p => p.gp} numeric />
-                    <StatRow label="AB" players={selectedPlayers} getValue={p => p.ab} numeric />
-                    <StatRow label="H" players={selectedPlayers} getValue={p => p.h} numeric />
-                    <StatRow label="HR" players={selectedPlayers} getValue={p => p.hr} numeric />
-                    <StatRow label="RBI" players={selectedPlayers} getValue={p => p.rbi} numeric />
-                    <StatRow label="Hits Robbed (ROB)" players={selectedPlayers} getValue={p => p.rob} numeric />
-                    <StatRow label="Double Plays Hit Into (DP)" players={selectedPlayers} getValue={p => p.dp} numeric />
-                    <StatRow label="AVG" players={selectedPlayers} getValue={p => p.avg} highlight />
-                    <StatRow label="OBP" players={selectedPlayers} getValue={p => p.obp} highlight />
-                    <StatRow label="SLG" players={selectedPlayers} getValue={p => p.slg} highlight />
-                    <StatRow label="OPS" players={selectedPlayers} getValue={p => p.ops} highlight />
-                  </tbody>
-                </table>
-              </ScrollableTable>
-            </SurfaceCard>
-          )}
+        <div className="rounded-2xl border border-white/10 bg-surface-dark/80 shadow-[0_0_24px_rgba(0,243,255,0.12)] overflow-hidden space-y-6">
+          <StatSection
+            title="Hitting Statistics"
+            accent="from-comets-cyan/15 to-comets-purple/10"
+            visible={activeTab === 'hitting'}
+          >
+            <StatsTable
+              ref={tableScrollRef}
+              selectedPlayers={selectedPlayers}
+              rows={[
+                { label: 'GP', value: (p) => p.gp, numeric: true },
+                { label: 'AB', value: (p) => p.ab, numeric: true },
+                { label: 'H', value: (p) => p.h, numeric: true },
+                { label: 'HR', value: (p) => p.hr, numeric: true },
+                { label: 'RBI', value: (p) => p.rbi, numeric: true },
+                { label: 'Hits Robbed (ROB)', value: (p) => p.rob, numeric: true },
+                { label: 'Double Plays Hit Into (DP)', value: (p) => p.dp, numeric: true },
+                { label: 'AVG', value: (p) => p.avg, highlight: true },
+                { label: 'OBP', value: (p) => p.obp, highlight: true },
+                { label: 'SLG', value: (p) => p.slg, highlight: true },
+                { label: 'OPS', value: (p) => p.ops, highlight: true },
+              ]}
+            />
+          </StatSection>
 
-          {/* Pitching Stats */}
-          {activeTab === 'pitching' && (
-            <SurfaceCard className="overflow-hidden">
-              <div className="bg-gradient-to-r from-solar-gold/30 to-comet-yellow/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-solar-gold text-shadow">Pitching Statistics</h3>
-              </div>
-              <ScrollableTable>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                      <th className="px-4 py-3 text-left font-display font-bold text-solar-gold sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
-                        Stat
-                      </th>
-                      {selectedPlayers.map(player => (
-                        <th
-                          key={player.name}
-                          className="px-4 py-3 text-center font-display font-bold text-star-white min-w-[120px]"
-                        >
-                          {player.name}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="font-mono">
-                    <StatRow label="IP" players={selectedPlayers} getValue={p => p.ip} numeric />
-                    <StatRow label="W" players={selectedPlayers} getValue={p => p.w} numeric />
-                    <StatRow label="L" players={selectedPlayers} getValue={p => p.l} numeric />
-                    <StatRow label="SV" players={selectedPlayers} getValue={p => p.sv} numeric />
-                    <StatRow label="H" players={selectedPlayers} getValue={p => p.hAllowed} numeric />
-                    <StatRow label="HR" players={selectedPlayers} getValue={p => p.hrAllowed} numeric />
-                    <StatRow label="ERA" players={selectedPlayers} getValue={p => p.era} highlight />
-                    <StatRow label="WHIP" players={selectedPlayers} getValue={p => p.whip} highlight />
-                    <StatRow label="BAA" players={selectedPlayers} getValue={p => p.baa} highlight />
-                  </tbody>
-                </table>
-              </ScrollableTable>
-            </SurfaceCard>
-          )}
+          <StatSection
+            title="Pitching Statistics"
+            accent="from-comets-yellow/15 to-comets-red/10"
+            visible={activeTab === 'pitching'}
+          >
+            <StatsTable
+              selectedPlayers={selectedPlayers}
+              rows={[
+                { label: 'IP', value: (p) => p.ip, numeric: true },
+                { label: 'W', value: (p) => p.w, numeric: true },
+                { label: 'L', value: (p) => p.l, numeric: true },
+                { label: 'SV', value: (p) => p.sv, numeric: true },
+                { label: 'H', value: (p) => p.hAllowed, numeric: true },
+                { label: 'HR', value: (p) => p.hrAllowed, numeric: true },
+                { label: 'ERA', value: (p) => p.era, highlight: true },
+                { label: 'WHIP', value: (p) => p.whip, highlight: true },
+                { label: 'BAA', value: (p) => p.baa, highlight: true },
+              ]}
+            />
+          </StatSection>
 
-          {/* Fielding Stats */}
-          {activeTab === 'fielding' && (
-            <SurfaceCard className="overflow-hidden">
-              <div className="bg-gradient-to-r from-field-green/30 to-nebula-teal/30 px-4 py-3 border-b border-cosmic-border">
-                <h3 className="text-lg font-display font-bold text-field-green text-shadow">Fielding & Running Statistics</h3>
-              </div>
-              <ScrollableTable>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                      <th className="px-4 py-3 text-left font-display font-bold text-field-green sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
-                        Stat
-                      </th>
-                      {selectedPlayers.map(player => (
-                        <th
-                          key={player.name}
-                          className="px-4 py-3 text-center font-display font-bold text-star-white min-w-[120px]"
-                        >
-                          {player.name}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="font-mono">
-                    <StatRow label="NP" players={selectedPlayers} getValue={p => p.np} numeric />
-                    <StatRow label="E" players={selectedPlayers} getValue={p => p.e} numeric />
-                    <StatRow label="OAA" players={selectedPlayers} getValue={p => p.oaa} numeric highlight />
-                    <StatRow label="SB" players={selectedPlayers} getValue={p => p.sb} numeric />
-                    <StatRow label="CS" players={selectedPlayers} getValue={p => p.cs} numeric />
-                  </tbody>
-                </table>
-              </ScrollableTable>
-            </SurfaceCard>
-          )}
-          </div>
-        </FadeIn>
+          <StatSection
+            title="Fielding & Running Statistics"
+            accent="from-emerald-400/15 to-comets-cyan/10"
+            visible={activeTab === 'fielding'}
+          >
+            <StatsTable
+              selectedPlayers={selectedPlayers}
+              rows={[
+                { label: 'NP', value: (p) => p.np, numeric: true },
+                { label: 'E', value: (p) => p.e, numeric: true },
+                { label: 'SB', value: (p) => p.sb, numeric: true },
+                { label: 'CS', value: (p) => p.cs, numeric: true },
+                { label: 'OAA', value: (p) => p.oaa, highlight: true },
+              ]}
+            />
+          </StatSection>
+        </div>
       )}
     </div>
   );
 }
 
-interface StatRowProps {
+type StatsTableRow = {
   label: string;
-  players: PlayerStats[];
-  getValue: (player: PlayerStats) => string | number | undefined;
+  value: (player: PlayerStats) => any;
   numeric?: boolean;
   highlight?: boolean;
-}
+};
 
-function StatRow({ label, players, getValue, numeric = false, highlight = false }: StatRowProps) {
-  const values = players.map(p => getValue(p));
+type StatsTableProps = {
+  selectedPlayers: PlayerStats[];
+  rows: StatsTableRow[];
+};
 
-  // Find max value for numeric highlighting (only for counting stats, not rate stats)
-  const maxValue = numeric && !highlight
-    ? Math.max(...values.map(v => typeof v === 'number' ? v : 0))
-    : null;
-
+const StatsTable = React.forwardRef<HTMLDivElement, StatsTableProps>(function StatsTable(
+  { selectedPlayers, rows },
+  ref
+) {
   return (
-    <tr className="border-b border-cosmic-border hover:bg-space-blue/20 transition-colors duration-200">
-      <td className={`px-4 py-2 font-medium text-star-gray sticky left-0 bg-space-navy/90 backdrop-blur-md border-r border-cosmic-border ${highlight ? 'font-bold text-star-white' : ''}`}>
-        {label}
-      </td>
-      {players.map((player) => {
-        const value = getValue(player);
-        const isMax = numeric && maxValue !== null && value === maxValue && (value as number) > 0;
-        const displayValue = value !== undefined && value !== null && value !== 0 ? value : '-';
-
-        return (
-          <td
-            key={player.name}
-            className={`px-4 py-2 text-center ${
-              isMax ? 'bg-green-400/20 font-bold text-green-400' : 'text-star-white'
-            } ${highlight ? 'font-semibold text-nebula-orange' : ''}`}
-          >
-            {displayValue}
-          </td>
-        );
-      })}
-    </tr>
+    <div ref={ref} className="relative overflow-auto" onWheel={(e) => e.stopPropagation()}>
+      <table className="w-full text-sm text-white/80">
+        <thead>
+          <tr className="bg-black/40 border-b border-white/10">
+            <th className="px-4 py-3 text-left font-display font-bold text-comets-yellow sticky left-0 bg-surface-dark/95 backdrop-blur z-10 border-r border-white/10">
+              Stat
+            </th>
+            {selectedPlayers.map((player) => (
+              <th
+                key={player.name}
+                className="px-4 py-3 text-center font-display font-bold text-white min-w-[120px]"
+              >
+                {player.name}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="font-mono">
+          {rows.map((row) => (
+            <tr key={row.label} className="border-b border-white/5">
+              <td className="px-4 py-3 text-left text-white/80 font-semibold sticky left-0 bg-surface-dark/95 backdrop-blur z-10 border-r border-white/10">
+                {row.label}
+              </td>
+              {selectedPlayers.map((player) => {
+                const value = row.value(player);
+                const display = row.numeric && typeof value === 'number' ? value.toFixed(0) : value ?? '-';
+                return (
+                  <td
+                    key={player.name}
+                    className={`px-4 py-3 text-center ${row.highlight ? 'text-comets-yellow font-semibold' : 'text-white'}`}
+                  >
+                    {display}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
-}
+});
 
-function ScrollableTable({ children }: { children: ReactNode }) {
-  const ref = useLenisScrollLock<HTMLDivElement>();
+type StatSectionProps = {
+  title: string;
+  accent: string;
+  visible: boolean;
+  children: React.ReactNode;
+};
 
+function StatSection({ title, accent, visible, children }: StatSectionProps) {
+  if (!visible) return null;
   return (
-    <div ref={ref} className="relative overflow-auto max-h-[70vh]" onWheel={(e) => e.stopPropagation()}>
-      {children}
+    <div className="overflow-hidden">
+      <div className={`px-4 py-3 border-b border-white/10 bg-gradient-to-r ${accent}`}>
+        <h3 className="text-lg font-display font-semibold text-white">{title}</h3>
+      </div>
+      <div className="p-4">{children}</div>
     </div>
   );
 }

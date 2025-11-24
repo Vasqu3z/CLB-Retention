@@ -18,8 +18,21 @@ export interface LineupPlayer {
   };
 }
 
+type LineupPlayerWithDefaults = LineupPlayer & {
+  id: string;
+  team: string;
+  teamColor: string;
+  position: string;
+  stats: {
+    avg: string;
+    power: number;
+    speed: number;
+    chemistry: string[];
+  };
+};
+
 interface Roster {
-  [position: string]: LineupPlayer | null;
+  [position: string]: LineupPlayerWithDefaults | null;
 }
 
 const POSITIONS = {
@@ -35,7 +48,7 @@ const POSITIONS = {
 };
 
 export default function LineupBuilder({ players }: { players: LineupPlayer[] }) {
-  const availablePlayers = useMemo(() => {
+  const availablePlayers = useMemo<LineupPlayerWithDefaults[]>(() => {
     return players.map((player, index) => ({
       id: `${player.name}-${index}`,
       name: player.name,

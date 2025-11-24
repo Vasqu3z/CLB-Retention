@@ -6,12 +6,14 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import type { HTMLMotionProps } from "framer-motion";
 
-interface RetroButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
+interface RetroButtonProps
+  extends Omit<HTMLMotionProps<"button">, "ref" | "onClick"> {
   variant?: "primary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   href?: string;
   children: React.ReactNode;
   isLoading?: boolean;
+  onClick?: React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
 }
 
 export function RetroButton({

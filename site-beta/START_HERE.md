@@ -12,6 +12,12 @@ A complete, production-ready package to upgrade your existing Next.js 15 site wi
 
 **All files are in: `/mnt/user-data/outputs/`**
 
+### 🔒 Non-Negotiable Migration Rules (read first)
+- **Use the provided files as-is for _every_ page.** Do not rebuild or remix pages or components from scratch.
+- **Replace old designs and fonts everywhere.** Do not keep legacy styling unless a beta equivalent literally does not exist.
+- **Copy the new pages, do not “blend” with legacy layouts.** Each route should ship the pre-built beta page.
+- **Wire Google Sheets only after the full visual swap.** First drop in the new designs/pages, then hook up data.
+
 ---
 
 ## 🎯 Three Paths Forward
@@ -56,6 +62,7 @@ A complete, production-ready package to upgrade your existing Next.js 15 site wi
 |------|---------|-----------|
 | **START_HERE.md** | You're here! Overview | First thing |
 | **README.md** | Complete package docs | Before starting |
+| **MIGRATION_GUARDRAILS.md** | Hard rules: no rewrites, full swap | Before copying files |
 | **MIGRATION_CHECKLIST.md** | Step-by-step guide | During migration |
 | **QUICK_REFERENCE.md** | Common patterns | While coding |
 | **dependencies.json** | Required packages | Before npm install |

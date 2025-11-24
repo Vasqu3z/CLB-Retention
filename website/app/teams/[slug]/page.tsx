@@ -58,7 +58,7 @@ const TEAM_DATA = {
   ] as Matchup[]
 };
 
-export default function TeamDetailPage({ params }: { params: { slug: string } }) {
+export default function TeamDetailPage({ params: _params }: { params: any }) {
   const [activeTab, setActiveTab] = useState<"roster" | "schedule" | "stats">("roster");
 
   // In production: 

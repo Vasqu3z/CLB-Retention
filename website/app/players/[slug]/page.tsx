@@ -3,7 +3,8 @@ import StatHighlight from "@/components/ui/StatHighlight";
 import RetroTable from "@/components/ui/RetroTable";
 import { Activity, History } from "lucide-react";
 
-export default function PlayerProfilePage({ params }: { params: { slug: string } }) {
+export default async function PlayerProfilePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   // In real app, fetch data based on params.slug
   
   const gameLog = [

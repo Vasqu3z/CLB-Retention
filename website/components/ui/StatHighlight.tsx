@@ -30,7 +30,7 @@ export default function StatHighlight() {
           </div>
           
           <h2 className="font-display text-5xl md:text-7xl text-white uppercase leading-[0.9] mb-8">
-            Numbers <br/> don't lie.
+            Numbers <br/> don&apos;t lie.
           </h2>
           
           <p className="text-white/60 text-lg max-w-md mb-8 font-body leading-relaxed">

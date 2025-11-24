@@ -1,65 +1,81 @@
-import LineupBuilderClient, { BuilderPlayer } from "./LineupBuilderClient";
-import { getAllPlayerAttributes, getAllPlayers, getPlayerRegistry } from "@/lib/sheets";
-import { getTeamByName } from "@/config/league";
+import { CHEMISTRY_LOOKUP_SHEET } from '@/config/sheets';
+import {
+  getChemistryMatrix,
+  getAllPlayerAttributes,
+  getPlayerRegistry,
+  getTeamRegistry,
+} from '@/lib/sheets';
+import LineupBuilder, { LineupPlayer } from './LineupBuilder';
 
-export const dynamic = "force-dynamic";
-export const revalidate = 300;
+// Use Incremental Static Regeneration with 60-second revalidation
+export const revalidate = 60;
 
-function formatAvg(value?: string) {
-  if (!value) return ".000";
-  return value.startsWith(".") ? value : value.padStart(5, "0");
-}
-
-export default async function LineupPage() {
-  const [registry, playerStats, playerAttributes] = await Promise.all([
-    getPlayerRegistry(),
-    getAllPlayers(),
+/**
+ * Lineup Builder Tool
+ * Interactive baseball field with drag-and-drop player placement,
+ * real-time chemistry visualization, and lineup saving
+ */
+export default async function LineupBuilderPage() {
+  const [chemistryMatrix, allPlayers, registry, teams] = await Promise.all([
+    getChemistryMatrix(),
     getAllPlayerAttributes(),
+    getPlayerRegistry(),
+    getTeamRegistry(),
   ]);
 
-  const statsByName = new Map(playerStats.map((p) => [p.name, p]));
-  const attributesByName = new Map(playerAttributes.map((p) => [p.name, p]));
+  const positiveThreshold = CHEMISTRY_LOOKUP_SHEET.THRESHOLDS.POSITIVE_MIN ?? 100;
 
-  const availablePlayers: BuilderPlayer[] = registry.map((entry) => {
-    const stat = statsByName.get(entry.playerName);
-    const attributes = attributesByName.get(entry.playerName);
-    const teamConfig = getTeamByName(entry.team);
+  const teamColorByName = new Map(
+    teams.map(team => [team.teamName, team.color || '#00F3FF'])
+  );
+
+  const registryByPlayer = new Map(
+    registry.map(entry => [entry.playerName, entry])
+  );
+
+  const lineupPlayers: LineupPlayer[] = allPlayers.map(player => {
+    const registryEntry = registryByPlayer.get(player.name);
+    const teamName = registryEntry?.team || 'Free Agent';
+    const chemistryPartners = Object.entries(chemistryMatrix[player.name] ?? {})
+      .filter(([, value]) => value >= positiveThreshold)
+      .map(([name]) => name);
+
+    const powerValue = player.chargeHitPower ?? player.battingOverall ?? 0;
+    const speedValue = player.speedOverall ?? player.speed ?? 0;
 
     return {
-      id: entry.databaseId || entry.playerName,
-      name: entry.playerName,
-      team: entry.team || "Free Agent",
-      teamColor: teamConfig?.primaryColor || "#00F3FF",
-      position: "P/C/1B/2B/3B/SS/LF/CF/RF",
+      id: player.name,
+      name: player.name,
+      team: teamName,
+      teamColor: teamColorByName.get(teamName) || '#00F3FF',
+      positions: ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'],
       stats: {
-        avg: formatAvg(stat?.avg),
-        power: attributes?.chargeHitPower ?? attributes?.battingOverall ?? 50,
-        speed: attributes?.speed ?? attributes?.speedOverall ?? 50,
-        chemistry: attributes?.ability ? [attributes.ability] : [],
+        avg: (player.battingAverage ?? 0).toFixed(3).replace(/^0/, '.'),
+        power: Math.min(
+          100,
+          Math.max(0, Math.round(powerValue))
+        ),
+        speed: Math.min(
+          100,
+          Math.max(0, Math.round(speedValue))
+        ),
       },
+      // Chemistry partners kept for compatibility with the neon builder visuals
+      // even though connections are rendered via chemistryMatrix.
+      chemistry: chemistryPartners,
     };
   });
 
-  // Fallback to stat sheet in case registry is empty
-  const fallbackPlayers: BuilderPlayer[] =
-    availablePlayers.length > 0
-      ? availablePlayers
-      : playerStats.slice(0, 12).map((p) => {
-          const teamConfig = getTeamByName(p.team);
-          return {
-            id: p.name,
-            name: p.name,
-            team: p.team,
-            teamColor: teamConfig?.primaryColor || "#00F3FF",
-            position: "P/C/1B/2B/3B/SS/LF/CF/RF",
-            stats: {
-              avg: formatAvg(p.avg),
-              power: 50,
-              speed: 50,
-              chemistry: [],
-            },
-          };
-        });
-
-  return <LineupBuilderClient availablePlayers={fallbackPlayers} />;
+  return (
+    <LineupBuilder
+      players={lineupPlayers}
+      chemistryMatrix={chemistryMatrix}
+      positiveChemistryThreshold={positiveThreshold}
+    />
+  );
 }
+
+export const metadata = {
+  title: 'Lineup Builder - Comets League Baseball',
+  description: 'Build and optimize your lineup with interactive chemistry visualization',
+};

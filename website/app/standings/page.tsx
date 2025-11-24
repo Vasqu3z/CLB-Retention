@@ -1,204 +1,55 @@
-import { getStandings } from "@/lib/sheets";
-import { getTeamByName } from "@/config/league";
-import { getTeamLogoPaths, getLeagueLogo } from "@/lib/teamLogos";
-import StatCard from "@/components/StatCard";
+import React from "react";
 import StandingsTable from "./StandingsTable";
-import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
-import FadeIn from "@/components/animations/FadeIn";
-import LiveStatsIndicator from "@/components/LiveStatsIndicator";
-import Image from "next/image";
-import SurfaceCard from "@/components/SurfaceCard";
+import { Trophy } from "lucide-react";
 
-export const revalidate = 60;
-
-export default async function StandingsPage() {
-  const standings = await getStandings();
-
-  // Enhance standings with team info for stat card calculations
-  const enhancedStandings = standings.map((team) => {
-    const teamConfig = getTeamByName(team.team);
-    const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
-
-    return {
-      ...team,
-      teamConfig,
-      teamColor: teamConfig?.primaryColor,
-      teamSlug: teamConfig?.slug,
-      emblemPath: logos?.emblem,
-      fullLogoPath: logos?.full,
-    };
-  });
-
-  // Calculate stats for stat cards - with safe defaults for empty arrays
-  const topTeam = enhancedStandings[0] || null;
-  const totalGames = enhancedStandings.reduce((sum, t) => sum + t.wins + t.losses, 0) / 2; // Divide by 2 since each game involves 2 teams
-
-  // Highest Runs/Game team
-  const teamsWithGames = enhancedStandings.map(t => {
-    const gamesPlayed = t.wins + t.losses;
-    return {
-      ...t,
-      gamesPlayed,
-      runsPerGame: gamesPlayed > 0 ? t.runsScored / gamesPlayed : 0,
-    };
-  });
-
-  // Safe reduce with initial value for empty arrays
-  const highestRunsPerGameTeam = teamsWithGames.length > 0
-    ? teamsWithGames.reduce((max, t) => t.runsPerGame > max.runsPerGame ? t : max, teamsWithGames[0])
-    : null;
-
-  // Lowest ERA team (Runs Allowed / Games) - safe reduce with initial value
-  const lowestERATeam = teamsWithGames.length > 0
-    ? teamsWithGames.reduce((min, t) => {
-        const era = t.gamesPlayed > 0 ? t.runsAllowed / t.gamesPlayed : 999;
-        const minEra = min.gamesPlayed > 0 ? min.runsAllowed / min.gamesPlayed : 999;
-        return era < minEra ? t : min;
-      }, teamsWithGames[0])
-    : null;
-
+export default function StandingsPage() {
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <FadeIn delay={0} direction="down">
-        <div className="text-center sm:text-left">
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-orange to-solar-gold bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-            League Standings
-          </h1>
-          <LiveStatsIndicator />
-        </div>
-      </FadeIn>
-
-      {/* Stat Cards */}
-      <FadeIn delay={0.15} direction="up">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="League Leader"
-            value={topTeam ? `${topTeam.wins}-${topTeam.losses}` : 'N/A'}
-            icon={Trophy}
-            sublabel={topTeam ? `Win %: ${topTeam.winPct}` : 'No data available'}
-            color="orange"
-          >
-            {topTeam?.fullLogoPath && (
-              <div className="flex items-center justify-center pt-2">
-                <div className="w-40 h-20 relative">
-                  <Image
-                    src={topTeam.fullLogoPath}
-                    alt={topTeam.team}
-                    width={160}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-            )}
-          </StatCard>
-
-          <StatCard
-            label="Games Played"
-            value={totalGames}
-            icon={Award}
-            sublabel="Total games this season"
-            color="gold"
-          >
-            <div className="flex items-center justify-center pt-2">
-              <div className="w-30 h-20 relative">
-                <Image
-                  src={getLeagueLogo()}
-                  alt="CLB Logo"
-                  width={120}
-                  height={80}
-                  className="object-contain"
-                />
-              </div>
+    <main className="min-h-screen bg-background pb-24 pt-32 px-4">
+      <div className="container mx-auto max-w-5xl">
+        
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-12">
+          <div>
+            <div className="flex items-center gap-3 text-comets-yellow mb-2">
+              <Trophy size={24} />
+              <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season 6</span>
             </div>
-          </StatCard>
-
-          <StatCard
-            label="Highest Scoring"
-            value={highestRunsPerGameTeam ? highestRunsPerGameTeam.runsPerGame.toFixed(2) : 'N/A'}
-            icon={TrendingUp}
-            sublabel="Runs scored per game"
-            color="cyan"
-          >
-            {highestRunsPerGameTeam?.fullLogoPath && (
-              <div className="flex items-center justify-center pt-2">
-                <div className="w-40 h-20 relative">
-                  <Image
-                    src={highestRunsPerGameTeam.fullLogoPath}
-                    alt={highestRunsPerGameTeam.team}
-                    width={160}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-            )}
-          </StatCard>
-
-          <StatCard
-            label="Lowest ERA"
-            value={lowestERATeam ? (lowestERATeam.gamesPlayed > 0 ? lowestERATeam.runsAllowed / lowestERATeam.gamesPlayed : 0).toFixed(2) : 'N/A'}
-            icon={TrendingDown}
-            sublabel="Runs allowed per game"
-            color="teal"
-          >
-            {lowestERATeam?.fullLogoPath && (
-              <div className="flex items-center justify-center pt-2">
-                <div className="w-40 h-20 relative">
-                  <Image
-                    src={lowestERATeam.fullLogoPath}
-                    alt={lowestERATeam.team}
-                    width={160}
-                    height={80}
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-            )}
-          </StatCard>
-        </div>
-      </FadeIn>
-
-      {/* Standings Table */}
-      <FadeIn delay={0.3} direction="up">
-        <StandingsTable standings={standings} />
-      </FadeIn>
-
-      {/* Legend */}
-      <FadeIn delay={0.45} direction="up">
-        <SurfaceCard className="p-6">
-          <h3 className="text-sm font-display font-semibold text-nebula-orange mb-4 uppercase tracking-wider">
-            Legend
-          </h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm font-mono">
-            <div>
-              <span className="text-star-gray">W</span>
-              <span className="text-star-white ml-2">Wins</span>
-            </div>
-            <div>
-              <span className="text-star-gray">L</span>
-              <span className="text-star-white ml-2">Losses</span>
-            </div>
-            <div>
-              <span className="text-star-gray">Win %</span>
-              <span className="text-star-white ml-2">Winning Percentage</span>
-            </div>
-            <div>
-              <span className="text-star-gray">Diff</span>
-              <span className="text-star-white ml-2">Run Differential</span>
-            </div>
-            <div>
-              <span className="text-star-gray">RS</span>
-              <span className="text-star-white ml-2">Runs Scored</span>
-            </div>
-            <div>
-              <span className="text-star-gray">RA</span>
-              <span className="text-star-white ml-2">Runs Allowed</span>
-            </div>
+            <h1 className="font-display text-4xl md:text-6xl uppercase text-white leading-none">
+              League Standings
+            </h1>
           </div>
-        </SurfaceCard>
-      </FadeIn>
-    </div>
+
+          {/* Filter / Toggle (Static Mock) */}
+          <div className="flex bg-surface-dark border border-white/10 rounded p-1">
+            <button className="px-4 py-2 bg-white/10 rounded-sm text-white font-ui text-xs uppercase tracking-wider shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+              Regular Season
+            </button>
+            <button className="px-4 py-2 hover:bg-white/5 rounded-sm text-white/40 hover:text-white font-ui text-xs uppercase tracking-wider transition-colors">
+              Playoffs
+            </button>
+          </div>
+        </div>
+
+        {/* The Table */}
+        <StandingsTable />
+
+        {/* Legend / Info */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono text-white/30 border-t border-white/5 pt-8">
+          <div>
+            <span className="text-comets-yellow block mb-1 font-bold">RANKING CRITERIA</span>
+            Win Percentage &gt; Head-to-Head &gt; Run Differential
+          </div>
+          <div>
+            <span className="text-comets-cyan block mb-1 font-bold">PLAYOFF CLINCH</span>
+            Top 4 teams advance to the Star Cup Semifinals.
+          </div>
+          <div className="md:text-right">
+            <span className="text-white/50 block mb-1 font-bold">LAST UPDATED</span>
+            2025-05-12 14:30 EST
+          </div>
+        </div>
+
+      </div>
+    </main>
   );
 }

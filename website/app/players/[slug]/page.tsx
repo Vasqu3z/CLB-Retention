@@ -1,123 +1,49 @@
-import { getAllPlayers, getPlayerAttributes, getPlayerChemistry, getPlayerRegistry } from '@/lib/sheets';
-import { playerNameToSlug } from '@/lib/utils';
-import { notFound } from 'next/navigation';
-import PlayerProfileView from './PlayerProfileView';
+import React from "react";
+import StatHighlight from "@/components/ui/StatHighlight";
+import RetroTable from "@/components/ui/RetroTable";
+import { Activity, History } from "lucide-react";
 
-// Use Incremental Static Regeneration with 60-second revalidation
-export const revalidate = 60;
+export default function PlayerProfilePage({ params }: { params: { slug: string } }) {
+  // In real app, fetch data based on params.slug
+  
+  const gameLog = [
+    { date: "MAY 12", opp: "BOW", ab: 4, h: 2, hr: 1, rbi: 3, pts: 120 },
+    { date: "MAY 10", opp: "DKW", ab: 3, h: 1, hr: 0, rbi: 0, pts: 45 },
+    { date: "MAY 08", opp: "PCH", ab: 5, h: 3, hr: 2, rbi: 5, pts: 210 },
+  ];
 
-/**
- * Converts a URL slug back to a player name by matching against all players
- * Example: "mario" → "Mario", "luigi-jr" → "Luigi Jr."
- */
-async function slugToPlayerName(slug: string): Promise<string | null> {
-  const [regularPlayers, playoffPlayers, registry] = await Promise.all([
-    getAllPlayers(false),
-    getAllPlayers(true),
-    getPlayerRegistry(),
-  ]);
-
-  // Combine all unique player names
-  const allPlayerNames = new Set<string>();
-  regularPlayers.forEach(p => allPlayerNames.add(p.name));
-  playoffPlayers.forEach(p => allPlayerNames.add(p.name));
-  registry.forEach(p => allPlayerNames.add(p.playerName));
-
-  // Find player name matching this slug
-  for (const playerName of allPlayerNames) {
-    if (playerNameToSlug(playerName) === slug) {
-      return playerName;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Generate static params for all players (for static generation at build time)
- * Falls back to empty array if API fails during build - pages will be generated on-demand
- */
-export async function generateStaticParams() {
-  try {
-    const registry = await getPlayerRegistry();
-
-    if (!registry || registry.length === 0) {
-      console.warn('No players found in registry during build - pages will be generated on-demand');
-      return [];
-    }
-
-    return registry.map((player) => ({
-      slug: playerNameToSlug(player.playerName),
-    }));
-  } catch (error) {
-    console.error('Failed to generate static params for player pages:', error);
-    // Return empty array so build continues - pages will be generated on-demand with ISR
-    return [];
-  }
-}
-
-/**
- * Generate metadata for player profile pages
- */
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const playerName = await slugToPlayerName(slug);
-
-  if (!playerName) {
-    return {
-      title: 'Player Not Found - Comets League Baseball',
-    };
-  }
-
-  return {
-    title: `${playerName} - Player Profile - Comets League Baseball`,
-    description: `View comprehensive stats, attributes, and chemistry for ${playerName}`,
-  };
-}
-
-export default async function PlayerProfilePage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const playerName = await slugToPlayerName(slug);
-
-  if (!playerName) {
-    notFound();
-  }
-
-  // Fetch all player data in parallel
-  const [
-    regularPlayers,
-    playoffPlayers,
-    attributes,
-    chemistry,
-    registry,
-  ] = await Promise.all([
-    getAllPlayers(false),
-    getAllPlayers(true),
-    getPlayerAttributes(playerName),
-    getPlayerChemistry(playerName),
-    getPlayerRegistry(),
-  ]);
-
-  // Find player stats
-  const regularStats = regularPlayers.find(p => p.name === playerName);
-  const playoffStats = playoffPlayers.find(p => p.name === playerName);
-
-  // Find player registry entry (for team, image URL)
-  const registryEntry = registry.find(p => p.playerName === playerName);
-
-  // If player doesn't exist in any data source, show 404
-  if (!regularStats && !playoffStats && !attributes) {
-    notFound();
-  }
+  const logColumns = [
+    { header: "Date", accessorKey: "date", className: "text-white/60" },
+    { header: "VS", accessorKey: "opp", className: "text-comets-red font-bold" },
+    { header: "AB", accessorKey: "ab" },
+    { header: "H", accessorKey: "h" },
+    { header: "HR", accessorKey: "hr", className: "text-comets-yellow" },
+    { header: "RBI", accessorKey: "rbi" },
+    { header: "PTS", accessorKey: "pts", className: "text-comets-cyan font-bold" },
+  ];
 
   return (
-    <PlayerProfileView
-      playerName={playerName}
-      regularStats={regularStats || null}
-      playoffStats={playoffStats || null}
-      attributes={attributes}
-      chemistry={chemistry}
-      registryEntry={registryEntry || null}
-    />
+    <main className="min-h-screen bg-background pb-24">
+      
+      <StatHighlight />
+
+      <div className="container mx-auto max-w-5xl px-4 -mt-12 relative z-20">
+        
+        <div className="flex gap-8 border-b border-white/10 mb-8">
+            <button className="pb-4 text-comets-yellow border-b-2 border-comets-yellow font-ui uppercase tracking-widest text-sm flex items-center gap-2">
+                <Activity size={16} /> Recent Performance
+            </button>
+            <button className="pb-4 text-white/40 hover:text-white font-ui uppercase tracking-widest text-sm flex items-center gap-2 transition-colors">
+                <History size={16} /> Season History
+            </button>
+        </div>
+
+        <div className="space-y-4">
+            <h3 className="font-display text-2xl text-white uppercase">Game Log</h3>
+            <RetroTable data={gameLog} columns={logColumns} />
+        </div>
+
+      </div>
+    </main>
   );
 }

@@ -1,12 +1,9 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-export const surfaceCardBaseClasses =
-  'rounded-2xl border border-cosmic-border/60 bg-space-black/60 backdrop-blur-xl shadow-panel transition-all duration-300 contain-strict will-change-transform';
 
 /**
  * Converts a player name to a URL-friendly slug

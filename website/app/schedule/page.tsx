@@ -6,13 +6,29 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+type TeamInfo = {
+  name: string;
+  code: string;
+  logoColor: string;
+  score?: number;
+};
+
+type ScheduleMatch = {
+  id: string;
+  home: TeamInfo;
+  away: TeamInfo;
+  date: string;
+  time: string;
+  isFinished: boolean;
+};
+
 // Mock Data - Replace with your Google Sheets fetch
-const MATCHES_BY_WEEK: Record<number, any[]> = {
+const MATCHES_BY_WEEK: Record<number, ScheduleMatch[]> = {
   3: [
-    { 
-      id: "w3-1", 
-      home: { name: "Yoshi Eggs", code: "YOS", logoColor: "#2E86DE", score: 7 }, 
-      away: { name: "Wario Muscles", code: "WAR", logoColor: "#F1C40F", score: 2 }, 
+    {
+      id: "w3-1",
+      home: { name: "Yoshi Eggs", code: "YOS", logoColor: "#2E86DE", score: 7 },
+      away: { name: "Wario Muscles", code: "WAR", logoColor: "#F1C40F", score: 2 },
       date: "MAY 05", time: "FINAL", isFinished: true 
     },
     { 
@@ -23,43 +39,43 @@ const MATCHES_BY_WEEK: Record<number, any[]> = {
     },
   ],
   4: [
-    { 
-      id: "w4-1", 
-      home: { name: "Mario Fireballs", code: "MAR", logoColor: "#FF4D4D", score: 5 }, 
-      away: { name: "Bowser Monsters", code: "BOW", logoColor: "#F4D03F", score: 3 }, 
-      date: "MAY 12", time: "FINAL", isFinished: true 
+    {
+      id: "w4-1",
+      home: { name: "Mario Fireballs", code: "MAR", logoColor: "#FF4D4D", score: 5 },
+      away: { name: "Bowser Monsters", code: "BOW", logoColor: "#F4D03F", score: 3 },
+      date: "MAY 12", time: "FINAL", isFinished: true
     },
-    { 
-      id: "w4-2", 
-      home: { name: "Luigi Knights", code: "LUI", logoColor: "#2ECC71", score: 1 }, 
-      away: { name: "Wario Muscles", code: "WAR", logoColor: "#F1C40F", score: 4 }, 
-      date: "MAY 12", time: "FINAL", isFinished: true 
+    {
+      id: "w4-2",
+      home: { name: "Luigi Knights", code: "LUI", logoColor: "#2ECC71", score: 1 },
+      away: { name: "Wario Muscles", code: "WAR", logoColor: "#F1C40F", score: 4 },
+      date: "MAY 12", time: "FINAL", isFinished: true
     },
-    { 
-      id: "w4-3", 
-      home: { name: "Peach Monarchs", code: "PCH", logoColor: "#FF69B4" }, 
-      away: { name: "Daisy Flowers", code: "DSY", logoColor: "#E67E22" }, 
-      date: "MAY 14", time: "18:00 EST", isFinished: false 
+    {
+      id: "w4-3",
+      home: { name: "Peach Monarchs", code: "PCH", logoColor: "#FF69B4" },
+      away: { name: "Daisy Flowers", code: "DSY", logoColor: "#E67E22" },
+      date: "MAY 14", time: "18:00 EST", isFinished: false
     },
-    { 
-      id: "w4-4", 
-      home: { name: "Yoshi Eggs", code: "YOS", logoColor: "#2E86DE" }, 
-      away: { name: "Birdo Bows", code: "BDO", logoColor: "#E91E63" }, 
-      date: "MAY 14", time: "20:00 EST", isFinished: false 
+    {
+      id: "w4-4",
+      home: { name: "Yoshi Eggs", code: "YOS", logoColor: "#2E86DE" },
+      away: { name: "Birdo Bows", code: "BDO", logoColor: "#E91E63" },
+      date: "MAY 14", time: "20:00 EST", isFinished: false
     },
   ],
   5: [
-    { 
-      id: "w5-1", 
-      home: { name: "Bowser Monsters", code: "BOW", logoColor: "#F4D03F" }, 
-      away: { name: "DK Wilds", code: "DKW", logoColor: "#8D6E63" }, 
-      date: "MAY 19", time: "19:00 EST", isFinished: false 
+    {
+      id: "w5-1",
+      home: { name: "Bowser Monsters", code: "BOW", logoColor: "#F4D03F" },
+      away: { name: "DK Wilds", code: "DKW", logoColor: "#8D6E63" },
+      date: "MAY 19", time: "19:00 EST", isFinished: false
     },
-    { 
-      id: "w5-2", 
-      home: { name: "Waluigi Spitballs", code: "WAL", logoColor: "#9B59B6" }, 
-      away: { name: "Mario Fireballs", code: "MAR", logoColor: "#FF4D4D" }, 
-      date: "MAY 20", time: "18:30 EST", isFinished: false 
+    {
+      id: "w5-2",
+      home: { name: "Waluigi Spitballs", code: "WAL", logoColor: "#9B59B6" },
+      away: { name: "Mario Fireballs", code: "MAR", logoColor: "#FF4D4D" },
+      date: "MAY 20", time: "18:30 EST", isFinished: false
     },
   ]
 };
@@ -71,13 +87,13 @@ export default function SchedulePage() {
   const matches = MATCHES_BY_WEEK[activeWeek] || [];
 
   // Group matches by date
-  const matchesByDate = matches.reduce((acc, match) => {
+  const matchesByDate = matches.reduce<Record<string, ScheduleMatch[]>>((acc, match) => {
     if (!acc[match.date]) {
       acc[match.date] = [];
     }
     acc[match.date].push(match);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {});
 
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4">

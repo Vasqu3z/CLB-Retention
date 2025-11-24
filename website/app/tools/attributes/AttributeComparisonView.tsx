@@ -4,9 +4,8 @@ import { useState } from 'react';
 import { PlayerAttributes } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
 import useLenisScrollLock from '@/hooks/useLenisScrollLock';
-import FadeIn from '@/components/animations/FadeIn';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
-import SurfaceCard from '@/components/SurfaceCard';
+import { RetroButton } from '@/components/ui/RetroButton';
 
 type AttributeTab = 'hitting' | 'pitching' | 'fielding';
 
@@ -26,77 +25,70 @@ export default function AttributeComparisonView({ players }: Props) {
 
   const tableScrollRef = useLenisScrollLock<HTMLDivElement>();
 
-  return (
-    <div className="space-y-8">
-      <FadeIn delay={0.1} direction="up">
-        <div className="relative">
-          {/* Baseball stitching accent */}
-          <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-cosmic-purple/50 to-transparent rounded-full" />
+  const panelClass =
+    'relative rounded-xl border border-white/10 bg-black/60 backdrop-blur-sm overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.45)]';
 
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-cosmic-purple via-royal-purple to-nebula-cyan bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-            Player Attribute Comparison
-          </h1>
-          <p className="text-star-gray font-mono text-lg mb-3">
-            Compare 2-5 players side-by-side across all 30 attributes
-          </p>
+  return (
+    <div className="space-y-6">
+      <div className={`${panelClass} p-6 lg:p-8`}>
+        <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(circle at 20% 25%, #b57cff 0%, transparent 45%)' }} />
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 rounded-sm bg-white/10 border border-white/10 text-[11px] font-mono uppercase tracking-[0.2em] text-white/70">Tool</span>
+            <h1 className="text-3xl lg:text-4xl font-display font-black uppercase tracking-tight text-shadow-neon">
+              <span className="bg-gradient-to-r from-cosmic-purple via-royal-purple to-nebula-cyan bg-clip-text text-transparent">Attribute Comparator</span>
+            </h1>
+          </div>
+          <p className="text-white/70 font-mono text-sm lg:text-base">Compare 2-5 players side-by-side across all 30 attributes.</p>
           <LiveStatsIndicator />
         </div>
-      </FadeIn>
+      </div>
 
       {/* Attribute Category Tabs */}
-      <FadeIn delay={0.2} direction="up">
-        <SurfaceCard className="p-4">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('hitting')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'hitting'
-                  ? 'bg-gradient-to-r from-nebula-orange to-nebula-coral text-white shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Hitting
-            </button>
-            <button
-              onClick={() => setActiveTab('pitching')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'pitching'
-                  ? 'bg-gradient-to-r from-solar-gold to-comet-yellow text-space-black shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Pitching
-            </button>
-            <button
-              onClick={() => setActiveTab('fielding')}
-              className={`flex-1 py-3 px-4 rounded-lg font-display font-semibold transition-all ${
-                activeTab === 'fielding'
-                  ? 'bg-gradient-to-r from-field-green to-nebula-teal text-white shadow-lg'
-                  : 'text-star-gray hover:text-star-white hover:bg-space-blue/30'
-              }`}
-            >
-              Fielding & Running
-            </button>
-          </div>
-        </SurfaceCard>
-      </FadeIn>
+      <div className={`${panelClass} p-4 flex flex-wrap gap-3`}>
+        <RetroButton
+          onClick={() => setActiveTab('hitting')}
+          variant={activeTab === 'hitting' ? 'primary' : 'outline'}
+          size="sm"
+          className="flex-1"
+        >
+          Hitting
+        </RetroButton>
+        <RetroButton
+          onClick={() => setActiveTab('pitching')}
+          variant={activeTab === 'pitching' ? 'primary' : 'outline'}
+          size="sm"
+          className="flex-1"
+        >
+          Pitching
+        </RetroButton>
+        <RetroButton
+          onClick={() => setActiveTab('fielding')}
+          variant={activeTab === 'fielding' ? 'primary' : 'outline'}
+          size="sm"
+          className="flex-1"
+        >
+          Fielding & Running
+        </RetroButton>
+      </div>
 
       {/* Player Selection */}
-      <FadeIn delay={0.3} direction="up">
+      <div className={`${panelClass} p-4 lg:p-6`}>
         <PlayerMultiSelect
-        className="mb-2"
-        players={playerNames}
-        selectedPlayers={selectedPlayerNames}
-        onSelectionChange={setSelectedPlayerNames}
-        maxSelections={5}
-        placeholder="Search players..."
+          className="mb-2"
+          players={playerNames}
+          selectedPlayers={selectedPlayerNames}
+          onSelectionChange={setSelectedPlayerNames}
+          maxSelections={5}
+          placeholder="Search players..."
         />
-      </FadeIn>
+        <p className="text-white/60 font-mono text-xs uppercase tracking-[0.14em]">Select at least 2 players to view the retro comparison table.</p>
+      </div>
 
       {/* Comparison Table */}
       {selectedPlayers.length >= 2 && (
-        <FadeIn delay={0.4} direction="up">
-          <SurfaceCard>
+        <div className={`${panelClass} overflow-hidden`}>
+          <div className="bg-gradient-to-r from-nebula-orange/20 via-cosmic-purple/15 to-nebula-cyan/20 h-1" />
           <div
             ref={tableScrollRef}
             className="relative overflow-auto max-h-[70vh]"
@@ -104,14 +96,14 @@ export default function AttributeComparisonView({ players }: Props) {
           >
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-space-blue/30 border-b border-cosmic-border">
-                  <th className="px-4 py-3 text-left font-display font-bold text-nebula-orange sticky left-0 bg-space-navy/90 backdrop-blur-md z-10 border-r border-cosmic-border">
+                <tr className="border-b border-white/10 bg-black/60">
+                  <th className="px-4 py-3 text-left font-display font-black text-nebula-orange uppercase tracking-[0.18em] sticky left-0 bg-black/80 backdrop-blur-md z-10 border-r border-white/10">
                     Attribute
                   </th>
                   {selectedPlayers.map(player => (
                     <th
                       key={player.name}
-                      className="px-4 py-3 text-center font-display font-bold text-star-white min-w-[120px]"
+                      className="px-4 py-3 text-center font-display font-semibold text-star-white min-w-[140px] uppercase tracking-[0.14em]"
                     >
                       {player.name}
                     </th>
@@ -197,8 +189,7 @@ export default function AttributeComparisonView({ players }: Props) {
               </tbody>
             </table>
           </div>
-          </SurfaceCard>
-        </FadeIn>
+        </div>
       )}
     </div>
   );

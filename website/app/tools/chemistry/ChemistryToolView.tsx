@@ -3,9 +3,8 @@
 import { useState, useMemo } from 'react';
 import { ChemistryMatrix } from '@/lib/sheets';
 import PlayerMultiSelect from '@/components/PlayerMultiSelect';
-import FadeIn from '@/components/animations/FadeIn';
 import LiveStatsIndicator from '@/components/LiveStatsIndicator';
-import SurfaceCard from '@/components/SurfaceCard';
+import { RetroButton } from '@/components/ui/RetroButton';
 
 interface Props {
   chemistryMatrix: ChemistryMatrix;
@@ -30,6 +29,9 @@ interface TeamAnalysis {
 
 export default function ChemistryToolView({ chemistryMatrix, playerNames }: Props) {
   const [selectedPlayerNames, setSelectedPlayerNames] = useState<string[]>([]);
+
+  const panelClass =
+    'relative rounded-xl border border-white/10 bg-black/60 backdrop-blur-sm overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.45)]';
 
   // Calculate chemistry data for selected players
   const selectedPlayersData = useMemo(() => {
@@ -156,24 +158,22 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
   }, [selectedPlayerNames, chemistryMatrix]);
 
   return (
-    <div className="space-y-8">
-      <FadeIn delay={0.1} direction="up">
-        <div className="relative">
-          {/* Baseball stitching accent */}
-          <div className="absolute -left-4 top-0 w-1 h-24 bg-gradient-to-b from-nebula-teal/50 to-transparent rounded-full" />
-
-          <h1 className="text-4xl lg:text-5xl font-display font-bold mb-3 bg-gradient-to-r from-nebula-teal via-nebula-cyan to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-            Player Chemistry Tool
-          </h1>
-          <p className="text-star-gray font-mono text-lg mb-3">
-            Analyze chemistry relationships and team compatibility for up to 5 players
-          </p>
+    <div className="space-y-6">
+      <div className={`${panelClass} p-6 lg:p-8`}>
+        <div className="absolute inset-0 opacity-5" style={{ background: 'radial-gradient(circle at 30% 20%, #22d1ee 0%, transparent 45%)' }} />
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 rounded-sm bg-white/10 border border-white/10 text-[11px] font-mono uppercase tracking-[0.2em] text-white/70">Tool</span>
+            <h1 className="text-3xl lg:text-4xl font-display font-black uppercase tracking-tight text-shadow-neon">
+              <span className="bg-gradient-to-r from-nebula-teal via-nebula-cyan to-cosmic-purple bg-clip-text text-transparent">Chemistry Analyzer</span>
+            </h1>
+          </div>
+          <p className="text-white/70 font-mono text-sm lg:text-base">Analyze chemistry relationships and team compatibility for up to 5 players.</p>
           <LiveStatsIndicator />
         </div>
-      </FadeIn>
+      </div>
 
-      {/* Player Selection */}
-      <FadeIn delay={0.2} direction="up">
+      <div className={`${panelClass} p-4 lg:p-6`}>
         <PlayerMultiSelect
           className="mb-2"
           players={playerNames}
@@ -182,185 +182,190 @@ export default function ChemistryToolView({ chemistryMatrix, playerNames }: Prop
           maxSelections={5}
           placeholder="Search players..."
         />
-      </FadeIn>
+        <div className="flex gap-2 text-xs font-mono uppercase tracking-[0.12em] text-white/50">
+          <span className="px-2 py-1 rounded-sm bg-white/5 border border-white/5">Positive ≥ 100</span>
+          <span className="px-2 py-1 rounded-sm bg-white/5 border border-white/5">Negative ≤ -100</span>
+        </div>
+      </div>
 
       {/* Chemistry Display */}
       {selectedPlayersData.length > 0 && (
-        <FadeIn delay={0.3} direction="up">
-          <div className="space-y-6">
-            {/* Individual Player Chemistry */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {selectedPlayersData.map(player => (
-                <SurfaceCard
-                  key={player.name}
-                  className="overflow-hidden hover:border-nebula-orange/50 transition-all duration-300"
-                >
-                  <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-cosmic-border">
-                    <h3 className="font-display font-bold text-lg text-star-white">{player.name}</h3>
-                    <p className="text-sm text-star-gray font-mono">
-                      {player.posCount} positive • {player.negCount} negative
-                    </p>
-                  </div>
-
-                  <div className="p-4 space-y-4">
-                    {/* Positive Chemistry */}
-                    {player.positive.length > 0 && (
-                      <div>
-                        <h4 className="font-display font-semibold text-green-400 mb-2 flex items-center gap-2">
-                          <span className="text-lg">✅</span>
-                          Positive Chemistry ({player.positive.length})
-                        </h4>
-                        <div
-                          className="space-y-1 max-h-48 overflow-y-auto pr-2"
-                          onWheel={(e) => e.stopPropagation()}
-                        >
-                          {player.positive.map(rel => (
-                            <div
-                              key={rel.player}
-                              className="flex justify-between items-center text-sm bg-green-400/10 hover:bg-green-400/20 px-2 py-1 rounded font-mono transition-colors duration-200"
-                            >
-                              <span className="text-star-white">{rel.player}</span>
-                              <span className="font-semibold text-green-400">+</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Negative Chemistry */}
-                    {player.negative.length > 0 && (
-                      <div>
-                        <h4 className="font-display font-semibold text-red-400 mb-2 flex items-center gap-2">
-                          <span className="text-lg">❌</span>
-                          Negative Chemistry ({player.negative.length})
-                        </h4>
-                        <div
-                          className="space-y-1 max-h-48 overflow-y-auto pr-2"
-                          onWheel={(e) => e.stopPropagation()}
-                        >
-                          {player.negative.map(rel => (
-                            <div
-                              key={rel.player}
-                              className="flex justify-between items-center text-sm bg-red-400/10 hover:bg-red-400/20 px-2 py-1 rounded font-mono transition-colors duration-200"
-                            >
-                              <span className="text-star-white">{rel.player}</span>
-                              <span className="font-semibold text-red-400">-</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {player.positive.length === 0 && player.negative.length === 0 && (
-                      <p className="text-star-gray text-sm italic font-mono">No chemistry relationships</p>
-                    )}
-                  </div>
-                </SurfaceCard>
-              ))}
-            </div>
-
-            {/* Team Analysis (only show if 2+ players selected) */}
-            {selectedPlayerNames.length >= 2 && (
-              <SurfaceCard className="p-6">
-                <h2 className="text-2xl font-display font-bold text-star-white mb-4">
-                  📊 Team Chemistry Analysis
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Internal Positive */}
-                  <div>
-                    <h3 className="font-display font-semibold text-green-400 mb-2 flex items-center gap-2">
-                      <span>✨</span>
-                      Internal Positive Connections ({teamAnalysis.internalPositive.length})
-                    </h3>
-                    {teamAnalysis.internalPositive.length > 0 ? (
-                      <div className="space-y-1">
-                        {teamAnalysis.internalPositive.map((conn, idx) => (
-                          <div key={idx} className="bg-green-400/10 px-3 py-2 rounded text-sm font-mono hover:bg-green-400/20 transition-colors duration-200">
-                            <span className="font-medium text-star-white">{conn.player1}</span>
-                            <span className="text-star-gray"> ↔ </span>
-                            <span className="font-medium text-star-white">{conn.player2}</span>
-                            <span className="ml-2 text-green-400 font-bold">+{conn.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-star-gray text-sm italic font-mono">No internal positive chemistry</p>
-                    )}
-                  </div>
-
-                  {/* Internal Negative */}
-                  <div>
-                    <h3 className="font-display font-semibold text-red-400 mb-2 flex items-center gap-2">
-                      <span>⚠️</span>
-                      Internal Negative Connections ({teamAnalysis.internalNegative.length})
-                    </h3>
-                    {teamAnalysis.internalNegative.length > 0 ? (
-                      <div className="space-y-1">
-                        {teamAnalysis.internalNegative.map((conn, idx) => (
-                          <div key={idx} className="bg-red-400/10 px-3 py-2 rounded text-sm font-mono hover:bg-red-400/20 transition-colors duration-200">
-                            <span className="font-medium text-star-white">{conn.player1}</span>
-                            <span className="text-star-gray"> ↔ </span>
-                            <span className="font-medium text-star-white">{conn.player2}</span>
-                            <span className="ml-2 text-red-400 font-bold">{conn.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-star-gray text-sm italic font-mono">No internal conflicts</p>
-                    )}
-                  </div>
-
-                  {/* Shared Positive Chemistry */}
-                  <div>
-                    <h3 className="font-display font-semibold text-nebula-cyan mb-2 flex items-center gap-2">
-                      <span>🤝</span>
-                      Shared Positive Chemistry ({Object.keys(teamAnalysis.sharedPositive).length})
-                    </h3>
-                    {Object.keys(teamAnalysis.sharedPositive).length > 0 ? (
-                      <div className="space-y-1 max-h-64 overflow-y-auto pr-2" onWheel={(e) => e.stopPropagation()}>
-                        {Object.entries(teamAnalysis.sharedPositive).map(([character, players]) => (
-                          <div key={character} className="bg-nebula-cyan/10 px-3 py-2 rounded text-sm hover:bg-nebula-cyan/20 transition-colors duration-200">
-                            <div className="font-medium text-nebula-cyan font-display">{character}</div>
-                            <div className="text-star-gray text-xs mt-1 font-mono">
-                              {players.join(', ')}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-star-gray text-sm italic font-mono">No shared positive chemistry</p>
-                    )}
-                  </div>
-
-                  {/* Mixed Relationships */}
-                  <div>
-                    <h3 className="font-display font-semibold text-nebula-orange mb-2 flex items-center gap-2">
-                      <span>⚡</span>
-                      Conflicting Chemistry ({Object.keys(teamAnalysis.mixedRelationships).length})
-                    </h3>
-                    {Object.keys(teamAnalysis.mixedRelationships).length > 0 ? (
-                      <div className="space-y-1 max-h-64 overflow-y-auto pr-2" onWheel={(e) => e.stopPropagation()}>
-                        {Object.entries(teamAnalysis.mixedRelationships).map(([character, rel]) => (
-                          <div key={character} className="bg-nebula-orange/10 px-3 py-2 rounded text-sm hover:bg-nebula-orange/20 transition-colors duration-200">
-                            <div className="font-medium text-nebula-orange font-display">{character}</div>
-                            <div className="text-xs mt-1 font-mono">
-                              <span className="text-green-400">✅ {rel.positive.join(', ')}</span>
-                              <br />
-                              <span className="text-red-400">❌ {rel.negative.join(', ')}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-star-gray text-sm italic font-mono">No conflicting relationships</p>
-                    )}
+        <div className="space-y-6">
+          {/* Individual Player Chemistry */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {selectedPlayersData.map(player => (
+              <div
+                key={player.name}
+                className={`${panelClass} overflow-hidden border-nebula-orange/30 hover:border-nebula-orange/60 transition-colors duration-300`}
+              >
+                <div className="bg-gradient-to-r from-nebula-orange/30 to-nebula-coral/30 px-4 py-3 border-b border-white/10">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display font-black uppercase tracking-[0.18em] text-star-white text-sm">{player.name}</h3>
+                    <span className="text-[11px] font-mono text-white/70">{player.posCount}+/ {player.negCount}-</span>
                   </div>
                 </div>
-              </SurfaceCard>
-            )}
+
+                <div className="p-4 space-y-4">
+                  {/* Positive Chemistry */}
+                  {player.positive.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 text-green-300 uppercase font-display text-xs tracking-[0.14em] mb-2">
+                        <span className="w-2 h-2 rounded-full bg-green-300 shadow-[0_0_12px_rgba(74,222,128,0.8)]" />
+                        Positive ({player.positive.length})
+                      </div>
+                      <div
+                        className="space-y-1 max-h-48 overflow-y-auto pr-2"
+                        onWheel={(e) => e.stopPropagation()}
+                      >
+                        {player.positive.map(rel => (
+                          <div
+                            key={rel.player}
+                            className="flex justify-between items-center text-sm bg-green-400/10 hover:bg-green-400/20 px-2 py-1 rounded font-mono transition-colors duration-200"
+                          >
+                            <span className="text-star-white">{rel.player}</span>
+                            <span className="font-semibold text-green-400">+</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Negative Chemistry */}
+                  {player.negative.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 text-red-300 uppercase font-display text-xs tracking-[0.14em] mb-2">
+                        <span className="w-2 h-2 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.8)]" />
+                        Negative ({player.negative.length})
+                      </div>
+                      <div
+                        className="space-y-1 max-h-48 overflow-y-auto pr-2"
+                        onWheel={(e) => e.stopPropagation()}
+                      >
+                        {player.negative.map(rel => (
+                          <div
+                            key={rel.player}
+                            className="flex justify-between items-center text-sm bg-red-400/10 hover:bg-red-400/20 px-2 py-1 rounded font-mono transition-colors duration-200"
+                          >
+                            <span className="text-star-white">{rel.player}</span>
+                            <span className="font-semibold text-red-400">-</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {player.positive.length === 0 && player.negative.length === 0 && (
+                    <p className="text-star-gray text-sm italic font-mono">No chemistry relationships</p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        </FadeIn>
+
+          {/* Team Analysis (only show if 2+ players selected) */}
+          {selectedPlayerNames.length >= 2 && (
+            <div className={`${panelClass} p-6 space-y-4`}>
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-xl font-display font-black uppercase tracking-[0.2em] text-star-white">Team Chemistry Analysis</h2>
+                <RetroButton size="sm" variant="outline" onClick={() => setSelectedPlayerNames([])}>
+                  Reset Selection
+                </RetroButton>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Internal Positive */}
+                <div>
+                  <div className="flex items-center gap-2 text-green-300 uppercase font-display text-xs tracking-[0.14em] mb-2">
+                    <span className="w-2 h-2 rounded-full bg-green-300 shadow-[0_0_12px_rgba(74,222,128,0.8)]" />
+                    Internal Positive ({teamAnalysis.internalPositive.length})
+                  </div>
+                  {teamAnalysis.internalPositive.length > 0 ? (
+                    <div className="space-y-1">
+                      {teamAnalysis.internalPositive.map((conn, idx) => (
+                        <div key={idx} className="bg-green-400/10 px-3 py-2 rounded text-sm font-mono hover:bg-green-400/20 transition-colors duration-200">
+                          <span className="font-medium text-star-white">{conn.player1}</span>
+                          <span className="text-star-gray"> ↔ </span>
+                          <span className="font-medium text-star-white">{conn.player2}</span>
+                          <span className="ml-2 text-green-400 font-bold">+{conn.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-star-gray text-sm italic font-mono">No internal positive chemistry</p>
+                  )}
+                </div>
+
+                {/* Internal Negative */}
+                <div>
+                  <div className="flex items-center gap-2 text-red-300 uppercase font-display text-xs tracking-[0.14em] mb-2">
+                    <span className="w-2 h-2 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.8)]" />
+                    Internal Negative ({teamAnalysis.internalNegative.length})
+                  </div>
+                  {teamAnalysis.internalNegative.length > 0 ? (
+                    <div className="space-y-1">
+                      {teamAnalysis.internalNegative.map((conn, idx) => (
+                        <div key={idx} className="bg-red-400/10 px-3 py-2 rounded text-sm font-mono hover:bg-red-400/20 transition-colors duration-200">
+                          <span className="font-medium text-star-white">{conn.player1}</span>
+                          <span className="text-star-gray"> ↔ </span>
+                          <span className="font-medium text-star-white">{conn.player2}</span>
+                          <span className="ml-2 text-red-400 font-bold">{conn.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-star-gray text-sm italic font-mono">No internal conflicts</p>
+                  )}
+                </div>
+
+                {/* Shared Positive Chemistry */}
+                <div>
+                  <div className="flex items-center gap-2 text-nebula-cyan uppercase font-display text-xs tracking-[0.14em] mb-2">
+                    <span className="w-2 h-2 rounded-full bg-nebula-cyan shadow-[0_0_12px_rgba(21,244,255,0.8)]" />
+                    Shared Positive ({Object.keys(teamAnalysis.sharedPositive).length})
+                  </div>
+                  {Object.keys(teamAnalysis.sharedPositive).length > 0 ? (
+                    <div className="space-y-1 max-h-64 overflow-y-auto pr-2" onWheel={(e) => e.stopPropagation()}>
+                      {Object.entries(teamAnalysis.sharedPositive).map(([character, players]) => (
+                        <div key={character} className="bg-nebula-cyan/10 px-3 py-2 rounded text-sm hover:bg-nebula-cyan/20 transition-colors duration-200">
+                          <div className="font-medium text-nebula-cyan font-display">{character}</div>
+                          <div className="text-star-gray text-xs mt-1 font-mono">
+                            {players.join(', ')}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-star-gray text-sm italic font-mono">No shared positive chemistry</p>
+                  )}
+                </div>
+
+                {/* Mixed Relationships */}
+                <div>
+                  <div className="flex items-center gap-2 text-nebula-orange uppercase font-display text-xs tracking-[0.14em] mb-2">
+                    <span className="w-2 h-2 rounded-full bg-nebula-orange shadow-[0_0_12px_rgba(255,107,53,0.8)]" />
+                    Conflicting ({Object.keys(teamAnalysis.mixedRelationships).length})
+                  </div>
+                  {Object.keys(teamAnalysis.mixedRelationships).length > 0 ? (
+                    <div className="space-y-1 max-h-64 overflow-y-auto pr-2" onWheel={(e) => e.stopPropagation()}>
+                      {Object.entries(teamAnalysis.mixedRelationships).map(([character, rel]) => (
+                        <div key={character} className="bg-nebula-orange/10 px-3 py-2 rounded text-sm hover:bg-nebula-orange/20 transition-colors duration-200">
+                          <div className="font-medium text-nebula-orange font-display">{character}</div>
+                          <div className="text-xs mt-1 font-mono">
+                            <span className="text-green-400">✅ {rel.positive.join(', ')}</span>
+                            <br />
+                            <span className="text-red-400">❌ {rel.negative.join(', ')}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-star-gray text-sm italic font-mono">No conflicting relationships</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

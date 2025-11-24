@@ -8,6 +8,7 @@ The migration goal is **full replacement** with the provided beta assets:
 - **Drop the new typography and formatting everywhere**; keep legacy styling only if no beta equivalent exists.
 - **Defer Google Sheets wiring until after the visual swap**; first land the exact beta pages, then connect data.
 - See **MIGRATION_GUARDRAILS.md** for the mandatory rules and per-route expectations.
+- See **MIGRATION_LLM_PLAYBOOK.md** for per-file actions and the exact copy/replace targets.
 
 ## ⚡ Quick Start (30 minutes)
 

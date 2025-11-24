@@ -61,6 +61,7 @@ A complete, production-ready package to upgrade your existing Next.js 15 site wi
 | File | Purpose | Read When |
 |------|---------|-----------|
 | **START_HERE.md** | You're here! Overview | First thing |
+| **MIGRATION_LLM_PLAYBOOK.md** | LLM-specific playbook: file-by-file actions and hard rules | Before any coding |
 | **README.md** | Complete package docs | Before starting |
 | **MIGRATION_GUARDRAILS.md** | Hard rules: no rewrites, full swap | Before copying files |
 | **MIGRATION_CHECKLIST.md** | Step-by-step guide | During migration |

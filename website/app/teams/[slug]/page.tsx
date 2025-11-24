@@ -13,8 +13,9 @@ function formatOrdinal(rank: string | number | undefined) {
   return `${num}${suffix}`;
 }
 
-export default async function TeamDetailPage({ params }: { params: { slug: string } }) {
-  const teamConfig = getTeamBySlug(params.slug);
+export default async function TeamDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const teamConfig = getTeamBySlug(slug);
 
   if (!teamConfig) {
     return notFound();

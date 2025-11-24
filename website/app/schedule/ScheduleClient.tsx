@@ -33,7 +33,8 @@ interface ScheduleClientProps {
 
 export default function ScheduleClient({ weeks, matchesByWeek, initialWeek }: ScheduleClientProps) {
   const [activeWeek, setActiveWeek] = useState(initialWeek);
-  const matches = matchesByWeek[activeWeek] || [];
+
+  const matches = useMemo(() => matchesByWeek[activeWeek] || [], [activeWeek, matchesByWeek]);
 
   const matchesByDate = useMemo(() => {
     return matches.reduce<Record<string, MatchDisplay[]>>((acc, match) => {

@@ -1,5 +1,5 @@
-import TeamSkeleton from '@/components/skeletons/TeamSkeleton';
+import RetroTeamSkeleton from "@/components/ui/RetroTeamSkeleton";
 
 export default function TeamLoading() {
-  return <TeamSkeleton />;
+  return <RetroTeamSkeleton />;
 }

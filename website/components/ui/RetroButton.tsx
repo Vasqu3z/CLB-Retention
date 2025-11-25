@@ -3,9 +3,9 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, type HTMLMotionProps } from "framer-motion";
 
-interface RetroButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface RetroButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?: "primary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   href?: string;

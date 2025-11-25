@@ -2,7 +2,7 @@
 
 ## Overview
 
-This package contains 4 production-ready page components designed with the "Neon Void" arcade aesthetic for the Comets League Baseball website. Each page features massive typography, spring physics animations, cosmic backgrounds, and diegetic arcade interface elements.
+This package contains 5 production-ready page components designed with the "Neon Void" arcade aesthetic for the Comets League Baseball website. Each page features massive typography, spring physics animations, cosmic backgrounds, and diegetic arcade interface elements.
 
 ---
 
@@ -12,6 +12,7 @@ This package contains 4 production-ready page components designed with the "Neon
 2. **playoffs-page.tsx** - Tournament bracket with geometric matchup visualizations
 3. **tools-attributes-page.tsx** - Player attribute comparison with animated bars
 4. **tools-stats-page.tsx** - Side-by-side statistical comparison cards
+5. **tools-chemistry-page.tsx** - Chemistry network analysis with connection visualization
 
 ---
 
@@ -59,7 +60,9 @@ website/
 │   └── tools/
 │       ├── attributes/
 │       │   └── page.tsx
-│       └── stats/
+│       ├── stats/
+│       │   └── page.tsx
+│       └── chemistry/
 │           └── page.tsx
 ├── components/
 │   └── ui/

@@ -59,8 +59,11 @@ const TEAM_DATA = {
   ] as Matchup[]
 };
 
-export default function TeamDetailPage({ params }: { params: { slug: string } }) {
+export default function TeamDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [activeTab, setActiveTab] = useState<"roster" | "schedule" | "stats">("roster");
+
+  // Note: In client components, params is automatically unwrapped by Next.js
+  // Access params.slug directly (no await needed in client components)
 
   // In production: 
   // const team = await fetchTeam(params.slug);

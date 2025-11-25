@@ -6,8 +6,17 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+type Match = {
+  id: string;
+  home: { name: string; code: string; logoColor: string; score?: number };
+  away: { name: string; code: string; logoColor: string; score?: number };
+  date: string;
+  time: string;
+  isFinished: boolean;
+};
+
 // Mock Data - Replace with your Google Sheets fetch
-const MATCHES_BY_WEEK: Record<number, any[]> = {
+const MATCHES_BY_WEEK: Record<number, Match[]> = {
   3: [
     { 
       id: "w3-1", 
@@ -77,7 +86,7 @@ export default function SchedulePage() {
     }
     acc[match.date].push(match);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, Match[]>);
 
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4">

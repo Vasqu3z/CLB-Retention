@@ -1,6 +1,6 @@
 # Comets League Baseball - Arcade Pages Package
 
-**4 Production-Ready Pages • Diegetic Arcade Interface • Motion-First Design**
+**5 Production-Ready Pages • Diegetic Arcade Interface • Motion-First Design**
 
 ---
 

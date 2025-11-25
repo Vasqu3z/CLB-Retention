@@ -108,8 +108,8 @@ export default function RetroTable<T extends { id?: string | number }>({
                   tabIndex={col.sortable ? 0 : undefined}
                   role={col.sortable ? "button" : undefined}
                   aria-sort={
-                    sortConfig?.key === col.accessorKey 
-                      ? sortConfig.direction === 'asc' ? 'ascending' : 'descending'
+                    sortConfig?.key === col.accessorKey
+                      ? sortConfig?.direction === 'asc' ? 'ascending' : 'descending'
                       : undefined
                   }
                 >

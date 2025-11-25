@@ -486,3 +486,27 @@ All 14 production pages are using the modern "Neon Void" arcade aesthetic with:
 
 **Generated:** November 25, 2025
 **Last Updated:** November 25, 2025
+
+---
+
+## UPDATE: Legacy Files Relocated
+
+**Date:** November 25, 2025
+
+All legacy files have been moved to `legacy-site/` directory for Phase 2 reference instead of being deleted. This preserves the Google Sheets integration logic for future implementation.
+
+**New Location:** `legacy-site/`
+
+**Structure:**
+- `legacy-site/view-components/` - 11 View components with sheets integration
+- `legacy-site/components/` - 11 legacy UI components
+- `legacy-site/components/skeletons/` - 3 skeleton loaders
+- `legacy-site/loading-states/` - Loading file references
+- `legacy-site/README.md` - Usage guide for Phase 2
+
+**Purpose:** Reference for implementing Google Sheets data fetching in Phase 2
+
+**When to Delete:** After Phase 2 data integration is complete and tested
+
+See `legacy-site/README.md` for detailed usage instructions.
+

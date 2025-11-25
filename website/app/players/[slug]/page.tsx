@@ -8,9 +8,9 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
   // In real app, fetch data based on params.slug
   
   const gameLog = [
-    { date: "MAY 12", opp: "BOW", ab: 4, h: 2, hr: 1, rbi: 3, pts: 120 },
-    { date: "MAY 10", opp: "DKW", ab: 3, h: 1, hr: 0, rbi: 0, pts: 45 },
-    { date: "MAY 08", opp: "PCH", ab: 5, h: 3, hr: 2, rbi: 5, pts: 210 },
+    { id: 1, date: "MAY 12", opp: "BOW", ab: 4, h: 2, hr: 1, rbi: 3, pts: 120 },
+    { id: 2, date: "MAY 10", opp: "DKW", ab: 3, h: 1, hr: 0, rbi: 0, pts: 45 },
+    { id: 3, date: "MAY 08", opp: "PCH", ab: 5, h: 3, hr: 2, rbi: 5, pts: 210 },
   ];
 
   const logColumns = [

@@ -6,7 +6,10 @@ import { Network, X, Zap, Users, TrendingUp, AlertTriangle, Sparkles } from "luc
 import { cn } from "@/lib/utils";
 
 // Mock chemistry data
-const MOCK_CHEMISTRY = {
+type ChemistryRecord = Record<string, number>;
+type ChemistryData = Record<string, ChemistryRecord>;
+
+const MOCK_CHEMISTRY: ChemistryData = {
   "Mario": { "Luigi": 150, "Peach": 120, "Bowser": -150, "Yoshi": 100 },
   "Luigi": { "Mario": 150, "Daisy": 140, "Waluigi": -120 },
   "Bowser": { "Mario": -150, "Wario": 130, "Bowser Jr": 180, "Peach": -100 },

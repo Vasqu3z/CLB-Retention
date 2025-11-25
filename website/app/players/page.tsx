@@ -46,11 +46,11 @@ export default function PlayersPage() {
   };
 
   const columns = [
-    { 
-      header: "Player", 
+    {
+      header: "Player",
       cell: (item: any) => (
         <div className="flex items-center gap-3">
-          <motion.div 
+          <motion.div
             className="w-8 h-8 bg-surface-light rounded flex items-center justify-center font-display text-white/80"
             whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
           >
@@ -60,11 +60,11 @@ export default function PlayersPage() {
         </div>
       )
     },
-    { header: "Team", accessorKey: "team", className: "text-white/60", sortable: true },
-    { header: "Pos", accessorKey: "position", className: "text-white/40 text-xs", sortable: true },
-    { header: "AVG", accessorKey: "avg", className: "text-comets-cyan font-mono", sortable: true },
-    { header: "HR", accessorKey: "hr", className: "text-comets-red font-mono", sortable: true },
-    { header: "OPS", accessorKey: "ops", className: "text-comets-yellow font-mono font-bold", sortable: true },
+    { header: "Team", accessorKey: "team" as const, className: "text-white/60", sortable: true },
+    { header: "Pos", accessorKey: "position" as const, className: "text-white/40 text-xs", sortable: true },
+    { header: "AVG", accessorKey: "avg" as const, className: "text-comets-cyan font-mono", sortable: true },
+    { header: "HR", accessorKey: "hr" as const, className: "text-comets-red font-mono", sortable: true },
+    { header: "OPS", accessorKey: "ops" as const, className: "text-comets-yellow font-mono font-bold", sortable: true },
     { 
       header: "Stamina", 
       cell: (item: any) => (

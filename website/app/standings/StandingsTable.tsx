@@ -4,8 +4,8 @@ import React from "react";
 import RetroTable from "@/components/ui/RetroTable";
 import { cn } from "@/lib/utils";
 
-// Mock Data Interface
-interface TeamStanding {
+// Data Interface
+export interface TeamStanding {
   id: string;
   rank: number;
   teamName: string;
@@ -19,17 +19,11 @@ interface TeamStanding {
   logoColor: string;
 }
 
-// Mock Data - Replace with real fetch
-const MOCK_STANDINGS: TeamStanding[] = [
-  { id: 'fireballs', rank: 1, teamName: 'Mario Fireballs', teamCode: 'MAR', wins: 12, losses: 2, pct: '.857', gb: '-', streak: 'W5', runDiff: 45, logoColor: '#FF4D4D' },
-  { id: 'monsters', rank: 2, teamName: 'Bowser Monsters', teamCode: 'BOW', wins: 10, losses: 4, pct: '.714', gb: '2.0', streak: 'W2', runDiff: 28, logoColor: '#F4D03F' },
-  { id: 'monarchs', rank: 3, teamName: 'Peach Monarchs', teamCode: 'PCH', wins: 8, losses: 6, pct: '.571', gb: '4.0', streak: 'L1', runDiff: 5, logoColor: '#FF69B4' },
-  { id: 'wilds', rank: 4, teamName: 'DK Wilds', teamCode: 'DKW', wins: 7, losses: 7, pct: '.500', gb: '5.0', streak: 'L3', runDiff: -2, logoColor: '#8D6E63' },
-  { id: 'knights', rank: 5, teamName: 'Luigi Knights', teamCode: 'LUI', wins: 6, losses: 8, pct: '.429', gb: '6.0', streak: 'W1', runDiff: -12, logoColor: '#2ECC71' },
-  { id: 'muscles', rank: 6, teamName: 'Wario Muscles', teamCode: 'WAR', wins: 4, losses: 10, pct: '.286', gb: '8.0', streak: 'L2', runDiff: -24, logoColor: '#F1C40F' },
-];
+interface StandingsTableProps {
+  data: TeamStanding[];
+}
 
-export default function StandingsTable() {
+export default function StandingsTable({ data }: StandingsTableProps) {
 
   const columns = [
     {
@@ -113,7 +107,7 @@ export default function StandingsTable() {
   return (
     <div className="w-full max-w-5xl mx-auto">
        <RetroTable
-          data={MOCK_STANDINGS}
+          data={data}
           columns={columns}
           onRowClick={(item) => console.log(`Clicked ${item.teamName}`)}
        />

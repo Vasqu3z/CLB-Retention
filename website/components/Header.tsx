@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Menu, X, Trophy, Calendar, Users, Activity } from "lucide-react";
+import { Search, Menu, X, Trophy, Calendar, Users, Activity, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
@@ -14,8 +14,9 @@ export default function Header() {
   const navItems = [
     { name: "Standings", href: "/standings", icon: Trophy },
     { name: "Schedule", href: "/schedule", icon: Calendar },
-    { name: "Stats", href: "/leaders", icon: Users },
-    { name: "Lineup.exe", href: "/tools/lineup", icon: Activity },
+    { name: "Teams", href: "/teams", icon: Users },
+    { name: "Players", href: "/players", icon: UserCircle },
+    { name: "Stats", href: "/leaders", icon: Activity },
   ];
 
   return (

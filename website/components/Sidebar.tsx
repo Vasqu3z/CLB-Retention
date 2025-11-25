@@ -12,7 +12,12 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Swords
+  Swords,
+  UserCircle,
+  TrendingUp,
+  Zap,
+  BarChart3,
+  Network
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,11 +26,22 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
+    // Core Pages
     { name: "Standings", href: "/standings", icon: Trophy, color: "text-comets-yellow" },
     { name: "Schedule", href: "/schedule", icon: Calendar, color: "text-comets-red" },
-    { name: "Roster Stats", href: "/leaders", icon: Users, color: "text-comets-blue" },
-    { name: "Lineup.exe", href: "/tools/lineup", icon: Activity, color: "text-comets-purple" },
-    { name: "Head-to-Head", href: "/tools/compare", icon: Swords, color: "text-comets-cyan" },
+    { name: "Teams", href: "/teams", icon: Users, color: "text-comets-purple" },
+    { name: "Players", href: "/players", icon: UserCircle, color: "text-comets-cyan" },
+    { name: "Playoffs", href: "/playoffs", icon: Trophy, color: "text-comets-yellow" },
+
+    // Stats
+    { name: "League Leaders", href: "/leaders", icon: TrendingUp, color: "text-comets-blue" },
+
+    // Tools
+    { name: "Lineup Builder", href: "/tools/lineup", icon: Activity, color: "text-comets-purple" },
+    { name: "Player Compare", href: "/tools/compare", icon: Swords, color: "text-comets-cyan" },
+    { name: "Attributes", href: "/tools/attributes", icon: Zap, color: "text-comets-yellow" },
+    { name: "Stats Compare", href: "/tools/stats", icon: BarChart3, color: "text-comets-blue" },
+    { name: "Chemistry", href: "/tools/chemistry", icon: Network, color: "text-comets-purple" },
   ];
 
   return (

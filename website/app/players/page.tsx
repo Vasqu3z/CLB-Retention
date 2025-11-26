@@ -5,6 +5,8 @@ import RetroTable from "@/components/ui/RetroTable";
 import { Search, SlidersHorizontal, X, TrendingUp, Filter } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { SeasonToggle } from "@/components/ui/RetroSegmentedControl";
+import RetroEmptyState from "@/components/ui/RetroEmptyState";
 
 // Mock Data - Replace with Google Sheets fetch
 const PLAYERS = [
@@ -102,30 +104,7 @@ export default function PlayersPage() {
           </div>
 
           {/* Season Toggle */}
-          <div className="flex bg-surface-dark border border-white/10 rounded p-1">
-            <button
-              onClick={() => setIsPlayoffs(false)}
-              className={cn(
-                "px-4 py-2 rounded-sm font-ui text-xs uppercase tracking-wider transition-all",
-                !isPlayoffs
-                  ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]"
-                  : "text-white/40 hover:text-white hover:bg-white/5"
-              )}
-            >
-              Regular Season
-            </button>
-            <button
-              onClick={() => setIsPlayoffs(true)}
-              className={cn(
-                "px-4 py-2 rounded-sm font-ui text-xs uppercase tracking-wider transition-all",
-                isPlayoffs
-                  ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]"
-                  : "text-white/40 hover:text-white hover:bg-white/5"
-              )}
-            >
-              Playoffs
-            </button>
-          </div>
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
         </div>
 
         {/* Search & Filter Controls */}
@@ -255,27 +234,15 @@ export default function PlayersPage() {
         
         {/* Empty State */}
         {filteredPlayers.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-24"
-          >
-            <div className="text-6xl mb-4 opacity-20">🔍</div>
-            <div className="font-display text-2xl text-white/40 mb-2">No Players Found</div>
-            <div className="font-ui text-sm text-white/20 uppercase tracking-widest mb-4">
-              Try adjusting your filters
-            </div>
-            {hasActiveFilters && (
-              <motion.button
-                onClick={clearFilters}
-                className="px-6 py-2 bg-comets-yellow text-black font-ui uppercase tracking-widest text-sm rounded-sm arcade-press focus-arcade"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Clear Filters
-              </motion.button>
-            )}
-          </motion.div>
+          <RetroEmptyState
+            title="No Players Found"
+            message="Try adjusting your filters"
+            icon="search"
+            action={hasActiveFilters ? {
+              label: "Clear Filters",
+              onClick: clearFilters
+            } : undefined}
+          />
         )}
         
         {/* Pagination Info */}

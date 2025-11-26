@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, TrendingUp, Zap, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import RetroTabs from "@/components/ui/RetroTabs";
 
 // Mock data - Replace with Google Sheets fetch
 const MOCK_LEADERS = {
@@ -196,41 +197,14 @@ export default function LeadersPage() {
           transition={{ delay: 0.4 }}
           className="flex justify-center mb-12"
         >
-          <div className="inline-flex bg-surface-dark border border-white/10 rounded-lg p-2">
-            <button
-              onClick={() => setCategory("batting")}
-              className={cn(
-                "relative px-8 py-3 font-ui uppercase tracking-widest text-sm transition-all rounded-lg",
-                category === "batting" ? "text-black" : "text-white/60 hover:text-white"
-              )}
-            >
-              {category === "batting" && (
-                <motion.div
-                  layoutId="categoryBg"
-                  className="absolute inset-0 bg-comets-yellow rounded-lg"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <span className="relative z-10">Batting</span>
-            </button>
-            
-            <button
-              onClick={() => setCategory("pitching")}
-              className={cn(
-                "relative px-8 py-3 font-ui uppercase tracking-widest text-sm transition-all rounded-lg",
-                category === "pitching" ? "text-black" : "text-white/60 hover:text-white"
-              )}
-            >
-              {category === "pitching" && (
-                <motion.div
-                  layoutId="categoryBg"
-                  className="absolute inset-0 bg-comets-cyan rounded-lg"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <span className="relative z-10">Pitching</span>
-            </button>
-          </div>
+          <RetroTabs
+            tabs={[
+              { value: "batting", label: "Batting", color: "yellow" },
+              { value: "pitching", label: "Pitching", color: "cyan" }
+            ]}
+            value={category}
+            onChange={(val) => setCategory(val as "batting" | "pitching")}
+          />
         </motion.div>
 
         {/* Leaders grid */}

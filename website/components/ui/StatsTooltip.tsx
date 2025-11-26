@@ -41,7 +41,6 @@ const STAT_DEFINITIONS: Record<string, string> = {
   "ERA": "Earned Run Average",
   "IP": "Innings Pitched",
   "K": "Strikeouts",
-  "BB": "Walks Allowed",
   "SV": "Saves",
   "HLD": "Holds",
   "WHIP": "Walks + Hits per Inning",

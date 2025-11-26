@@ -1,5 +1,5 @@
-import { TableSkeleton } from '@/components/LoadingState';
+import LeadersPageSkeleton from "@/components/ui/skeletons/LeadersPageSkeleton";
 
-export default function LeadersLoading() {
-  return <TableSkeleton />;
+export default function Loading() {
+  return <LeadersPageSkeleton />;
 }

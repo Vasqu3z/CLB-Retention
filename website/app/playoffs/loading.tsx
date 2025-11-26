@@ -1,5 +1,5 @@
-import { CardSkeleton } from '@/components/LoadingState';
+import PlayoffsPageSkeleton from "@/components/ui/skeletons/PlayoffsPageSkeleton";
 
-export default function PlayoffsLoading() {
-  return <CardSkeleton />;
+export default function Loading() {
+  return <PlayoffsPageSkeleton />;
 }

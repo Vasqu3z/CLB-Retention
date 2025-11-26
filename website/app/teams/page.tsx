@@ -1,20 +1,53 @@
 import React from "react";
 import TeamSelectCard from "@/components/ui/TeamSelectCard";
 import { Users } from "lucide-react";
+import { getTeamRegistry, getStandings, getTeamData } from "@/lib/sheets";
 
-// Mock Data - Replace with your database fetch
-const TEAMS = [
-  { name: "Mario Fireballs", code: "MAR", logoColor: "#FF4D4D", stats: { wins: 12, losses: 2, avg: ".312" }, href: "/teams/mario-fireballs" },
-  { name: "Bowser Monsters", code: "BOW", logoColor: "#F4D03F", stats: { wins: 10, losses: 4, avg: ".289" }, href: "/teams/bowser-monsters" },
-  { name: "Peach Monarchs", code: "PCH", logoColor: "#FF69B4", stats: { wins: 8, losses: 6, avg: ".275" }, href: "/teams/peach-monarchs" },
-  { name: "DK Wilds", code: "DKW", logoColor: "#8D6E63", stats: { wins: 7, losses: 7, avg: ".265" }, href: "/teams/dk-wilds" },
-  { name: "Luigi Knights", code: "LUI", logoColor: "#2ECC71", stats: { wins: 6, losses: 8, avg: ".250" }, href: "/teams/luigi-knights" },
-  { name: "Wario Muscles", code: "WAR", logoColor: "#F1C40F", stats: { wins: 4, losses: 10, avg: ".240" }, href: "/teams/wario-muscles" },
-  { name: "Yoshi Eggs", code: "YOS", logoColor: "#2E86DE", stats: { wins: 9, losses: 5, avg: ".295" }, href: "/teams/yoshi-eggs" },
-  { name: "Waluigi Spitballs", code: "WAL", logoColor: "#9B59B6", stats: { wins: 5, losses: 9, avg: ".230" }, href: "/teams/waluigi-spitballs" },
-];
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, '-');
+}
 
-export default function TeamsPage() {
+export default async function TeamsPage() {
+  // Fetch team registry and standings data from Google Sheets
+  const [teamRegistry, standings, teamStats] = await Promise.all([
+    getTeamRegistry(),
+    getStandings(false),
+    getTeamData(undefined, false),
+  ]);
+
+  // Create a map of team names to their standings
+  const standingsMap = new Map(
+    standings.map(s => [s.team, s])
+  );
+
+  // Create a map of team names to their stats
+  const statsMap = new Map(
+    teamStats.map(s => [s.teamName, s])
+  );
+
+  // Transform team registry into the format expected by TeamSelectCard
+  const teams = teamRegistry.map(team => {
+    const standing = standingsMap.get(team.teamName);
+    const stats = statsMap.get(team.teamName);
+
+    // Calculate team batting average from team stats
+    const avg = stats && stats.hitting.ab > 0
+      ? (stats.hitting.h / stats.hitting.ab).toFixed(3)
+      : ".000";
+
+    return {
+      name: team.teamName,
+      code: team.abbr,
+      logoColor: team.color,
+      stats: {
+        wins: standing?.wins || 0,
+        losses: standing?.losses || 0,
+        avg: avg,
+      },
+      href: `/teams/${slugify(team.teamName)}`,
+    };
+  });
+
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4 relative overflow-hidden">
        {/* Background Decor */}
@@ -34,7 +67,7 @@ export default function TeamsPage() {
 
           {/* The Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {TEAMS.map((team) => (
+              {teams.map((team) => (
                   <TeamSelectCard key={team.code} {...team} />
               ))}
           </div>

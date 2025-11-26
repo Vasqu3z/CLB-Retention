@@ -49,10 +49,13 @@ function calculateGB(wins: number, losses: number, leaderWins: number, leaderLos
 export default async function StandingsPage({
   searchParams,
 }: {
-  searchParams: { season?: string };
+  searchParams: Promise<{ season?: string }>;
 }) {
+  // Await searchParams (Next.js 15 requirement)
+  const params = await searchParams;
+
   // Determine if we're showing playoffs or regular season
-  const isPlayoffs = searchParams.season === 'playoffs';
+  const isPlayoffs = params.season === 'playoffs';
 
   // Fetch data from Google Sheets
   const [standingsData, teamRegistry, schedule] = await Promise.all([

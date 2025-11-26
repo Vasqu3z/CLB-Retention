@@ -54,15 +54,18 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
 
   // Filter by category
   const displayPlayers = useMemo(() => {
+    let filtered: PlayerStats[];
     if (activeTab === "hitting") {
-      return filteredPlayers.filter((p) => p.ab && p.ab > 0);
+      filtered = filteredPlayers.filter((p) => p.ab && p.ab > 0);
     } else if (activeTab === "pitching") {
-      return filteredPlayers.filter((p) => p.ip && p.ip > 0);
+      filtered = filteredPlayers.filter((p) => p.ip && p.ip > 0);
     } else {
-      return filteredPlayers.filter(
+      filtered = filteredPlayers.filter(
         (p) => (p.np && p.np > 0) || (p.e && p.e > 0) || (p.sb && p.sb > 0)
       );
     }
+    // Add id property for RetroTable compatibility
+    return filtered.map((p, idx) => ({ ...p, id: `${p.name}-${idx}` }));
   }, [filteredPlayers, activeTab]);
 
   const hasActiveFilters = selectedTeam !== "All Teams" || searchQuery.trim() !== "";

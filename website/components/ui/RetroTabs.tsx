@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 export interface RetroTab {
   value: string;
   label: string;
-  icon?: React.ComponentType<{ size?: number; className?: string }>;
+  icon?: React.ComponentType<any>;
   color?: "yellow" | "cyan" | "red" | "purple" | "blue";
 }
 

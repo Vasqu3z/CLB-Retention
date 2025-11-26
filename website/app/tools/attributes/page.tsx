@@ -16,7 +16,7 @@ export default async function AttributeComparisonPage() {
 
   // Create a map of player names to their teams
   const playerTeamMap = new Map(
-    playerRegistry.map(p => [p.playerName, p.teamName])
+    playerRegistry.map(p => [p.playerName, p.team])
   );
 
   // Create a map of team names to their colors

@@ -12,7 +12,7 @@ export default async function ComparePage() {
 
   // Create a map of player names to teams
   const playerTeamMap = new Map(
-    playerRegistry.map(p => [p.playerName, p.teamName])
+    playerRegistry.map(p => [p.playerName, p.team])
   );
 
   // Create a map of team names to colors

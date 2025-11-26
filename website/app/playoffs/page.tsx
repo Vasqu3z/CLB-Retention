@@ -62,8 +62,8 @@ export default async function PlayoffsPage() {
       winner: games.find(g => g.played && calculateSeriesRecord(games, g.winner!) >= 3)?.winner || null,
       games: games.map((g, idx) => ({
         game: idx + 1,
-        scoreA: g.played ? g.homeScore : null,
-        scoreB: g.played ? g.awayScore : null,
+        scoreA: g.played ? (g.homeScore ?? null) : null,
+        scoreB: g.played ? (g.awayScore ?? null) : null,
         played: g.played,
       })),
     };
@@ -90,8 +90,8 @@ export default async function PlayoffsPage() {
       winner: finalsGames.find(g => g.played && calculateSeriesRecord(finalsGames, g.winner!) >= 4)?.winner || null,
       games: finalsGames.map((g, idx) => ({
         game: idx + 1,
-        scoreA: g.played ? g.homeScore : null,
-        scoreB: g.played ? g.awayScore : null,
+        scoreA: g.played ? (g.homeScore ?? null) : null,
+        scoreB: g.played ? (g.awayScore ?? null) : null,
         played: g.played,
       })),
     };

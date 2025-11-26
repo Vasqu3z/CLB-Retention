@@ -1,9 +1,7 @@
 import React from "react";
-import Link from "next/link";
 import StandingsTable, { TeamStanding } from "./StandingsTable";
 import { Trophy } from "lucide-react";
 import { getStandings, getTeamRegistry, getSchedule } from "@/lib/sheets";
-import { cn } from "@/lib/utils";
 
 // Helper function to calculate streak from schedule
 function calculateStreak(teamName: string, schedule: any[]): string {
@@ -46,20 +44,10 @@ function calculateGB(wins: number, losses: number, leaderWins: number, leaderLos
   return gb.toFixed(1);
 }
 
-export default async function StandingsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ season?: string }>;
-}) {
-  // Await searchParams (Next.js 15 requirement)
-  const params = await searchParams;
-
-  // Determine if we're showing playoffs or regular season
-  const isPlayoffs = params.season === 'playoffs';
-
-  // Fetch data from Google Sheets
+export default async function StandingsPage() {
+  // Fetch data from Google Sheets (regular season only)
   const [standingsData, teamRegistry, schedule] = await Promise.all([
-    getStandings(isPlayoffs),
+    getStandings(false),
     getTeamRegistry(),
     getSchedule()
   ]);
@@ -109,32 +97,6 @@ export default async function StandingsPage({
             <h1 className="font-display text-4xl md:text-6xl uppercase text-white leading-none">
               League Standings
             </h1>
-          </div>
-
-          {/* Season Toggle */}
-          <div className="flex bg-surface-dark border border-white/10 rounded p-1">
-            <Link
-              href="/standings"
-              className={cn(
-                "px-4 py-2 rounded-sm font-ui text-xs uppercase tracking-wider transition-all",
-                !isPlayoffs
-                  ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]"
-                  : "text-white/40 hover:text-white hover:bg-white/5"
-              )}
-            >
-              Regular Season
-            </Link>
-            <Link
-              href="/standings?season=playoffs"
-              className={cn(
-                "px-4 py-2 rounded-sm font-ui text-xs uppercase tracking-wider transition-all",
-                isPlayoffs
-                  ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]"
-                  : "text-white/40 hover:text-white hover:bg-white/5"
-              )}
-            >
-              Playoffs
-            </Link>
           </div>
         </div>
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import RetroTable from "@/components/ui/RetroTable";
-import { Search, SlidersHorizontal, X, TrendingUp, Filter } from "lucide-react";
+import { Search, SlidersHorizontal, X, TrendingUp, Filter, Target, Flame, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SeasonToggle } from "@/components/ui/RetroSegmentedControl";
@@ -10,7 +10,6 @@ import RetroEmptyState from "@/components/ui/RetroEmptyState";
 import StatsTooltip from "@/components/ui/StatsTooltip";
 import RetroTabs from "@/components/ui/RetroTabs";
 import { PlayerStats } from "@/lib/sheets";
-import { Bat, Flame, Shield } from "lucide-react";
 
 type Tab = "hitting" | "pitching" | "fielding";
 
@@ -256,7 +255,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
         <div className="mb-6">
           <RetroTabs
             tabs={[
-              { value: "hitting", label: "Hitting", icon: Bat, color: "yellow" },
+              { value: "hitting", label: "Hitting", icon: Target, color: "yellow" },
               { value: "pitching", label: "Pitching", icon: Flame, color: "cyan" },
               { value: "fielding", label: "Fielding", icon: Shield, color: "purple" },
             ]}

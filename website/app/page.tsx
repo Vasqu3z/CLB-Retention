@@ -22,7 +22,8 @@ export default async function HomePage() {
 
   // Add recent game results
   recentGames.forEach(game => {
-    tickerItems.push(`🏆 ${game.winner?.toUpperCase()} DEFEATS ${game.loser?.toUpperCase()} ${game.homeScore}-${game.awayScore}`);
+    const loser = game.winner === game.homeTeam ? game.awayTeam : game.homeTeam;
+    tickerItems.push(`🏆 ${game.winner?.toUpperCase()} DEFEATS ${loser.toUpperCase()} ${game.homeScore}-${game.awayScore}`);
   });
 
   // Add top batting leader

@@ -124,12 +124,12 @@ export default async function DebugStatsPage() {
                 <div className="mt-6 p-4 bg-black/30 rounded border border-comets-yellow/30">
                   <div className="text-comets-yellow font-bold mb-2">🔍 Check These Values Against Your Spreadsheet:</div>
                   <div className="text-sm text-white/80">
-                    Open your Google Sheet for "{samplePlayer.name}" and verify:
+                    Open your Google Sheet for &ldquo;{samplePlayer.name}&rdquo; and verify:
                     <ul className="list-disc list-inside mt-2 space-y-1">
                       <li>Does H ({samplePlayer.h}) match column E in the spreadsheet?</li>
                       <li>Does HR ({samplePlayer.hr}) match column F in the spreadsheet?</li>
                       <li>Does AB ({samplePlayer.ab}) match column D in the spreadsheet?</li>
-                      <li>If these don't match, the column indices in config/sheets.ts are incorrect</li>
+                      <li>If these don&apos;t match, the column indices in config/sheets.ts are incorrect</li>
                     </ul>
                   </div>
                 </div>

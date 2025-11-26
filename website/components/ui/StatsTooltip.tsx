@@ -70,19 +70,24 @@ export default function StatsTooltip({ stat, children, description, context }: S
     if (description) return description;
 
     // Try context-specific lookup first
-    if (context && STAT_DEFINITIONS[context]?.[stat]) {
-      return STAT_DEFINITIONS[context][stat];
+    if (context) {
+      const contextDefs = STAT_DEFINITIONS[context] as Record<string, string>;
+      if (contextDefs[stat]) {
+        return contextDefs[stat];
+      }
     }
 
     // Fall back to general lookup
-    if (STAT_DEFINITIONS.general[stat]) {
-      return STAT_DEFINITIONS.general[stat];
+    const generalDefs = STAT_DEFINITIONS.general as Record<string, string>;
+    if (generalDefs[stat]) {
+      return generalDefs[stat];
     }
 
     // Check all contexts as last resort
     for (const ctx of ["batting", "pitching", "fielding"] as const) {
-      if (STAT_DEFINITIONS[ctx][stat]) {
-        return STAT_DEFINITIONS[ctx][stat];
+      const ctxDefs = STAT_DEFINITIONS[ctx] as Record<string, string>;
+      if (ctxDefs[stat]) {
+        return ctxDefs[stat];
       }
     }
 

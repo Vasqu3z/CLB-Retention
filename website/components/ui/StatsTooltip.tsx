@@ -15,48 +15,81 @@ interface StatsTooltipProps {
   stat: string;
   children: React.ReactNode;
   description?: string;
+  context?: "batting" | "pitching" | "fielding";
 }
 
-// Stat definitions database
-const STAT_DEFINITIONS: Record<string, string> = {
-  // Batting
-  "GP": "Games Played",
-  "AB": "At Bats",
-  "H": "Hits",
-  "HR": "Home Runs",
-  "RBI": "Runs Batted In",
-  "R": "Runs Scored",
-  "BB": "Walks",
-  "SO": "Strikeouts",
-  "SB": "Stolen Bases",
-  "AVG": "Batting Average",
-  "OBP": "On-Base Percentage",
-  "SLG": "Slugging Percentage",
-  "OPS": "On-Base Plus Slugging",
-  "DP": "Double Plays",
+// Stat definitions database with context awareness
+const STAT_DEFINITIONS = {
+  // Context-specific stats (different meanings in different contexts)
+  batting: {
+    "BB": "Walks",
+    "H": "Hits",
+    "K": "Strikeouts",
+  },
+  pitching: {
+    "BB": "Walks Allowed",
+    "H": "Hits Allowed",
+    "K": "Strikeouts",
+    "W": "Wins",
+    "L": "Losses",
+    "ERA": "Earned Run Average",
+    "IP": "Innings Pitched",
+    "SV": "Saves",
+    "HLD": "Holds",
+    "WHIP": "Walks + Hits per Inning",
+  },
+  fielding: {
+    "PO": "Put Outs",
+    "A": "Assists",
+    "E": "Errors",
+    "FLD%": "Fielding Percentage",
+    "TC": "Total Chances",
+  },
+  // General stats (work across all contexts)
+  general: {
+    "GP": "Games Played",
+    "AB": "At Bats",
+    "HR": "Home Runs",
+    "RBI": "Runs Batted In",
+    "R": "Runs Scored",
+    "SO": "Strikeouts",
+    "SB": "Stolen Bases",
+    "AVG": "Batting Average",
+    "OBP": "On-Base Percentage",
+    "SLG": "Slugging Percentage",
+    "OPS": "On-Base Plus Slugging",
+    "DP": "Double Plays",
+  }
+} as const;
 
-  // Pitching
-  "W": "Wins",
-  "L": "Losses",
-  "ERA": "Earned Run Average",
-  "IP": "Innings Pitched",
-  "K": "Strikeouts",
-  "SV": "Saves",
-  "HLD": "Holds",
-  "WHIP": "Walks + Hits per Inning",
-
-  // Fielding
-  "PO": "Put Outs",
-  "A": "Assists",
-  "E": "Errors",
-  "FLD%": "Fielding Percentage",
-  "TC": "Total Chances",
-};
-
-export default function StatsTooltip({ stat, children, description }: StatsTooltipProps) {
+export default function StatsTooltip({ stat, children, description, context }: StatsTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
 
-  const definition = description || STAT_DEFINITIONS[stat] || "Statistical Metric";
+  // Look up stat definition with context awareness
+  const getDefinition = () => {
+    if (description) return description;
+
+    // Try context-specific lookup first
+    if (context && STAT_DEFINITIONS[context]?.[stat]) {
+      return STAT_DEFINITIONS[context][stat];
+    }
+
+    // Fall back to general lookup
+    if (STAT_DEFINITIONS.general[stat]) {
+      return STAT_DEFINITIONS.general[stat];
+    }
+
+    // Check all contexts as last resort
+    for (const ctx of ["batting", "pitching", "fielding"] as const) {
+      if (STAT_DEFINITIONS[ctx][stat]) {
+        return STAT_DEFINITIONS[ctx][stat];
+      }
+    }
+
+    return "Statistical Metric";
+  };
+
+  const definition = getDefinition();
 
   return (
     <div

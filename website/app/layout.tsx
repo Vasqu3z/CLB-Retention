@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const delaGothic = Dela_Gothic_One({
   weight: '400',
@@ -46,6 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${delaGothic.variable} ${chivo.variable} ${rajdhani.variable} ${spaceMono.variable}`}>
       <body className="bg-background text-white min-h-screen flex flex-col md:flex-row overflow-x-hidden font-body">
+        <SmoothScroll />
         <div className="md:hidden z-50">
           <SidebarMobile />
         </div>

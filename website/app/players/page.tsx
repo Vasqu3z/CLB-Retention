@@ -17,12 +17,11 @@ const PLAYERS = [
 ];
 
 const TEAMS = ["All Teams", "Fireballs", "Monsters", "Monarchs", "Eggs", "Muscles"];
-const POSITIONS = ["All Positions", "P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"];
 
 export default function PlayersPage() {
+  const [isPlayoffs, setIsPlayoffs] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("All Teams");
-  const [selectedPosition, setSelectedPosition] = useState("All Positions");
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter players based on search and filters
@@ -31,17 +30,15 @@ export default function PlayersPage() {
       const matchesSearch = player.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            player.team.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesTeam = selectedTeam === "All Teams" || player.team === selectedTeam;
-      const matchesPosition = selectedPosition === "All Positions" || player.position === selectedPosition;
-      
-      return matchesSearch && matchesTeam && matchesPosition;
-    });
-  }, [searchQuery, selectedTeam, selectedPosition]);
 
-  const hasActiveFilters = selectedTeam !== "All Teams" || selectedPosition !== "All Positions";
+      return matchesSearch && matchesTeam;
+    });
+  }, [searchQuery, selectedTeam]);
+
+  const hasActiveFilters = selectedTeam !== "All Teams";
 
   const clearFilters = () => {
     setSelectedTeam("All Teams");
-    setSelectedPosition("All Positions");
     setSearchQuery("");
   };
 
@@ -89,9 +86,9 @@ export default function PlayersPage() {
           <div>
             <div className="text-xs font-mono text-comets-cyan uppercase tracking-widest mb-2">Database Access</div>
             <h1 className="font-display text-5xl text-white uppercase">Player Registry</h1>
-            
+
             {/* Player Count Badge */}
-            <motion.div 
+            <motion.div
               className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -103,9 +100,36 @@ export default function PlayersPage() {
               </span>
             </motion.div>
           </div>
-          
-          {/* Search & Filter Controls */}
-          <div className="flex gap-2 w-full md:w-auto">
+
+          {/* Season Toggle */}
+          <div className="flex bg-surface-dark border border-white/10 rounded p-1">
+            <button
+              onClick={() => setIsPlayoffs(false)}
+              className={cn(
+                "px-4 py-2 rounded-sm font-ui text-xs uppercase tracking-wider transition-all",
+                !isPlayoffs
+                  ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+                  : "text-white/40 hover:text-white hover:bg-white/5"
+              )}
+            >
+              Regular Season
+            </button>
+            <button
+              onClick={() => setIsPlayoffs(true)}
+              className={cn(
+                "px-4 py-2 rounded-sm font-ui text-xs uppercase tracking-wider transition-all",
+                isPlayoffs
+                  ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+                  : "text-white/40 hover:text-white hover:bg-white/5"
+              )}
+            >
+              Playoffs
+            </button>
+          </div>
+        </div>
+
+        {/* Search & Filter Controls */}
+        <div className="flex gap-2 w-full md:w-auto mb-6">
             <div className="relative flex-1 md:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" size={16} />
               <input 
@@ -213,41 +237,6 @@ export default function PlayersPage() {
                           />
                         )}
                         <span className="relative z-10">{team}</span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Position Filter Pills */}
-                <div>
-                  <label className="block text-xs font-mono text-white/40 uppercase tracking-wider mb-2">
-                    Position
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {POSITIONS.map((position, index) => (
-                      <motion.button
-                        key={position}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => setSelectedPosition(position)}
-                        className={cn(
-                          "relative px-4 py-2 rounded-full font-mono text-sm transition-all focus-arcade",
-                          selectedPosition === position
-                            ? "text-black"
-                            : "text-white/60 hover:text-white hover:bg-white/5"
-                        )}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {selectedPosition === position && (
-                          <motion.div
-                            layoutId="activePosition"
-                            className="absolute inset-0 bg-comets-cyan rounded-full"
-                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                          />
-                        )}
-                        <span className="relative z-10">{position}</span>
                       </motion.button>
                     ))}
                   </div>

@@ -1,7 +1,9 @@
 import React from "react";
+import Link from "next/link";
 import StandingsTable, { TeamStanding } from "./StandingsTable";
 import { Trophy } from "lucide-react";
 import { getStandings, getTeamRegistry, getSchedule } from "@/lib/sheets";
+import { cn } from "@/lib/utils";
 
 // Helper function to calculate streak from schedule
 function calculateStreak(teamName: string, schedule: any[]): string {
@@ -44,10 +46,17 @@ function calculateGB(wins: number, losses: number, leaderWins: number, leaderLos
   return gb.toFixed(1);
 }
 
-export default async function StandingsPage() {
+export default async function StandingsPage({
+  searchParams,
+}: {
+  searchParams: { season?: string };
+}) {
+  // Determine if we're showing playoffs or regular season
+  const isPlayoffs = searchParams.season === 'playoffs';
+
   // Fetch data from Google Sheets
   const [standingsData, teamRegistry, schedule] = await Promise.all([
-    getStandings(false), // false = regular season
+    getStandings(isPlayoffs),
     getTeamRegistry(),
     getSchedule()
   ]);
@@ -99,14 +108,30 @@ export default async function StandingsPage() {
             </h1>
           </div>
 
-          {/* Filter / Toggle (Static Mock) */}
+          {/* Season Toggle */}
           <div className="flex bg-surface-dark border border-white/10 rounded p-1">
-            <button className="px-4 py-2 bg-white/10 rounded-sm text-white font-ui text-xs uppercase tracking-wider shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+            <Link
+              href="/standings"
+              className={cn(
+                "px-4 py-2 rounded-sm font-ui text-xs uppercase tracking-wider transition-all",
+                !isPlayoffs
+                  ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+                  : "text-white/40 hover:text-white hover:bg-white/5"
+              )}
+            >
               Regular Season
-            </button>
-            <button className="px-4 py-2 hover:bg-white/5 rounded-sm text-white/40 hover:text-white font-ui text-xs uppercase tracking-wider transition-colors">
+            </Link>
+            <Link
+              href="/standings?season=playoffs"
+              className={cn(
+                "px-4 py-2 rounded-sm font-ui text-xs uppercase tracking-wider transition-all",
+                isPlayoffs
+                  ? "bg-white/10 text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+                  : "text-white/40 hover:text-white hover:bg-white/5"
+              )}
+            >
               Playoffs
-            </button>
+            </Link>
           </div>
         </div>
 

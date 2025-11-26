@@ -23,9 +23,14 @@ interface StatsTooltipProps {
 const STAT_DEFINITIONS = {
   // Context-specific stats (different meanings in different contexts)
   batting: {
-    "BB": "Walks",
+    "BB": "Walks (Base on Balls)",
     "H": "Hits",
     "K": "Strikeouts",
+    "AVG": "Batting Average",
+    "OBP": "On-Base Percentage",
+    "SLG": "Slugging Percentage",
+    "OPS": "On-Base Plus Slugging",
+    "SB": "Stolen Bases",
   },
   pitching: {
     "BB": "Walks Allowed",
@@ -36,8 +41,8 @@ const STAT_DEFINITIONS = {
     "ERA": "Earned Run Average",
     "IP": "Innings Pitched",
     "SV": "Saves",
-    "HLD": "Holds",
     "WHIP": "Walks + Hits per Inning",
+    "BAA": "Batting Average Against",
   },
   fielding: {
     "PO": "Put Outs",
@@ -45,6 +50,10 @@ const STAT_DEFINITIONS = {
     "E": "Errors",
     "FLD%": "Fielding Percentage",
     "TC": "Total Chances",
+    "NP": "Nice Plays",
+    "ROB": "Hits Robbed",
+    "CS": "Caught Stealing",
+    "OAA": "Outs Above Average",
   },
   team: {
     "W": "Wins",
@@ -68,12 +77,7 @@ const STAT_DEFINITIONS = {
     "RBI": "Runs Batted In",
     "R": "Runs Scored",
     "SO": "Strikeouts",
-    "SB": "Stolen Bases",
-    "AVG": "Batting Average",
-    "OBP": "On-Base Percentage",
-    "SLG": "Slugging Percentage",
-    "OPS": "On-Base Plus Slugging",
-    "DP": "Double Plays",
+    "DP": "Double Plays Hit Into",
   }
 } as const;
 

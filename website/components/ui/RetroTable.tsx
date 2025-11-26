@@ -86,10 +86,11 @@ export default function RetroTable<T extends { id?: string | number }>({
       
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-white/10 bg-black/40 relative overflow-hidden">
-              <th className="absolute inset-0 scanlines opacity-20 pointer-events-none w-full h-full" colSpan={columns.length} />
-              
+          <thead className="relative">
+            {/* Scanlines background - positioned absolutely to not create extra column */}
+            <div className="absolute inset-0 scanlines opacity-20 pointer-events-none" />
+
+            <tr className="border-b border-white/10 bg-black/40 relative">
               {columns.map((col, i) => (
                 <th 
                   key={i} 

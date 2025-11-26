@@ -15,7 +15,7 @@ interface StatsTooltipProps {
   stat: string;
   children: React.ReactNode;
   description?: string;
-  context?: "batting" | "pitching" | "fielding";
+  context?: "batting" | "pitching" | "fielding" | "team";
 }
 
 // Stat definitions database with context awareness
@@ -44,6 +44,20 @@ const STAT_DEFINITIONS = {
     "E": "Errors",
     "FLD%": "Fielding Percentage",
     "TC": "Total Chances",
+  },
+  team: {
+    "W": "Wins",
+    "L": "Losses",
+    "PCT": "Winning Percentage",
+    "GB": "Games Back",
+    "STRK": "Streak",
+    "RS": "Runs Scored",
+    "RA": "Runs Against",
+    "DIFF": "Run Differential",
+    "R/G": "Runs Per Game",
+    "DER": "Defensive Efficiency Rating",
+    "OAA": "Outs Above Average",
+    "NP": "Nice Plays",
   },
   // General stats (work across all contexts)
   general: {
@@ -84,7 +98,7 @@ export default function StatsTooltip({ stat, children, description, context }: S
     }
 
     // Check all contexts as last resort
-    for (const ctx of ["batting", "pitching", "fielding"] as const) {
+    for (const ctx of ["batting", "pitching", "fielding", "team"] as const) {
       const ctxDefs = STAT_DEFINITIONS[ctx] as Record<string, string>;
       if (ctxDefs[stat]) {
         return ctxDefs[stat];

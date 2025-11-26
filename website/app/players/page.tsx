@@ -171,7 +171,6 @@ export default function PlayersPage() {
                 />
               )}
             </motion.button>
-          </div>
         </div>
 
         {/* ENHANCED: Animated Filter Panel */}

@@ -78,6 +78,8 @@ const STAT_DEFINITIONS = {
 
 export default function StatsTooltip({ stat, children, description, context }: StatsTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const triggerRef = React.useRef<HTMLDivElement>(null);
+  const [position, setPosition] = React.useState({ top: 0, left: 0 });
 
   // Look up stat definition with context awareness
   const getDefinition = () => {
@@ -110,8 +112,20 @@ export default function StatsTooltip({ stat, children, description, context }: S
 
   const definition = getDefinition();
 
+  // Update position when tooltip becomes visible
+  React.useEffect(() => {
+    if (isVisible && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2
+      });
+    }
+  }, [isVisible]);
+
   return (
     <div
+      ref={triggerRef}
       className="relative inline-block"
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
@@ -138,7 +152,8 @@ export default function StatsTooltip({ stat, children, description, context }: S
             animate={{ opacity: 1, y: -12, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none whitespace-nowrap"
+            className="fixed -translate-x-1/2 -translate-y-full z-[9999] pointer-events-none whitespace-nowrap"
+            style={{ top: `${position.top}px`, left: `${position.left}px` }}
           >
             {/* Glow effect */}
             <div className="absolute inset-0 bg-comets-cyan/20 blur-xl rounded-lg" />

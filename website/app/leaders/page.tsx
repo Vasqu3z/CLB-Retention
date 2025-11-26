@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, TrendingUp, Zap, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RetroTabs from "@/components/ui/RetroTabs";
+import StatsTooltip from "@/components/ui/StatsTooltip";
 
 // Mock data - Replace with Google Sheets fetch
 const MOCK_LEADERS = {
@@ -52,7 +53,7 @@ interface LeaderEntry {
   color: string;
 }
 
-function LeaderPodium({ leaders, statName, icon: Icon }: { leaders: LeaderEntry[], statName: string, icon: any }) {
+function LeaderPodium({ leaders, statName, statKey, context, icon: Icon }: { leaders: LeaderEntry[], statName: string, statKey: string, context: "batting" | "pitching", icon: any }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -61,21 +62,23 @@ function LeaderPodium({ leaders, statName, icon: Icon }: { leaders: LeaderEntry[
     >
       {/* Card container */}
       <div className="relative bg-surface-dark border border-white/10 rounded-lg overflow-hidden p-8 hover:border-white/30 transition-colors duration-300">
-        
+
         {/* Scanlines */}
         <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
-        
+
         {/* Stat header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <motion.div 
+            <motion.div
               className="p-2 bg-comets-cyan/10 rounded-lg"
               whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
             >
               <Icon className="text-comets-cyan" size={24} />
             </motion.div>
             <h3 className="font-display text-2xl uppercase text-white tracking-tight">
-              {statName}
+              <StatsTooltip stat={statKey.toUpperCase()} context={context}>
+                {statName}
+              </StatsTooltip>
             </h3>
           </div>
           <div className="font-mono text-xs text-white/40 uppercase tracking-widest">
@@ -224,9 +227,11 @@ export default function LeadersPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
               >
-                <LeaderPodium 
-                  leaders={stat.data} 
+                <LeaderPodium
+                  leaders={stat.data}
                   statName={stat.name}
+                  statKey={stat.key}
+                  context={category}
                   icon={stat.icon}
                 />
               </motion.div>

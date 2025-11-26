@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SeasonToggle } from "@/components/ui/RetroSegmentedControl";
 import RetroEmptyState from "@/components/ui/RetroEmptyState";
+import StatsTooltip from "@/components/ui/StatsTooltip";
 
 // Mock Data - Replace with Google Sheets fetch
 const PLAYERS = [
@@ -61,18 +62,33 @@ export default function PlayersPage() {
     },
     { header: "Team", accessorKey: "team" as const, className: "text-white/60", sortable: true },
     { header: "Pos", accessorKey: "position" as const, className: "text-white/40 text-xs", sortable: true },
-    { header: "AVG", accessorKey: "avg" as const, className: "text-comets-cyan font-mono", sortable: true },
-    { header: "HR", accessorKey: "hr" as const, className: "text-comets-red font-mono", sortable: true },
-    { header: "OPS", accessorKey: "ops" as const, className: "text-comets-yellow font-mono font-bold", sortable: true },
-    { 
-      header: "Stamina", 
+    {
+      header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>,
+      accessorKey: "avg" as const,
+      className: "text-comets-cyan font-mono",
+      sortable: true
+    },
+    {
+      header: <StatsTooltip stat="HR" context="batting">HR</StatsTooltip>,
+      accessorKey: "hr" as const,
+      className: "text-comets-red font-mono",
+      sortable: true
+    },
+    {
+      header: <StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>,
+      accessorKey: "ops" as const,
+      className: "text-comets-yellow font-mono font-bold",
+      sortable: true
+    },
+    {
+      header: "Stamina",
       cell: (item: any) => (
         <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
-          <motion.div 
+          <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${item.stamina}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="h-full bg-comets-purple" 
+            className="h-full bg-comets-purple"
           />
         </div>
       )

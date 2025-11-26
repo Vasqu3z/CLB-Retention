@@ -3,6 +3,7 @@
 import React from "react";
 import RetroTable from "@/components/ui/RetroTable";
 import { cn } from "@/lib/utils";
+import StatsTooltip from "@/components/ui/StatsTooltip";
 
 // Data Interface
 export interface TeamStanding {
@@ -60,27 +61,27 @@ export default function StandingsTable({ data }: StandingsTableProps) {
       )
     },
     {
-      header: "W",
+      header: <StatsTooltip stat="W" context="team">W</StatsTooltip>,
       accessorKey: "wins" as const,
       className: "text-center text-white/90"
     },
     {
-      header: "L",
+      header: <StatsTooltip stat="L" context="team">L</StatsTooltip>,
       accessorKey: "losses" as const,
       className: "text-center text-white/60"
     },
     {
-      header: "PCT",
+      header: <StatsTooltip stat="PCT" context="team">PCT</StatsTooltip>,
       accessorKey: "pct" as const,
       className: "text-center font-bold text-comets-blue tracking-wider"
     },
     {
-      header: "GB",
+      header: <StatsTooltip stat="GB" context="team">GB</StatsTooltip>,
       accessorKey: "gb" as const,
       className: "text-center text-white/40 hidden md:table-cell"
     },
     {
-      header: "STRK",
+      header: <StatsTooltip stat="STRK" context="team">STRK</StatsTooltip>,
       className: "text-center",
       cell: (item: TeamStanding) => (
         <span className={cn(
@@ -94,7 +95,7 @@ export default function StandingsTable({ data }: StandingsTableProps) {
       )
     },
     {
-      header: "DIFF",
+      header: <StatsTooltip stat="DIFF" context="team">DIFF</StatsTooltip>,
       className: "text-center text-right hidden md:table-cell",
       cell: (item: TeamStanding) => (
         <span className={item.runDiff > 0 ? "text-green-400" : "text-red-400"}>

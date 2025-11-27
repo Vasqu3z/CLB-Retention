@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import RetroTable from "@/components/ui/RetroTable";
 import { cn } from "@/lib/utils";
 import StatsTooltip from "@/components/ui/StatsTooltip";
@@ -19,6 +20,7 @@ export interface TeamStanding {
   streak: string;
   runDiff: number;
   logoColor: string;
+  logoUrl?: string; // Team logo URL
   h2hNote?: string; // Head-to-head record for tiebreaker context
 }
 
@@ -47,12 +49,22 @@ export default function StandingsTable({ data }: StandingsTableProps) {
       cell: (item: TeamStanding) => {
         const teamDisplay = (
           <div className="flex items-center gap-3">
-            {/* Logo Placeholder with Glow */}
+            {/* Team Logo */}
             <div
-              className="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs font-bold border border-white/10 shadow-sm"
-              style={{ color: item.logoColor, borderColor: item.rank === 1 ? item.logoColor : 'rgba(255,255,255,0.1)' }}
+              className="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs font-bold border border-white/10 shadow-sm overflow-hidden"
+              style={{ borderColor: item.rank === 1 ? item.logoColor : 'rgba(255,255,255,0.1)' }}
             >
-              {item.teamCode[0]}
+              {item.logoUrl ? (
+                <Image
+                  src={item.logoUrl}
+                  alt={`${item.teamName} logo`}
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                />
+              ) : (
+                <span style={{ color: item.logoColor }}>{item.teamCode[0]}</span>
+              )}
             </div>
             <div className="flex flex-col">
               <span className="font-bold uppercase tracking-wide text-white group-hover/row:text-comets-cyan transition-colors">

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { TrendingUp } from "lucide-react";
 import Link from "next/link";
@@ -9,6 +10,7 @@ interface TeamSelectCardProps {
   name: string;
   code: string;
   logoColor: string;
+  logoUrl?: string; // Optional logo URL
   stats: {
     wins: number;
     losses: number;
@@ -17,7 +19,7 @@ interface TeamSelectCardProps {
   href: string;
 }
 
-export default function TeamSelectCard({ name, code, logoColor, stats, href }: TeamSelectCardProps) {
+export default function TeamSelectCard({ name, code, logoColor, logoUrl, stats, href }: TeamSelectCardProps) {
   return (
     <Link href={href} className="block h-full group perspective-1000">
       <motion.div
@@ -37,17 +39,27 @@ export default function TeamSelectCard({ name, code, logoColor, stats, href }: T
         />
         
         {/* Animated team logo */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 flex items-center justify-center z-0 grayscale group-hover:grayscale-0"
           initial={{ opacity: 0.2, scale: 1 }}
-          whileHover={{ 
-            opacity: 1, 
+          whileHover={{
+            opacity: 1,
             scale: 1.15,
             rotate: [0, -3, 3, 0],
           }}
           transition={{ duration: 0.5 }}
         >
-          <div className="text-9xl font-display" style={{ color: logoColor }}>{code[0]}</div>
+          {logoUrl ? (
+            <Image
+              src={logoUrl}
+              alt={`${name} logo`}
+              width={200}
+              height={200}
+              className="object-contain"
+            />
+          ) : (
+            <div className="text-9xl font-display" style={{ color: logoColor }}>{code[0]}</div>
+          )}
         </motion.div>
 
         <div className="absolute inset-0 p-6 flex flex-col justify-between z-10 bg-gradient-to-t from-black/80 to-transparent">

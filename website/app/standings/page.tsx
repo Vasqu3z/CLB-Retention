@@ -80,6 +80,7 @@ export default async function StandingsPage() {
       streak: calculateStreak(row.team, schedule),
       runDiff: row.runDiff,
       logoColor: teamInfo?.color || "#FFFFFF",
+      logoUrl: teamInfo?.emblemUrl, // Use emblem (smaller icon) for standings table
       h2hNote: row.h2hNote // Head-to-head record for tiebreaker context
     };
   });

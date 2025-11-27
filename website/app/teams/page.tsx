@@ -39,6 +39,7 @@ export default async function TeamsPage() {
       name: team.teamName,
       code: team.abbr,
       logoColor: team.color,
+      logoUrl: team.logoUrl, // Add logo URL from team registry
       stats: {
         wins: standing?.wins || 0,
         losses: standing?.losses || 0,

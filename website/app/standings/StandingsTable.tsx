@@ -4,6 +4,7 @@ import React from "react";
 import RetroTable from "@/components/ui/RetroTable";
 import { cn } from "@/lib/utils";
 import StatsTooltip from "@/components/ui/StatsTooltip";
+import H2HTooltip from "@/components/ui/H2HTooltip";
 
 // Data Interface
 export interface TeamStanding {
@@ -18,6 +19,7 @@ export interface TeamStanding {
   streak: string;
   runDiff: number;
   logoColor: string;
+  h2hNote?: string; // Head-to-head record for tiebreaker context
 }
 
 interface StandingsTableProps {
@@ -42,23 +44,36 @@ export default function StandingsTable({ data }: StandingsTableProps) {
     {
       header: "Team",
       className: "min-w-[200px]",
-      cell: (item: TeamStanding) => (
-        <div className="flex items-center gap-3">
-          {/* Logo Placeholder with Glow */}
-          <div
-            className="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs font-bold border border-white/10 shadow-sm"
-            style={{ color: item.logoColor, borderColor: item.rank === 1 ? item.logoColor : 'rgba(255,255,255,0.1)' }}
-          >
-            {item.teamCode[0]}
+      cell: (item: TeamStanding) => {
+        const teamDisplay = (
+          <div className="flex items-center gap-3">
+            {/* Logo Placeholder with Glow */}
+            <div
+              className="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs font-bold border border-white/10 shadow-sm"
+              style={{ color: item.logoColor, borderColor: item.rank === 1 ? item.logoColor : 'rgba(255,255,255,0.1)' }}
+            >
+              {item.teamCode[0]}
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold uppercase tracking-wide text-white group-hover/row:text-comets-cyan transition-colors">
+                {item.teamName}
+              </span>
+              <span className="text-[10px] text-white/40 md:hidden">{item.teamCode}</span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold uppercase tracking-wide text-white group-hover/row:text-comets-cyan transition-colors">
-              {item.teamName}
-            </span>
-            <span className="text-[10px] text-white/40 md:hidden">{item.teamCode}</span>
-          </div>
-        </div>
-      )
+        );
+
+        // Wrap with H2H tooltip if head-to-head record exists
+        if (item.h2hNote) {
+          return (
+            <H2HTooltip record={item.h2hNote} teamColor={item.logoColor}>
+              {teamDisplay}
+            </H2HTooltip>
+          );
+        }
+
+        return teamDisplay;
+      }
     },
     {
       header: <StatsTooltip stat="W" context="team">W</StatsTooltip>,

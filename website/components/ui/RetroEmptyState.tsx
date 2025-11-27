@@ -15,7 +15,7 @@ import { Gamepad2, Search, Trophy, AlertCircle } from "lucide-react";
 interface RetroEmptyStateProps {
   title?: string;
   message?: string;
-  icon?: "search" | "trophy" | "gamepad" | "alert";
+  icon?: "search" | "trophy" | "gamepad" | "alert" | "database";
   action?: {
     label: string;
     onClick: () => void;
@@ -28,12 +28,13 @@ const ICONS = {
   trophy: Trophy,
   gamepad: Gamepad2,
   alert: AlertCircle,
+  database: AlertCircle, // Using AlertCircle as placeholder for database icon
 };
 
 export default function RetroEmptyState({
-  title = "No Data Found",
-  message = "Insert coin to continue",
-  icon = "gamepad",
+  title = "No Data Available",
+  message = "There are currently no entries to display. Check back later or try adjusting your filters.",
+  icon = "database",
   action,
   className = ""
 }: RetroEmptyStateProps) {

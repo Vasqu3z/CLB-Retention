@@ -79,7 +79,8 @@ export default async function StandingsPage() {
       gb: calculateGB(row.wins, row.losses, leader.wins, leader.losses),
       streak: calculateStreak(row.team, schedule),
       runDiff: row.runDiff,
-      logoColor: teamInfo?.color || "#FFFFFF"
+      logoColor: teamInfo?.color || "#FFFFFF",
+      h2hNote: row.h2hNote // Head-to-head record for tiebreaker context
     };
   });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import RetroTable from "@/components/ui/RetroTable";
 import { Search, SlidersHorizontal, X, TrendingUp, Filter, Target, Flame, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -79,13 +80,23 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
   const hittingColumns = [
     {
       header: "Player",
-      cell: (item: PlayerStats) => (
+      cell: (item: PlayerStats & { imageUrl?: string }) => (
         <div className="flex items-center gap-3">
           <motion.div
-            className="w-8 h-8 bg-surface-light rounded flex items-center justify-center font-display text-white/80"
-            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80"
+            whileHover={{ scale: 1.1 }}
           >
-            {item.name[0]}
+            {item.imageUrl ? (
+              <Image
+                src={item.imageUrl}
+                alt={item.name}
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>{item.name[0]}</span>
+            )}
           </motion.div>
           <span className="font-bold text-white uppercase tracking-wider">{item.name}</span>
         </div>
@@ -158,13 +169,23 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
   const pitchingColumns = [
     {
       header: "Player",
-      cell: (item: PlayerStats) => (
+      cell: (item: PlayerStats & { imageUrl?: string }) => (
         <div className="flex items-center gap-3">
           <motion.div
-            className="w-8 h-8 bg-surface-light rounded flex items-center justify-center font-display text-white/80"
-            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80"
+            whileHover={{ scale: 1.1 }}
           >
-            {item.name[0]}
+            {item.imageUrl ? (
+              <Image
+                src={item.imageUrl}
+                alt={item.name}
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>{item.name[0]}</span>
+            )}
           </motion.div>
           <span className="font-bold text-white uppercase tracking-wider">{item.name}</span>
         </div>
@@ -231,13 +252,23 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
   const fieldingColumns = [
     {
       header: "Player",
-      cell: (item: PlayerStats) => (
+      cell: (item: PlayerStats & { imageUrl?: string }) => (
         <div className="flex items-center gap-3">
           <motion.div
-            className="w-8 h-8 bg-surface-light rounded flex items-center justify-center font-display text-white/80"
-            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80"
+            whileHover={{ scale: 1.1 }}
           >
-            {item.name[0]}
+            {item.imageUrl ? (
+              <Image
+                src={item.imageUrl}
+                alt={item.name}
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>{item.name[0]}</span>
+            )}
           </motion.div>
           <span className="font-bold text-white uppercase tracking-wider">{item.name}</span>
         </div>

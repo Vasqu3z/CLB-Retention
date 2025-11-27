@@ -11,6 +11,30 @@ const nextConfig = {
   images: {
     // Optimize image loading
     formats: ['image/webp', 'image/avif'],
+    // Allow external image domains
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        pathname: '/Vasqu3z/Comets-League-Baseball/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media.discordapp.net',
+        pathname: '/**',
+      },
+      // Add other domains as needed (Google Drive, imgur, etc.)
+    ],
   },
 }
 

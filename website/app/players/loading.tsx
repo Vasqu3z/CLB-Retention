@@ -1,9 +1,5 @@
-import RetroLoader from '@/components/ui/RetroLoader';
+import PlayersPageSkeleton from "@/components/ui/skeletons/PlayersPageSkeleton";
 
 export default function PlayersLoading() {
-  return (
-    <main className="min-h-screen bg-background pb-24 pt-32 px-4 flex items-center justify-center">
-      <RetroLoader />
-    </main>
-  );
+  return <PlayersPageSkeleton />;
 }

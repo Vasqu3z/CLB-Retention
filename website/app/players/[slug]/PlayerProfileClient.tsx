@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Activity, Zap, Users, Target, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatsTooltip from "@/components/ui/StatsTooltip";
+import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
 
 interface PlayerStats {
   name: string;
@@ -63,6 +64,7 @@ export default function PlayerProfileClient({
   negativeChemistry,
 }: PlayerProfileClientProps) {
   const [activeTab, setActiveTab] = useState<"stats" | "attributes" | "chemistry">("stats");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const hasHittingStats = (player.ab || 0) > 0;
   const hasPitchingStats = (player.ip || 0) > 0;
@@ -149,11 +151,15 @@ export default function PlayerProfileClient({
               animate={{ opacity: 1, y: 0 }}
               className="space-y-8"
             >
+              {/* Stats Toggle */}
+              <div className="flex justify-end">
+                <StatsToggle showAdvanced={showAdvanced} onChange={setShowAdvanced} size="sm" />
+              </div>
               {hasHittingStats && (
                 <StatCard title="Hitting" color={teamColor}>
                   <StatRow label={<StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>} value={player.avg || ".000"} />
-                  <StatRow label={<StatsTooltip stat="OBP" context="batting">OBP</StatsTooltip>} value={player.obp || ".000"} />
-                  <StatRow label={<StatsTooltip stat="SLG" context="batting">SLG</StatsTooltip>} value={player.slg || ".000"} />
+                  {showAdvanced && <StatRow label={<StatsTooltip stat="OBP" context="batting">OBP</StatsTooltip>} value={player.obp || ".000"} />}
+                  {showAdvanced && <StatRow label={<StatsTooltip stat="SLG" context="batting">SLG</StatsTooltip>} value={player.slg || ".000"} />}
                   <StatRow label={<StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>} value={player.ops || ".000"} highlight />
                   <StatRow label={<StatsTooltip stat="AB" context="batting">AB</StatsTooltip>} value={player.ab || 0} />
                   <StatRow label={<StatsTooltip stat="H" context="batting">H</StatsTooltip>} value={player.h || 0} />
@@ -166,9 +172,9 @@ export default function PlayerProfileClient({
                 <StatCard title="Pitching" color={teamColor}>
                   <StatRow label={<StatsTooltip stat="ERA" context="pitching">ERA</StatsTooltip>} value={player.era || "0.00"} highlight />
                   <StatRow label={<StatsTooltip stat="WHIP" context="pitching">WHIP</StatsTooltip>} value={player.whip || "0.00"} />
-                  <StatRow label={<StatsTooltip stat="W" context="pitching">W</StatsTooltip>} value={player.w || 0} />
-                  <StatRow label={<StatsTooltip stat="L" context="pitching">L</StatsTooltip>} value={player.l || 0} />
-                  <StatRow label={<StatsTooltip stat="SV" context="pitching">SV</StatsTooltip>} value={player.sv || 0} />
+                  {showAdvanced && <StatRow label={<StatsTooltip stat="W" context="pitching">W</StatsTooltip>} value={player.w || 0} />}
+                  {showAdvanced && <StatRow label={<StatsTooltip stat="L" context="pitching">L</StatsTooltip>} value={player.l || 0} />}
+                  {showAdvanced && <StatRow label={<StatsTooltip stat="SV" context="pitching">SV</StatsTooltip>} value={player.sv || 0} />}
                   <StatRow label={<StatsTooltip stat="IP" context="pitching">IP</StatsTooltip>} value={player.ip?.toFixed(1) || "0.0"} />
                 </StatCard>
               )}

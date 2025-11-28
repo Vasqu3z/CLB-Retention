@@ -26,9 +26,10 @@ export interface TeamStanding {
 
 interface StandingsTableProps {
   data: TeamStanding[];
+  showAdvanced?: boolean;
 }
 
-export default function StandingsTable({ data }: StandingsTableProps) {
+export default function StandingsTable({ data, showAdvanced = true }: StandingsTableProps) {
 
   const columns = [
     {
@@ -105,11 +106,13 @@ export default function StandingsTable({ data }: StandingsTableProps) {
     {
       header: <StatsTooltip stat="GB" context="team">GB</StatsTooltip>,
       accessorKey: "gb" as const,
-      className: "text-center text-white/40 hidden md:table-cell"
+      className: "text-center text-white/40 hidden md:table-cell",
+      condensed: true
     },
     {
       header: <StatsTooltip stat="STRK" context="team">STRK</StatsTooltip>,
       className: "text-center",
+      condensed: true,
       cell: (item: TeamStanding) => (
         <span className={cn(
           "px-2 py-1 rounded text-xs font-bold border",
@@ -124,6 +127,7 @@ export default function StandingsTable({ data }: StandingsTableProps) {
     {
       header: <StatsTooltip stat="DIFF" context="team">DIFF</StatsTooltip>,
       className: "text-center text-right hidden md:table-cell",
+      condensed: true,
       cell: (item: TeamStanding) => (
         <span className={item.runDiff > 0 ? "text-green-400" : "text-red-400"}>
           {item.runDiff > 0 ? `+${item.runDiff}` : item.runDiff}
@@ -138,6 +142,7 @@ export default function StandingsTable({ data }: StandingsTableProps) {
           data={data}
           columns={columns}
           onRowClick={(item) => console.log(`Clicked ${item.teamName}`)}
+          showAdvanced={showAdvanced}
        />
     </div>
   );

@@ -6,7 +6,7 @@ import RetroTable from "@/components/ui/RetroTable";
 import { Search, SlidersHorizontal, X, TrendingUp, Filter, Target, Flame, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { SeasonToggle } from "@/components/ui/RetroSegmentedControl";
+import { SeasonToggle, StatsToggle } from "@/components/ui/RetroSegmentedControl";
 import RetroEmptyState from "@/components/ui/RetroEmptyState";
 import StatsTooltip from "@/components/ui/StatsTooltip";
 import RetroTabs from "@/components/ui/RetroTabs";
@@ -23,6 +23,7 @@ const TEAMS = ["All Teams", "Fireballs", "Monsters", "Monarchs", "Eggs", "Muscle
 
 export default function PlayersClient({ regularPlayers, playoffPlayers }: PlayersClientProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("hitting");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("All Teams");
@@ -133,12 +134,14 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       accessorKey: "dp" as const,
       className: "text-white/70 font-mono text-sm",
       sortable: true,
+      condensed: true,
     },
     {
       header: <StatsTooltip stat="ROB" context="fielding">ROB</StatsTooltip>,
       accessorKey: "rob" as const,
       className: "text-white/70 font-mono text-sm",
       sortable: true,
+      condensed: true,
     },
     {
       header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>,
@@ -151,6 +154,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       accessorKey: "obp" as const,
       className: "text-comets-cyan font-mono",
       sortable: true,
+      condensed: true,
     },
     {
       header: <StatsTooltip stat="SLG" context="batting">SLG</StatsTooltip>,
@@ -204,18 +208,21 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       accessorKey: "w" as const,
       className: "text-green-400 font-mono text-sm",
       sortable: true,
+      condensed: true,
     },
     {
       header: <StatsTooltip stat="L" context="pitching">L</StatsTooltip>,
       accessorKey: "l" as const,
       className: "text-red-400 font-mono text-sm",
       sortable: true,
+      condensed: true,
     },
     {
       header: <StatsTooltip stat="SV" context="pitching">SV</StatsTooltip>,
       accessorKey: "sv" as const,
       className: "text-comets-yellow font-mono text-sm",
       sortable: true,
+      condensed: true,
     },
     {
       header: <StatsTooltip stat="H" context="pitching">H</StatsTooltip>,
@@ -335,8 +342,11 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
             </motion.div>
           </div>
 
-          {/* Season Toggle */}
-          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+          {/* Toggles */}
+          <div className="flex gap-3">
+            <StatsToggle showAdvanced={showAdvanced} onChange={setShowAdvanced} size="sm" />
+            <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} size="sm" />
+          </div>
         </div>
 
         {/* Category Tabs */}
@@ -478,6 +488,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
           data={displayPlayers}
           columns={columns}
           onRowClick={(p) => console.log("View Player", p.name)}
+          showAdvanced={showAdvanced}
         />
 
         {/* Empty State */}

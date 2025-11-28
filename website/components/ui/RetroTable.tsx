@@ -11,6 +11,7 @@ interface Column<T> {
   cell?: (item: T, index: number) => React.ReactNode;
   className?: string;
   sortable?: boolean;
+  condensed?: boolean; // Column only shown in advanced mode
 }
 
 interface RetroTableProps<T> {
@@ -18,6 +19,7 @@ interface RetroTableProps<T> {
   columns: Column<T>[];
   onRowClick?: (item: T) => void;
   isLoading?: boolean;
+  showAdvanced?: boolean; // Show condensed columns (default: true)
 }
 
 type SortConfig<T> = {
@@ -25,13 +27,20 @@ type SortConfig<T> = {
   direction: 'asc' | 'desc';
 } | null;
 
-export default function RetroTable<T extends { id?: string | number }>({ 
-  data, 
-  columns, 
+export default function RetroTable<T extends { id?: string | number }>({
+  data,
+  columns,
   onRowClick,
-  isLoading 
+  isLoading,
+  showAdvanced = true
 }: RetroTableProps<T>) {
   const [sortConfig, setSortConfig] = useState<SortConfig<T>>(null);
+
+  // Filter columns based on showAdvanced prop
+  const visibleColumns = React.useMemo(() => {
+    if (showAdvanced) return columns;
+    return columns.filter(col => !col.condensed);
+  }, [columns, showAdvanced]);
 
   const handleSort = (key: keyof T) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -91,7 +100,7 @@ export default function RetroTable<T extends { id?: string | number }>({
             <div className="absolute inset-0 scanlines opacity-20 pointer-events-none" />
 
             <tr className="border-b border-white/10 bg-black/40 relative">
-              {columns.map((col, i) => (
+              {visibleColumns.map((col, i) => (
                 <th 
                   key={i} 
                   className={cn(
@@ -168,7 +177,7 @@ export default function RetroTable<T extends { id?: string | number }>({
                   onRowClick && "cursor-pointer"
                 )}
               >
-                {columns.map((col, j) => (
+                {visibleColumns.map((col, j) => (
                   <td key={j} className={cn("p-4 text-white/80 whitespace-nowrap", col.className)}>
                     <div className="relative z-10">
                       {col.cell 

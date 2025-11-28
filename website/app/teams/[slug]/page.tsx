@@ -123,6 +123,8 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
       teamName={team.teamName}
       teamCode={team.abbr}
       logoColor={team.color}
+      logoUrl={team.logoUrl}
+      emblemUrl={team.emblemUrl}
       rank={rank}
       wins={standing?.wins || 0}
       losses={standing?.losses || 0}

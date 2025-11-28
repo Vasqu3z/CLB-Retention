@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Users, Calendar, Activity, Trophy, TrendingUp } from "lucide-react";
 import RetroTable from "@/components/ui/RetroTable";
 import VersusCard from "@/components/ui/VersusCard";
@@ -57,6 +58,8 @@ interface TeamDetailClientProps {
   teamName: string;
   teamCode: string;
   logoColor: string;
+  logoUrl: string;
+  emblemUrl: string;
   rank: number;
   wins: number;
   losses: number;
@@ -70,6 +73,8 @@ export default function TeamDetailClient({
   teamName,
   teamCode,
   logoColor,
+  logoUrl,
+  emblemUrl,
   rank,
   wins,
   losses,
@@ -161,7 +166,7 @@ export default function TeamDetailClient({
         <div className="container mx-auto px-4 relative z-10 flex items-end gap-8">
           {/* Animated Logo */}
           <motion.div
-            className="w-32 h-32 md:w-48 md:h-48 bg-surface-dark border-4 rounded-xl flex items-center justify-center shadow-2xl relative overflow-hidden"
+            className="w-32 h-32 md:w-48 md:h-48 bg-surface-dark border-4 rounded-xl flex items-center justify-center shadow-2xl relative overflow-hidden p-4"
             style={{ borderColor: logoColor }}
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
@@ -186,9 +191,21 @@ export default function TeamDetailClient({
                 background: `radial-gradient(circle, ${logoColor}40, transparent)`,
               }}
             />
-            <div className="font-display text-8xl relative z-10" style={{ color: logoColor }}>
-              {teamCode[0]}
-            </div>
+            {/* Team Logo */}
+            {emblemUrl ? (
+              <Image
+                src={emblemUrl}
+                alt={`${teamName} logo`}
+                width={192}
+                height={192}
+                className="relative z-10 w-full h-full object-contain"
+                priority
+              />
+            ) : (
+              <div className="font-display text-8xl relative z-10" style={{ color: logoColor }}>
+                {teamCode[0]}
+              </div>
+            )}
           </motion.div>
 
           {/* Team Info */}

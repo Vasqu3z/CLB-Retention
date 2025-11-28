@@ -6,6 +6,7 @@ import { Users, Calendar, Activity, Trophy, TrendingUp } from "lucide-react";
 import RetroTable from "@/components/ui/RetroTable";
 import VersusCard from "@/components/ui/VersusCard";
 import StatsTooltip from "@/components/ui/StatsTooltip";
+import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { PlayerStats } from "@/lib/sheets";
@@ -78,6 +79,7 @@ export default function TeamDetailClient({
   stats,
 }: TeamDetailClientProps) {
   const [activeTab, setActiveTab] = useState<"roster" | "schedule" | "stats">("roster");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const record = `${wins}-${losses}`;
   const standing = `${rank}${getRankSuffix(rank)}`;
@@ -106,7 +108,7 @@ export default function TeamDetailClient({
         </div>
       ),
     },
-    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/50" },
+    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/50", condensed: true },
     { header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>, accessorKey: "avg" as const, className: "font-mono text-comets-cyan", sortable: true },
     { header: <StatsTooltip stat="HR" context="batting">HR</StatsTooltip>, accessorKey: "hr" as const, className: "font-mono text-comets-red", sortable: true },
     { header: <StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>, accessorKey: "ops" as const, className: "font-mono text-white font-bold", sortable: true },
@@ -334,11 +336,14 @@ export default function TeamDetailClient({
             >
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-display text-2xl text-white">Team Roster</h3>
-                <div className="text-xs font-mono text-white/40">
-                  {roster.length} {roster.length === 1 ? "PLAYER" : "PLAYERS"}
+                <div className="flex items-center gap-4">
+                  <div className="text-xs font-mono text-white/40">
+                    {roster.length} {roster.length === 1 ? "PLAYER" : "PLAYERS"}
+                  </div>
+                  <StatsToggle showAdvanced={showAdvanced} onChange={setShowAdvanced} size="sm" />
                 </div>
               </div>
-              <RetroTable data={rosterWithIds} columns={rosterColumns} />
+              <RetroTable data={rosterWithIds} columns={rosterColumns} showAdvanced={showAdvanced} />
             </motion.div>
           )}
 

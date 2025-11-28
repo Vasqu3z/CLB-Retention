@@ -150,3 +150,32 @@ export function SeasonToggle({
     />
   );
 }
+
+/**
+ * Convenience component for Stats Toggle
+ * Pre-configured for Basic / Advanced stats switching
+ */
+export function StatsToggle({
+  showAdvanced,
+  onChange,
+  size = "md",
+  className
+}: {
+  showAdvanced: boolean;
+  onChange: (showAdvanced: boolean) => void;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}) {
+  return (
+    <RetroSegmentedControl
+      options={[
+        { value: "basic", label: "Basic" },
+        { value: "advanced", label: "Advanced" }
+      ]}
+      value={showAdvanced ? "advanced" : "basic"}
+      onChange={(val) => onChange(val === "advanced")}
+      size={size}
+      className={className}
+    />
+  );
+}

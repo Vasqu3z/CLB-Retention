@@ -223,7 +223,7 @@ export default function TeamDetailClient({
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, type: "spring" }}
               >
-                Season 6
+                Season 2
               </motion.span>
 
               <motion.div

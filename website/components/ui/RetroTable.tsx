@@ -91,20 +91,21 @@ export default function RetroTable<T extends { id?: string | number }>({
 
   return (
     <div className="w-full overflow-hidden rounded-xl border border-white/10 bg-surface-dark/80 backdrop-blur-sm relative group">
+      {/* Glow effect on hover */}
       <div className="absolute -inset-[1px] bg-gradient-to-b from-comets-cyan/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none rounded-xl" />
-      
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead className="relative">
-            {/* Scanlines background - positioned absolutely to not create extra column */}
-            <div className="absolute inset-0 scanlines opacity-20 pointer-events-none" />
 
-            <tr className="border-b border-white/10 bg-black/40 relative">
+      {/* Scanlines overlay - outside of table structure */}
+      <div className="absolute inset-0 scanlines opacity-10 pointer-events-none z-20" />
+
+      <div className="overflow-x-auto scrollbar-thin">
+        <table className="w-full text-left border-collapse min-w-full">
+          <thead>
+            <tr className="border-b border-white/10 bg-black/40">
               {visibleColumns.map((col, i) => (
-                <th 
-                  key={i} 
+                <th
+                  key={i}
                   className={cn(
-                    "p-4 font-ui uppercase text-sm tracking-[0.15em] text-comets-yellow/80 font-bold whitespace-nowrap relative z-10",
+                    "px-4 py-3 font-ui uppercase text-xs tracking-[0.1em] text-comets-yellow/80 font-bold whitespace-nowrap",
                     col.sortable && "cursor-pointer hover:text-comets-yellow transition-colors select-none",
                     col.className
                   )}
@@ -123,25 +124,25 @@ export default function RetroTable<T extends { id?: string | number }>({
                       : undefined
                   }
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {col.header}
                     {col.sortable && col.accessorKey && (
                       <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ 
-                          opacity: sortConfig?.key === col.accessorKey ? 1 : 0.3 
+                        animate={{
+                          opacity: sortConfig?.key === col.accessorKey ? 1 : 0.3
                         }}
                         className="flex flex-col"
                       >
                         {sortConfig?.key === col.accessorKey ? (
                           sortConfig.direction === 'asc' ? (
-                            <ChevronUp size={14} className="text-comets-cyan" />
+                            <ChevronUp size={12} className="text-comets-cyan" />
                           ) : (
-                            <ChevronDown size={14} className="text-comets-cyan" />
+                            <ChevronDown size={12} className="text-comets-cyan" />
                           )
                         ) : (
-                          <svg width="14" height="14" fill="currentColor" className="opacity-50">
-                            <path d="M7 3L10 6H4L7 3ZM7 11L4 8H10L7 11Z"/>
+                          <svg width="12" height="12" fill="currentColor" className="opacity-50">
+                            <path d="M6 2L9 5H3L6 2ZM6 10L3 7H9L6 10Z"/>
                           </svg>
                         )}
                       </motion.div>
@@ -151,18 +152,16 @@ export default function RetroTable<T extends { id?: string | number }>({
               ))}
             </tr>
           </thead>
-          <tbody className="font-mono text-sm relative z-10">
+          <tbody className="font-mono text-sm">
             {sortedData.map((item, i) => (
-              <motion.tr 
+              <motion.tr
                 key={item.id || i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                whileHover={onRowClick ? { x: 4, backgroundColor: "rgba(255,255,255,0.05)" } : {}}
-                transition={{ 
-                  delay: i * 0.03,
-                  duration: 0.3,
-                  type: "spring",
-                  stiffness: 300
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={onRowClick ? { backgroundColor: "rgba(255,255,255,0.05)" } : {}}
+                transition={{
+                  delay: Math.min(i * 0.02, 0.3), // Cap delay to avoid slow animations
+                  duration: 0.2,
                 }}
                 onClick={() => onRowClick && onRowClick(item)}
                 onKeyDown={(e) => {
@@ -173,26 +172,22 @@ export default function RetroTable<T extends { id?: string | number }>({
                 }}
                 tabIndex={onRowClick ? 0 : -1}
                 className={cn(
-                  "border-b border-white/5 transition-all duration-200 group/row relative focus-arcade",
-                  onRowClick && "cursor-pointer"
+                  "border-b border-white/5 transition-colors duration-150 group/row relative focus-arcade",
+                  onRowClick && "cursor-pointer hover:bg-white/5"
                 )}
               >
                 {visibleColumns.map((col, j) => (
-                  <td key={j} className={cn("p-4 text-white/80 whitespace-nowrap", col.className)}>
-                    <div className="relative z-10">
-                      {col.cell 
-                        ? col.cell(item, i) 
-                        : col.accessorKey 
-                          ? (item[col.accessorKey] as React.ReactNode) 
-                          : null
-                      }
-                    </div>
+                  <td key={j} className={cn("px-4 py-3 text-white/80", col.className)}>
+                    {col.cell
+                      ? col.cell(item, i)
+                      : col.accessorKey
+                        ? (item[col.accessorKey] as React.ReactNode)
+                        : null
+                    }
                     {j === 0 && (
-                      <motion.div 
+                      <motion.div
                         className="absolute left-0 top-0 bottom-0 w-[2px] bg-comets-cyan opacity-0 group-hover/row:opacity-100"
-                        initial={{ scaleY: 0 }}
-                        whileHover={{ scaleY: 1 }}
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: 0.15 }}
                       />
                     )}
                   </td>

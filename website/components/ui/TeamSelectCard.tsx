@@ -10,7 +10,9 @@ interface TeamSelectCardProps {
   name: string;
   code: string;
   logoColor: string;
-  logoUrl?: string; // Optional logo URL
+  logoUrl?: string;
+  emblemUrl?: string; // Team emblem (more visible)
+  rank?: number;
   stats: {
     wins: number;
     losses: number;
@@ -19,7 +21,9 @@ interface TeamSelectCardProps {
   href: string;
 }
 
-export default function TeamSelectCard({ name, code, logoColor, logoUrl, stats, href }: TeamSelectCardProps) {
+export default function TeamSelectCard({ name, code, logoColor, logoUrl, emblemUrl, rank, stats, href }: TeamSelectCardProps) {
+  // Prefer emblem over logo for better visibility
+  const displayImage = emblemUrl || logoUrl;
   return (
     <Link href={href} className="block h-full group perspective-1000">
       <motion.div
@@ -38,44 +42,58 @@ export default function TeamSelectCard({ name, code, logoColor, logoUrl, stats, 
           transition={{ duration: 0.5 }}
         />
         
-        {/* Animated team logo */}
+        {/* Animated team logo/emblem */}
         <motion.div
-          className="absolute inset-0 flex items-center justify-center z-0 grayscale group-hover:grayscale-0"
-          initial={{ opacity: 0.2, scale: 1 }}
+          className="absolute inset-0 flex items-center justify-center z-0"
+          initial={{ opacity: 0.6, scale: 1 }}
           whileHover={{
             opacity: 1,
-            scale: 1.15,
-            rotate: [0, -3, 3, 0],
+            scale: 1.1,
           }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
         >
-          {logoUrl ? (
+          {displayImage ? (
             <Image
-              src={logoUrl}
+              src={displayImage}
               alt={`${name} logo`}
-              width={200}
-              height={200}
-              className="object-contain"
+              width={160}
+              height={160}
+              className="object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
             />
           ) : (
-            <div className="text-9xl font-display" style={{ color: logoColor }}>{code[0]}</div>
+            <div className="text-8xl font-display drop-shadow-[0_0_20px_currentColor]" style={{ color: logoColor }}>{code[0]}</div>
           )}
         </motion.div>
 
-        <div className="absolute inset-0 p-6 flex flex-col justify-between z-10 bg-gradient-to-t from-black/80 to-transparent">
+        <div className="absolute inset-0 p-6 flex flex-col justify-between z-10 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
           <div className="flex justify-between items-start">
-            <motion.div 
-              className="px-2 py-1 rounded bg-white/10 border border-white/10 text-xs font-mono text-white/60 backdrop-blur-sm"
-              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)" }}
-            >
-              {code}
-            </motion.div>
-            <motion.div 
+            <div className="flex items-center gap-2">
+              {/* Rank badge */}
+              {rank && rank <= 8 && (
+                <motion.div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-display text-sm font-bold border-2 ${
+                    rank === 1 ? 'bg-comets-yellow/20 border-comets-yellow text-comets-yellow' :
+                    rank <= 4 ? 'bg-comets-cyan/20 border-comets-cyan/50 text-comets-cyan' :
+                    'bg-white/10 border-white/20 text-white/60'
+                  }`}
+                  whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
+                >
+                  {rank}
+                </motion.div>
+              )}
+              <motion.div
+                className="px-2 py-1 rounded bg-white/10 border border-white/10 text-xs font-mono text-white/60 backdrop-blur-sm"
+                whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)" }}
+              >
+                {code}
+              </motion.div>
+            </div>
+            <motion.div
               className="text-white/40 group-hover:text-comets-yellow transition-colors"
-              animate={{ 
+              animate={{
                 y: [0, -3, 0],
               }}
-              transition={{ 
+              transition={{
                 duration: 2,
                 repeat: Infinity,
                 ease: "easeInOut"

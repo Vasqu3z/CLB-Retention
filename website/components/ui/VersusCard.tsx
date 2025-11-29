@@ -19,15 +19,95 @@ interface VersusCardProps {
   date: string;
   time: string;
   isFinished: boolean;
+  compact?: boolean;
 }
 
-export default function VersusCard({ home, away, date, time, isFinished }: VersusCardProps) {
+export default function VersusCard({ home, away, date, time, isFinished, compact = false }: VersusCardProps) {
+  // Compact mode for grid layouts
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          "group relative bg-surface-dark border border-white/10 rounded-lg overflow-hidden hover:border-white/20 transition-colors duration-200 cursor-pointer",
+          isFinished ? "opacity-100" : "opacity-80"
+        )}
+      >
+        {/* Status bar */}
+        <div className={cn(
+          "px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider border-b border-white/5",
+          isFinished ? "text-comets-yellow/80" : "text-white/40"
+        )}>
+          {isFinished ? "Final" : "Upcoming"}
+        </div>
+
+        {/* Teams */}
+        <div className="p-3 space-y-2">
+          {/* Away Team */}
+          <div className={cn(
+            "flex items-center justify-between gap-2 p-2 rounded",
+            isFinished && away.score! > home.score! ? "bg-comets-cyan/10" : "bg-white/5"
+          )}>
+            <div className="flex items-center gap-2 min-w-0">
+              {away.logoUrl ? (
+                <Image src={away.logoUrl} alt="" width={20} height={20} className="object-contain flex-shrink-0" />
+              ) : (
+                <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: `${away.logoColor}30`, color: away.logoColor }}>
+                  {away.code[0]}
+                </div>
+              )}
+              <span className={cn(
+                "font-ui text-xs uppercase truncate",
+                isFinished && away.score! > home.score! ? "text-white font-bold" : "text-white/70"
+              )}>
+                {away.name}
+              </span>
+            </div>
+            <span className={cn(
+              "font-mono text-sm font-bold flex-shrink-0",
+              isFinished && away.score! > home.score! ? "text-comets-cyan" : "text-white/50"
+            )}>
+              {isFinished ? away.score : "-"}
+            </span>
+          </div>
+
+          {/* Home Team */}
+          <div className={cn(
+            "flex items-center justify-between gap-2 p-2 rounded",
+            isFinished && home.score! > away.score! ? "bg-comets-cyan/10" : "bg-white/5"
+          )}>
+            <div className="flex items-center gap-2 min-w-0">
+              {home.logoUrl ? (
+                <Image src={home.logoUrl} alt="" width={20} height={20} className="object-contain flex-shrink-0" />
+              ) : (
+                <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: `${home.logoColor}30`, color: home.logoColor }}>
+                  {home.code[0]}
+                </div>
+              )}
+              <span className={cn(
+                "font-ui text-xs uppercase truncate",
+                isFinished && home.score! > away.score! ? "text-white font-bold" : "text-white/70"
+              )}>
+                {home.name}
+              </span>
+            </div>
+            <span className={cn(
+              "font-mono text-sm font-bold flex-shrink-0",
+              isFinished && home.score! > away.score! ? "text-comets-cyan" : "text-white/50"
+            )}>
+              {isFinished ? home.score : "-"}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Full version with animations
   return (
-    <motion.div 
+    <motion.div
       className="group relative w-full h-32 bg-surface-dark border border-white/10 rounded-xl overflow-hidden hover:border-white/30 transition-all duration-300 cursor-pointer focus-arcade"
-      whileHover={{ scale: 1.02, y: -2 }}
-      whileTap={{ scale: 0.99 }}
-      transition={{ type: "spring", stiffness: 300 }}
+      whileHover={{ scale: 1.01 }}
+      transition={{ duration: 0.2 }}
       tabIndex={0}
       role="article"
       aria-label={`Match between ${home.name} and ${away.name} on ${date} at ${time}`}

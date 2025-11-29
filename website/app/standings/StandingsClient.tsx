@@ -21,7 +21,7 @@ export default function StandingsClient({ data }: StandingsClientProps) {
           <div>
             <div className="flex items-center gap-3 text-comets-yellow mb-2">
               <Trophy size={24} />
-              <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season 6</span>
+              <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season 2</span>
             </div>
             <h1 className="font-display text-4xl md:text-6xl uppercase text-white leading-none">
               League Standings

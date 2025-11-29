@@ -58,7 +58,7 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
             transition={{ delay: 0.2 }}
           >
             <Trophy size={24} />
-            <span className="font-ui uppercase tracking-[0.3em] text-sm">Season 6</span>
+            <span className="font-ui uppercase tracking-[0.3em] text-sm">Season 2</span>
           </motion.div>
 
           <h1 className="font-display text-6xl md:text-8xl uppercase leading-none tracking-tighter mb-4">

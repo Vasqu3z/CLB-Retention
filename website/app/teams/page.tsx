@@ -26,28 +26,34 @@ export default async function TeamsPage() {
   );
 
   // Transform team registry into the format expected by TeamSelectCard
-  const teams = teamRegistry.map(team => {
-    const standing = standingsMap.get(team.teamName);
-    const stats = statsMap.get(team.teamName);
+  // Filter out inactive teams and sort by standings rank
+  const teams = teamRegistry
+    .filter(team => team.status?.toLowerCase() === 'active')
+    .map(team => {
+      const standing = standingsMap.get(team.teamName);
+      const stats = statsMap.get(team.teamName);
 
-    // Calculate team batting average from team stats
-    const avg = stats && stats.hitting.ab > 0
-      ? (stats.hitting.h / stats.hitting.ab).toFixed(3)
-      : ".000";
+      // Calculate team batting average from team stats
+      const avg = stats && stats.hitting.ab > 0
+        ? (stats.hitting.h / stats.hitting.ab).toFixed(3)
+        : ".000";
 
-    return {
-      name: team.teamName,
-      code: team.abbr,
-      logoColor: team.color,
-      logoUrl: team.logoUrl, // Add logo URL from team registry
-      stats: {
-        wins: standing?.wins || 0,
-        losses: standing?.losses || 0,
-        avg: avg,
-      },
-      href: `/teams/${slugify(team.teamName)}`,
-    };
-  });
+      return {
+        name: team.teamName,
+        code: team.abbr,
+        logoColor: team.color,
+        logoUrl: team.logoUrl,
+        emblemUrl: team.emblemUrl, // Use emblem for better visibility
+        rank: standing?.rank || 99,
+        stats: {
+          wins: standing?.wins || 0,
+          losses: standing?.losses || 0,
+          avg: avg,
+        },
+        href: `/teams/${slugify(team.teamName)}`,
+      };
+    })
+    .sort((a, b) => a.rank - b.rank); // Sort by standings rank
 
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4 relative overflow-hidden">

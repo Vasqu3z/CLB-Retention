@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, Zap, AlertCircle, CheckCircle2, RotateCcw, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ interface Player {
   name: string;
   team: string;
   teamColor: string;
+  imageUrl?: string;
   stats: {
     avg: string;
     power: number;
@@ -213,16 +215,31 @@ export default function LineupBuilderClient({ players }: LineupBuilderClientProp
                   >
                     <div className="flex items-center gap-4">
                       {/* Avatar */}
-                      <div
-                        className="w-12 h-12 rounded-lg flex items-center justify-center font-display text-xl border-2"
-                        style={{
-                          borderColor: player.teamColor,
-                          color: player.teamColor,
-                          backgroundColor: `${player.teamColor}10`
-                        }}
-                      >
-                        {player.name[0]}
-                      </div>
+                      {player.imageUrl ? (
+                        <div
+                          className="w-12 h-12 rounded-lg overflow-hidden border-2 flex-shrink-0"
+                          style={{ borderColor: player.teamColor }}
+                        >
+                          <Image
+                            src={player.imageUrl}
+                            alt={player.name}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className="w-12 h-12 rounded-lg flex items-center justify-center font-display text-xl border-2 flex-shrink-0"
+                          style={{
+                            borderColor: player.teamColor,
+                            color: player.teamColor,
+                            backgroundColor: `${player.teamColor}10`
+                          }}
+                        >
+                          {player.name[0]}
+                        </div>
+                      )}
 
                       {/* Info */}
                       <div className="flex-1">
@@ -360,10 +377,20 @@ export default function LineupBuilderClient({ players }: LineupBuilderClientProp
                       disabled={!selectedPlayer && !player}
                     >
                       {player ? (
-                        <>
-                          <div className="font-bold text-xs text-comets-yellow">{player.name[0]}</div>
-                          <div className="text-[8px] text-white/50 font-mono">{pos}</div>
-                        </>
+                        player.imageUrl ? (
+                          <Image
+                            src={player.imageUrl}
+                            alt={player.name}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <>
+                            <div className="font-bold text-xs text-comets-yellow">{player.name[0]}</div>
+                            <div className="text-[8px] text-white/50 font-mono">{pos}</div>
+                          </>
+                        )
                       ) : (
                         <div className="text-[10px] text-white/50 font-mono">{pos}</div>
                       )}

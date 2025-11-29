@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Activity, Zap, Users, Target, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,7 @@ interface ChemistryRelation {
 
 interface PlayerProfileClientProps {
   player: PlayerStats;
+  playerImageUrl?: string;
   attributes: PlayerAttributes | null;
   teamColor: string;
   positiveChemistry: ChemistryRelation[];
@@ -58,6 +60,7 @@ interface PlayerProfileClientProps {
 
 export default function PlayerProfileClient({
   player,
+  playerImageUrl,
   attributes,
   teamColor,
   positiveChemistry,
@@ -73,11 +76,11 @@ export default function PlayerProfileClient({
   return (
     <main className="min-h-screen bg-background pb-24">
       {/* Player Hero Header */}
-      <div className="relative h-[40vh] overflow-hidden flex items-end pb-12">
+      <div className="relative h-[45vh] min-h-[360px] overflow-hidden flex items-end pb-12">
         <motion.div
           className="absolute inset-0"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.25 }}
+          animate={{ opacity: 0.3 }}
           style={{
             background: `linear-gradient(135deg, ${teamColor}, transparent 70%)`,
           }}
@@ -85,23 +88,45 @@ export default function PlayerProfileClient({
 
         <div className="absolute inset-0 scanlines opacity-5" />
 
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.h1
-            className="font-display text-6xl md:text-8xl uppercase text-white leading-none tracking-tight mb-3"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            {player.name}
-          </motion.h1>
+        <div className="container mx-auto px-4 relative z-10 flex items-end gap-8">
+          {/* Player Image */}
+          {playerImageUrl && (
+            <motion.div
+              className="hidden md:block w-40 h-40 lg:w-48 lg:h-48 rounded-xl border-4 overflow-hidden bg-surface-dark shadow-2xl flex-shrink-0"
+              style={{ borderColor: teamColor }}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", duration: 0.6 }}
+            >
+              <Image
+                src={playerImageUrl}
+                alt={player.name}
+                width={192}
+                height={192}
+                className="w-full h-full object-cover"
+                priority
+              />
+            </motion.div>
+          )}
 
-          <motion.div
-            className="text-xl text-white/60 font-ui tracking-widest"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <span style={{ color: teamColor }}>{player.team}</span> • {player.gp} GP
-          </motion.div>
+          <div className="flex-1">
+            <motion.h1
+              className="font-display text-5xl md:text-7xl lg:text-8xl uppercase text-white leading-none tracking-tight mb-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {player.name}
+            </motion.h1>
+
+            <motion.div
+              className="text-lg md:text-xl text-white/60 font-ui tracking-widest"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span style={{ color: teamColor }}>{player.team}</span> • {player.gp} GP
+            </motion.div>
+          </div>
         </div>
       </div>
 

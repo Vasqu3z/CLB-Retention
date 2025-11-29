@@ -38,13 +38,16 @@ export default async function TeamsPage() {
         ? (stats.hitting.h / stats.hitting.ab).toFixed(3)
         : ".000";
 
+      // Ensure rank is always a number for sorting (rank comes as string from sheets)
+      const teamRank = standing?.rank ? parseInt(standing.rank, 10) : 99;
+
       return {
         name: team.teamName,
         code: team.abbr,
         logoColor: team.color,
         logoUrl: team.logoUrl,
         emblemUrl: team.emblemUrl, // Use emblem for better visibility
-        rank: standing?.rank || 99,
+        rank: teamRank,
         stats: {
           wins: standing?.wins || 0,
           losses: standing?.losses || 0,
@@ -53,7 +56,7 @@ export default async function TeamsPage() {
         href: `/teams/${slugify(team.teamName)}`,
       };
     })
-    .sort((a, b) => a.rank - b.rank); // Sort by standings rank
+    .sort((a, b) => a.rank! - b.rank!); // Sort by standings rank
 
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4 relative overflow-hidden">

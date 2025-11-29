@@ -26,6 +26,11 @@ export default async function LineupBuilderPage() {
     attributes.map(attr => [attr.name, attr])
   );
 
+  // Create player image map
+  const playerImageMap = new Map(
+    playerRegistry.map(p => [p.playerName, p.imageUrl])
+  );
+
   // Transform players data for lineup builder
   const players = allPlayers
     .filter(p => p.ab && p.ab > 0) // Only players with at-bats
@@ -44,6 +49,7 @@ export default async function LineupBuilderPage() {
         name: player.name,
         team: player.team,
         teamColor,
+        imageUrl: playerImageMap.get(player.name) || "",
         stats: {
           avg: player.avg || ".000",
           power: playerAttributes?.battingOverall || 50,

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Swords, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ interface PlayerData {
   name: string;
   team: string;
   color: string;
+  imageUrl?: string;
   stats: {
     avg?: string;
     hr?: number;
@@ -91,7 +93,25 @@ export default function CompareClient({ players }: CompareClientProps) {
           }}
         >
           {/* Player Selection Dropdown */}
-          <div className="relative mb-12 pointer-events-auto">
+          <div className="relative mb-8 pointer-events-auto">
+            {/* Player Image */}
+            {playerA.imageUrl && (
+              <motion.div
+                className="w-24 h-24 mx-auto mb-4 rounded-full border-4 overflow-hidden"
+                style={{ borderColor: playerA.color }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                key={playerA.name}
+              >
+                <Image
+                  src={playerA.imageUrl}
+                  alt={playerA.name}
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+            )}
             <button
               onClick={() => setShowDropdownA(!showDropdownA)}
               className="group flex items-center gap-3 px-8 py-4 bg-surface-dark border-2 rounded-lg hover:scale-105 transition-all"
@@ -119,7 +139,11 @@ export default function CompareClient({ players }: CompareClientProps) {
                     }}
                     className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-all text-left"
                   >
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }} />
+                    {p.imageUrl ? (
+                      <Image src={p.imageUrl} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full" style={{ backgroundColor: p.color }} />
+                    )}
                     <div className="flex-1">
                       <div className="font-ui text-white uppercase text-sm">{p.name}</div>
                       <div className="font-mono text-xs text-white/40">{p.team}</div>
@@ -195,7 +219,25 @@ export default function CompareClient({ players }: CompareClientProps) {
           }}
         >
           {/* Player Selection Dropdown */}
-          <div className="relative mb-12 pointer-events-auto">
+          <div className="relative mb-8 pointer-events-auto">
+            {/* Player Image */}
+            {playerB.imageUrl && (
+              <motion.div
+                className="w-24 h-24 mx-auto mb-4 rounded-full border-4 overflow-hidden"
+                style={{ borderColor: playerB.color }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                key={playerB.name}
+              >
+                <Image
+                  src={playerB.imageUrl}
+                  alt={playerB.name}
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+            )}
             <button
               onClick={() => setShowDropdownB(!showDropdownB)}
               className="group flex items-center gap-3 px-8 py-4 bg-surface-dark border-2 rounded-lg hover:scale-105 transition-all"
@@ -223,7 +265,11 @@ export default function CompareClient({ players }: CompareClientProps) {
                     }}
                     className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-all text-left"
                   >
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }} />
+                    {p.imageUrl ? (
+                      <Image src={p.imageUrl} alt="" width={24} height={24} className="w-6 h-6 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full" style={{ backgroundColor: p.color }} />
+                    )}
                     <div className="flex-1">
                       <div className="font-ui text-white uppercase text-sm">{p.name}</div>
                       <div className="font-mono text-xs text-white/40">{p.team}</div>

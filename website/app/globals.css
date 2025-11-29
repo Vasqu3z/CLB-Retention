@@ -292,6 +292,33 @@
   box-shadow: 0 0 10px var(--comets-yellow);
 }
 
+/* Enhanced horizontal scrollbar for tables */
+.retro-scrollbar {
+  scrollbar-color: var(--comets-cyan) var(--surface-dark);
+  scrollbar-width: thin;
+}
+
+.retro-scrollbar::-webkit-scrollbar {
+  height: 8px;
+}
+
+.retro-scrollbar::-webkit-scrollbar-track {
+  background: var(--surface-dark);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+}
+
+.retro-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--comets-cyan), var(--comets-purple));
+  border-radius: 4px;
+  border: none;
+}
+
+.retro-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--comets-yellow);
+  box-shadow: 0 0 10px var(--comets-yellow);
+}
+
 /* ===== SELECTION STYLING ===== */
 ::selection {
   background-color: var(--comets-cyan);

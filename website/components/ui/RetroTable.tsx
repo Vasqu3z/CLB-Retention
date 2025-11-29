@@ -97,7 +97,7 @@ export default function RetroTable<T extends { id?: string | number }>({
       {/* Scanlines overlay - outside of table structure */}
       <div className="absolute inset-0 scanlines opacity-10 pointer-events-none z-20" />
 
-      <div className="overflow-x-auto scrollbar-thin">
+      <div>
         <table className="w-full text-left border-collapse min-w-full">
           <thead>
             <tr className="border-b border-white/10 bg-black/40">

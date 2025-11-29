@@ -77,14 +77,15 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
     setSearchQuery("");
   };
 
-  // Define columns based on active tab
+  // Define columns based on active tab - MINIMAL columns to avoid horizontal scroll
+  // Key stats only: Player, Team, and 3-4 most important stats per category
   const hittingColumns = [
     {
       header: "Player",
       cell: (item: PlayerStats & { imageUrl?: string }) => (
         <div className="flex items-center gap-3">
           <motion.div
-            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80"
+            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80 flex-shrink-0"
             whileHover={{ scale: 1.1 }}
           >
             {item.imageUrl ? (
@@ -99,74 +100,66 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
               <span>{item.name[0]}</span>
             )}
           </motion.div>
-          <span className="font-bold text-white uppercase tracking-wider">{item.name}</span>
+          <div className="min-w-0">
+            <span className="font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
+            <span className="text-[10px] text-white/40 md:hidden">{item.team}</span>
+          </div>
         </div>
       ),
     },
-    { header: "Team", accessorKey: "team" as const, className: "text-white/60", sortable: true },
-    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-xs", sortable: true },
+    { header: "Team", accessorKey: "team" as const, className: "text-white/60 hidden md:table-cell", sortable: true },
     {
-      header: <StatsTooltip stat="AB" context="batting">AB</StatsTooltip>,
-      accessorKey: "ab" as const,
-      className: "text-white/70 font-mono",
-      sortable: true,
-    },
-    {
-      header: <StatsTooltip stat="H" context="batting">H</StatsTooltip>,
-      accessorKey: "h" as const,
-      className: "text-white/90 font-mono",
+      header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>,
+      accessorKey: "avg" as const,
+      className: "text-comets-cyan font-mono font-bold text-center",
       sortable: true,
     },
     {
       header: <StatsTooltip stat="HR" context="batting">HR</StatsTooltip>,
       accessorKey: "hr" as const,
-      className: "text-comets-red font-mono font-bold",
+      className: "text-comets-red font-mono font-bold text-center",
       sortable: true,
     },
     {
       header: <StatsTooltip stat="RBI" context="batting">RBI</StatsTooltip>,
       accessorKey: "rbi" as const,
-      className: "text-white/90 font-mono",
+      className: "text-white/90 font-mono text-center",
       sortable: true,
     },
     {
-      header: <StatsTooltip stat="DP" context="batting">DP</StatsTooltip>,
-      accessorKey: "dp" as const,
-      className: "text-white/70 font-mono text-sm",
+      header: <StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>,
+      accessorKey: "ops" as const,
+      className: "text-comets-yellow font-mono font-bold text-center",
+      sortable: true,
+    },
+    // Advanced stats - hidden by default
+    {
+      header: <StatsTooltip stat="H" context="batting">H</StatsTooltip>,
+      accessorKey: "h" as const,
+      className: "text-white/90 font-mono text-center",
       sortable: true,
       condensed: true,
     },
     {
-      header: <StatsTooltip stat="ROB" context="fielding">ROB</StatsTooltip>,
-      accessorKey: "rob" as const,
-      className: "text-white/70 font-mono text-sm",
+      header: <StatsTooltip stat="AB" context="batting">AB</StatsTooltip>,
+      accessorKey: "ab" as const,
+      className: "text-white/70 font-mono text-center",
       sortable: true,
       condensed: true,
-    },
-    {
-      header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>,
-      accessorKey: "avg" as const,
-      className: "text-comets-cyan font-mono font-bold",
-      sortable: true,
     },
     {
       header: <StatsTooltip stat="OBP" context="batting">OBP</StatsTooltip>,
       accessorKey: "obp" as const,
-      className: "text-comets-cyan font-mono",
+      className: "text-comets-cyan font-mono text-center",
       sortable: true,
       condensed: true,
     },
     {
       header: <StatsTooltip stat="SLG" context="batting">SLG</StatsTooltip>,
       accessorKey: "slg" as const,
-      className: "text-comets-cyan font-mono",
+      className: "text-comets-cyan font-mono text-center",
       sortable: true,
-    },
-    {
-      header: <StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>,
-      accessorKey: "ops" as const,
-      className: "text-comets-yellow font-mono font-bold",
-      sortable: true,
+      condensed: true,
     },
   ];
 
@@ -176,7 +169,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       cell: (item: PlayerStats & { imageUrl?: string }) => (
         <div className="flex items-center gap-3">
           <motion.div
-            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80"
+            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80 flex-shrink-0"
             whileHover={{ scale: 1.1 }}
           >
             {item.imageUrl ? (
@@ -191,68 +184,66 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
               <span>{item.name[0]}</span>
             )}
           </motion.div>
-          <span className="font-bold text-white uppercase tracking-wider">{item.name}</span>
+          <div className="min-w-0">
+            <span className="font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
+            <span className="text-[10px] text-white/40 md:hidden">{item.team}</span>
+          </div>
         </div>
       ),
     },
-    { header: "Team", accessorKey: "team" as const, className: "text-white/60", sortable: true },
-    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-xs", sortable: true },
+    { header: "Team", accessorKey: "team" as const, className: "text-white/60 hidden md:table-cell", sortable: true },
+    {
+      header: <StatsTooltip stat="ERA" context="pitching">ERA</StatsTooltip>,
+      accessorKey: "era" as const,
+      className: "text-comets-cyan font-mono font-bold text-center",
+      sortable: true,
+    },
     {
       header: <StatsTooltip stat="IP" context="pitching">IP</StatsTooltip>,
       accessorKey: "ip" as const,
-      className: "text-white/90 font-mono",
+      className: "text-white/90 font-mono text-center",
       sortable: true,
     },
     {
       header: <StatsTooltip stat="W" context="pitching">W</StatsTooltip>,
       accessorKey: "w" as const,
-      className: "text-green-400 font-mono text-sm",
+      className: "text-green-400 font-mono font-bold text-center",
       sortable: true,
-      condensed: true,
     },
+    {
+      header: <StatsTooltip stat="WHIP" context="pitching">WHIP</StatsTooltip>,
+      accessorKey: "whip" as const,
+      className: "text-comets-yellow font-mono font-bold text-center",
+      sortable: true,
+    },
+    // Advanced stats - hidden by default
     {
       header: <StatsTooltip stat="L" context="pitching">L</StatsTooltip>,
       accessorKey: "l" as const,
-      className: "text-red-400 font-mono text-sm",
+      className: "text-red-400 font-mono text-center",
       sortable: true,
       condensed: true,
     },
     {
       header: <StatsTooltip stat="SV" context="pitching">SV</StatsTooltip>,
       accessorKey: "sv" as const,
-      className: "text-comets-yellow font-mono text-sm",
+      className: "text-comets-yellow font-mono text-center",
       sortable: true,
       condensed: true,
     },
     {
       header: <StatsTooltip stat="H" context="pitching">H</StatsTooltip>,
       accessorKey: "hAllowed" as const,
-      className: "text-white/90 font-mono",
+      className: "text-white/90 font-mono text-center",
       sortable: true,
-    },
-    {
-      header: <StatsTooltip stat="HR" context="pitching">HR</StatsTooltip>,
-      accessorKey: "hrAllowed" as const,
-      className: "text-white/90 font-mono",
-      sortable: true,
-    },
-    {
-      header: <StatsTooltip stat="ERA" context="pitching">ERA</StatsTooltip>,
-      accessorKey: "era" as const,
-      className: "text-comets-cyan font-mono font-bold",
-      sortable: true,
-    },
-    {
-      header: <StatsTooltip stat="WHIP" context="pitching">WHIP</StatsTooltip>,
-      accessorKey: "whip" as const,
-      className: "text-comets-cyan font-mono",
-      sortable: true,
+      condensed: true,
     },
     {
       header: <StatsTooltip stat="BAA" context="pitching">BAA</StatsTooltip>,
       accessorKey: "baa" as const,
-      className: "text-comets-cyan font-mono",
+      className: "text-comets-cyan font-mono text-center",
       sortable: true,
+      condensed: true,
     },
   ];
 
@@ -262,7 +253,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       cell: (item: PlayerStats & { imageUrl?: string }) => (
         <div className="flex items-center gap-3">
           <motion.div
-            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80"
+            className="w-8 h-8 bg-surface-light rounded overflow-hidden flex items-center justify-center font-display text-white/80 flex-shrink-0"
             whileHover={{ scale: 1.1 }}
           >
             {item.imageUrl ? (
@@ -277,41 +268,52 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
               <span>{item.name[0]}</span>
             )}
           </motion.div>
-          <span className="font-bold text-white uppercase tracking-wider">{item.name}</span>
+          <div className="min-w-0">
+            <span className="font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
+            <span className="text-[10px] text-white/40 md:hidden">{item.team}</span>
+          </div>
         </div>
       ),
     },
-    { header: "Team", accessorKey: "team" as const, className: "text-white/60", sortable: true },
-    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-xs", sortable: true },
+    { header: "Team", accessorKey: "team" as const, className: "text-white/60 hidden md:table-cell", sortable: true },
     {
       header: <StatsTooltip stat="NP" context="fielding">NP</StatsTooltip>,
       accessorKey: "np" as const,
-      className: "text-comets-cyan font-mono font-bold",
+      className: "text-comets-cyan font-mono font-bold text-center",
       sortable: true,
     },
     {
       header: <StatsTooltip stat="E" context="fielding">E</StatsTooltip>,
       accessorKey: "e" as const,
-      className: "text-red-400 font-mono",
-      sortable: true,
-    },
-    {
-      header: <StatsTooltip stat="SB" context="batting">SB</StatsTooltip>,
-      accessorKey: "sb" as const,
-      className: "text-comets-yellow font-mono",
-      sortable: true,
-    },
-    {
-      header: <StatsTooltip stat="CS" context="fielding">CS</StatsTooltip>,
-      accessorKey: "cs" as const,
-      className: "text-white/90 font-mono",
+      className: "text-red-400 font-mono text-center",
       sortable: true,
     },
     {
       header: <StatsTooltip stat="OAA" context="fielding">OAA</StatsTooltip>,
       accessorKey: "oaa" as const,
-      className: "text-comets-purple font-mono font-bold",
+      className: "text-comets-purple font-mono font-bold text-center",
       sortable: true,
+    },
+    {
+      header: <StatsTooltip stat="SB" context="batting">SB</StatsTooltip>,
+      accessorKey: "sb" as const,
+      className: "text-comets-yellow font-mono text-center",
+      sortable: true,
+    },
+    // Advanced stats - hidden by default
+    {
+      header: <StatsTooltip stat="CS" context="fielding">CS</StatsTooltip>,
+      accessorKey: "cs" as const,
+      className: "text-white/90 font-mono text-center",
+      sortable: true,
+      condensed: true,
+    },
+    {
+      header: <StatsTooltip stat="GP">GP</StatsTooltip>,
+      accessorKey: "gp" as const,
+      className: "text-white/40 text-center",
+      sortable: true,
+      condensed: true,
     },
   ];
 

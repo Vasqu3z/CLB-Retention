@@ -1,6 +1,6 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { getAllPlayers, getPlayerAttributes, getChemistryMatrix, getTeamRegistry } from "@/lib/sheets";
+import { getAllPlayers, getPlayerAttributes, getChemistryMatrix, getTeamRegistry, getPlayerRegistry } from "@/lib/sheets";
 import PlayerProfileClient from "./PlayerProfileClient";
 
 function deslugify(slug: string): string {
@@ -15,11 +15,17 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
   const playerNameGuess = deslugify(slug);
 
   // Fetch all necessary data from Google Sheets
-  const [allPlayers, teamRegistry, chemistryMatrix] = await Promise.all([
+  const [allPlayers, teamRegistry, chemistryMatrix, playerRegistry] = await Promise.all([
     getAllPlayers(false),
     getTeamRegistry(),
     getChemistryMatrix(),
+    getPlayerRegistry(),
   ]);
+
+  // Create player image map
+  const playerImageMap = new Map(
+    playerRegistry.map(p => [p.playerName, p.imageUrl])
+  );
 
   // Find the player by matching the slug
   const player = allPlayers.find(
@@ -34,9 +40,10 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
   // Fetch player attributes
   const attributes = await getPlayerAttributes(player.name);
 
-  // Get team color
+  // Get team color and player image
   const team = teamRegistry.find(t => t.teamName === player.team);
   const teamColor = team?.color || "#FFFFFF";
+  const playerImageUrl = playerImageMap.get(player.name) || "";
 
   // Get player chemistry
   const playerChemistry = chemistryMatrix[player.name] || {};
@@ -57,6 +64,7 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
   return (
     <PlayerProfileClient
       player={player}
+      playerImageUrl={playerImageUrl}
       attributes={attributes}
       teamColor={teamColor}
       positiveChemistry={positiveChemistry.slice(0, 10)}

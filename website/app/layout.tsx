@@ -47,18 +47,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${delaGothic.variable} ${chivo.variable} ${rajdhani.variable} ${spaceMono.variable}`}>
-      <body className="bg-background text-white min-h-screen flex flex-col md:flex-row overflow-x-hidden font-body">
+      <body className="bg-background text-white min-h-screen flex flex-col md:flex-row overflow-x-hidden font-body relative">
         <CosmicBackground />
         <SmoothScroll />
         <div className="md:hidden z-50">
           <SidebarMobile />
         </div>
-        <div className="hidden md:block w-64 shrink-0 h-screen sticky top-0 border-r border-white/10 bg-surface-dark/50 backdrop-blur-md z-40">
+        <div className="hidden md:block w-64 shrink-0 h-screen sticky top-0 border-r border-white/10 bg-surface-dark/80 backdrop-blur-md z-40">
           <Sidebar />
         </div>
-        <div className="flex-1 flex flex-col min-w-0 relative">
+        <div className="flex-1 flex flex-col min-w-0 relative z-10">
           <Header />
-          <main className="flex-1 relative z-0">
+          <main className="flex-1 relative">
             {children}
           </main>
           <Footer />

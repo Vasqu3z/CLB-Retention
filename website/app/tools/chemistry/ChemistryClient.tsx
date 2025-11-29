@@ -1,8 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Network, X, Zap, Users, TrendingUp, AlertTriangle, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { Network, Users } from "lucide-react";
+import RetroPlayerSelector, { type PlayerOption } from "@/components/ui/RetroPlayerSelector";
+import RetroChemistryNode, {
+  RetroChemistryTeamSummary,
+  RetroChemistryConnection,
+} from "@/components/ui/RetroChemistryNode";
 
 interface PlayerData {
   id: string;
@@ -23,47 +28,33 @@ interface Connection {
 }
 
 export default function ChemistryClient({ players, chemistryMatrix }: ChemistryClientProps) {
-  const [selectedPlayers, setSelectedPlayers] = useState<string[]>(
-    players.slice(0, 2).map(p => p.name)
-  );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const selectedPlayerData = selectedPlayers
-    .map(name => players.find(p => p.name === name))
+  // Convert players to PlayerOption format
+  const playerOptions: PlayerOption[] = players.map((p) => ({
+    id: p.id,
+    name: p.name,
+    team: p.team,
+    color: p.color,
+  }));
+
+  // Get selected player data
+  const selectedPlayers = selectedIds
+    .map((id) => players.find((p) => p.id === id))
     .filter(Boolean) as PlayerData[];
-
-  const availablePlayers = players.filter(
-    p => !selectedPlayers.includes(p.name) &&
-         p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const addPlayer = (name: string) => {
-    if (selectedPlayers.length < 5) {
-      setSelectedPlayers([...selectedPlayers, name]);
-      setSearchQuery("");
-      setShowSearch(false);
-    }
-  };
-
-  const removePlayer = (name: string) => {
-    if (selectedPlayers.length > 1) {
-      setSelectedPlayers(selectedPlayers.filter(p => p !== name));
-    }
-  };
 
   // Calculate chemistry data
   const chemistryData = useMemo(() => {
-    const playerChemistry = selectedPlayers.map(playerName => {
-      const relationships = chemistryMatrix[playerName] || {};
-      const positive: Array<{name: string, value: number}> = [];
-      const negative: Array<{name: string, value: number}> = [];
+    const playerChemistry = selectedPlayers.map((player) => {
+      const relationships = chemistryMatrix[player.name] || {};
+      const positive: Array<{ playerName: string; value: number }> = [];
+      const negative: Array<{ playerName: string; value: number }> = [];
 
       Object.entries(relationships).forEach(([other, value]) => {
         if (value >= 100) {
-          positive.push({ name: other, value });
+          positive.push({ playerName: other, value });
         } else if (value <= -100) {
-          negative.push({ name: other, value });
+          negative.push({ playerName: other, value });
         }
       });
 
@@ -71,13 +62,16 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
       negative.sort((a, b) => a.value - b.value);
 
       return {
-        name: playerName,
-        positive: positive.slice(0, 5), // Top 5
-        negative: negative.slice(0, 5), // Top 5
+        id: player.id,
+        name: player.name,
+        team: player.team,
+        color: player.color,
+        positiveConnections: positive,
+        negativeConnections: negative,
       };
     });
 
-    // Calculate internal connections
+    // Calculate internal connections between selected players
     const internalPositive: Connection[] = [];
     const internalNegative: Connection[] = [];
 
@@ -85,13 +79,13 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
       for (let j = i + 1; j < selectedPlayers.length; j++) {
         const player1 = selectedPlayers[i];
         const player2 = selectedPlayers[j];
-        const value = chemistryMatrix[player1]?.[player2];
+        const value = chemistryMatrix[player1.name]?.[player2.name];
 
         if (value !== undefined && value !== 0) {
           if (value >= 100) {
-            internalPositive.push({ player1, player2, value });
+            internalPositive.push({ player1: player1.name, player2: player2.name, value });
           } else if (value <= -100) {
-            internalNegative.push({ player1, player2, value });
+            internalNegative.push({ player1: player1.name, player2: player2.name, value });
           }
         }
       }
@@ -106,7 +100,6 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
 
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4">
-
       {/* Cosmic background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-1/3 left-1/4 w-[700px] h-[700px] bg-comets-purple/10 blur-[120px] rounded-full animate-pulse-slow" />
@@ -114,12 +107,11 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
       </div>
 
       <div className="container mx-auto max-w-7xl relative z-10">
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-16 text-center"
+          className="mb-12 text-center"
         >
           <motion.div
             className="inline-flex items-center gap-2 text-comets-purple mb-4"
@@ -128,10 +120,12 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
             transition={{ delay: 0.2 }}
           >
             <Network size={24} />
-            <span className="font-ui uppercase tracking-[0.3em] text-sm">Chemistry Network</span>
+            <span className="font-ui uppercase tracking-[0.3em] text-sm">
+              Chemistry Network
+            </span>
           </motion.div>
 
-          <h1 className="font-display text-6xl md:text-8xl uppercase leading-none tracking-tighter mb-4">
+          <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
               Chemistry
               <br />
@@ -139,359 +133,138 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
             </span>
           </h1>
 
-          <p className="font-ui text-sm uppercase tracking-widest text-white/40">
-            Explore player relationships • Build optimal teams
+          <p className="font-mono text-white/40 text-sm">
+            Explore player relationships and build optimal teams
           </p>
         </motion.div>
 
-        {/* Player selection */}
+        {/* Player Selection */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mb-12"
+          transition={{ delay: 0.3 }}
+          className="mb-10"
         >
-          <div className="flex flex-wrap items-center gap-3">
-
-            {/* Selected player pills */}
-            {selectedPlayerData.map((player, idx) => (
-              <motion.div
-                key={player.id}
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: idx * 0.1, type: "spring" }}
-                className="relative group"
-              >
-                <div
-                  className="flex items-center gap-3 px-6 py-3 bg-surface-dark border-2 rounded-full transition-all hover:scale-105"
-                  style={{ borderColor: player.color }}
-                >
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: player.color }}
-                  />
-                  <span className="font-ui uppercase tracking-wider text-white font-bold">
-                    {player.name}
-                  </span>
-                  {selectedPlayers.length > 1 && (
-                    <motion.button
-                      whileHover={{ scale: 1.2, rotate: 90 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => removePlayer(player.name)}
-                      className="text-white/40 hover:text-comets-red transition-colors"
-                    >
-                      <X size={16} />
-                    </motion.button>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Add player button */}
-            {selectedPlayers.length < 5 && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowSearch(!showSearch)}
-                className="px-6 py-3 border-2 border-dashed border-white/20 rounded-full font-ui uppercase tracking-wider text-white/60 hover:text-white hover:border-comets-purple/50 transition-all"
-              >
-                + Add Player
-              </motion.button>
-            )}
-          </div>
-
-          {/* Search dropdown */}
-          <AnimatePresence>
-            {showSearch && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-4 overflow-hidden"
-              >
-                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
-                  <input
-                    type="text"
-                    placeholder="SEARCH PLAYERS..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-black/30 border border-white/10 rounded px-4 py-2 text-white font-ui uppercase tracking-wider text-sm focus:border-comets-purple outline-none"
-                    autoFocus
-                  />
-                  <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
-                    {availablePlayers.map((player, idx) => (
-                      <motion.button
-                        key={player.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.05 }}
-                        onClick={() => addPlayer(player.name)}
-                        className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded transition-all"
-                      >
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: player.color }}
-                        />
-                        <span className="font-ui text-white uppercase tracking-wider">
-                          {player.name}
-                        </span>
-                        <span className="ml-auto font-mono text-xs text-white/40">
-                          {player.team}
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <RetroPlayerSelector
+            players={playerOptions}
+            selectedIds={selectedIds}
+            onChange={setSelectedIds}
+            maxSelections={5}
+            placeholder="Search players to analyze..."
+          />
         </motion.div>
 
-        {/* Team Analysis (if 2+ players) */}
+        {/* Team Chemistry Summary (if 2+ players) */}
         {selectedPlayers.length >= 2 && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="mb-12"
+            transition={{ delay: 0.4 }}
+            className="mb-10"
           >
-            <div className="relative bg-surface-dark border border-white/10 rounded-lg p-8 overflow-hidden">
-              {/* Scanlines */}
+            <RetroChemistryTeamSummary
+              positiveConnections={chemistryData.internalPositive}
+              negativeConnections={chemistryData.internalNegative}
+            />
+          </motion.div>
+        )}
+
+        {/* Internal Team Connections */}
+        {selectedPlayers.length >= 2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mb-10"
+          >
+            <div className="relative bg-surface-dark border border-white/10 rounded-lg p-6 overflow-hidden">
               <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
 
-              <h2 className="font-display text-3xl uppercase text-white mb-6 flex items-center gap-3">
-                <Users className="text-comets-cyan" size={32} />
-                Team Chemistry Network
+              <h2 className="font-display text-2xl uppercase text-white mb-6 flex items-center gap-3">
+                <Users className="text-comets-cyan" size={24} />
+                Team Connections
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {chemistryData.internalPositive.length > 0 || chemistryData.internalNegative.length > 0 ? (
+                <div className="space-y-3">
+                  {/* Show all internal connections */}
+                  {[...chemistryData.internalPositive, ...chemistryData.internalNegative]
+                    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value))
+                    .map((conn, idx) => {
+                      const p1 = selectedPlayers.find((p) => p.name === conn.player1);
+                      const p2 = selectedPlayers.find((p) => p.name === conn.player2);
+                      if (!p1 || !p2) return null;
 
-                {/* Positive Connections */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7 }}
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="text-comets-yellow" size={20} />
-                    <h3 className="font-ui uppercase tracking-wider text-comets-yellow text-sm">
-                      Positive Connections ({chemistryData.internalPositive.length})
-                    </h3>
-                  </div>
-
-                  {chemistryData.internalPositive.length > 0 ? (
-                    <div className="space-y-2">
-                      {chemistryData.internalPositive.map((conn, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.8 + idx * 0.05 }}
-                          className="relative group"
-                        >
-                          <div className="p-3 bg-comets-yellow/10 border border-comets-yellow/30 rounded-lg hover:bg-comets-yellow/20 transition-all">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="font-ui text-white uppercase text-sm">
-                                  {conn.player1}
-                                </span>
-                                <TrendingUp className="text-comets-yellow" size={16} />
-                                <span className="font-ui text-white uppercase text-sm">
-                                  {conn.player2}
-                                </span>
-                              </div>
-                              <motion.span
-                                className="font-mono font-bold text-comets-yellow text-lg"
-                                whileHover={{ scale: 1.1 }}
-                              >
-                                +{conn.value}
-                              </motion.span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 bg-white/5 rounded-lg text-center">
-                      <p className="font-mono text-sm text-white/40 uppercase">
-                        No positive connections
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
-
-                {/* Negative Connections */}
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7 }}
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    <AlertTriangle className="text-comets-red" size={20} />
-                    <h3 className="font-ui uppercase tracking-wider text-comets-red text-sm">
-                      Conflicts ({chemistryData.internalNegative.length})
-                    </h3>
-                  </div>
-
-                  {chemistryData.internalNegative.length > 0 ? (
-                    <div className="space-y-2">
-                      {chemistryData.internalNegative.map((conn, idx) => (
-                        <motion.div
-                          key={idx}
-                          initial={{ opacity: 0, x: 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.8 + idx * 0.05 }}
-                          className="relative group"
-                        >
-                          <div className="p-3 bg-comets-red/10 border border-comets-red/30 rounded-lg hover:bg-comets-red/20 transition-all">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="font-ui text-white uppercase text-sm">
-                                  {conn.player1}
-                                </span>
-                                <Zap className="text-comets-red" size={16} />
-                                <span className="font-ui text-white uppercase text-sm">
-                                  {conn.player2}
-                                </span>
-                              </div>
-                              <motion.span
-                                className="font-mono font-bold text-comets-red text-lg"
-                                whileHover={{ scale: 1.1 }}
-                              >
-                                {conn.value}
-                              </motion.span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 bg-white/5 rounded-lg text-center">
-                      <p className="font-mono text-sm text-white/40 uppercase">
-                        No conflicts detected
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
-
-              </div>
+                      return (
+                        <RetroChemistryConnection
+                          key={`${conn.player1}-${conn.player2}`}
+                          player1={{ name: p1.name, color: p1.color }}
+                          player2={{ name: p2.name, color: p2.color }}
+                          value={conn.value}
+                          delay={idx * 0.05}
+                        />
+                      );
+                    })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-white/40 font-mono text-sm">
+                  No significant chemistry between selected players
+                </div>
+              )}
             </div>
           </motion.div>
         )}
 
-        {/* Individual Player Chemistry */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-        >
-          {chemistryData.playerChemistry.map((playerChem, idx) => {
-            const playerData = players.find(p => p.name === playerChem.name);
+        {/* Individual Player Chemistry Nodes */}
+        {selectedPlayers.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <h2 className="font-display text-2xl uppercase text-white mb-6 flex items-center gap-3">
+              <Network className="text-comets-purple" size={24} />
+              Individual Relationships
+            </h2>
 
-            return (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {chemistryData.playerChemistry.map((playerChem, idx) => (
+                <RetroChemistryNode
+                  key={playerChem.id}
+                  player={playerChem}
+                  maxDisplay={5}
+                  delay={0.1 + idx * 0.1}
+                />
+              ))}
+            </div>
+          </motion.div>
+        ) : (
+          // Empty state
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-center py-20"
+          >
+            <div className="relative inline-block">
               <motion.div
-                key={playerChem.name}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 + idx * 0.1 }}
-                className="relative bg-surface-dark border rounded-lg overflow-hidden hover:border-white/30 transition-all"
-                style={{ borderColor: `${playerData?.color}30` }}
-              >
-                {/* Scanlines */}
-                <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
-
-                {/* Player header */}
-                <div
-                  className="p-6 border-b"
-                  style={{
-                    borderColor: `${playerData?.color}30`,
-                    backgroundColor: `${playerData?.color}10`
-                  }}
-                >
-                  <h3 className="font-display text-2xl uppercase text-white mb-1">
-                    {playerChem.name}
-                  </h3>
-                  <div className="font-mono text-xs text-white/40 uppercase tracking-widest">
-                    {playerChem.positive.length} Positive • {playerChem.negative.length} Negative
-                  </div>
-                </div>
-
-                {/* Chemistry lists */}
-                <div className="p-6 space-y-4">
-
-                  {/* Positive */}
-                  {playerChem.positive.length > 0 && (
-                    <div>
-                      <h4 className="font-ui text-xs uppercase tracking-widest text-comets-yellow mb-2 flex items-center gap-2">
-                        <Sparkles size={12} />
-                        Positive
-                      </h4>
-                      <div className="space-y-1">
-                        {playerChem.positive.map((rel, relIdx) => (
-                          <motion.div
-                            key={rel.name}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 1.1 + idx * 0.1 + relIdx * 0.05 }}
-                            className="flex items-center justify-between p-2 bg-comets-yellow/10 rounded hover:bg-comets-yellow/20 transition-all"
-                          >
-                            <span className="font-ui text-sm text-white uppercase">
-                              {rel.name}
-                            </span>
-                            <span className="font-mono text-comets-yellow font-bold text-sm">
-                              +{rel.value}
-                            </span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Negative */}
-                  {playerChem.negative.length > 0 && (
-                    <div>
-                      <h4 className="font-ui text-xs uppercase tracking-widest text-comets-red mb-2 flex items-center gap-2">
-                        <AlertTriangle size={12} />
-                        Negative
-                      </h4>
-                      <div className="space-y-1">
-                        {playerChem.negative.map((rel, relIdx) => (
-                          <motion.div
-                            key={rel.name}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 1.1 + idx * 0.1 + relIdx * 0.05 }}
-                            className="flex items-center justify-between p-2 bg-comets-red/10 rounded hover:bg-comets-red/20 transition-all"
-                          >
-                            <span className="font-ui text-sm text-white uppercase">
-                              {rel.name}
-                            </span>
-                            <span className="font-mono text-comets-red font-bold text-sm">
-                              {rel.value}
-                            </span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {playerChem.positive.length === 0 && playerChem.negative.length === 0 && (
-                    <div className="p-6 text-center">
-                      <p className="font-mono text-xs text-white/40 uppercase">
-                        No chemistry data
-                      </p>
-                    </div>
-                  )}
-
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="absolute inset-0 bg-comets-purple/20 blur-3xl rounded-full"
+              />
+              <Network size={64} className="text-white/20 relative" />
+            </div>
+            <h3 className="mt-6 font-display text-2xl uppercase text-white/40">
+              Select Players to Analyze
+            </h3>
+            <p className="mt-2 font-mono text-sm text-white/20">
+              Choose players using the search above to explore their chemistry
+            </p>
+          </motion.div>
+        )}
       </div>
     </main>
   );

@@ -24,7 +24,7 @@ export default async function AttributeComparisonPage() {
     teamRegistry.map(t => [t.teamName, t.color])
   );
 
-  // Transform attributes data for the client component
+  // Transform attributes data for the client component - include ALL attributes
   const players = attributes.map(attr => {
     const teamName = playerTeamMap.get(attr.name) || "Unknown";
     const teamColor = teamColorMap.get(teamName) || "#FFFFFF";
@@ -34,16 +34,47 @@ export default async function AttributeComparisonPage() {
       name: attr.name,
       team: teamName,
       color: teamColor,
-      attributes: {
-        pitchingOverall: attr.pitchingOverall,
-        battingOverall: attr.battingOverall,
-        fieldingOverall: attr.fieldingOverall,
-        speedOverall: attr.speedOverall,
-        curve: attr.curve,
-        throwingSpeed: attr.throwingSpeed,
-      },
+      // Character info
+      characterClass: attr.characterClass,
+      captain: attr.captain,
+      mii: attr.mii,
+      miiColor: attr.miiColor,
+      battingSide: attr.battingSide,
+      armSide: attr.armSide,
+      weight: attr.weight,
+      ability: attr.ability,
+      // Overall stats
+      pitchingOverall: attr.pitchingOverall,
+      battingOverall: attr.battingOverall,
+      fieldingOverall: attr.fieldingOverall,
+      speedOverall: attr.speedOverall,
+      // Pitching attributes
+      starPitch: attr.starPitch,
+      fastballSpeed: attr.fastballSpeed,
+      curveballSpeed: attr.curveballSpeed,
+      curve: attr.curve,
+      stamina: attr.stamina,
+      // Hitting attributes
+      starSwing: attr.starSwing,
+      hitCurve: attr.hitCurve,
+      hittingTrajectory: attr.hittingTrajectory,
+      slapHitContact: attr.slapHitContact,
+      chargeHitContact: attr.chargeHitContact,
+      slapHitPower: attr.slapHitPower,
+      chargeHitPower: attr.chargeHitPower,
+      preCharge: attr.preCharge,
+      // Fielding & Running
+      fielding: attr.fielding,
+      throwingSpeed: attr.throwingSpeed,
+      speed: attr.speed,
+      bunting: attr.bunting,
     };
   });
 
   return <AttributesClient players={players} />;
 }
+
+export const metadata = {
+  title: "Attribute Comparison - Comets League Baseball",
+  description: "Compare player attributes side-by-side across all 30 stats",
+};

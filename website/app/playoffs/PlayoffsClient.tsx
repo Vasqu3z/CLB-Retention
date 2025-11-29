@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Swords, Crown, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +11,8 @@ interface TeamInfo {
   code: string;
   color: string;
   wins: number;
+  emblem?: string;
+  seed?: number;
 }
 
 interface Game {
@@ -150,16 +153,34 @@ function MatchupCard({ series, roundName, delay = 0 }: { series: Series; roundNa
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* Team logo placeholder */}
+              {/* Seed badge */}
+              {series.teamA.seed && series.teamA.seed > 0 && (
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                  <span className="font-mono text-xs text-comets-cyan font-bold">
+                    {series.teamA.seed}
+                  </span>
+                </div>
+              )}
+              {/* Team emblem */}
               <motion.div
-                className="w-12 h-12 rounded-lg flex items-center justify-center font-display text-xl border-2"
+                className="w-12 h-12 rounded-lg flex items-center justify-center font-display text-xl border-2 overflow-hidden"
                 style={{
                   borderColor: series.teamA.color,
                   backgroundColor: `${series.teamA.color}20`,
                 }}
                 whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
               >
-                {series.teamA.code[0]}
+                {series.teamA.emblem ? (
+                  <Image
+                    src={series.teamA.emblem}
+                    alt={series.teamA.name}
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                ) : (
+                  series.teamA.code[0]
+                )}
               </motion.div>
               <div>
                 <div className="font-display text-xl uppercase text-white">{series.teamA.name}</div>
@@ -193,16 +214,34 @@ function MatchupCard({ series, roundName, delay = 0 }: { series: Series; roundNa
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* Team logo placeholder */}
+              {/* Seed badge */}
+              {series.teamB.seed && series.teamB.seed > 0 && (
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                  <span className="font-mono text-xs text-comets-cyan font-bold">
+                    {series.teamB.seed}
+                  </span>
+                </div>
+              )}
+              {/* Team emblem */}
               <motion.div
-                className="w-12 h-12 rounded-lg flex items-center justify-center font-display text-xl border-2"
+                className="w-12 h-12 rounded-lg flex items-center justify-center font-display text-xl border-2 overflow-hidden"
                 style={{
                   borderColor: series.teamB.color,
                   backgroundColor: `${series.teamB.color}20`,
                 }}
                 whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
               >
-                {series.teamB.code[0]}
+                {series.teamB.emblem ? (
+                  <Image
+                    src={series.teamB.emblem}
+                    alt={series.teamB.name}
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                ) : (
+                  series.teamB.code[0]
+                )}
               </motion.div>
               <div>
                 <div className="font-display text-xl uppercase text-white">{series.teamB.name}</div>

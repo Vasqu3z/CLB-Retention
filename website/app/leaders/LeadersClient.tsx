@@ -2,43 +2,61 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, TrendingUp, Zap, Target } from "lucide-react";
+import { Trophy, TrendingUp, Zap, Target, Shield, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RetroTabs from "@/components/ui/RetroTabs";
 import StatsTooltip from "@/components/ui/StatsTooltip";
 import { SeasonToggle } from "@/components/ui/RetroSegmentedControl";
 import { LeaderEntry } from "@/lib/sheets";
 
-interface LeadersData {
-  avg: LeaderEntry[];
-  hits: LeaderEntry[];
-  hr: LeaderEntry[];
-  rbi: LeaderEntry[];
-  slg: LeaderEntry[];
-  ops: LeaderEntry[];
-  ip: LeaderEntry[];
-  wins: LeaderEntry[];
-  losses: LeaderEntry[];
-  saves: LeaderEntry[];
-  era: LeaderEntry[];
-  whip: LeaderEntry[];
-  baa: LeaderEntry[];
-}
-
 interface LeadersClientProps {
-  regularBattingLeaders: any;
-  regularPitchingLeaders: any;
-  playoffBattingLeaders: any;
-  playoffPitchingLeaders: any;
+  regularBattingLeaders: {
+    avg: LeaderEntry[];
+    hits: LeaderEntry[];
+    hr: LeaderEntry[];
+    rbi: LeaderEntry[];
+    slg: LeaderEntry[];
+    ops: LeaderEntry[];
+  };
+  regularPitchingLeaders: {
+    ip: LeaderEntry[];
+    wins: LeaderEntry[];
+    losses: LeaderEntry[];
+    saves: LeaderEntry[];
+    era: LeaderEntry[];
+    whip: LeaderEntry[];
+    baa: LeaderEntry[];
+  };
+  regularFieldingLeaders: {
+    nicePlays: LeaderEntry[];
+    errors: LeaderEntry[];
+    stolenBases: LeaderEntry[];
+  };
+  playoffBattingLeaders: {
+    avg: LeaderEntry[];
+    hits: LeaderEntry[];
+    hr: LeaderEntry[];
+    rbi: LeaderEntry[];
+    slg: LeaderEntry[];
+    ops: LeaderEntry[];
+  };
+  playoffPitchingLeaders: {
+    ip: LeaderEntry[];
+    wins: LeaderEntry[];
+    losses: LeaderEntry[];
+    saves: LeaderEntry[];
+    era: LeaderEntry[];
+    whip: LeaderEntry[];
+    baa: LeaderEntry[];
+  };
+  playoffFieldingLeaders: {
+    nicePlays: LeaderEntry[];
+    errors: LeaderEntry[];
+    stolenBases: LeaderEntry[];
+  };
 }
 
-interface LeaderEntryDisplay {
-  rank: number;
-  name: string;
-  team: string;
-  value: string;
-  color: string;
-}
+type Category = "batting" | "pitching" | "fielding";
 
 function LeaderPodium({
   leaders,
@@ -50,8 +68,8 @@ function LeaderPodium({
   leaders: LeaderEntry[];
   statName: string;
   statKey: string;
-  context: "batting" | "pitching";
-  icon: any;
+  context: "batting" | "pitching" | "fielding";
+  icon: React.ElementType;
 }) {
   // Convert LeaderEntry[] to display format with team colors
   const displayLeaders = leaders.slice(0, 3).map((leader, idx) => ({
@@ -93,59 +111,65 @@ function LeaderPodium({
 
         {/* Leader entries */}
         <div className="space-y-3">
-          {displayLeaders.map((leader, idx) => (
-            <motion.div
-              key={leader.name + idx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              whileHover={{ scale: 1.02, x: 4 }}
-              className="relative group/item"
-            >
-              <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-comets-cyan/50 transition-all duration-200 cursor-pointer">
-                {/* Rank badge */}
-                <motion.div
-                  className={cn(
-                    "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-display text-xl font-bold",
-                    idx === 0 && "bg-comets-yellow text-black",
-                    idx === 1 && "bg-white/20 text-white",
-                    idx === 2 && "bg-white/10 text-white/80"
-                  )}
-                  whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
-                >
-                  {leader.rank}
-                </motion.div>
-
-                {/* Player info */}
-                <div className="flex-1 min-w-0">
-                  <div className="font-ui text-white font-bold uppercase tracking-wider text-lg truncate">
-                    {leader.name}
-                  </div>
-                  <div
-                    className="font-mono text-xs uppercase tracking-widest truncate"
-                    style={{ color: leader.color }}
+          {displayLeaders.length > 0 ? (
+            displayLeaders.map((leader, idx) => (
+              <motion.div
+                key={leader.name + idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                whileHover={{ scale: 1.02, x: 4 }}
+                className="relative group/item"
+              >
+                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-comets-cyan/50 transition-all duration-200 cursor-pointer">
+                  {/* Rank badge */}
+                  <motion.div
+                    className={cn(
+                      "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-display text-xl font-bold",
+                      idx === 0 && "bg-comets-yellow text-black",
+                      idx === 1 && "bg-white/20 text-white",
+                      idx === 2 && "bg-white/10 text-white/80"
+                    )}
+                    whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
                   >
-                    {leader.team}
-                  </div>
-                </div>
+                    {leader.rank}
+                  </motion.div>
 
-                {/* Value display */}
-                <motion.div
-                  className="flex-shrink-0 px-6 py-2 bg-comets-cyan/20 border border-comets-cyan/50 rounded-full"
-                  whileHover={{ scale: 1.05, backgroundColor: "rgba(0, 243, 255, 0.3)" }}
-                >
-                  <span className="font-mono text-comets-cyan font-bold text-xl">{leader.value}</span>
-                </motion.div>
-              </div>
-            </motion.div>
-          ))}
+                  {/* Player info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-ui text-white font-bold uppercase tracking-wider text-lg truncate">
+                      {leader.name}
+                    </div>
+                    <div
+                      className="font-mono text-xs uppercase tracking-widest truncate"
+                      style={{ color: leader.color }}
+                    >
+                      {leader.team}
+                    </div>
+                  </div>
+
+                  {/* Value display */}
+                  <motion.div
+                    className="flex-shrink-0 px-6 py-2 bg-comets-cyan/20 border border-comets-cyan/50 rounded-full"
+                    whileHover={{ scale: 1.05, backgroundColor: "rgba(0, 243, 255, 0.3)" }}
+                  >
+                    <span className="font-mono text-comets-cyan font-bold text-xl">{leader.value}</span>
+                  </motion.div>
+                </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-center py-6 text-white/40 font-mono text-sm">
+              No data available
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
   );
 }
 
-// Helper to get team color (simplified - could be enhanced with team registry)
+// Helper to get team color
 function getTeamColor(teamName: string): string {
   const colors: Record<string, string> = {
     Fireballs: "#FF4D4D",
@@ -165,29 +189,56 @@ function getTeamColor(teamName: string): string {
 export default function LeadersClient({
   regularBattingLeaders,
   regularPitchingLeaders,
+  regularFieldingLeaders,
   playoffBattingLeaders,
   playoffPitchingLeaders,
+  playoffFieldingLeaders,
 }: LeadersClientProps) {
-  const [category, setCategory] = useState<"batting" | "pitching">("batting");
+  const [category, setCategory] = useState<Category>("batting");
   const [isPlayoffs, setIsPlayoffs] = useState(false);
 
   const battingLeaders = isPlayoffs ? playoffBattingLeaders : regularBattingLeaders;
   const pitchingLeaders = isPlayoffs ? playoffPitchingLeaders : regularPitchingLeaders;
+  const fieldingLeaders = isPlayoffs ? playoffFieldingLeaders : regularFieldingLeaders;
 
-  const stats =
-    category === "batting"
-      ? [
+  const getStats = () => {
+    switch (category) {
+      case "batting":
+        return [
           { key: "avg", name: "Batting Average", icon: Target, data: battingLeaders.avg },
+          { key: "h", name: "Hits", icon: Activity, data: battingLeaders.hits },
           { key: "hr", name: "Home Runs", icon: Zap, data: battingLeaders.hr },
           { key: "rbi", name: "Runs Batted In", icon: TrendingUp, data: battingLeaders.rbi },
-          { key: "ops", name: "On-Base Plus Slugging", icon: Trophy, data: battingLeaders.ops },
-        ]
-      : [
-          { key: "era", name: "Earned Run Avg", icon: Target, data: pitchingLeaders.era },
+          { key: "slg", name: "Slugging", icon: Trophy, data: battingLeaders.slg },
+          { key: "ops", name: "OPS", icon: Trophy, data: battingLeaders.ops },
+        ];
+      case "pitching":
+        return [
+          { key: "ip", name: "Innings Pitched", icon: Activity, data: pitchingLeaders.ip },
           { key: "w", name: "Wins", icon: Trophy, data: pitchingLeaders.wins },
           { key: "sv", name: "Saves", icon: Zap, data: pitchingLeaders.saves },
+          { key: "era", name: "ERA", icon: Target, data: pitchingLeaders.era },
           { key: "whip", name: "WHIP", icon: TrendingUp, data: pitchingLeaders.whip },
+          { key: "baa", name: "BAA", icon: Shield, data: pitchingLeaders.baa },
         ];
+      case "fielding":
+        return [
+          { key: "np", name: "Nice Plays", icon: Shield, data: fieldingLeaders.nicePlays },
+          { key: "e", name: "Errors", icon: Activity, data: fieldingLeaders.errors },
+          { key: "sb", name: "Stolen Bases", icon: Zap, data: fieldingLeaders.stolenBases },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const stats = getStats();
+
+  const tabs = [
+    { value: "batting", label: "Batting", color: "yellow" as const },
+    { value: "pitching", label: "Pitching", color: "cyan" as const },
+    { value: "fielding", label: "Fielding", color: "purple" as const },
+  ];
 
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4">
@@ -197,7 +248,7 @@ export default function LeadersClient({
         <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-comets-yellow/10 blur-[100px] rounded-full" />
       </div>
 
-      <div className="container mx-auto max-w-6xl relative z-10">
+      <div className="container mx-auto max-w-7xl relative z-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
           <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }}>
@@ -211,7 +262,7 @@ export default function LeadersClient({
               <span className="font-ui uppercase tracking-[0.3em] text-sm">Statistical Leaders</span>
             </motion.div>
 
-            <h1 className="font-display text-6xl md:text-8xl uppercase leading-none tracking-tighter">
+            <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
               <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
                 League
                 <br />
@@ -221,7 +272,7 @@ export default function LeadersClient({
           </motion.div>
 
           {/* Season Toggle */}
-          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} />
+          <SeasonToggle isPlayoffs={isPlayoffs} onChange={setIsPlayoffs} size="lg" />
         </div>
 
         {/* Category toggle */}
@@ -232,12 +283,9 @@ export default function LeadersClient({
           className="flex justify-center mb-12"
         >
           <RetroTabs
-            tabs={[
-              { value: "batting", label: "Batting", color: "yellow" },
-              { value: "pitching", label: "Pitching", color: "cyan" },
-            ]}
+            tabs={tabs}
             value={category}
-            onChange={(val) => setCategory(val as "batting" | "pitching")}
+            onChange={(val) => setCategory(val as Category)}
           />
         </motion.div>
 
@@ -249,7 +297,12 @@ export default function LeadersClient({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6"
+            className={cn(
+              "grid gap-6",
+              category === "fielding"
+                ? "grid-cols-1 md:grid-cols-3"
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            )}
           >
             {stats.map((stat, idx) => (
               <motion.div

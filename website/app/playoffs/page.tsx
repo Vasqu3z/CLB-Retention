@@ -1,20 +1,28 @@
 import React from "react";
-import { getPlayoffSchedule, getTeamRegistry } from "@/lib/sheets";
+import { getPlayoffSchedule, getTeamRegistry, getStandings } from "@/lib/sheets";
 import PlayoffsClient from "./PlayoffsClient";
 
 export default async function PlayoffsPage() {
-  // Fetch playoff schedule and team registry
-  const [playoffGames, teamRegistry] = await Promise.all([
+  // Fetch playoff schedule, team registry, and standings for seeds
+  const [playoffGames, teamRegistry, standings] = await Promise.all([
     getPlayoffSchedule(),
     getTeamRegistry(),
+    getStandings(false), // Regular season standings for playoff seeds
   ]);
 
-  // Create team color map
+  // Create team maps
   const teamColorMap = new Map(
     teamRegistry.map(t => [t.teamName, t.color])
   );
   const teamCodeMap = new Map(
     teamRegistry.map(t => [t.teamName, t.abbr])
+  );
+  const teamEmblemMap = new Map(
+    teamRegistry.map(t => [t.teamName, t.emblemUrl || ""])
+  );
+  // Create seed map from standings (convert rank to number)
+  const teamSeedMap = new Map(
+    standings.map(s => [s.team, parseInt(String(s.rank)) || 0])
   );
 
   // Group games by series (using code prefix)
@@ -38,6 +46,8 @@ export default async function PlayoffsPage() {
     name: teamName,
     code: teamCodeMap.get(teamName) || teamName.substring(0, 3).toUpperCase(),
     color: teamColorMap.get(teamName) || "#FFFFFF",
+    emblem: teamEmblemMap.get(teamName) || "",
+    seed: teamSeedMap.get(teamName) || 0,
   });
 
   // Parse semifinals (S1 and S2)

@@ -1,71 +1,131 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Users, X, Zap, Target, Shield, Wind, Activity, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Users, Zap, Target, Shield, Wind, Gauge, Award } from "lucide-react";
+import RetroTabs from "@/components/ui/RetroTabs";
+import RetroPlayerSelector, { type PlayerOption } from "@/components/ui/RetroPlayerSelector";
+import RetroComparisonBar from "@/components/ui/RetroComparisonBar";
 
+/**
+ * Full player attribute data from Google Sheets
+ */
 interface PlayerAttributeData {
   id: string;
   name: string;
   team: string;
   color: string;
-  attributes: {
-    pitchingOverall: number;
-    battingOverall: number;
-    fieldingOverall: number;
-    speedOverall: number;
-    curve: number;
-    throwingSpeed: number;
-  };
+  // Character info
+  characterClass: string;
+  captain: string;
+  mii: string;
+  miiColor: string;
+  battingSide: string;
+  armSide: string;
+  weight: number;
+  ability: string;
+  // Overall stats
+  pitchingOverall: number;
+  battingOverall: number;
+  fieldingOverall: number;
+  speedOverall: number;
+  // Pitching attributes
+  starPitch: string;
+  fastballSpeed: number;
+  curveballSpeed: number;
+  curve: number;
+  stamina: number;
+  // Hitting attributes
+  starSwing: string;
+  hitCurve: number;
+  hittingTrajectory: string;
+  slapHitContact: number;
+  chargeHitContact: number;
+  slapHitPower: number;
+  chargeHitPower: number;
+  preCharge: string;
+  // Fielding & Running
+  fielding: number;
+  throwingSpeed: number;
+  speed: number;
+  bunting: number;
 }
 
 interface AttributesClientProps {
   players: PlayerAttributeData[];
 }
 
-const ATTRIBUTES = [
-  { key: "pitchingOverall", name: "Pitching", icon: Zap, color: "#FF4D4D" },
-  { key: "battingOverall", name: "Batting", icon: Target, color: "#00F3FF" },
-  { key: "fieldingOverall", name: "Fielding", icon: Shield, color: "#2ECC71" },
-  { key: "speedOverall", name: "Speed", icon: Wind, color: "#F4D03F" },
-  { key: "curve", name: "Curve", icon: Activity, color: "#BD00FF" },
-  { key: "throwingSpeed", name: "Throwing", icon: TrendingUp, color: "#FF69B4" },
+type AttributeTab = "hitting" | "pitching" | "fielding";
+
+// Attribute definitions grouped by category
+const OVERALL_ATTRIBUTES = [
+  { key: "pitchingOverall", name: "Pitching Overall", maxValue: 100 },
+  { key: "battingOverall", name: "Batting Overall", maxValue: 100 },
+  { key: "fieldingOverall", name: "Fielding Overall", maxValue: 100 },
+  { key: "speedOverall", name: "Speed Overall", maxValue: 100 },
+];
+
+const HITTING_ATTRIBUTES = [
+  { key: "hitCurve", name: "Hit Curve", maxValue: 100 },
+  { key: "slapHitContact", name: "Slap Hit Contact", maxValue: 100 },
+  { key: "chargeHitContact", name: "Charge Hit Contact", maxValue: 100 },
+  { key: "slapHitPower", name: "Slap Hit Power", maxValue: 100 },
+  { key: "chargeHitPower", name: "Charge Hit Power", maxValue: 100 },
+];
+
+const PITCHING_ATTRIBUTES = [
+  { key: "fastballSpeed", name: "Fastball Speed", maxValue: 200 },
+  { key: "curveballSpeed", name: "Curveball Speed", maxValue: 200 },
+  { key: "curve", name: "Curve", maxValue: 100 },
+  { key: "stamina", name: "Stamina", maxValue: 100 },
+];
+
+const FIELDING_ATTRIBUTES = [
+  { key: "fielding", name: "Fielding", maxValue: 100 },
+  { key: "throwingSpeed", name: "Throwing Speed", maxValue: 100 },
+  { key: "speed", name: "Speed", maxValue: 100 },
+  { key: "bunting", name: "Bunting", maxValue: 100 },
 ];
 
 export default function AttributesClient({ players }: AttributesClientProps) {
-  const [selectedPlayers, setSelectedPlayers] = useState<string[]>(
-    players.slice(0, 2).map(p => p.id)
-  );
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<AttributeTab>("hitting");
 
-  const selectedPlayerData = selectedPlayers
-    .map(id => players.find(p => p.id === id))
+  // Convert players to PlayerOption format for selector
+  const playerOptions: PlayerOption[] = players.map((p) => ({
+    id: p.id,
+    name: p.name,
+    team: p.team,
+    color: p.color,
+  }));
+
+  // Get selected player data
+  const selectedPlayers = selectedIds
+    .map((id) => players.find((p) => p.id === id))
     .filter(Boolean) as PlayerAttributeData[];
 
-  const availablePlayers = players.filter(
-    p => !selectedPlayers.includes(p.id) &&
-         p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const addPlayer = (id: string) => {
-    if (selectedPlayers.length < 4) {
-      setSelectedPlayers([...selectedPlayers, id]);
-      setSearchQuery("");
-      setShowSearch(false);
+  // Get current category attributes
+  const getCategoryAttributes = () => {
+    switch (activeTab) {
+      case "hitting":
+        return HITTING_ATTRIBUTES;
+      case "pitching":
+        return PITCHING_ATTRIBUTES;
+      case "fielding":
+        return FIELDING_ATTRIBUTES;
+      default:
+        return HITTING_ATTRIBUTES;
     }
   };
 
-  const removePlayer = (id: string) => {
-    if (selectedPlayers.length > 1) {
-      setSelectedPlayers(selectedPlayers.filter(p => p !== id));
-    }
-  };
+  const tabs = [
+    { value: "hitting", label: "Hitting", color: "red" as const },
+    { value: "pitching", label: "Pitching", color: "yellow" as const },
+    { value: "fielding", label: "Fielding & Running", color: "cyan" as const },
+  ];
 
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4">
-
       {/* Cosmic background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-1/4 left-1/3 w-[600px] h-[600px] bg-comets-purple/10 blur-[120px] rounded-full animate-pulse-slow" />
@@ -73,12 +133,11 @@ export default function AttributesClient({ players }: AttributesClientProps) {
       </div>
 
       <div className="container mx-auto max-w-7xl relative z-10">
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-16 text-center"
+          className="mb-12 text-center"
         >
           <motion.div
             className="inline-flex items-center gap-2 text-comets-purple mb-4"
@@ -87,223 +146,295 @@ export default function AttributesClient({ players }: AttributesClientProps) {
             transition={{ delay: 0.2 }}
           >
             <Users size={24} />
-            <span className="font-ui uppercase tracking-[0.3em] text-sm">Player Analysis</span>
+            <span className="font-ui uppercase tracking-[0.3em] text-sm">
+              Player Analysis
+            </span>
           </motion.div>
 
-          <h1 className="font-display text-6xl md:text-8xl uppercase leading-none tracking-tighter mb-4">
+          <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
               Attribute
               <br />
               Comparison
             </span>
           </h1>
+
+          <p className="font-mono text-white/40 text-sm">
+            Compare 2-5 players side-by-side across all 30 attributes
+          </p>
         </motion.div>
 
-        {/* Player selection */}
+        {/* Player Selection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-8"
+        >
+          <RetroPlayerSelector
+            players={playerOptions}
+            selectedIds={selectedIds}
+            onChange={setSelectedIds}
+            maxSelections={5}
+            placeholder="Search players to compare..."
+          />
+        </motion.div>
+
+        {/* Category Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mb-12"
+          className="mb-8 flex justify-center"
         >
-          <div className="flex flex-wrap items-center gap-3">
-
-            {/* Selected player pills */}
-            {selectedPlayerData.map((player, idx) => (
-              <motion.div
-                key={player.id}
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: idx * 0.1, type: "spring" }}
-                className="relative group"
-              >
-                <div
-                  className="flex items-center gap-3 px-6 py-3 bg-surface-dark border-2 rounded-full transition-all hover:scale-105"
-                  style={{ borderColor: player.color }}
-                >
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: player.color }}
-                  />
-                  <span className="font-ui uppercase tracking-wider text-white font-bold">
-                    {player.name}
-                  </span>
-                  {selectedPlayers.length > 1 && (
-                    <motion.button
-                      whileHover={{ scale: 1.2, rotate: 90 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => removePlayer(player.id)}
-                      className="text-white/40 hover:text-comets-red transition-colors"
-                    >
-                      <X size={16} />
-                    </motion.button>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Add player button */}
-            {selectedPlayers.length < 4 && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowSearch(!showSearch)}
-                className="px-6 py-3 border-2 border-dashed border-white/20 rounded-full font-ui uppercase tracking-wider text-white/60 hover:text-white hover:border-comets-cyan/50 transition-all"
-              >
-                + Add Player
-              </motion.button>
-            )}
-          </div>
-
-          {/* Search dropdown */}
-          <AnimatePresence>
-            {showSearch && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-4 overflow-hidden"
-              >
-                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
-                  <input
-                    type="text"
-                    placeholder="SEARCH PLAYERS..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-black/30 border border-white/10 rounded px-4 py-2 text-white font-ui uppercase tracking-wider text-sm focus:border-comets-cyan outline-none"
-                    autoFocus
-                  />
-                  <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
-                    {availablePlayers.map((player, idx) => (
-                      <motion.button
-                        key={player.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.05 }}
-                        onClick={() => addPlayer(player.id)}
-                        className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded transition-all"
-                      >
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: player.color }}
-                        />
-                        <span className="font-ui text-white uppercase tracking-wider">
-                          {player.name}
-                        </span>
-                        <span className="ml-auto font-mono text-xs text-white/40">
-                          {player.team}
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <RetroTabs
+            tabs={tabs}
+            value={activeTab}
+            onChange={(val) => setActiveTab(val as AttributeTab)}
+          />
         </motion.div>
 
-        {/* Attribute comparison grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="space-y-6"
-        >
-          {ATTRIBUTES.map((attr, idx) => {
-            const Icon = attr.icon;
-            const maxValue = Math.max(...selectedPlayerData.map(p => p.attributes[attr.key as keyof typeof p.attributes]));
-
-            return (
+        {/* Comparison Content */}
+        {selectedPlayers.length >= 2 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-8"
+          >
+            {/* Overall Stats Section - Always visible */}
+            <section>
               <motion.div
-                key={attr.key}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 + idx * 0.05 }}
-                className="relative bg-surface-dark border border-white/10 rounded-lg p-6 overflow-hidden group hover:border-white/30 transition-colors"
+                className="flex items-center gap-3 mb-4"
               >
-                {/* Scanlines */}
+                <div className="p-2 bg-comets-yellow/20 rounded-lg">
+                  <Award className="text-comets-yellow" size={20} />
+                </div>
+                <h2 className="font-display text-2xl uppercase text-white tracking-tight">
+                  Overall Stats
+                </h2>
+              </motion.div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {OVERALL_ATTRIBUTES.map((attr, idx) => (
+                  <RetroComparisonBar
+                    key={attr.key}
+                    statName={attr.name}
+                    statKey={attr.key.toUpperCase()}
+                    maxValue={attr.maxValue}
+                    delay={0.1 + idx * 0.05}
+                    players={selectedPlayers.map((p) => ({
+                      id: p.id,
+                      name: p.name,
+                      color: p.color,
+                      value: p[attr.key as keyof PlayerAttributeData] as number,
+                    }))}
+                  />
+                ))}
+              </div>
+            </section>
+
+            {/* Category-specific attributes */}
+            <section>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-3 mb-4"
+              >
+                <div
+                  className="p-2 rounded-lg"
+                  style={{
+                    backgroundColor:
+                      activeTab === "hitting"
+                        ? "rgba(255, 77, 77, 0.2)"
+                        : activeTab === "pitching"
+                        ? "rgba(244, 208, 63, 0.2)"
+                        : "rgba(0, 243, 255, 0.2)",
+                  }}
+                >
+                  {activeTab === "hitting" && (
+                    <Target className="text-comets-red" size={20} />
+                  )}
+                  {activeTab === "pitching" && (
+                    <Zap className="text-comets-yellow" size={20} />
+                  )}
+                  {activeTab === "fielding" && (
+                    <Shield className="text-comets-cyan" size={20} />
+                  )}
+                </div>
+                <h2 className="font-display text-2xl uppercase text-white tracking-tight">
+                  {activeTab === "hitting" && "Hitting Attributes"}
+                  {activeTab === "pitching" && "Pitching Attributes"}
+                  {activeTab === "fielding" && "Fielding & Running"}
+                </h2>
+              </motion.div>
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {getCategoryAttributes().map((attr, idx) => (
+                  <RetroComparisonBar
+                    key={attr.key}
+                    statName={attr.name}
+                    statKey={attr.key.toUpperCase()}
+                    maxValue={attr.maxValue}
+                    delay={0.2 + idx * 0.05}
+                    players={selectedPlayers.map((p) => ({
+                      id: p.id,
+                      name: p.name,
+                      color: p.color,
+                      value: p[attr.key as keyof PlayerAttributeData] as number,
+                    }))}
+                  />
+                ))}
+              </div>
+            </section>
+
+            {/* Character Info Section */}
+            <section>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-3 mb-4"
+              >
+                <div className="p-2 bg-comets-purple/20 rounded-lg">
+                  <Gauge className="text-comets-purple" size={20} />
+                </div>
+                <h2 className="font-display text-2xl uppercase text-white tracking-tight">
+                  Character Info
+                </h2>
+              </motion.div>
+
+              <div className="relative bg-surface-dark border border-white/10 rounded-lg overflow-hidden">
                 <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
 
-                {/* Attribute header */}
-                <div className="flex items-center gap-3 mb-4">
-                  <motion.div
-                    className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${attr.color}20` }}
-                    whileHover={{ scale: 1.1, rotate: [0, -5, 5, 0] }}
-                  >
-                    <Icon style={{ color: attr.color }} size={20} />
-                  </motion.div>
-                  <h3 className="font-display text-2xl uppercase text-white tracking-tight">
-                    {attr.name}
-                  </h3>
-                </div>
-
-                {/* Comparison bars */}
-                <div className="space-y-3">
-                  {selectedPlayerData.map((player, playerIdx) => {
-                    const value = player.attributes[attr.key as keyof typeof player.attributes];
-                    const isMax = value === maxValue;
-
-                    return (
-                      <motion.div
-                        key={player.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.8 + playerIdx * 0.05 }}
-                        className="relative"
-                      >
-                        <div className="flex items-center gap-4 mb-2">
-                          <div
-                            className="w-3 h-3 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: player.color }}
-                          />
-                          <span className="font-ui text-sm uppercase tracking-wider text-white/60 w-24">
-                            {player.name}
-                          </span>
-                          <div className="flex-1 relative h-8 bg-white/5 rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${value}%` }}
-                              transition={{ duration: 1, delay: 0.9 + playerIdx * 0.1, ease: "easeOut" }}
-                              className={cn(
-                                "h-full rounded-full relative",
-                                isMax && "ring-2 ring-comets-yellow"
-                              )}
-                              style={{
-                                backgroundColor: player.color,
-                                opacity: isMax ? 1 : 0.7
-                              }}
-                            >
-                              {/* Shimmer effect */}
-                              <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                                animate={{ x: ["-100%", "200%"] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                              />
-                            </motion.div>
-                          </div>
-                          <motion.span
-                            className="font-mono font-bold text-lg w-12 text-right"
-                            style={{ color: isMax ? attr.color : "white" }}
-                            animate={isMax ? { scale: [1, 1.1, 1] } : {}}
-                            transition={{ duration: 0.5, delay: 1 + playerIdx * 0.1 }}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10">
+                        <th className="px-4 py-3 text-left font-ui text-xs uppercase tracking-widest text-white/40 bg-white/5">
+                          Attribute
+                        </th>
+                        {selectedPlayers.map((player) => (
+                          <th
+                            key={player.id}
+                            className="px-4 py-3 text-center font-ui text-xs uppercase tracking-widest min-w-[120px]"
+                            style={{ color: player.color }}
                           >
-                            {value}
-                          </motion.span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                            {player.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="font-mono text-sm">
+                      <CharacterInfoRow
+                        label="Class"
+                        players={selectedPlayers}
+                        getValue={(p) => p.characterClass}
+                      />
+                      <CharacterInfoRow
+                        label="Captain"
+                        players={selectedPlayers}
+                        getValue={(p) => p.captain}
+                      />
+                      <CharacterInfoRow
+                        label="Star Pitch"
+                        players={selectedPlayers}
+                        getValue={(p) => p.starPitch}
+                      />
+                      <CharacterInfoRow
+                        label="Star Swing"
+                        players={selectedPlayers}
+                        getValue={(p) => p.starSwing}
+                      />
+                      <CharacterInfoRow
+                        label="Ability"
+                        players={selectedPlayers}
+                        getValue={(p) => p.ability}
+                      />
+                      <CharacterInfoRow
+                        label="Batting Side"
+                        players={selectedPlayers}
+                        getValue={(p) => p.battingSide}
+                      />
+                      <CharacterInfoRow
+                        label="Arm Side"
+                        players={selectedPlayers}
+                        getValue={(p) => p.armSide}
+                      />
+                      <CharacterInfoRow
+                        label="Hit Trajectory"
+                        players={selectedPlayers}
+                        getValue={(p) => p.hittingTrajectory}
+                      />
+                      <CharacterInfoRow
+                        label="Pre-Charge"
+                        players={selectedPlayers}
+                        getValue={(p) => p.preCharge}
+                      />
+                      <CharacterInfoRow
+                        label="Weight"
+                        players={selectedPlayers}
+                        getValue={(p) => String(p.weight)}
+                      />
+                    </tbody>
+                  </table>
                 </div>
-
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
+              </div>
+            </section>
+          </motion.div>
+        ) : (
+          // Empty state
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-center py-20"
+          >
+            <div className="relative inline-block">
+              <motion.div
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="absolute inset-0 bg-comets-purple/20 blur-3xl rounded-full"
+              />
+              <Users size={64} className="text-white/20 relative" />
+            </div>
+            <h3 className="mt-6 font-display text-2xl uppercase text-white/40">
+              Select Players to Compare
+            </h3>
+            <p className="mt-2 font-mono text-sm text-white/20">
+              Choose at least 2 players using the search above
+            </p>
+          </motion.div>
+        )}
       </div>
     </main>
+  );
+}
+
+/**
+ * Character info table row component
+ */
+function CharacterInfoRow({
+  label,
+  players,
+  getValue,
+}: {
+  label: string;
+  players: PlayerAttributeData[];
+  getValue: (player: PlayerAttributeData) => string;
+}) {
+  return (
+    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
+      <td className="px-4 py-2 text-white/60 bg-white/5">{label}</td>
+      {players.map((player) => (
+        <td key={player.id} className="px-4 py-2 text-center text-white/80">
+          {getValue(player) || "-"}
+        </td>
+      ))}
+    </tr>
   );
 }

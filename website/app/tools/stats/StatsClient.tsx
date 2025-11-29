@@ -1,99 +1,161 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart3, X, TrendingUp, Activity } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { BarChart3, TrendingUp, Activity, Shield, Users } from "lucide-react";
+import RetroTabs from "@/components/ui/RetroTabs";
+import { SeasonToggle } from "@/components/ui/RetroSegmentedControl";
+import RetroPlayerSelector, { type PlayerOption } from "@/components/ui/RetroPlayerSelector";
+import RetroComparisonBar from "@/components/ui/RetroComparisonBar";
 
+/**
+ * Full player stats from Google Sheets
+ */
 interface PlayerStats {
   id: string;
   name: string;
   team: string;
   color: string;
   stats: {
-    batting: { avg: string; hr: number; rbi: number; ops: string; sb: number };
-    pitching: { era: string; w: number; l: number; sv: number; ip: string };
-    fielding: { np: number; e: number; oaa: number };
+    batting: {
+      gp: number;
+      ab: number;
+      h: number;
+      hr: number;
+      rbi: number;
+      rob: number;
+      dp: number;
+      sb: number;
+      avg: string;
+      obp: string;
+      slg: string;
+      ops: string;
+    };
+    pitching: {
+      ip: number;
+      w: number;
+      l: number;
+      sv: number;
+      hAllowed: number;
+      hrAllowed: number;
+      era: string;
+      whip: string;
+      baa: string;
+    };
+    fielding: {
+      np: number;
+      e: number;
+      oaa: number;
+      cs: number;
+    };
   };
 }
 
-interface StatsComparisonProps {
-  players: PlayerStats[];
+interface StatsClientProps {
+  regularPlayers: PlayerStats[];
+  playoffPlayers: PlayerStats[];
 }
 
-const STAT_CATEGORIES = [
-  { 
-    key: "batting", 
-    name: "Batting", 
-    icon: TrendingUp,
-    stats: [
-      { key: "avg", label: "AVG", color: "#00F3FF" },
-      { key: "hr", label: "HR", color: "#FF4D4D" },
-      { key: "rbi", label: "RBI", color: "#F4D03F" },
-      { key: "ops", label: "OPS", color: "#BD00FF" },
-      { key: "sb", label: "SB", color: "#2ECC71" },
-    ]
-  },
-  { 
-    key: "pitching", 
-    name: "Pitching", 
-    icon: Activity,
-    stats: [
-      { key: "era", label: "ERA", color: "#00F3FF" },
-      { key: "w", label: "W", color: "#2ECC71" },
-      { key: "l", label: "L", color: "#FF4D4D" },
-      { key: "sv", label: "SV", color: "#F4D03F" },
-      { key: "ip", label: "IP", color: "#BD00FF" },
-    ]
-  },
-  { 
-    key: "fielding", 
-    name: "Fielding", 
-    icon: BarChart3,
-    stats: [
-      { key: "np", label: "NP", color: "#2ECC71" },
-      { key: "e", label: "E", color: "#FF4D4D" },
-      { key: "oaa", label: "OAA", color: "#00F3FF" },
-    ]
-  },
+type StatCategory = "batting" | "pitching" | "fielding";
+
+interface StatConfig {
+  key: string;
+  label: string;
+  name: string;
+  isRate?: boolean;
+  lowerIsBetter?: boolean;
+}
+
+// Stat definitions by category
+const BATTING_STATS: StatConfig[] = [
+  { key: "gp", label: "GP", name: "Games Played" },
+  { key: "ab", label: "AB", name: "At Bats" },
+  { key: "h", label: "H", name: "Hits" },
+  { key: "hr", label: "HR", name: "Home Runs" },
+  { key: "rbi", label: "RBI", name: "Runs Batted In" },
+  { key: "sb", label: "SB", name: "Stolen Bases" },
+  { key: "rob", label: "ROB", name: "Hits Robbed" },
+  { key: "dp", label: "DP", name: "Double Plays" },
+  { key: "avg", label: "AVG", name: "Batting Average", isRate: true },
+  { key: "obp", label: "OBP", name: "On-Base Percentage", isRate: true },
+  { key: "slg", label: "SLG", name: "Slugging", isRate: true },
+  { key: "ops", label: "OPS", name: "OPS", isRate: true },
 ];
 
-export default function StatsComparisonPage({ players: allPlayers }: StatsComparisonProps) {
-  // Initialize with first two players if available
-  const initialPlayers = allPlayers.slice(0, 2).map(p => p.id);
-  const [selectedPlayers, setSelectedPlayers] = useState<string[]>(initialPlayers);
-  const [category, setCategory] = useState<"batting" | "pitching" | "fielding">("batting");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
+const PITCHING_STATS: StatConfig[] = [
+  { key: "ip", label: "IP", name: "Innings Pitched" },
+  { key: "w", label: "W", name: "Wins" },
+  { key: "l", label: "L", name: "Losses", lowerIsBetter: true },
+  { key: "sv", label: "SV", name: "Saves" },
+  { key: "hAllowed", label: "H", name: "Hits Allowed", lowerIsBetter: true },
+  { key: "hrAllowed", label: "HR", name: "Home Runs Allowed", lowerIsBetter: true },
+  { key: "era", label: "ERA", name: "Earned Run Average", isRate: true, lowerIsBetter: true },
+  { key: "whip", label: "WHIP", name: "WHIP", isRate: true, lowerIsBetter: true },
+  { key: "baa", label: "BAA", name: "Batting Avg Against", isRate: true, lowerIsBetter: true },
+];
 
-  const players = selectedPlayers
-    .map(id => allPlayers.find(p => p.id === id))
-    .filter(Boolean);
+const FIELDING_STATS: StatConfig[] = [
+  { key: "np", label: "NP", name: "Nice Plays" },
+  { key: "e", label: "E", name: "Errors", lowerIsBetter: true },
+  { key: "oaa", label: "OAA", name: "Outs Above Average" },
+  { key: "cs", label: "CS", name: "Caught Stealing" },
+];
 
-  const availablePlayers = allPlayers.filter(
-    p => !selectedPlayers.includes(p.id) &&
-         p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+export default function StatsClient({ regularPlayers, playoffPlayers }: StatsClientProps) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isPlayoffs, setIsPlayoffs] = useState(false);
+  const [activeTab, setActiveTab] = useState<StatCategory>("batting");
 
-  const currentCategory = STAT_CATEGORIES.find(c => c.key === category)!;
+  // Get active player list based on season
+  const activePlayers = isPlayoffs ? playoffPlayers : regularPlayers;
 
-  const addPlayer = (id: string) => {
-    if (selectedPlayers.length < 4) {
-      setSelectedPlayers([...selectedPlayers, id]);
-      setSearchQuery("");
-      setShowSearch(false);
+  // Build player options from active season
+  const playerOptions: PlayerOption[] = useMemo(() => {
+    return activePlayers.map((p) => ({
+      id: p.id,
+      name: p.name,
+      team: p.team,
+      color: p.color,
+    }));
+  }, [activePlayers]);
+
+  // Get selected player data
+  const selectedPlayers = useMemo(() => {
+    return selectedIds
+      .map((id) => activePlayers.find((p) => p.id === id))
+      .filter(Boolean) as PlayerStats[];
+  }, [selectedIds, activePlayers]);
+
+  // Filter out players not in current season when switching
+  const handleSeasonChange = (playoffs: boolean) => {
+    setIsPlayoffs(playoffs);
+    const newPlayers = playoffs ? playoffPlayers : regularPlayers;
+    const newPlayerIds = new Set(newPlayers.map((p) => p.id));
+    setSelectedIds((prev) => prev.filter((id) => newPlayerIds.has(id)));
+  };
+
+  // Get current stats config
+  const getStatsConfig = () => {
+    switch (activeTab) {
+      case "batting":
+        return BATTING_STATS;
+      case "pitching":
+        return PITCHING_STATS;
+      case "fielding":
+        return FIELDING_STATS;
+      default:
+        return BATTING_STATS;
     }
   };
 
-  const removePlayer = (id: string) => {
-    if (selectedPlayers.length > 1) {
-      setSelectedPlayers(selectedPlayers.filter(p => p !== id));
-    }
-  };
+  const tabs = [
+    { value: "batting", label: "Batting", icon: TrendingUp, color: "red" as const },
+    { value: "pitching", label: "Pitching", icon: Activity, color: "yellow" as const },
+    { value: "fielding", label: "Fielding", icon: Shield, color: "cyan" as const },
+  ];
 
   return (
     <main className="min-h-screen bg-background pb-24 pt-32 px-4">
-      
       {/* Cosmic background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-1/3 right-1/4 w-[650px] h-[650px] bg-comets-cyan/10 blur-[120px] rounded-full" />
@@ -101,236 +163,278 @@ export default function StatsComparisonPage({ players: allPlayers }: StatsCompar
       </div>
 
       <div className="container mx-auto max-w-7xl relative z-10">
-        
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-16 text-center"
+          className="mb-12 text-center"
         >
-          <motion.div 
+          <motion.div
             className="inline-flex items-center gap-2 text-comets-cyan mb-4"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
           >
             <BarChart3 size={24} />
-            <span className="font-ui uppercase tracking-[0.3em] text-sm">Statistical Analysis</span>
+            <span className="font-ui uppercase tracking-[0.3em] text-sm">
+              Statistical Analysis
+            </span>
           </motion.div>
-          
-          <h1 className="font-display text-6xl md:text-8xl uppercase leading-none tracking-tighter mb-4">
+
+          <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
               Stats
               <br />
               Comparison
             </span>
           </h1>
+
+          <p className="font-mono text-white/40 text-sm">
+            Compare 2-5 players side-by-side for hitting, pitching, and fielding
+          </p>
         </motion.div>
 
-        {/* Player selection */}
+        {/* Season Toggle */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="mb-6 flex justify-center"
+        >
+          <SeasonToggle
+            isPlayoffs={isPlayoffs}
+            onChange={handleSeasonChange}
+            size="lg"
+          />
+        </motion.div>
+
+        {/* Player Selection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-8"
+        >
+          <RetroPlayerSelector
+            players={playerOptions}
+            selectedIds={selectedIds}
+            onChange={setSelectedIds}
+            maxSelections={5}
+            placeholder={`Search ${isPlayoffs ? "playoff" : "regular season"} players...`}
+          />
+        </motion.div>
+
+        {/* Category Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mb-8"
+          className="mb-8 flex justify-center"
         >
-          <div className="flex flex-wrap items-center gap-3">
-            {players.map((player: any, idx) => (
-              <motion.div
-                key={player.id}
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: idx * 0.1, type: "spring" }}
-              >
-                <div 
-                  className="flex items-center gap-3 px-6 py-3 bg-surface-dark border-2 rounded-full transition-all hover:scale-105"
-                  style={{ borderColor: player.color }}
-                >
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: player.color }}
-                  />
-                  <span className="font-ui uppercase tracking-wider text-white font-bold">
-                    {player.name}
-                  </span>
-                  {selectedPlayers.length > 1 && (
-                    <motion.button
-                      whileHover={{ scale: 1.2, rotate: 90 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => removePlayer(player.id)}
-                      className="text-white/40 hover:text-comets-red transition-colors"
-                    >
-                      <X size={16} />
-                    </motion.button>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-
-            {selectedPlayers.length < 4 && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowSearch(!showSearch)}
-                className="px-6 py-3 border-2 border-dashed border-white/20 rounded-full font-ui uppercase tracking-wider text-white/60 hover:text-white hover:border-comets-cyan/50 transition-all"
-              >
-                + Add Player
-              </motion.button>
-            )}
-          </div>
-
-          <AnimatePresence>
-            {showSearch && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-4 overflow-hidden"
-              >
-                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
-                  <input
-                    type="text"
-                    placeholder="SEARCH PLAYERS..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-black/30 border border-white/10 rounded px-4 py-2 text-white font-ui uppercase tracking-wider text-sm focus:border-comets-cyan outline-none"
-                    autoFocus
-                  />
-                  <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
-                    {availablePlayers.map((player, idx) => (
-                      <motion.button
-                        key={player.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.05 }}
-                        onClick={() => addPlayer(player.id)}
-                        className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded transition-all"
-                      >
-                        <div 
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: player.color }}
-                        />
-                        <span className="font-ui text-white uppercase tracking-wider">
-                          {player.name}
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <RetroTabs
+            tabs={tabs}
+            value={activeTab}
+            onChange={(val) => setActiveTab(val as StatCategory)}
+          />
         </motion.div>
 
-        {/* Category toggle */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex justify-center mb-12"
-        >
-          <div className="inline-flex bg-surface-dark border border-white/10 rounded-lg p-2 gap-2">
-            {STAT_CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              return (
-                <button
-                  key={cat.key}
-                  onClick={() => setCategory(cat.key as any)}
-                  className={cn(
-                    "relative px-6 py-3 font-ui uppercase tracking-widest text-sm transition-all rounded-lg flex items-center gap-2",
-                    category === cat.key ? "text-black" : "text-white/60 hover:text-white"
-                  )}
-                >
-                  {category === cat.key && (
-                    <motion.div
-                      layoutId="categoryBg"
-                      className="absolute inset-0 bg-comets-cyan rounded-lg"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <Icon className="relative z-10" size={16} />
-                  <span className="relative z-10">{cat.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Stats grid */}
+        {/* Stats Comparison Content */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={category}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="grid gap-6"
-            style={{ 
-              gridTemplateColumns: `repeat(${players.length}, minmax(0, 1fr))` 
-            }}
-          >
-            {players.map((player: any, playerIdx) => (
-              <motion.div
-                key={player.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: playerIdx * 0.1 }}
-                className="relative bg-surface-dark border-2 rounded-lg overflow-hidden"
-                style={{ borderColor: player.color }}
-              >
-                {/* Scanlines */}
-                <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
-
-                {/* Player header */}
-                <div 
-                  className="p-6 border-b"
-                  style={{ 
-                    borderColor: `${player.color}30`,
-                    backgroundColor: `${player.color}10`
+          {selectedPlayers.length >= 2 ? (
+            <motion.div
+              key={`${activeTab}-${isPlayoffs}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              {/* Section Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className="p-2 rounded-lg"
+                  style={{
+                    backgroundColor:
+                      activeTab === "batting"
+                        ? "rgba(255, 77, 77, 0.2)"
+                        : activeTab === "pitching"
+                        ? "rgba(244, 208, 63, 0.2)"
+                        : "rgba(0, 243, 255, 0.2)",
                   }}
                 >
-                  <h3 className="font-display text-3xl uppercase text-white tracking-tight mb-1">
-                    {player.name}
+                  {activeTab === "batting" && <TrendingUp className="text-comets-red" size={20} />}
+                  {activeTab === "pitching" && <Activity className="text-comets-yellow" size={20} />}
+                  {activeTab === "fielding" && <Shield className="text-comets-cyan" size={20} />}
+                </div>
+                <h2 className="font-display text-2xl uppercase text-white tracking-tight">
+                  {activeTab === "batting" && "Hitting Statistics"}
+                  {activeTab === "pitching" && "Pitching Statistics"}
+                  {activeTab === "fielding" && "Fielding & Running"}
+                </h2>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {getStatsConfig().map((stat, idx) => (
+                  <RetroComparisonBar
+                    key={stat.key}
+                    statName={stat.name}
+                    statKey={stat.label}
+                    lowerIsBetter={stat.lowerIsBetter}
+                    delay={0.1 + idx * 0.03}
+                    players={selectedPlayers.map((p) => {
+                      const categoryStats = p.stats[activeTab];
+                      const value = categoryStats[stat.key as keyof typeof categoryStats];
+                      return {
+                        id: p.id,
+                        name: p.name,
+                        color: p.color,
+                        value: value,
+                      };
+                    })}
+                    formatValue={(v) => {
+                      if (stat.isRate) return String(v);
+                      if (typeof v === "number") {
+                        return stat.key === "ip" ? v.toFixed(1) : String(v);
+                      }
+                      return String(v);
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Summary Table */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="relative bg-surface-dark border border-white/10 rounded-lg overflow-hidden mt-8"
+              >
+                <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
+
+                <div
+                  className="px-4 py-3 border-b border-white/10"
+                  style={{
+                    background:
+                      activeTab === "batting"
+                        ? "linear-gradient(90deg, rgba(255,77,77,0.2), transparent)"
+                        : activeTab === "pitching"
+                        ? "linear-gradient(90deg, rgba(244,208,63,0.2), transparent)"
+                        : "linear-gradient(90deg, rgba(0,243,255,0.2), transparent)",
+                  }}
+                >
+                  <h3 className="font-display text-lg uppercase text-white tracking-tight">
+                    Full Comparison Table
                   </h3>
-                  <div className="font-mono text-xs text-white/40 uppercase tracking-widest">
-                    {player.team}
-                  </div>
                 </div>
 
-                {/* Stats list */}
-                <div className="p-6 space-y-4">
-                  {currentCategory.stats.map((stat, statIdx) => {
-                    const value = player.stats[category][stat.key];
-                    return (
-                      <motion.div
-                        key={stat.key}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 + statIdx * 0.05 }}
-                        className="flex items-center justify-between"
-                      >
-                        <span className="font-ui text-sm uppercase tracking-widest text-white/60">
-                          {stat.label}
-                        </span>
-                        <motion.span 
-                          className="font-mono text-2xl font-bold"
-                          style={{ color: stat.color }}
-                          whileHover={{ scale: 1.1 }}
-                        >
-                          {value}
-                        </motion.span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10">
+                        <th className="px-4 py-3 text-left font-ui text-xs uppercase tracking-widest text-white/40 bg-white/5 sticky left-0">
+                          Stat
+                        </th>
+                        {selectedPlayers.map((player) => (
+                          <th
+                            key={player.id}
+                            className="px-4 py-3 text-center font-ui text-xs uppercase tracking-widest min-w-[100px]"
+                            style={{ color: player.color }}
+                          >
+                            {player.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="font-mono text-sm">
+                      {getStatsConfig().map((stat) => {
+                        const values = selectedPlayers.map((p) => {
+                          const categoryStats = p.stats[activeTab];
+                          return categoryStats[stat.key as keyof typeof categoryStats];
+                        });
 
+                        // Find best value
+                        const numericValues = values.map((v) =>
+                          typeof v === "string" ? parseFloat(v) : v
+                        );
+                        const validValues = numericValues.filter((v) => v > 0);
+                        const bestValue = validValues.length > 0
+                          ? (stat.lowerIsBetter ? Math.min(...validValues) : Math.max(...validValues))
+                          : null;
+
+                        return (
+                          <tr
+                            key={stat.key}
+                            className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                          >
+                            <td className="px-4 py-2 text-white/60 bg-white/5 sticky left-0">
+                              {stat.label}
+                              <span className="ml-2 text-white/30 text-xs hidden md:inline">
+                                {stat.name}
+                              </span>
+                            </td>
+                            {selectedPlayers.map((player, idx) => {
+                              const value = values[idx];
+                              const numValue =
+                                typeof value === "string" ? parseFloat(value) : value;
+                              const isBest = bestValue !== null && numValue === bestValue && numValue > 0;
+
+                              return (
+                                <td
+                                  key={player.id}
+                                  className={`px-4 py-2 text-center ${
+                                    isBest
+                                      ? "text-comets-cyan font-bold"
+                                      : "text-white/80"
+                                  }`}
+                                  style={
+                                    isBest
+                                      ? { textShadow: `0 0 10px ${player.color}` }
+                                      : {}
+                                  }
+                                >
+                                  {stat.key === "ip" && typeof value === "number"
+                                    ? (value as number).toFixed(1)
+                                    : (value ?? "-")}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </motion.div>
-            ))}
-          </motion.div>
+            </motion.div>
+          ) : (
+            // Empty state
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-center py-20"
+            >
+              <div className="relative inline-block">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="absolute inset-0 bg-comets-cyan/20 blur-3xl rounded-full"
+                />
+                <Users size={64} className="text-white/20 relative" />
+              </div>
+              <h3 className="mt-6 font-display text-2xl uppercase text-white/40">
+                Select Players to Compare
+              </h3>
+              <p className="mt-2 font-mono text-sm text-white/20">
+                Choose at least 2 players using the search above
+              </p>
+            </motion.div>
+          )}
         </AnimatePresence>
-
       </div>
     </main>
   );

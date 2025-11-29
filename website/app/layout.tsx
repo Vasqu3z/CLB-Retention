@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Dela_Gothic_One, Chivo, Rajdhani, Space_Mono } from "next/font/google";
+import { Dela_Gothic_One, Chivo, Barlow, Exo_2, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -10,10 +10,20 @@ import CosmicBackground from "@/components/CosmicBackground";
 import PageTransition from "@/components/animations/PageTransition";
 
 // Neon Void Theme Fonts
+// IMPORTANT: Always use font-* classes (font-display, font-heading, font-body, font-ui, font-mono)
+// Never hardcode font family names in components - use the CSS variables instead
+
 const delaGothic = Dela_Gothic_One({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-display',
+  display: 'swap',
+});
+
+const exo2 = Exo_2({
+  weight: ['400', '500', '600', '700', '800'],
+  subsets: ['latin'],
+  variable: '--font-heading',
   display: 'swap',
 });
 
@@ -23,15 +33,15 @@ const chivo = Chivo({
   display: 'swap',
 });
 
-const rajdhani = Rajdhani({
+const barlow = Barlow({
   weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-ui',
   display: 'swap',
 });
 
-const spaceMono = Space_Mono({
-  weight: ['400', '700'],
+const ibmPlexMono = IBM_Plex_Mono({
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
@@ -48,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${delaGothic.variable} ${chivo.variable} ${rajdhani.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${delaGothic.variable} ${exo2.variable} ${chivo.variable} ${barlow.variable} ${ibmPlexMono.variable}`}>
       <body className="min-h-screen flex flex-col font-body">
         <CosmicBackground />
         <SmoothScroll />

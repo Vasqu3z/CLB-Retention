@@ -66,10 +66,13 @@ const config: Config = {
         'glow-cyan': '0 0 20px rgba(0, 212, 255, 0.3)',
       },
       fontFamily: {
-        display: ["var(--font-display)", "cursive"],
-        body: ["var(--font-body)", "sans-serif"],
-        ui: ["var(--font-ui)", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
+        // Use these classes: font-display, font-heading, font-body, font-ui, font-mono
+        // Never hardcode font names like "Barlow" or "IBM Plex Mono" in components
+        display: ["var(--font-display)", "cursive"],      // Dela Gothic One - hero headers only
+        heading: ["var(--font-heading)", "sans-serif"],   // Exo 2 - section headings
+        body: ["var(--font-body)", "sans-serif"],         // Chivo - body text
+        ui: ["var(--font-ui)", "sans-serif"],             // Barlow - UI elements, labels
+        mono: ["var(--font-mono)", "monospace"],          // IBM Plex Mono - stats, tables, code
       },
       backdropBlur: {
         'glass': '10px',

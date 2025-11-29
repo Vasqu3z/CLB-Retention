@@ -59,7 +59,7 @@ export default async function TeamsPage() {
     .sort((a, b) => a.rank! - b.rank!); // Sort by standings rank
 
   return (
-    <main className="min-h-screen bg-background pb-24 pt-32 px-4 relative overflow-hidden">
+    <main className="min-h-screen pb-24 pt-32 px-4 relative overflow-hidden">
        {/* Background Decor */}
        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-comets-blue/10 to-transparent -z-10" />
        

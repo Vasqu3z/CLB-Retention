@@ -74,7 +74,7 @@ export default function PlayerProfileClient({
   const hasFieldingStats = (player.np || 0) > 0;
 
   return (
-    <main className="min-h-screen bg-background pb-24">
+    <main className="min-h-screen pb-24">
       {/* Player Hero Header */}
       <div className="relative h-[45vh] min-h-[360px] overflow-hidden flex items-end pb-12">
         <motion.div

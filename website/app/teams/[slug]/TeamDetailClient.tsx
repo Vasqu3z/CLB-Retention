@@ -127,7 +127,7 @@ export default function TeamDetailClient({
     : "0.000";
 
   return (
-    <main className="min-h-screen bg-background pb-24">
+    <main className="min-h-screen pb-24">
       {/* Team Header (Locker Room Banner) */}
       <div className="relative h-[50vh] overflow-hidden flex items-end pb-12">
         {/* Animated gradient background */}

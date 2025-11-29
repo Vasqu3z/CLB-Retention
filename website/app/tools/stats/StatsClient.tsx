@@ -155,7 +155,7 @@ export default function StatsClient({ regularPlayers, playoffPlayers }: StatsCli
   ];
 
   return (
-    <main className="min-h-screen bg-background pb-24 pt-28 px-4">
+    <main className="min-h-screen pb-24 pt-28 px-4">
       {/* Cosmic background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-1/3 right-1/4 w-[650px] h-[650px] bg-comets-cyan/10 blur-[120px] rounded-full" />

@@ -136,7 +136,7 @@ export default function HomeClient({ tickerItems }: HomeClientProps) {
   ];
 
   return (
-    <main className="bg-background text-foreground overflow-x-hidden selection:bg-comets-cyan selection:text-black">
+    <main className="text-foreground overflow-x-hidden selection:bg-comets-cyan selection:text-black">
       <HeroSection />
       <LiveTicker items={tickerItems} />
 

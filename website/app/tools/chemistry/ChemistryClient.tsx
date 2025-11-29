@@ -99,7 +99,7 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
   }, [selectedPlayers, chemistryMatrix]);
 
   return (
-    <main className="min-h-screen bg-background pb-24 pt-28 px-4">
+    <main className="min-h-screen pb-24 pt-28 px-4">
       {/* Cosmic background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-1/3 left-1/4 w-[700px] h-[700px] bg-comets-purple/10 blur-[120px] rounded-full animate-pulse-slow" />

@@ -38,7 +38,7 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
   }, {} as Record<string, Match[]>);
 
   return (
-    <main className="min-h-screen bg-background pb-24 pt-28 px-4">
+    <main className="min-h-screen pb-24 pt-28 px-4">
       <div className="container mx-auto max-w-6xl">
 
         {/* Page Header */}

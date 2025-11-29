@@ -95,7 +95,7 @@ export default function LineupBuilderClient({ players }: LineupBuilderClientProp
   };
 
   return (
-    <main className="min-h-screen bg-background pt-28 pb-12 px-4 relative overflow-hidden">
+    <main className="min-h-screen pt-28 pb-12 px-4 relative overflow-hidden">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-comets-blue/5 to-transparent pointer-events-none" />
       <div className="absolute inset-0 grid-pattern opacity-5 pointer-events-none" />

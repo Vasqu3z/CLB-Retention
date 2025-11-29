@@ -362,7 +362,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
   const columns = activeTab === "hitting" ? hittingColumns : activeTab === "pitching" ? pitchingColumns : fieldingColumns;
 
   return (
-    <main className="min-h-screen bg-background pt-28 px-4 pb-12">
+    <main className="min-h-screen pt-28 px-4 pb-12">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">

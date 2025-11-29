@@ -3,11 +3,12 @@ import { getPlayoffSchedule, getTeamRegistry, getStandings } from "@/lib/sheets"
 import PlayoffsClient from "./PlayoffsClient";
 
 export default async function PlayoffsPage() {
-  // Fetch playoff schedule, team registry, and standings for seeds
+  // Fetch playoff schedule and team registry (required)
+  // Standings is optional - used for seeds, gracefully handle if it fails
   const [playoffGames, teamRegistry, standings] = await Promise.all([
     getPlayoffSchedule(),
     getTeamRegistry(),
-    getStandings(false), // Regular season standings for playoff seeds
+    getStandings(false).catch(() => []), // Gracefully fallback to empty array
   ]);
 
   // Create team maps

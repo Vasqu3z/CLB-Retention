@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 
 export type Match = {
   id: string;
-  home: { name: string; code: string; logoColor: string; score?: number };
-  away: { name: string; code: string; logoColor: string; score?: number };
+  home: { name: string; code: string; logoColor: string; logoUrl?: string; score?: number };
+  away: { name: string; code: string; logoColor: string; logoUrl?: string; score?: number };
   date: string;
   time: string;
   isFinished: boolean;

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +9,7 @@ interface TeamInfo {
   name: string;
   code: string;
   logoColor: string;
+  logoUrl?: string;
   score?: number;
 }
 
@@ -52,17 +54,32 @@ export default function VersusCard({ home, away, date, time, isFinished }: Versu
       <div className="absolute inset-0 flex items-center justify-between px-8 z-10">
         
         {/* Home Team - slides left on hover */}
-        <motion.div 
+        <motion.div
           className="flex items-center gap-4 text-left w-1/3"
           whileHover={{ x: -5 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <motion.div 
-            className="text-4xl font-display text-white"
-            whileHover={{ scale: 1.1 }}
-          >
-            {home.code}
-          </motion.div>
+          {home.logoUrl ? (
+            <motion.div
+              className="w-12 h-12 flex items-center justify-center"
+              whileHover={{ scale: 1.1 }}
+            >
+              <Image
+                src={home.logoUrl}
+                alt={`${home.name} logo`}
+                width={48}
+                height={48}
+                className="object-contain"
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              className="text-4xl font-display text-white"
+              whileHover={{ scale: 1.1 }}
+            >
+              {home.code}
+            </motion.div>
+          )}
           <div className="hidden md:block font-ui uppercase tracking-wider text-sm text-white/60 group-hover:text-white/80 transition-colors">
             {home.name}
           </div>
@@ -132,7 +149,7 @@ export default function VersusCard({ home, away, date, time, isFinished }: Versu
         </div>
 
         {/* Away Team - slides right on hover */}
-        <motion.div 
+        <motion.div
           className="flex items-center gap-4 justify-end text-right w-1/3"
           whileHover={{ x: 5 }}
           transition={{ type: "spring", stiffness: 300 }}
@@ -140,12 +157,27 @@ export default function VersusCard({ home, away, date, time, isFinished }: Versu
           <div className="hidden md:block font-ui uppercase tracking-wider text-sm text-white/60 group-hover:text-white/80 transition-colors">
             {away.name}
           </div>
-          <motion.div 
-            className="text-4xl font-display text-white"
-            whileHover={{ scale: 1.1 }}
-          >
-            {away.code}
-          </motion.div>
+          {away.logoUrl ? (
+            <motion.div
+              className="w-12 h-12 flex items-center justify-center"
+              whileHover={{ scale: 1.1 }}
+            >
+              <Image
+                src={away.logoUrl}
+                alt={`${away.name} logo`}
+                width={48}
+                height={48}
+                className="object-contain"
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              className="text-4xl font-display text-white"
+              whileHover={{ scale: 1.1 }}
+            >
+              {away.code}
+            </motion.div>
+          )}
         </motion.div>
 
       </div>

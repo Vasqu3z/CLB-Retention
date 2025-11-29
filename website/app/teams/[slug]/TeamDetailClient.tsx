@@ -14,8 +14,8 @@ import { PlayerStats } from "@/lib/sheets";
 
 interface Matchup {
   id: string;
-  home: { name: string; code: string; logoColor: string; score?: number };
-  away: { name: string; code: string; logoColor: string; score?: number };
+  home: { name: string; code: string; logoColor: string; logoUrl?: string; score?: number };
+  away: { name: string; code: string; logoColor: string; logoUrl?: string; score?: number };
   date: string;
   time: string;
   isFinished: boolean;

@@ -55,12 +55,14 @@ export default async function SchedulePage() {
         name: game.homeTeam,
         code: homeTeam?.abbr || game.homeTeam.substring(0, 3).toUpperCase(),
         logoColor: homeTeam?.color || "#FFFFFF",
+        logoUrl: homeTeam?.emblemUrl,
         score: game.homeScore
       },
       away: {
         name: game.awayTeam,
         code: awayTeam?.abbr || game.awayTeam.substring(0, 3).toUpperCase(),
         logoColor: awayTeam?.color || "#FFFFFF",
+        logoUrl: awayTeam?.emblemUrl,
         score: game.awayScore
       },
       date: gameDate,

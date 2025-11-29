@@ -1,44 +1,40 @@
 import type { Metadata } from "next";
-import { Barlow, Syne, Azeret_Mono, JetBrains_Mono } from 'next/font/google';
+import { Dela_Gothic_One, Chivo, Rajdhani, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import SidebarMobile from "@/components/SidebarMobile";
 import SmoothScroll from "@/components/SmoothScroll";
-import AnimatedBackground from "@/components/AnimatedBackground";
+import CosmicBackground from "@/components/CosmicBackground";
 import PageTransition from "@/components/animations/PageTransition";
 
-// Optimize font loading with display: 'swap' and limited weights
-const barlow = Barlow({
-  weight: ['400', '500', '600', '700'],
+// Neon Void Theme Fonts
+const delaGothic = Dela_Gothic_One({
+  weight: '400',
   subsets: ['latin'],
+  variable: '--font-display',
   display: 'swap',
-  variable: '--font-barlow',
-  preload: true,
 });
 
-const syne = Syne({
-  weight: ['400', '600', '700', '800'],
+const chivo = Chivo({
   subsets: ['latin'],
+  variable: '--font-body',
   display: 'swap',
-  variable: '--font-syne',
-  preload: true,
 });
 
-const azeretMono = Azeret_Mono({
-  weight: ['400', '500', '600'],
+const rajdhani = Rajdhani({
+  weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin'],
+  variable: '--font-ui',
   display: 'swap',
-  variable: '--font-azeret-mono',
-  preload: true,
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  weight: ['400', '500', '600'],
+const spaceMono = Space_Mono({
+  weight: ['400', '700'],
   subsets: ['latin'],
+  variable: '--font-mono',
   display: 'swap',
-  variable: '--font-jetbrains-mono',
 });
 
 export const metadata: Metadata = {
@@ -52,9 +48,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${barlow.variable} ${syne.variable} ${azeretMono.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen flex flex-col">
-        <AnimatedBackground />
+    <html lang="en" className={`${delaGothic.variable} ${chivo.variable} ${rajdhani.variable} ${spaceMono.variable}`}>
+      <body className="min-h-screen flex flex-col font-body">
+        <CosmicBackground />
         <SmoothScroll />
         <Header />
         <div className="flex flex-1">

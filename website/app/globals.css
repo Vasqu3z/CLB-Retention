@@ -81,10 +81,10 @@
       to bottom,
       rgba(255,255,255,0),
       rgba(255,255,255,0) 50%,
-      rgba(0,0,0,0.2) 50%,
-      rgba(0,0,0,0.2)
+      rgba(0,0,0,0.35) 50%,
+      rgba(0,0,0,0.35)
     );
-    background-size: 100% 4px;
+    background-size: 100% 3px;
     pointer-events: none;
   }
 

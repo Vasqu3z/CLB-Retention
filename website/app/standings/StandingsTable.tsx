@@ -2,10 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import RetroTable from "@/components/ui/RetroTable";
 import { cn } from "@/lib/utils";
 import StatsTooltip from "@/components/ui/StatsTooltip";
 import H2HTooltip from "@/components/ui/H2HTooltip";
+
+// Clinch status types
+export type ClinchStatus = 'clinched' | 'eliminated' | null;
 
 // Data Interface
 export interface TeamStanding {
@@ -22,6 +26,7 @@ export interface TeamStanding {
   logoColor: string;
   logoUrl?: string; // Team logo URL
   h2hNote?: string; // Head-to-head record for tiebreaker context
+  clinchStatus?: ClinchStatus; // Playoff clinch/elimination status
 }
 
 interface StandingsTableProps {
@@ -30,6 +35,14 @@ interface StandingsTableProps {
 }
 
 export default function StandingsTable({ data, showAdvanced = true }: StandingsTableProps) {
+  const router = useRouter();
+
+  // Navigate to team detail page
+  const handleTeamClick = (team: TeamStanding) => {
+    // Convert team name to slug (lowercase, hyphenated)
+    const slug = team.teamName.toLowerCase().replace(/\s+/g, '-');
+    router.push(`/teams/${slug}`);
+  };
 
   const columns = [
     {
@@ -68,9 +81,22 @@ export default function StandingsTable({ data, showAdvanced = true }: StandingsT
               )}
             </div>
             <div className="flex flex-col">
-              <span className="font-bold uppercase tracking-wide text-white group-hover/row:text-comets-cyan transition-colors">
-                {item.teamName}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-bold uppercase tracking-wide text-white group-hover/row:text-comets-cyan transition-colors">
+                  {item.teamName}
+                </span>
+                {/* Playoff clinch/elimination badge */}
+                {item.clinchStatus === 'clinched' && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-500/40 rounded shadow-[0_0_8px_rgba(74,222,128,0.3)]">
+                    x
+                  </span>
+                )}
+                {item.clinchStatus === 'eliminated' && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-900/40 text-red-400 border border-red-500/40 rounded shadow-[0_0_8px_rgba(248,113,113,0.3)]">
+                    e
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] text-white/40 md:hidden">{item.teamCode}</span>
             </div>
           </div>
@@ -141,7 +167,7 @@ export default function StandingsTable({ data, showAdvanced = true }: StandingsT
        <RetroTable
           data={data}
           columns={columns}
-          onRowClick={(item) => console.log(`Clicked ${item.teamName}`)}
+          onRowClick={handleTeamClick}
           showAdvanced={showAdvanced}
        />
     </div>

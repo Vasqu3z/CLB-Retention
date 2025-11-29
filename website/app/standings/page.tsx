@@ -1,7 +1,10 @@
 import React from "react";
 import StandingsClient from "./StandingsClient";
-import { TeamStanding } from "./StandingsTable";
+import { TeamStanding, ClinchStatus } from "./StandingsTable";
 import { getStandings, getTeamRegistry, getSchedule } from "@/lib/sheets";
+
+// Configuration
+const PLAYOFF_SPOTS = 4; // Top 4 teams make playoffs
 
 // Helper function to calculate streak from schedule
 function calculateStreak(teamName: string, schedule: any[]): string {
@@ -44,6 +47,73 @@ function calculateGB(wins: number, losses: number, leaderWins: number, leaderLos
   return gb.toFixed(1);
 }
 
+// Helper function to calculate clinch/elimination status
+function calculateClinchStatus(
+  teamName: string,
+  standings: { team: string; wins: number; losses: number }[],
+  schedule: { homeTeam: string; awayTeam: string; played: boolean }[]
+): ClinchStatus {
+  // Find this team's position in standings
+  const teamIndex = standings.findIndex(s => s.team === teamName);
+  if (teamIndex === -1) return null;
+
+  const team = standings[teamIndex];
+  const gamesPlayed = team.wins + team.losses;
+
+  // Count remaining games for this team
+  const remainingGames = schedule.filter(
+    g => !g.played && (g.homeTeam === teamName || g.awayTeam === teamName)
+  ).length;
+
+  // If season is over, clinch status is determined by final rank
+  if (remainingGames === 0) {
+    return teamIndex < PLAYOFF_SPOTS ? 'clinched' : 'eliminated';
+  }
+
+  // Get the team currently in the last playoff spot
+  const lastPlayoffTeam = standings[PLAYOFF_SPOTS - 1];
+  if (!lastPlayoffTeam) return null;
+
+  // Get the team in first position outside playoffs (5th place)
+  const firstOutTeam = standings[PLAYOFF_SPOTS];
+
+  // Check if team has clinched:
+  // Team clinches if even losing all remaining games, they'd still be ahead of 5th place
+  // who wins all their remaining games
+  if (firstOutTeam) {
+    const firstOutRemainingGames = schedule.filter(
+      g => !g.played && (g.homeTeam === firstOutTeam.team || g.awayTeam === firstOutTeam.team)
+    ).length;
+
+    const teamWorstCase = team.wins; // Current wins (lose all remaining)
+    const firstOutBestCase = firstOutTeam.wins + firstOutRemainingGames; // Win all remaining
+
+    // If team's worst case is still better than 5th place's best case, clinched
+    if (teamWorstCase > firstOutBestCase) {
+      return 'clinched';
+    }
+  }
+
+  // Check if team is eliminated:
+  // Team is eliminated if even winning all remaining games, they can't catch 4th place
+  // who loses all their remaining games
+  if (lastPlayoffTeam) {
+    const lastPlayoffRemainingGames = schedule.filter(
+      g => !g.played && (g.homeTeam === lastPlayoffTeam.team || g.awayTeam === lastPlayoffTeam.team)
+    ).length;
+
+    const teamBestCase = team.wins + remainingGames; // Current wins + win all remaining
+    const lastPlayoffWorstCase = lastPlayoffTeam.wins; // Current wins (lose all remaining)
+
+    // If team's best case can't reach 4th place's worst case, eliminated
+    if (teamBestCase < lastPlayoffWorstCase) {
+      return 'eliminated';
+    }
+  }
+
+  return null; // Neither clinched nor eliminated yet
+}
+
 export default async function StandingsPage() {
   // Fetch data from Google Sheets (regular season only)
   const [standingsData, teamRegistry, schedule] = await Promise.all([
@@ -81,7 +151,8 @@ export default async function StandingsPage() {
       runDiff: row.runDiff,
       logoColor: teamInfo?.color || "#FFFFFF",
       logoUrl: teamInfo?.emblemUrl, // Use emblem (smaller icon) for standings table
-      h2hNote: row.h2hNote // Head-to-head record for tiebreaker context
+      h2hNote: row.h2hNote, // Head-to-head record for tiebreaker context
+      clinchStatus: calculateClinchStatus(row.team, standingsData, schedule)
     };
   });
 

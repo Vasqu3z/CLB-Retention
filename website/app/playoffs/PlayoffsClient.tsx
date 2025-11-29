@@ -37,7 +37,7 @@ interface PlayoffsClientProps {
 
 export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientProps) {
   return (
-    <main className="min-h-screen bg-background pb-24 pt-32 px-4">
+    <main className="min-h-screen bg-background pb-24 pt-28 px-4">
       {/* Cosmic background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-1/4 left-1/3 w-[600px] h-[600px] bg-comets-yellow/10 blur-[120px] rounded-full animate-pulse-slow" />
@@ -71,54 +71,133 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
         </motion.div>
 
         {/* Bracket */}
-        <div className="space-y-12">
-          {/* Semifinals */}
-          {semifinals.length > 0 && (
-            <div>
-              <h2 className="font-display text-3xl uppercase text-white mb-6 flex items-center gap-3">
-                <Swords className="text-comets-cyan" size={32} />
-                Semifinals
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {semifinals.map((series, idx) => (
-                  <MatchupCard key={series.id} series={series} roundName="Semifinal" delay={idx * 0.1} />
+        {semifinals.length > 0 || finals ? (
+          <div className="relative">
+            {/* Bracket Layout with Connector Lines */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-0 items-center">
+              {/* Left Column - Semifinals */}
+              <div className="space-y-6 lg:pr-8">
+                <h2 className="font-display text-2xl uppercase text-white mb-4 flex items-center gap-3">
+                  <Swords className="text-comets-cyan" size={24} />
+                  Semifinals
+                </h2>
+                {semifinals.slice(0, 1).map((series, idx) => (
+                  <MatchupCard key={series.id} series={series} roundName="SF 1" delay={idx * 0.1} />
+                ))}
+                {/* Spacer for vertical alignment with connector */}
+                <div className="hidden lg:block h-16" />
+                {semifinals.slice(1, 2).map((series, idx) => (
+                  <MatchupCard key={series.id} series={series} roundName="SF 2" delay={(idx + 1) * 0.1} />
                 ))}
               </div>
-            </div>
-          )}
 
-          {/* Finals */}
-          {finals && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <h2 className="font-display text-3xl uppercase text-white mb-6 flex items-center gap-3">
-                <Crown className="text-comets-yellow" size={32} />
-                Star Cup Finals
-              </h2>
-              <div className="max-w-2xl mx-auto">
-                <MatchupCard series={finals} roundName="Finals" />
+              {/* Center Column - Connector Lines (desktop only) */}
+              <div className="hidden lg:flex flex-col items-center justify-center py-8 relative">
+                {/* SVG Connector Lines */}
+                <svg
+                  className="w-24 h-[400px]"
+                  viewBox="0 0 96 400"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Top connector - from SF1 to Finals */}
+                  <motion.path
+                    d="M0 80 H32 Q48 80 48 96 V184 Q48 200 64 200 H96"
+                    stroke="url(#bracketGradient)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    fill="none"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                  />
+                  {/* Bottom connector - from SF2 to Finals */}
+                  <motion.path
+                    d="M0 320 H32 Q48 320 48 304 V216 Q48 200 64 200 H96"
+                    stroke="url(#bracketGradient)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    fill="none"
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+                  />
+                  {/* Gradient definition */}
+                  <defs>
+                    <linearGradient id="bracketGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#00F3FF" stopOpacity="0.3" />
+                      <stop offset="50%" stopColor="#00F3FF" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#F4D03F" stopOpacity="1" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                {/* Glow effect at center */}
+                <motion.div
+                  className="absolute w-4 h-4 rounded-full bg-comets-yellow"
+                  style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
+                  animate={{
+                    boxShadow: [
+                      '0 0 10px rgba(244,208,63,0.5)',
+                      '0 0 25px rgba(244,208,63,0.8)',
+                      '0 0 10px rgba(244,208,63,0.5)'
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
               </div>
-            </motion.div>
-          )}
 
-          {!semifinals.length && !finals && (
-            <div className="text-center py-20">
-              <Trophy className="mx-auto mb-4 text-white/20" size={64} />
-              <p className="text-white/40 font-mono uppercase text-sm">
-                No playoff data available yet
-              </p>
+              {/* Right Column - Finals */}
+              <div className="lg:pl-8 flex items-center">
+                {finals ? (
+                  <motion.div
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="w-full"
+                  >
+                    <h2 className="font-display text-2xl uppercase text-white mb-4 flex items-center gap-3">
+                      <Crown className="text-comets-yellow" size={24} />
+                      Star Cup Finals
+                    </h2>
+                    <MatchupCard series={finals} roundName="Finals" isFinals />
+                  </motion.div>
+                ) : (
+                  <div className="w-full bg-surface-dark/50 border-2 border-dashed border-white/20 rounded-lg p-8 text-center">
+                    <Crown className="mx-auto mb-2 text-comets-yellow/30" size={32} />
+                    <p className="font-mono text-xs text-white/30 uppercase tracking-wider">
+                      Awaiting Semifinal Winners
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Mobile Connector Arrow (visible on small screens) */}
+            <div className="lg:hidden flex justify-center my-6">
+              <motion.div
+                className="flex flex-col items-center text-comets-cyan/50"
+                animate={{ y: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                <div className="w-0.5 h-8 bg-gradient-to-b from-comets-cyan/50 to-comets-yellow/50" />
+                <ChevronDown size={20} />
+              </motion.div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <Trophy className="mx-auto mb-4 text-white/20" size={64} />
+            <p className="text-white/40 font-mono uppercase text-sm">
+              No playoff data available yet
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );
 }
 
-function MatchupCard({ series, roundName, delay = 0 }: { series: Series; roundName: string; delay?: number }) {
+function MatchupCard({ series, roundName, delay = 0, isFinals = false }: { series: Series; roundName: string; delay?: number; isFinals?: boolean }) {
   const [showGames, setShowGames] = useState(false);
 
   return (
@@ -129,7 +208,12 @@ function MatchupCard({ series, roundName, delay = 0 }: { series: Series; roundNa
       className="relative group"
     >
       <div
-        className="relative bg-surface-dark border-2 border-white/10 rounded-lg overflow-hidden hover:border-comets-cyan/50 transition-all duration-300 cursor-pointer"
+        className={cn(
+          "relative bg-surface-dark border-2 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer",
+          isFinals
+            ? "border-comets-yellow/30 hover:border-comets-yellow/70 shadow-[0_0_30px_rgba(244,208,63,0.15)]"
+            : "border-white/10 hover:border-comets-cyan/50"
+        )}
         onClick={() => setShowGames(!showGames)}
       >
         {/* Scanlines */}

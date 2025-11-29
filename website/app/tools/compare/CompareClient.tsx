@@ -50,7 +50,7 @@ export default function CompareClient({ players }: CompareClientProps) {
   };
 
   return (
-    <main className="min-h-screen bg-background pt-20 relative flex flex-col overflow-hidden">
+    <main className="min-h-screen bg-background pt-28 relative flex flex-col overflow-hidden">
       {/* Tool Header Floating */}
       <motion.div
         className="absolute top-24 left-0 right-0 z-20 text-center pointer-events-none"

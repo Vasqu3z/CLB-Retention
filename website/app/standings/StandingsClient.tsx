@@ -13,7 +13,7 @@ export default function StandingsClient({ data }: StandingsClientProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
-    <main className="min-h-screen bg-background pb-24 pt-32 px-4">
+    <main className="min-h-screen bg-background pb-24 pt-28 px-4">
       <div className="container mx-auto max-w-5xl">
 
         {/* Page Header */}
@@ -42,12 +42,21 @@ export default function StandingsClient({ data }: StandingsClientProps) {
             Win Percentage &gt; Head-to-Head &gt; Run Differential
           </div>
           <div>
-            <span className="text-comets-cyan block mb-1 font-bold">PLAYOFF CLINCH</span>
-            Top 4 teams advance to the Star Cup Semifinals.
+            <span className="text-comets-cyan block mb-1 font-bold">PLAYOFF STATUS</span>
+            <div className="flex items-center gap-4 mt-1">
+              <div className="flex items-center gap-1.5">
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-green-900/40 text-green-400 border border-green-500/40 rounded">x</span>
+                <span>Clinched</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-900/40 text-red-400 border border-red-500/40 rounded">e</span>
+                <span>Eliminated</span>
+              </div>
+            </div>
           </div>
           <div className="md:text-right">
-            <span className="text-white/50 block mb-1 font-bold">LAST UPDATED</span>
-            2025-05-12 14:30 EST
+            <span className="text-white/50 block mb-1 font-bold">TOP 4 QUALIFY</span>
+            Star Cup Semifinals
           </div>
         </div>
 

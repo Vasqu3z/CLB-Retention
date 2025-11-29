@@ -2,10 +2,11 @@
 
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import RetroTable from "@/components/ui/RetroTable";
-import { Search, SlidersHorizontal, X, TrendingUp, Filter, Target, Flame, Shield } from "lucide-react";
+import { Search, SlidersHorizontal, X, TrendingUp, Filter, Target, Flame, Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn, playerNameToSlug } from "@/lib/utils";
 import { SeasonToggle, StatsToggle } from "@/components/ui/RetroSegmentedControl";
 import RetroEmptyState from "@/components/ui/RetroEmptyState";
 import StatsTooltip from "@/components/ui/StatsTooltip";
@@ -19,15 +20,29 @@ interface PlayersClientProps {
   playoffPlayers: PlayerStats[];
 }
 
-const TEAMS = ["All Teams", "Fireballs", "Monsters", "Monarchs", "Eggs", "Muscles", "Knights", "Wilds"];
-
 export default function PlayersClient({ regularPlayers, playoffPlayers }: PlayersClientProps) {
+  // Get unique team names from actual player data
+  const TEAMS = useMemo(() => {
+    const uniqueTeams = new Set<string>();
+    [...regularPlayers, ...playoffPlayers].forEach(p => {
+      if (p.team) uniqueTeams.add(p.team);
+    });
+    return ["All Teams", ...Array.from(uniqueTeams).sort()];
+  }, [regularPlayers, playoffPlayers]);
+  const router = useRouter();
   const [isPlayoffs, setIsPlayoffs] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("hitting");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTeam, setSelectedTeam] = useState("All Teams");
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 25;
+
+  // Navigate to player detail page
+  const handlePlayerClick = (player: PlayerStats) => {
+    router.push(`/players/${playerNameToSlug(player.name)}`);
+  };
 
   // Use appropriate data based on toggle
   const players = isPlayoffs ? playoffPlayers : regularPlayers;
@@ -54,8 +69,8 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
     return result;
   }, [players, searchQuery, selectedTeam]);
 
-  // Filter by category
-  const displayPlayers = useMemo(() => {
+  // Filter by category (all players, for total count)
+  const allFilteredPlayers = useMemo(() => {
     let filtered: PlayerStats[];
     if (activeTab === "hitting") {
       filtered = filteredPlayers.filter((p) => p.ab && p.ab > 0);
@@ -70,6 +85,18 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
     return filtered.map((p, idx) => ({ ...p, id: `${p.name}-${idx}` }));
   }, [filteredPlayers, activeTab]);
 
+  // Paginated players for display
+  const totalPages = Math.ceil(allFilteredPlayers.length / ITEMS_PER_PAGE);
+  const displayPlayers = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return allFilteredPlayers.slice(start, start + ITEMS_PER_PAGE);
+  }, [allFilteredPlayers, currentPage, ITEMS_PER_PAGE]);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedTeam, activeTab, isPlayoffs]);
+
   const hasActiveFilters = selectedTeam !== "All Teams" || searchQuery.trim() !== "";
 
   const clearFilters = () => {
@@ -77,8 +104,9 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
     setSearchQuery("");
   };
 
-  // Define columns based on active tab - MINIMAL columns to avoid horizontal scroll
-  // Key stats only: Player, Team, and 3-4 most important stats per category
+  // Define columns based on active tab
+  // Default shows: Player, Team, GP, AB, H, HR, RBI, AVG, SLG, OPS (10 columns)
+  // Advanced adds: DP, ROB, OBP (niche stats)
   const hittingColumns = [
     {
       header: "Player",
@@ -108,10 +136,17 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       ),
     },
     { header: "Team", accessorKey: "team" as const, className: "text-white/60 hidden md:table-cell", sortable: true },
+    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-center text-xs", sortable: true },
     {
-      header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>,
-      accessorKey: "avg" as const,
-      className: "text-comets-cyan font-mono font-bold text-center",
+      header: <StatsTooltip stat="AB" context="batting">AB</StatsTooltip>,
+      accessorKey: "ab" as const,
+      className: "text-white/70 font-mono text-center",
+      sortable: true,
+    },
+    {
+      header: <StatsTooltip stat="H" context="batting">H</StatsTooltip>,
+      accessorKey: "h" as const,
+      className: "text-white/90 font-mono text-center",
       sortable: true,
     },
     {
@@ -126,26 +161,26 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       className: "text-white/90 font-mono text-center",
       sortable: true,
     },
+    // Advanced stats - hidden by default (niche stats)
     {
-      header: <StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>,
-      accessorKey: "ops" as const,
-      className: "text-comets-yellow font-mono font-bold text-center",
-      sortable: true,
-    },
-    // Advanced stats - hidden by default
-    {
-      header: <StatsTooltip stat="H" context="batting">H</StatsTooltip>,
-      accessorKey: "h" as const,
-      className: "text-white/90 font-mono text-center",
+      header: <StatsTooltip stat="DP" context="batting">DP</StatsTooltip>,
+      accessorKey: "dp" as const,
+      className: "text-white/70 font-mono text-center text-sm",
       sortable: true,
       condensed: true,
     },
     {
-      header: <StatsTooltip stat="AB" context="batting">AB</StatsTooltip>,
-      accessorKey: "ab" as const,
-      className: "text-white/70 font-mono text-center",
+      header: <StatsTooltip stat="ROB" context="fielding">ROB</StatsTooltip>,
+      accessorKey: "rob" as const,
+      className: "text-white/70 font-mono text-center text-sm",
       sortable: true,
       condensed: true,
+    },
+    {
+      header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>,
+      accessorKey: "avg" as const,
+      className: "text-comets-cyan font-mono font-bold text-center",
+      sortable: true,
     },
     {
       header: <StatsTooltip stat="OBP" context="batting">OBP</StatsTooltip>,
@@ -159,10 +194,17 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       accessorKey: "slg" as const,
       className: "text-comets-cyan font-mono text-center",
       sortable: true,
-      condensed: true,
+    },
+    {
+      header: <StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>,
+      accessorKey: "ops" as const,
+      className: "text-comets-yellow font-mono font-bold text-center",
+      sortable: true,
     },
   ];
 
+  // Default shows: Player, Team, GP, IP, H, HR, ERA, WHIP, BAA (9 columns)
+  // Advanced adds: W, L, SV (record stats)
   const pitchingColumns = [
     {
       header: "Player",
@@ -192,42 +234,32 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       ),
     },
     { header: "Team", accessorKey: "team" as const, className: "text-white/60 hidden md:table-cell", sortable: true },
-    {
-      header: <StatsTooltip stat="ERA" context="pitching">ERA</StatsTooltip>,
-      accessorKey: "era" as const,
-      className: "text-comets-cyan font-mono font-bold text-center",
-      sortable: true,
-    },
+    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-center text-xs", sortable: true },
     {
       header: <StatsTooltip stat="IP" context="pitching">IP</StatsTooltip>,
       accessorKey: "ip" as const,
       className: "text-white/90 font-mono text-center",
       sortable: true,
     },
+    // Advanced stats - hidden by default (record stats)
     {
       header: <StatsTooltip stat="W" context="pitching">W</StatsTooltip>,
       accessorKey: "w" as const,
-      className: "text-green-400 font-mono font-bold text-center",
+      className: "text-green-400 font-mono text-center text-sm",
       sortable: true,
+      condensed: true,
     },
-    {
-      header: <StatsTooltip stat="WHIP" context="pitching">WHIP</StatsTooltip>,
-      accessorKey: "whip" as const,
-      className: "text-comets-yellow font-mono font-bold text-center",
-      sortable: true,
-    },
-    // Advanced stats - hidden by default
     {
       header: <StatsTooltip stat="L" context="pitching">L</StatsTooltip>,
       accessorKey: "l" as const,
-      className: "text-red-400 font-mono text-center",
+      className: "text-red-400 font-mono text-center text-sm",
       sortable: true,
       condensed: true,
     },
     {
       header: <StatsTooltip stat="SV" context="pitching">SV</StatsTooltip>,
       accessorKey: "sv" as const,
-      className: "text-comets-yellow font-mono text-center",
+      className: "text-comets-yellow font-mono text-center text-sm",
       sortable: true,
       condensed: true,
     },
@@ -236,17 +268,35 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       accessorKey: "hAllowed" as const,
       className: "text-white/90 font-mono text-center",
       sortable: true,
-      condensed: true,
+    },
+    {
+      header: <StatsTooltip stat="HR" context="pitching">HR</StatsTooltip>,
+      accessorKey: "hrAllowed" as const,
+      className: "text-white/90 font-mono text-center",
+      sortable: true,
+    },
+    {
+      header: <StatsTooltip stat="ERA" context="pitching">ERA</StatsTooltip>,
+      accessorKey: "era" as const,
+      className: "text-comets-cyan font-mono font-bold text-center",
+      sortable: true,
+    },
+    {
+      header: <StatsTooltip stat="WHIP" context="pitching">WHIP</StatsTooltip>,
+      accessorKey: "whip" as const,
+      className: "text-comets-cyan font-mono text-center",
+      sortable: true,
     },
     {
       header: <StatsTooltip stat="BAA" context="pitching">BAA</StatsTooltip>,
       accessorKey: "baa" as const,
       className: "text-comets-cyan font-mono text-center",
       sortable: true,
-      condensed: true,
     },
   ];
 
+  // Default shows: Player, Team, GP, NP, E, SB, CS, OAA (8 columns)
+  // Fielding has fewer stats, no condensed columns needed
   const fieldingColumns = [
     {
       header: "Player",
@@ -276,6 +326,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       ),
     },
     { header: "Team", accessorKey: "team" as const, className: "text-white/60 hidden md:table-cell", sortable: true },
+    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-center text-xs", sortable: true },
     {
       header: <StatsTooltip stat="NP" context="fielding">NP</StatsTooltip>,
       accessorKey: "np" as const,
@@ -289,38 +340,29 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
       sortable: true,
     },
     {
-      header: <StatsTooltip stat="OAA" context="fielding">OAA</StatsTooltip>,
-      accessorKey: "oaa" as const,
-      className: "text-comets-purple font-mono font-bold text-center",
-      sortable: true,
-    },
-    {
       header: <StatsTooltip stat="SB" context="batting">SB</StatsTooltip>,
       accessorKey: "sb" as const,
       className: "text-comets-yellow font-mono text-center",
       sortable: true,
     },
-    // Advanced stats - hidden by default
     {
       header: <StatsTooltip stat="CS" context="fielding">CS</StatsTooltip>,
       accessorKey: "cs" as const,
       className: "text-white/90 font-mono text-center",
       sortable: true,
-      condensed: true,
     },
     {
-      header: <StatsTooltip stat="GP">GP</StatsTooltip>,
-      accessorKey: "gp" as const,
-      className: "text-white/40 text-center",
+      header: <StatsTooltip stat="OAA" context="fielding">OAA</StatsTooltip>,
+      accessorKey: "oaa" as const,
+      className: "text-comets-purple font-mono font-bold text-center",
       sortable: true,
-      condensed: true,
     },
   ];
 
   const columns = activeTab === "hitting" ? hittingColumns : activeTab === "pitching" ? pitchingColumns : fieldingColumns;
 
   return (
-    <main className="min-h-screen bg-background pt-24 px-4 pb-12">
+    <main className="min-h-screen bg-background pt-28 px-4 pb-12">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
@@ -339,7 +381,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
             >
               <TrendingUp size={12} className="text-comets-cyan" />
               <span className="text-xs font-mono text-white/60">
-                {displayPlayers.length} {displayPlayers.length === 1 ? "Player" : "Players"}
+                {allFilteredPlayers.length} {allFilteredPlayers.length === 1 ? "Player" : "Players"}
               </span>
             </motion.div>
           </div>
@@ -489,7 +531,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
         <RetroTable
           data={displayPlayers}
           columns={columns}
-          onRowClick={(p) => console.log("View Player", p.name)}
+          onRowClick={handlePlayerClick}
           showAdvanced={showAdvanced}
         />
 
@@ -510,12 +552,77 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
           />
         )}
 
-        {/* Pagination Info */}
-        {displayPlayers.length > 0 && (
-          <div className="mt-8 flex justify-center gap-2 font-mono text-xs text-white/40">
-            <span>
-              PAGE 1 OF {Math.ceil(displayPlayers.length / 10)}
-            </span>
+        {/* Pagination Controls */}
+        {allFilteredPlayers.length > 0 && totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center gap-4">
+            <motion.button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className={cn(
+                "p-2 rounded border transition-all focus-arcade",
+                currentPage === 1
+                  ? "border-white/10 text-white/20 cursor-not-allowed"
+                  : "border-white/20 text-white/60 hover:border-comets-cyan hover:text-comets-cyan"
+              )}
+              whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+              whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+            >
+              <ChevronLeft size={18} />
+            </motion.button>
+
+            <div className="flex items-center gap-2 font-mono text-sm">
+              {/* Page numbers */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <motion.button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={cn(
+                      "w-8 h-8 rounded border transition-all focus-arcade",
+                      currentPage === pageNum
+                        ? "border-comets-cyan bg-comets-cyan/20 text-comets-cyan"
+                        : "border-white/10 text-white/40 hover:border-white/30 hover:text-white"
+                    )}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {pageNum}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            <motion.button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className={cn(
+                "p-2 rounded border transition-all focus-arcade",
+                currentPage === totalPages
+                  ? "border-white/10 text-white/20 cursor-not-allowed"
+                  : "border-white/20 text-white/60 hover:border-comets-cyan hover:text-comets-cyan"
+              )}
+              whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+              whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+            >
+              <ChevronRight size={18} />
+            </motion.button>
+          </div>
+        )}
+
+        {/* Results count */}
+        {allFilteredPlayers.length > 0 && (
+          <div className="mt-4 text-center font-mono text-xs text-white/30">
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, allFilteredPlayers.length)} of {allFilteredPlayers.length} players
           </div>
         )}
       </div>

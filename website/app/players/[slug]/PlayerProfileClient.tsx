@@ -235,6 +235,7 @@ export default function PlayerProfileClient({
                 color="#FF4D4D"
                 icon={Zap}
                 detail={attributes.starPitch}
+                delay={0}
               />
               <AttributeBar
                 name="Batting"
@@ -242,18 +243,21 @@ export default function PlayerProfileClient({
                 color="#00F3FF"
                 icon={Target}
                 detail={attributes.starSwing}
+                delay={0.1}
               />
               <AttributeBar
                 name="Fielding"
                 value={attributes.fieldingOverall}
                 color="#2ECC71"
                 icon={Shield}
+                delay={0.2}
               />
               <AttributeBar
                 name="Speed"
                 value={attributes.speedOverall}
                 color="#F4D03F"
                 icon={Activity}
+                delay={0.3}
               />
             </motion.div>
           )}
@@ -353,40 +357,134 @@ function AttributeBar({
   color,
   icon: Icon,
   detail,
+  delay = 0,
 }: {
   name: string;
   value: number;
   color: string;
   icon: any;
   detail?: string;
+  delay?: number;
 }) {
+  // Determine tier for styling
+  const tier = value >= 80 ? 'elite' : value >= 60 ? 'good' : value >= 40 ? 'average' : 'low';
+
   return (
-    <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
+    <motion.div
+      className="bg-surface-dark border border-white/10 rounded-lg p-6 relative overflow-hidden group"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+    >
+      {/* Scanlines */}
+      <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
+
+      {/* Glow effect for high stats */}
+      {tier === 'elite' && (
+        <motion.div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at 50% 100%, ${color}15, transparent 70%)`,
+          }}
+        />
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}20` }}>
+          <motion.div
+            className="p-2 rounded-lg relative"
+            style={{ backgroundColor: `${color}20` }}
+            whileHover={{ scale: 1.1 }}
+            animate={tier === 'elite' ? {
+              boxShadow: [`0 0 10px ${color}40`, `0 0 20px ${color}60`, `0 0 10px ${color}40`]
+            } : {}}
+            transition={tier === 'elite' ? { duration: 2, repeat: Infinity } : {}}
+          >
             <Icon style={{ color }} size={20} />
-          </div>
+          </motion.div>
           <h3 className="font-display text-xl uppercase text-white">{name}</h3>
         </div>
-        <span className="font-mono font-bold text-2xl" style={{ color }}>
+        <motion.span
+          className="font-mono font-bold text-2xl relative"
+          style={{ color }}
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: delay + 0.5, type: "spring", stiffness: 300 }}
+        >
           {value}
-        </span>
+          {tier === 'elite' && (
+            <motion.span
+              className="absolute -top-1 -right-2 text-xs text-comets-yellow"
+              initial={{ scale: 0, rotate: -45 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: delay + 0.8, type: "spring" }}
+            >
+              ★
+            </motion.span>
+          )}
+        </motion.span>
       </div>
+
       <div className="relative h-4 bg-white/5 rounded-full overflow-hidden">
+        {/* Background grid pattern */}
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage: 'linear-gradient(90deg, transparent 0%, transparent 9%, rgba(255,255,255,0.1) 10%, transparent 11%)',
+          backgroundSize: '10% 100%',
+        }} />
+
+        {/* Animated fill bar */}
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${value}%` }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="h-full rounded-full"
-          style={{ backgroundColor: color }}
-        />
-      </div>
-      {detail && (
-        <div className="mt-2 text-sm font-mono text-white/60 uppercase">
-          Special: {detail}
+          transition={{
+            delay: delay + 0.3,
+            duration: 0.8,
+            ease: [0.34, 1.56, 0.64, 1] // Bounce effect
+          }}
+          className="h-full rounded-full relative"
+          style={{
+            backgroundColor: color,
+            boxShadow: `0 0 15px ${color}60, inset 0 1px 0 rgba(255,255,255,0.3)`,
+          }}
+        >
+          {/* Shimmer effect */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{
+              delay: delay + 1,
+              duration: 1.5,
+              repeat: Infinity,
+              repeatDelay: 3,
+            }}
+          />
+        </motion.div>
+
+        {/* Notch markers at 25%, 50%, 75% */}
+        <div className="absolute inset-0 flex justify-between pointer-events-none px-[25%]">
+          {[25, 50, 75].map((mark) => (
+            <div
+              key={mark}
+              className="w-0.5 h-full bg-white/10"
+              style={{ marginLeft: mark === 25 ? 0 : `${25}%` }}
+            />
+          ))}
         </div>
+      </div>
+
+      {detail && (
+        <motion.div
+          className="mt-3 text-sm font-mono uppercase flex items-center gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: delay + 0.6 }}
+        >
+          <span className="text-white/40">Special:</span>
+          <span className="text-white/80 px-2 py-0.5 bg-white/5 rounded border border-white/10">
+            {detail}
+          </span>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

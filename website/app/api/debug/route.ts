@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getPlayerRegistry, getTeamRegistry, getStandings } from '@/lib/sheets';
+import { getPlayerRegistry, getTeamRegistry, getStandings, getPlayoffSchedule } from '@/lib/sheets';
 
 export async function GET() {
   try {
-    const [playerRegistry, teamRegistry, standings] = await Promise.all([
+    const [playerRegistry, teamRegistry, standings, playoffSchedule] = await Promise.all([
       getPlayerRegistry(),
       getTeamRegistry(),
-      getStandings(false)
+      getStandings(false),
+      getPlayoffSchedule()
     ]);
 
     // Sample a few entries to check data
@@ -46,6 +47,19 @@ export async function GET() {
           team: s.team,
           h2hNote: s.h2hNote,
           hasH2H: !!s.h2hNote && s.h2hNote.trim() !== ''
+        }))
+      },
+      playoffSchedule: {
+        total: playoffSchedule.length,
+        sample: playoffSchedule[0] || null,
+        allGames: playoffSchedule.map(g => ({
+          code: g.code,
+          homeTeam: g.homeTeam,
+          awayTeam: g.awayTeam,
+          played: g.played,
+          winner: g.winner,
+          homeScore: g.homeScore,
+          awayScore: g.awayScore
         }))
       }
     });

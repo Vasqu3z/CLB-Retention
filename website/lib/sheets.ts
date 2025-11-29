@@ -44,12 +44,17 @@ try {
   parsedGoogleCredentials = undefined;
 }
 
-const googleAuth = new google.auth.GoogleAuth({
-  credentials: parsedGoogleCredentials,
-  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-});
+// Check if Google Sheets credentials are configured
+const hasCredentials = !!parsedGoogleCredentials && !!process.env.SHEETS_SPREADSHEET_ID;
 
-type SheetsAuthClient = Awaited<ReturnType<typeof googleAuth.getClient>>;
+const googleAuth = hasCredentials
+  ? new google.auth.GoogleAuth({
+      credentials: parsedGoogleCredentials,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    })
+  : null;
+
+type SheetsAuthClient = Awaited<ReturnType<NonNullable<typeof googleAuth>['getClient']>>;
 
 const DEFAULT_SHEET_REVALIDATE_SECONDS = 60;
 const LOW_CHURN_SHEET_REVALIDATE_SECONDS = 300;
@@ -59,6 +64,9 @@ let authClientPromise: Promise<SheetsAuthClient> | null = null;
 
 // Initialize Google Sheets API client
 async function getAuthClient(): Promise<SheetsAuthClient> {
+  if (!googleAuth) {
+    throw new Error('Google Sheets credentials not configured');
+  }
   if (!authClientPromise) {
     authClientPromise = googleAuth.getClient();
   }
@@ -68,6 +76,11 @@ async function getAuthClient(): Promise<SheetsAuthClient> {
 
 // Generic function to read data from a sheet range (uncached)
 async function getSheetDataUncached(range: string, spreadsheetId?: string): Promise<any[][]> {
+  // Return empty array if credentials not configured (allows build to succeed)
+  if (!hasCredentials) {
+    return [];
+  }
+
   try {
     const auth = await getAuthClient();
     const sheetId = spreadsheetId || process.env.SHEETS_SPREADSHEET_ID;
@@ -185,6 +198,11 @@ export async function getStandings(isPlayoffs: boolean = false): Promise<Standin
 }
 
 async function fetchStandingsNotes(sheetName: string): Promise<string[]> {
+  // Return empty array if credentials not configured
+  if (!hasCredentials) {
+    return [];
+  }
+
   try {
     const sheetId = process.env.SHEETS_SPREADSHEET_ID;
     if (!sheetId) {

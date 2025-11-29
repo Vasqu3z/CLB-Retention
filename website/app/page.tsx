@@ -18,9 +18,9 @@ const mainNavCards = [
     title: "Standings",
     description: "Current season rankings",
     icon: Trophy,
-    gradient: "from-field-green/30 via-nebula-teal/20 to-transparent",
-    borderColor: "border-field-green/60",
-    iconColor: "text-field-green",
+    gradient: "from-comets-cyan/20 via-comets-cyan/10 to-transparent",
+    borderColor: "border-comets-cyan/50",
+    iconColor: "text-comets-cyan",
     size: "large" as const,
   },
   {
@@ -28,9 +28,9 @@ const mainNavCards = [
     title: "Leaders",
     description: "Top performers",
     icon: TrendingUp,
-    gradient: "from-solar-gold/25 via-comet-yellow/15 to-transparent",
-    borderColor: "border-solar-gold/60",
-    iconColor: "text-solar-gold",
+    gradient: "from-comets-yellow/20 via-comets-yellow/10 to-transparent",
+    borderColor: "border-comets-yellow/50",
+    iconColor: "text-comets-yellow",
     size: "medium" as const,
   },
   {
@@ -38,9 +38,9 @@ const mainNavCards = [
     title: "Schedule",
     description: "Games & results",
     icon: Calendar,
-    gradient: "from-cosmic-purple/25 via-deep-violet/15 to-transparent",
-    borderColor: "border-cosmic-purple/60",
-    iconColor: "text-cosmic-purple",
+    gradient: "from-comets-purple/20 via-comets-purple/10 to-transparent",
+    borderColor: "border-comets-purple/50",
+    iconColor: "text-comets-purple",
     size: "medium" as const,
   },
   {
@@ -48,9 +48,9 @@ const mainNavCards = [
     title: "Playoffs",
     description: "Postseason bracket",
     icon: Award,
-    gradient: "from-infield-dirt/30 to-leather-brown/10",
-    borderColor: "border-infield-dirt/60",
-    iconColor: "text-infield-dirt",
+    gradient: "from-comets-red/20 via-comets-red/10 to-transparent",
+    borderColor: "border-comets-red/50",
+    iconColor: "text-comets-red",
     size: "medium" as const,
   },
 ];
@@ -61,34 +61,33 @@ const secondaryNavCards = [
     title: "Teams",
     description: "Team rosters & stats",
     icon: Users,
-    gradient: "from-nebula-orange/20 to-nebula-coral/10",
-    borderColor: "border-nebula-orange/50",
-    iconColor: "text-nebula-orange",
+    gradient: "from-comets-blue/20 via-comets-blue/10 to-transparent",
+    borderColor: "border-comets-blue/50",
+    iconColor: "text-comets-blue",
   },
   {
     href: "/players",
     title: "Players",
     description: "Individual statistics",
     icon: Target,
-    gradient: "from-nebula-cyan/20 to-nebula-teal/10",
-    borderColor: "border-nebula-cyan/50",
-    iconColor: "text-nebula-cyan",
+    gradient: "from-comets-cyan/15 via-comets-purple/10 to-transparent",
+    borderColor: "border-comets-cyan/40",
+    iconColor: "text-comets-cyan",
   },
 ];
 
 const ICON_COLOR_VALUES: Record<string, string> = {
-  'text-field-green': '#2D5F3F',
-  'text-solar-gold': '#FFA62B',
-  'text-cosmic-purple': '#8B5CF6',
-  'text-infield-dirt': '#A0826D',
-  'text-nebula-orange': '#FF6B35',
-  'text-nebula-cyan': '#00D4FF',
+  'text-comets-cyan': '#00F3FF',
+  'text-comets-yellow': '#F4D03F',
+  'text-comets-purple': '#BD00FF',
+  'text-comets-red': '#FF4D4D',
+  'text-comets-blue': '#2E86DE',
 };
 
 const navCardBaseClass =
   "group relative block h-full cursor-pointer overflow-hidden rounded-2xl border-2 px-8 py-8 bg-gradient-to-br " +
   "backdrop-blur-md transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 transform-gpu will-change-transform " +
-  "focus-visible:ring-nebula-teal focus-visible:ring-offset-2 focus-visible:ring-offset-space-black motion-reduce:transition-none motion-reduce:transform-none";
+  "focus-visible:ring-comets-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none motion-reduce:transform-none";
 
 export default function Home() {
   const prefersReducedMotion = useReducedMotion();
@@ -97,58 +96,44 @@ export default function Home() {
 
   return (
     <div className="space-y-16">
-      {/* Hero Section - Baseball Diamond Inspired */}
+      {/* Hero Section - Neon Void Arcade */}
       <motion.section
         className="relative py-16"
         variants={sectionVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Baseball stitching pattern background */}
-        <div
-          className="absolute inset-0 opacity-5 pointer-events-none"
-          style={{
-            backgroundImage: `repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 10px,
-              currentColor 10px,
-              currentColor 12px
-            )`,
-            color: '#2D5F3F'
-          }}
-        />
         <div className="relative z-10 text-center">
-          {/* Logo with baseball-inspired glow */}
+          {/* Logo with neon glow */}
           <div className="mb-8 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-field-green/20 rounded-full blur-3xl" />
+              <div className="absolute inset-0 bg-comets-cyan/15 rounded-full blur-3xl" />
               <div className="relative w-40 h-40">
                 <Image
                   src={getLeagueLogo()}
                   alt="CLB Logo"
                   width={160}
                   height={160}
-                  className="object-contain drop-shadow-[0_0_30px_rgba(45,95,63,0.8)]"
+                  className="object-contain drop-shadow-[0_0_30px_rgba(0,243,255,0.6)]"
                   priority
                 />
               </div>
             </div>
           </div>
 
-          {/* Title with distinctive gradient */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-6 pb-1 leading-[1.15] sm:leading-[1.12] bg-gradient-to-r from-nebula-orange via-nebula-coral to-cosmic-purple bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
+          {/* Title with neon gradient */}
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-6 pb-1 leading-[1.15] sm:leading-[1.12] bg-gradient-to-r from-comets-cyan via-comets-purple to-comets-yellow bg-clip-text text-transparent">
             {LEAGUE_CONFIG.name}
           </h1>
 
           <div className="flex flex-col items-center gap-4">
-            <p className="text-2xl text-vintage-cream font-display font-semibold tracking-wide text-shadow-strong">
+            <p className="text-2xl text-foreground/90 font-heading font-semibold tracking-wide">
               Season {LEAGUE_CONFIG.currentSeason}
             </p>
 
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-field-green/10 border border-field-green/30">
-              <div className="w-3 h-3 rounded-full bg-nebula-teal animate-pulse shadow-[0_0_12px_rgba(0,212,255,0.8)]" />
-              <span className="font-display font-semibold text-nebula-teal tracking-wide">
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-comets-cyan/10 border border-comets-cyan/30">
+              <div className="w-3 h-3 rounded-full bg-comets-cyan animate-pulse shadow-[0_0_12px_rgba(0,243,255,0.8)]" />
+              <span className="font-ui font-semibold text-comets-cyan tracking-wide">
                 SYSTEM OPERATIONAL
               </span>
             </div>
@@ -156,7 +141,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* Main Navigation - Asymmetric Baseball Diamond Layout */}
+      {/* Main Navigation - Arcade Grid */}
       <motion.section
         variants={sectionVariants}
         initial="hidden"
@@ -167,7 +152,7 @@ export default function Home() {
           variants={sectionVariants}
           className="text-3xl font-display font-bold mb-8 text-center"
         >
-          <span className="bg-gradient-to-r from-field-green to-nebula-teal bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-comets-cyan to-comets-purple bg-clip-text text-transparent glow-cyan">
             Game Center
           </span>
         </motion.h2>
@@ -192,7 +177,7 @@ export default function Home() {
                       navCardBaseClass,
                       card.borderColor,
                       card.gradient,
-                      "shadow-[0_12px_40px_rgba(45,95,63,0.15)] transition-shadow duration-200",
+                      "shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_40px_rgba(0,243,255,0.15)] transition-shadow duration-200",
                       isLarge ? "min-h-[280px]" : "min-h-[220px]"
                     )}
                     variants={cardHover}
@@ -201,11 +186,11 @@ export default function Home() {
                     whileHover="hover"
                     whileFocus="hover"
                   >
-                    {/* Baseball stitch decoration */}
-                    <div className="pointer-events-none absolute top-4 right-4 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity motion-reduce:transition-none">
+                    {/* Neon corner accent */}
+                    <div className="pointer-events-none absolute top-4 right-4 w-12 h-12 opacity-20 group-hover:opacity-40 transition-opacity motion-reduce:transition-none">
                       <div
-                        className="w-full h-full border-4 border-current rounded-full border-dashed"
-                        style={{ borderColor: ICON_COLOR_VALUES[card.iconColor] || '#E8EDF5' }}
+                        className="w-full h-full border-2 border-current rounded-lg"
+                        style={{ borderColor: ICON_COLOR_VALUES[card.iconColor] || '#00F3FF' }}
                       />
                     </div>
 
@@ -215,17 +200,17 @@ export default function Home() {
                     <div className="relative z-10 flex flex-col h-full">
                       <Icon className={`w-12 h-12 ${card.iconColor} mb-4 transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none`} />
 
-                      <h3 className="text-3xl font-display font-bold mb-2 text-star-white group-hover:text-vintage-cream transition-colors duration-200">
+                      <h3 className="text-3xl font-display font-bold mb-2 text-foreground group-hover:text-comets-cyan transition-colors duration-200">
                         {card.title}
                       </h3>
 
-                      <p className="text-lg text-star-gray font-body group-hover:text-star-white transition-colors duration-200">
+                      <p className="text-lg text-foreground/60 font-body group-hover:text-foreground/80 transition-colors duration-200">
                         {card.description}
                       </p>
 
                       {isLarge && (
                         <div className="mt-auto pt-6">
-                          <div className="inline-flex items-center gap-2 text-sm font-display font-semibold text-field-green transition-all duration-200 motion-reduce:transition-none">
+                          <div className="inline-flex items-center gap-2 text-sm font-ui font-semibold text-comets-cyan transition-all duration-200 motion-reduce:transition-none">
                             View Details
                             <span className="transition-transform duration-200 group-hover:translate-x-1 motion-reduce:translate-x-0 motion-reduce:transition-none">→</span>
                           </div>
@@ -268,10 +253,10 @@ export default function Home() {
 
                     <div className="relative z-10 text-center">
                       <Icon className={`w-12 h-12 ${card.iconColor} mx-auto mb-4 transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:transform-none`} />
-                      <h3 className="text-2xl font-display font-bold mb-2 text-star-white">
+                      <h3 className="text-2xl font-display font-bold mb-2 text-foreground group-hover:text-comets-cyan transition-colors duration-200">
                         {card.title}
                       </h3>
-                      <p className="text-sm text-star-gray font-body">
+                      <p className="text-sm text-foreground/60 font-body">
                         {card.description}
                       </p>
                     </div>
@@ -283,22 +268,12 @@ export default function Home() {
         </div>
       </motion.section>
 
-      {/* Status Footer with Baseball Theme */}
+      {/* Status Footer */}
       <FadeIn delay={motionTokens.durations.extended} direction="up">
-        <section className="text-center py-12 border-t-2 border-field-green/30 relative">
-          {/* Infield dirt pattern */}
-          <div
-            className="absolute inset-0 opacity-5 pointer-events-none"
-            style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`,
-              backgroundSize: '20px 20px',
-              color: '#A0826D'
-            }}
-          />
-
+        <section className="text-center py-12 border-t border-comets-cyan/20 relative">
           <div className="relative z-10">
-            <p className="text-sm text-star-dim font-mono">
-              Powered by Google Sheets • Next.js • Real-time sync every 60s
+            <p className="text-sm text-foreground/40 font-mono">
+              Powered by Google Sheets • Next.js • Real-time sync
             </p>
           </div>
         </section>

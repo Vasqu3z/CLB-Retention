@@ -61,11 +61,11 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-space-navy/90 backdrop-blur-md border-b border-cosmic-border sticky top-0 z-30" role="banner">
+    <header className="bg-surface-dark/90 backdrop-blur-md border-b border-comets-cyan/20 sticky top-0 z-30" role="banner">
       {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-nebula-orange focus:text-white focus:rounded-lg focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-comets-cyan focus:text-background focus:rounded-lg focus:ring-2 focus:ring-comets-cyan focus:ring-offset-2 focus:ring-offset-background"
       >
         Skip to main content
       </a>
@@ -83,14 +83,14 @@ export default function Header() {
                 alt="CLB Logo"
                 width={48}
                 height={48}
-                className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
+                className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(0,243,255,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(0,243,255,0.8)] transition-all"
               />
             </div>
             <div className="flex flex-col justify-center">
-              <span className="text-xl font-display font-bold text-star-white leading-tight">
+              <span className="text-xl font-display font-bold text-foreground leading-tight">
                 {LEAGUE_CONFIG.shortName}
               </span>
-              <span className="text-xs text-star-gray font-mono leading-tight">
+              <span className="text-xs text-comets-cyan font-mono leading-tight">
                 Season {LEAGUE_CONFIG.currentSeason}
               </span>
             </div>
@@ -114,7 +114,7 @@ export default function Header() {
                       width={32}
                       height={32}
                       loading="lazy"
-                      className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
+                      className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(0,243,255,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(0,243,255,0.8)] transition-all"
                     />
                   </div>
                 </Link>
@@ -133,10 +133,10 @@ export default function Header() {
                   aria-current={isActive ? 'page' : undefined}
                   className={`
                     px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 border-b-2
-                    focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
+                    focus:outline-none focus:ring-2 focus:ring-comets-cyan focus:ring-offset-2 focus:ring-offset-background
                     ${isActive
-                      ? 'bg-nebula-orange/20 text-nebula-orange border-nebula-orange'
-                      : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 border-transparent'
+                      ? 'bg-comets-cyan/20 text-comets-cyan border-comets-cyan'
+                      : 'text-foreground/60 hover:text-foreground hover:bg-surface-light/50 border-transparent'
                     }
                   `}
                 >
@@ -159,10 +159,10 @@ export default function Header() {
                 aria-haspopup="true"
                 className={`
                   px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 border-b-2
-                  focus:outline-none focus:ring-2 focus:ring-nebula-orange focus:ring-offset-2 focus:ring-offset-space-navy
+                  focus:outline-none focus:ring-2 focus:ring-comets-cyan focus:ring-offset-2 focus:ring-offset-background
                   ${isToolsActive
-                    ? 'bg-nebula-orange/20 text-nebula-orange border-nebula-orange'
-                    : 'text-star-gray hover:text-star-white hover:bg-space-blue/50 border-transparent'
+                    ? 'bg-comets-cyan/20 text-comets-cyan border-comets-cyan'
+                    : 'text-foreground/60 hover:text-foreground hover:bg-surface-light/50 border-transparent'
                   }
                 `}
               >
@@ -172,7 +172,7 @@ export default function Header() {
               {/* Dropdown Menu */}
               {showToolsDropdown && (
                 <div className="absolute top-full right-0 pt-2 w-56">
-                  <SurfaceCard className="bg-space-navy/90 border border-cosmic-border/80 shadow-2xl overflow-hidden" role="menu">
+                  <SurfaceCard className="bg-surface-dark/95 border border-comets-cyan/30 shadow-2xl overflow-hidden" role="menu">
                     {toolsItems.map((tool) => {
                       const isActive = pathname === tool.href;
                       return (
@@ -184,8 +184,8 @@ export default function Header() {
                           className={`
                             block px-4 py-3 text-sm transition-all duration-200
                             ${isActive
-                              ? 'bg-nebula-orange/20 text-nebula-orange'
-                              : 'text-star-gray hover:text-star-white hover:bg-space-blue/50'
+                              ? 'bg-comets-cyan/20 text-comets-cyan'
+                              : 'text-foreground/60 hover:text-foreground hover:bg-surface-light/50'
                             }
                           `}
                         >

@@ -16,10 +16,10 @@ export default function SidebarMobile({ children }: SidebarMobileProps) {
       {/* Mobile Hamburger Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed top-4 left-4 z-40 lg:hidden bg-space-navy/90 backdrop-blur-md p-3 rounded-lg border border-cosmic-border hover:border-nebula-orange transition-all"
+        className="fixed top-4 left-4 z-40 lg:hidden bg-surface-dark/90 backdrop-blur-md p-3 rounded-lg border border-comets-cyan/30 hover:border-comets-cyan transition-all"
         aria-label="Open menu"
       >
-        <Menu className="w-5 h-5 text-star-white" />
+        <Menu className="w-5 h-5 text-foreground" />
       </button>
 
       {/* Mobile Overlay */}
@@ -38,14 +38,14 @@ export default function SidebarMobile({ children }: SidebarMobileProps) {
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className="relative h-full w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border overflow-y-auto">
+        <div className="relative h-full w-80 bg-surface-dark/95 backdrop-blur-glass border-r border-comets-cyan/20 overflow-y-auto">
           {/* Close Button */}
           <button
             onClick={() => setIsOpen(false)}
-            className="absolute top-4 right-4 z-10 bg-space-blue/90 p-2 rounded-lg hover:bg-nebula-orange transition-colors"
+            className="absolute top-4 right-4 z-10 bg-surface-light/90 p-2 rounded-lg hover:bg-comets-cyan/20 transition-colors"
             aria-label="Close menu"
           >
-            <X className="w-5 h-5 text-star-white" />
+            <X className="w-5 h-5 text-foreground" />
           </button>
 
           {/* Sidebar Content */}
@@ -55,7 +55,7 @@ export default function SidebarMobile({ children }: SidebarMobileProps) {
 
       {/* Desktop Sidebar - Always Visible */}
       <div className="hidden lg:block">
-        <SidebarScrollWrapper className="fixed left-0 top-16 w-80 bg-space-navy/80 backdrop-blur-glass border-r border-cosmic-border z-20" style={{ height: 'calc(100vh - 4rem)' }}>
+        <SidebarScrollWrapper className="fixed left-0 top-16 w-80 bg-surface-dark/80 backdrop-blur-glass border-r border-comets-cyan/20 z-20" style={{ height: 'calc(100vh - 4rem)' }}>
           {children}
         </SidebarScrollWrapper>
       </div>

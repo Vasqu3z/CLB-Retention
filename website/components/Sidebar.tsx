@@ -192,7 +192,7 @@ export default async function Sidebar() {
                 />
               </div>
 
-              <p className="text-xs font-mono text-star-gray">
+              <p className="text-xs font-mono text-foreground/60">
                 Season 1
               </p>
             </Link>
@@ -201,7 +201,7 @@ export default async function Sidebar() {
 
         {/* Mini Standings */}
         <section>
-          <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
+          <h3 className="text-sm font-display font-semibold text-comets-cyan mb-3 uppercase tracking-wider">
             Standings
           </h3>
           <div className="space-y-1">
@@ -213,10 +213,10 @@ export default async function Sidebar() {
                 <Link
                   key={team.rank}
                   href={teamConfig ? `/teams/${teamConfig.slug}` : '#'}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-space-blue/50 transition-all group"
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-light/50 transition-all group"
                 >
                   {/* Rank */}
-                  <span className="text-sm font-mono text-star-dim w-6">
+                  <span className="text-sm font-mono text-foreground/40 w-6">
                     {team.rank}
                   </span>
 
@@ -228,26 +228,26 @@ export default async function Sidebar() {
                         alt={team.team}
                         width={24}
                         height={24}
-                        className="object-contain group-hover:drop-shadow-[0_0_8px_rgba(255,107,53,0.6)]"
+                        className="object-contain group-hover:drop-shadow-[0_0_8px_rgba(0,243,255,0.6)]"
                       />
                     </div>
                   )}
 
                   {/* Team Name (abbreviated on small screens) */}
                   <span
-                    className="text-sm font-medium flex-1 truncate group-hover:text-nebula-orange transition-colors"
+                    className="text-sm font-medium flex-1 truncate group-hover:text-comets-cyan transition-colors"
                     style={{ color: teamConfig?.primaryColor || '#E8EDF5' }}
                   >
                     {teamConfig?.shortName || team.team}
                   </span>
 
                   {/* Record */}
-                  <span className="text-sm font-mono text-star-gray">
+                  <span className="text-sm font-mono text-foreground/60">
                     {team.wins}-{team.losses}
                   </span>
 
                   {/* Win % */}
-                  <span className="text-sm font-mono text-star-white font-semibold w-12 text-right">
+                  <span className="text-sm font-mono text-foreground font-semibold w-12 text-right">
                     {team.winPct}
                   </span>
                 </Link>
@@ -258,19 +258,19 @@ export default async function Sidebar() {
 
         {/* League Leaders */}
         <section>
-          <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
+          <h3 className="text-sm font-display font-semibold text-comets-cyan mb-3 uppercase tracking-wider">
             League Leaders
           </h3>
 
           {/* BA Leaders */}
           <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Batting Average</h4>
+            <h4 className="text-xs font-mono text-foreground/60 mb-2 uppercase tracking-wide">Batting Average</h4>
             <div className="space-y-1">
               {baLeaders.map((player, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm gap-2">
                   <Link
                     href={`/players/${playerNameToSlug(player.name)}`}
-                    className="text-star-white hover:text-nebula-orange transition-colors truncate flex-1 min-w-0"
+                    className="text-foreground hover:text-comets-cyan transition-colors truncate flex-1 min-w-0"
                   >
                     {player.name}
                   </Link>
@@ -284,13 +284,13 @@ export default async function Sidebar() {
 
           {/* HR Leaders */}
           <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Home Runs</h4>
+            <h4 className="text-xs font-mono text-foreground/60 mb-2 uppercase tracking-wide">Home Runs</h4>
             <div className="space-y-1">
               {hrLeaders.map((player, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm gap-2">
                   <Link
                     href={`/players/${playerNameToSlug(player.name)}`}
-                    className="text-star-white hover:text-nebula-orange transition-colors truncate flex-1 min-w-0"
+                    className="text-foreground hover:text-comets-cyan transition-colors truncate flex-1 min-w-0"
                   >
                     {player.name}
                   </Link>
@@ -304,13 +304,13 @@ export default async function Sidebar() {
 
           {/* RBI Leaders */}
           <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">RBI</h4>
+            <h4 className="text-xs font-mono text-foreground/60 mb-2 uppercase tracking-wide">RBI</h4>
             <div className="space-y-1">
               {rbiLeaders.map((player, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm gap-2">
                   <Link
                     href={`/players/${playerNameToSlug(player.name)}`}
-                    className="text-star-white hover:text-nebula-orange transition-colors truncate flex-1 min-w-0"
+                    className="text-foreground hover:text-comets-cyan transition-colors truncate flex-1 min-w-0"
                   >
                     {player.name}
                   </Link>
@@ -324,13 +324,13 @@ export default async function Sidebar() {
 
           {/* ERA Leaders */}
           <div className="mb-4">
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">ERA</h4>
+            <h4 className="text-xs font-mono text-foreground/60 mb-2 uppercase tracking-wide">ERA</h4>
             <div className="space-y-1">
               {eraLeaders.map((player, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm gap-2">
                   <Link
                     href={`/players/${playerNameToSlug(player.name)}`}
-                    className="text-star-white hover:text-nebula-orange transition-colors truncate flex-1 min-w-0"
+                    className="text-foreground hover:text-comets-cyan transition-colors truncate flex-1 min-w-0"
                   >
                     {player.name}
                   </Link>
@@ -344,13 +344,13 @@ export default async function Sidebar() {
 
           {/* NP Leaders */}
           <div>
-            <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">Nice Plays</h4>
+            <h4 className="text-xs font-mono text-foreground/60 mb-2 uppercase tracking-wide">Nice Plays</h4>
             <div className="space-y-1">
               {npLeaders.map((player, idx) => (
                 <div key={idx} className="flex items-center justify-between text-sm gap-2">
                   <Link
                     href={`/players/${playerNameToSlug(player.name)}`}
-                    className="text-star-white hover:text-nebula-orange transition-colors truncate flex-1 min-w-0"
+                    className="text-foreground hover:text-comets-cyan transition-colors truncate flex-1 min-w-0"
                   >
                     {player.name}
                   </Link>
@@ -366,7 +366,7 @@ export default async function Sidebar() {
         {/* Recent Games */}
         {(recentPlayoffWeeks.length > 0 || currentWeekGames.length > 0 || previousWeekGames.length > 0) && (
           <section>
-            <h3 className="text-sm font-display font-semibold text-nebula-orange mb-3 uppercase tracking-wider">
+            <h3 className="text-sm font-display font-semibold text-comets-cyan mb-3 uppercase tracking-wider">
               Recent Games
             </h3>
 
@@ -377,7 +377,7 @@ export default async function Sidebar() {
 
               return (
                 <div key={week.roundOrder} className={weekIdx < recentPlayoffWeeks.length - 1 || currentWeekGames.length > 0 || previousWeekGames.length > 0 ? 'mb-4' : ''}>
-                  <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
+                  <h4 className="text-xs font-mono text-foreground/60 mb-2 uppercase tracking-wide">
                     {week.roundName}
                   </h4>
                   <div className="space-y-3">
@@ -385,7 +385,7 @@ export default async function Sidebar() {
                       <div key={seriesName}>
                         {/* Series label for multiple series (e.g., CS-A, CS-B) */}
                         {hasMultipleSeries && (
-                          <div className="text-xs font-mono text-star-dim mb-1.5 pl-1">
+                          <div className="text-xs font-mono text-foreground/40 mb-1.5 pl-1">
                             {seriesName}
                           </div>
                         )}
@@ -399,23 +399,23 @@ export default async function Sidebar() {
                               <>
                                 <div className="flex items-center justify-between">
                                   <span
-                                    className={homeWon ? 'font-bold' : 'text-star-gray'}
+                                    className={homeWon ? 'font-bold' : 'text-foreground/60'}
                                     style={{ color: homeWon ? homeTeam?.primaryColor : undefined }}
                                   >
                                     {homeTeam?.shortName || game.homeTeam}
                                   </span>
-                                  <span className="font-mono font-bold text-star-white">
+                                  <span className="font-mono font-bold text-foreground">
                                     {game.homeScore}
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between mt-1">
                                   <span
-                                    className={!homeWon ? 'font-bold' : 'text-star-gray'}
+                                    className={!homeWon ? 'font-bold' : 'text-foreground/60'}
                                     style={{ color: !homeWon ? awayTeam?.primaryColor : undefined }}
                                   >
                                     {awayTeam?.shortName || game.awayTeam}
                                   </span>
-                                  <span className="font-mono font-bold text-star-white">
+                                  <span className="font-mono font-bold text-foreground">
                                     {game.awayScore}
                                   </span>
                                 </div>
@@ -428,14 +428,14 @@ export default async function Sidebar() {
                                 href={game.boxScoreUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block hover:border-nebula-orange/50 hover:bg-space-blue/50 hover:scale-105 cursor-pointer"
+                                className="text-sm p-2 rounded-lg bg-surface-light/30 border border-comets-cyan/20 transition-all duration-300 block hover:border-comets-cyan/50 hover:bg-surface-light/50 hover:scale-105 cursor-pointer"
                               >
                                 {gameContent}
                               </Link>
                             ) : (
                               <div
                                 key={`${seriesName}-${idx}`}
-                                className="text-sm p-2 rounded-lg bg-space-blue/30 border border-cosmic-border transition-all duration-300 block"
+                                className="text-sm p-2 rounded-lg bg-surface-light/30 border border-comets-cyan/20 transition-all duration-300 block"
                               >
                                 {gameContent}
                               </div>
@@ -456,7 +456,7 @@ export default async function Sidebar() {
             {/* Current Week Regular Season Games */}
             {currentWeekGames.length > 0 && (
               <div className={previousWeekGames.length > 0 ? 'mb-4' : ''}>
-                <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
+                <h4 className="text-xs font-mono text-foreground/60 mb-2 uppercase tracking-wide">
                   Week {currentWeek}
                 </h4>
                 <div className="space-y-2">
@@ -469,23 +469,23 @@ export default async function Sidebar() {
                       <>
                         <div className="flex items-center justify-between">
                           <span
-                            className={homeWon ? 'font-bold' : 'text-star-gray'}
+                            className={homeWon ? 'font-bold' : 'text-foreground/60'}
                             style={{ color: homeWon ? homeTeam?.primaryColor : undefined }}
                           >
                             {homeTeam?.shortName || game.homeTeam}
                           </span>
-                          <span className="font-mono font-bold text-star-white">
+                          <span className="font-mono font-bold text-foreground">
                             {game.homeScore}
                           </span>
                         </div>
                         <div className="flex items-center justify-between mt-1">
                           <span
-                            className={!homeWon ? 'font-bold' : 'text-star-gray'}
+                            className={!homeWon ? 'font-bold' : 'text-foreground/60'}
                             style={{ color: !homeWon ? awayTeam?.primaryColor : undefined }}
                           >
                             {awayTeam?.shortName || game.awayTeam}
                           </span>
-                          <span className="font-mono font-bold text-star-white">
+                          <span className="font-mono font-bold text-foreground">
                             {game.awayScore}
                           </span>
                         </div>
@@ -518,7 +518,7 @@ export default async function Sidebar() {
             {/* Previous Week Regular Season Games */}
             {previousWeekGames.length > 0 && (
               <div>
-                <h4 className="text-xs font-mono text-star-gray mb-2 uppercase tracking-wide">
+                <h4 className="text-xs font-mono text-foreground/60 mb-2 uppercase tracking-wide">
                   Week {currentWeek - 1}
                 </h4>
                 <div className="space-y-2">
@@ -531,23 +531,23 @@ export default async function Sidebar() {
                       <>
                         <div className="flex items-center justify-between">
                           <span
-                            className={homeWon ? 'font-bold' : 'text-star-gray'}
+                            className={homeWon ? 'font-bold' : 'text-foreground/60'}
                             style={{ color: homeWon ? homeTeam?.primaryColor : undefined }}
                           >
                             {homeTeam?.shortName || game.homeTeam}
                           </span>
-                          <span className="font-mono font-bold text-star-white">
+                          <span className="font-mono font-bold text-foreground">
                             {game.homeScore}
                           </span>
                         </div>
                         <div className="flex items-center justify-between mt-1">
                           <span
-                            className={!homeWon ? 'font-bold' : 'text-star-gray'}
+                            className={!homeWon ? 'font-bold' : 'text-foreground/60'}
                             style={{ color: !homeWon ? awayTeam?.primaryColor : undefined }}
                           >
                             {awayTeam?.shortName || game.awayTeam}
                           </span>
-                          <span className="font-mono font-bold text-star-white">
+                          <span className="font-mono font-bold text-foreground">
                             {game.awayScore}
                           </span>
                         </div>

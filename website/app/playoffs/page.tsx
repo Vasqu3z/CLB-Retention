@@ -26,15 +26,27 @@ export default async function PlayoffsPage() {
     standings.map(s => [s.team, parseInt(String(s.rank)) || 0])
   );
 
-  // Group games by series (using code prefix)
+  // Group games by series suffix (A, B for semifinals, KC for finals)
+  // Codes are like: CS1-A, CS2-A, CS3-A (Championship Series A)
+  //                 CS1-B, CS2-B, CS3-B (Championship Series B)
+  //                 KC1, KC2, KC3 (Koopa Championship / Finals)
   const seriesGames: Record<string, typeof playoffGames> = {};
   playoffGames.forEach(game => {
-    // Extract series code (e.g., "S1" from "S1-A", "F" from "F1")
-    const seriesCode = game.code.match(/^[A-Z]+\d*/)?.[0] || game.code;
-    if (!seriesGames[seriesCode]) {
-      seriesGames[seriesCode] = [];
+    let seriesKey: string;
+    if (game.code.includes("-A")) {
+      seriesKey = "CS-A";
+    } else if (game.code.includes("-B")) {
+      seriesKey = "CS-B";
+    } else if (game.code.startsWith("KC")) {
+      seriesKey = "KC";
+    } else {
+      // Fallback: try old format (S1, S2, F)
+      seriesKey = game.code.match(/^[A-Z]+\d*/)?.[0] || game.code;
     }
-    seriesGames[seriesCode].push(game);
+    if (!seriesGames[seriesKey]) {
+      seriesGames[seriesKey] = [];
+    }
+    seriesGames[seriesKey].push(game);
   });
 
   // Helper to calculate series wins
@@ -51,8 +63,9 @@ export default async function PlayoffsPage() {
     seed: teamSeedMap.get(teamName) || 0,
   });
 
-  // Parse semifinals (S1 and S2)
-  const semifinals = ["S1", "S2"].map(code => {
+  // Parse semifinals (CS-A and CS-B, or fallback to S1 and S2)
+  const semifinalKeys = seriesGames["CS-A"] ? ["CS-A", "CS-B"] : ["S1", "S2"];
+  const semifinals = semifinalKeys.map(code => {
     const games = seriesGames[code] || [];
     if (games.length === 0) return null;
 
@@ -61,7 +74,7 @@ export default async function PlayoffsPage() {
     const teamBInfo = getTeamInfo(firstGame.awayTeam);
 
     return {
-      id: code.toLowerCase(),
+      id: code.toLowerCase().replace("-", ""),
       teamA: {
         ...teamAInfo,
         wins: calculateSeriesRecord(games, firstGame.homeTeam),
@@ -70,7 +83,7 @@ export default async function PlayoffsPage() {
         ...teamBInfo,
         wins: calculateSeriesRecord(games, firstGame.awayTeam),
       },
-      winner: games.find(g => g.played && calculateSeriesRecord(games, g.winner!) >= 3)?.winner || null,
+      winner: games.find(g => g.played && calculateSeriesRecord(games, g.winner!) >= 2)?.winner || null,
       games: games.map((g, idx) => ({
         game: idx + 1,
         scoreA: g.played ? (g.homeScore ?? null) : null,
@@ -80,8 +93,9 @@ export default async function PlayoffsPage() {
     };
   }).filter(Boolean);
 
-  // Parse finals (F)
-  const finalsGames = seriesGames["F"] || [];
+  // Parse finals (KC or fallback to F)
+  const finalsKey = seriesGames["KC"] ? "KC" : "F";
+  const finalsGames = seriesGames[finalsKey] || [];
   let finals = null;
   if (finalsGames.length > 0) {
     const firstGame = finalsGames[0];
@@ -98,7 +112,7 @@ export default async function PlayoffsPage() {
         ...teamBInfo,
         wins: calculateSeriesRecord(finalsGames, firstGame.awayTeam),
       },
-      winner: finalsGames.find(g => g.played && calculateSeriesRecord(finalsGames, g.winner!) >= 4)?.winner || null,
+      winner: finalsGames.find(g => g.played && calculateSeriesRecord(finalsGames, g.winner!) >= 2)?.winner || null,
       games: finalsGames.map((g, idx) => ({
         game: idx + 1,
         scoreA: g.played ? (g.homeScore ?? null) : null,

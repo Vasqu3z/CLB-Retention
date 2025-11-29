@@ -9,8 +9,8 @@ import { motion } from "framer-motion";
 export default function CosmicBackground() {
   return (
     <>
-      {/* Cosmic background orbs - high z-index to appear over page backgrounds */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-[5] mix-blend-screen">
+      {/* Cosmic background orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         {/* Floating orbs - increased opacity for visibility */}
         <motion.div
           className="absolute w-[700px] h-[700px] rounded-full blur-[120px]"
@@ -95,8 +95,8 @@ export default function CosmicBackground() {
         />
       </div>
 
-      {/* Scanlines overlay - on top of everything */}
-      <div className="fixed inset-0 pointer-events-none z-[100] scanlines opacity-[0.04]" />
+      {/* Scanlines overlay */}
+      <div className="fixed inset-0 pointer-events-none z-[1] scanlines opacity-[0.04]" />
     </>
   );
 }

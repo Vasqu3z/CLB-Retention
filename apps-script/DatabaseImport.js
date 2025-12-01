@@ -785,8 +785,8 @@ function exportChemistryToStatsPreset() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
     const chemistryLines = exportChemistrySection(ss, config);
-    const statsLines = exportStatsSection(ss, config);
     const trajectoryLines = exportTrajectorySection(ss, config);
+    const statsLines = exportStatsSection(ss, config);
 
     const allLines = [...chemistryLines, ...statsLines, ...trajectoryLines];
     const content = allLines.join('\n');

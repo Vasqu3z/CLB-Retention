@@ -438,22 +438,18 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
     attributesSheet.setFrozenRows(1);
   }
 
-  const existingCustomData = {};
-  if (attributesSheet.getLastRow() >= config.ATTRIBUTES_CONFIG.FIRST_DATA_ROW) {
+  const existingRowsByName = {};
+  const firstRow = config.ATTRIBUTES_CONFIG.FIRST_DATA_ROW;
+  const totalCols = Math.max(config.ATTRIBUTES_CONFIG.TOTAL_COLUMNS, attributesSheet.getLastColumn());
+  if (attributesSheet.getLastRow() >= firstRow) {
     const lastRow = attributesSheet.getLastRow();
-    const firstRow = config.ATTRIBUTES_CONFIG.FIRST_DATA_ROW;
-    const totalCols = config.ATTRIBUTES_CONFIG.TOTAL_COLUMNS;
     const existingData = attributesSheet.getRange(firstRow, 1, lastRow - firstRow + 1, totalCols).getValues();
 
     const cols = config.ATTRIBUTES_CONFIG.COLUMNS;
     for (let i = 0; i < existingData.length; i++) {
       const characterName = String(existingData[i][cols.NAME]).trim();
       if (characterName) {
-        existingCustomData[characterName] = {
-          mii: existingData[i][cols.MII],
-          miiColor: existingData[i][cols.MII_COLOR],
-          preCharge: existingData[i][cols.PRE_CHARGE]
-        };
+        existingRowsByName[characterName] = existingData[i];
       }
     }
   }
@@ -469,40 +465,46 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
     const pythonName = GAME_CHARACTER_ORDER[i];
     const characterName = getCustomCharacterName(nameMappings, pythonName);
 
-    const customData = existingCustomData[characterName] || { mii: '', miiColor: '', preCharge: '' };
+    const sheetRow = existingRowsByName[characterName]
+      ? existingRowsByName[characterName].slice(0, totalCols)
+      : Array(totalCols).fill('');
 
-    const sheetRow = [
-      characterName,
-      CHARACTER_CLASSES[presetRow[2]] || '',
-      presetRow[5] === 1 ? 'Yes' : 'No',
-      customData.mii,
-      customData.miiColor,
-      ARM_SIDES[presetRow[0]] || '',
-      ARM_SIDES[presetRow[1]] || '',
-      presetRow[4],
-      combineAbilityField(presetRow[8], presetRow[9]),
-      presetRow[18],
-      presetRow[19],
-      presetRow[20],
-      presetRow[21],
-      STAR_SWINGS[presetRow[7]] || '',
-      HIT_CURVE_TYPES[presetRow[27]] || '',
-      trajectoryTypes[presetRow[26]] || '',
-      presetRow[10],
-      presetRow[11],
-      presetRow[12],
-      presetRow[13],
-      presetRow[15],
-      presetRow[14],
-      presetRow[17],
-      presetRow[16],
-      customData.preCharge,
-      combineStarPitchField(presetRow[6], presetRow[29]),
-      presetRow[23],
-      presetRow[22],
-      presetRow[24],
-      presetRow[28]
-    ];
+    while (sheetRow.length < totalCols) {
+      sheetRow.push('');
+    }
+
+    const cols = config.ATTRIBUTES_CONFIG.COLUMNS;
+
+    // Preset-driven fields (manual/custom columns are left untouched)
+    sheetRow[cols.NAME] = characterName;
+    sheetRow[cols.CHARACTER_CLASS] = CHARACTER_CLASSES[presetRow[2]] || '';
+    sheetRow[cols.CAPTAIN] = presetRow[5] === 1 ? 'Yes' : 'No';
+    sheetRow[cols.ARM_SIDE] = ARM_SIDES[presetRow[0]] || '';
+    sheetRow[cols.BATTING_SIDE] = ARM_SIDES[presetRow[1]] || '';
+    sheetRow[cols.WEIGHT] = presetRow[4];
+    sheetRow[cols.ABILITY] = combineAbilityField(presetRow[8], presetRow[9]);
+    sheetRow[cols.PITCHING_OVERALL] = presetRow[18];
+    sheetRow[cols.BATTING_OVERALL] = presetRow[19];
+    sheetRow[cols.FIELDING_OVERALL] = presetRow[20];
+    sheetRow[cols.SPEED_OVERALL] = presetRow[21];
+    sheetRow[cols.STAR_SWING] = STAR_SWINGS[presetRow[7]] || '';
+    sheetRow[cols.HIT_CURVE] = HIT_CURVE_TYPES[presetRow[27]] || '';
+    sheetRow[cols.HITTING_TRAJECTORY] = trajectoryTypes[presetRow[26]] || '';
+    sheetRow[cols.SLAP_HIT_CONTACT] = presetRow[10];
+    sheetRow[cols.CHARGE_HIT_CONTACT] = presetRow[11];
+    sheetRow[cols.SLAP_HIT_POWER] = presetRow[12];
+    sheetRow[cols.CHARGE_HIT_POWER] = presetRow[13];
+    sheetRow[cols.SPEED] = presetRow[15];
+    sheetRow[cols.BUNTING] = presetRow[14];
+    sheetRow[cols.FIELDING] = presetRow[17];
+    sheetRow[cols.THROWING_SPEED] = presetRow[16];
+    sheetRow[cols.STAR_PITCH] = combineStarPitchField(presetRow[6], presetRow[29]);
+    sheetRow[cols.FASTBALL_SPEED] = presetRow[23];
+    sheetRow[cols.CURVEBALL_SPEED] = presetRow[22];
+    sheetRow[cols.CURVE] = presetRow[24];
+    sheetRow[cols.STAMINA] = presetRow[28];
+
+    // Leave custom fields (Mii, Mii Color, Pre-Charge, or any extra columns) untouched
 
     sheetData.push(sheetRow);
   }
@@ -511,7 +513,7 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
     config.ATTRIBUTES_CONFIG.FIRST_DATA_ROW,
     1,
     sheetData.length,
-    config.ATTRIBUTES_CONFIG.TOTAL_COLUMNS
+    totalCols
   ).setValues(sheetData);
 
   return {

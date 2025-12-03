@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { StandingsRow } from "@/lib/sheets";
-import { getTeamByName } from "@/config/league";
+import { StandingsRow, Team } from "@/lib/sheets";
 import { getTeamLogoPaths } from "@/lib/teamLogos";
 import DataTable, { Column } from "@/components/DataTable";
 import StatTooltip from "@/components/StatTooltip";
@@ -16,12 +15,21 @@ interface StandingsRowWithColor extends StandingsRow {
 
 interface StandingsTableProps {
   standings: StandingsRow[];
+  teams: Team[];
 }
 
-export default function StandingsTable({ standings }: StandingsTableProps) {
+// Helper to find team by name
+function findTeamByName(teams: Team[], name: string): Team | undefined {
+  const normalizedInput = name.trim().toLowerCase();
+  return teams.find(
+    (t) => t.name.toLowerCase() === normalizedInput || t.shortName.toLowerCase() === normalizedInput
+  );
+}
+
+export default function StandingsTable({ standings, teams }: StandingsTableProps) {
   // Enhance standings with team info
   const enhancedStandings: StandingsRowWithColor[] = standings.map((team) => {
-    const teamConfig = getTeamByName(team.team);
+    const teamConfig = findTeamByName(teams, team.team);
     const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
 
     return {

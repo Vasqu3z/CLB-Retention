@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { PlayerStats } from '@/lib/sheets';
-import { getActiveTeams } from '@/config/league';
+import { PlayerStats, Team } from '@/lib/sheets';
 import SeasonToggle from '@/components/SeasonToggle';
 import DataTable, { Column } from '@/components/DataTable';
 import { Search } from 'lucide-react';
@@ -16,11 +15,13 @@ type Tab = 'hitting' | 'pitching' | 'fielding';
 interface PlayersViewProps {
   regularPlayers: PlayerStats[];
   playoffPlayers: PlayerStats[];
+  teams: Team[];
 }
 
 export default function PlayersView({
   regularPlayers,
-  playoffPlayers
+  playoffPlayers,
+  teams,
 }: PlayersViewProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('hitting');
@@ -28,8 +29,6 @@ export default function PlayersView({
 
   // Use appropriate data based on toggle
   const players = isPlayoffs ? playoffPlayers : regularPlayers;
-
-  const teams = getActiveTeams();
 
   // Helper to get team color
   const getTeamColor = (teamName: string) => {

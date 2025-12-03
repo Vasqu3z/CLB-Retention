@@ -1,4 +1,4 @@
-import { getTeamData, getStandings } from '@/lib/sheets';
+import { getTeamData, getStandings, getActiveTeams } from '@/lib/sheets';
 import TeamStatsView from './TeamStatsView';
 import FadeIn from "@/components/animations/FadeIn";
 import LiveStatsIndicator from "@/components/LiveStatsIndicator";
@@ -7,12 +7,13 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 export default async function TeamsPage() {
-  // Fetch both regular season and playoff data
-  const [regularTeamData, regularStandings, playoffTeamData, playoffStandings] = await Promise.all([
+  // Fetch both regular season and playoff data, plus teams
+  const [regularTeamData, regularStandings, playoffTeamData, playoffStandings, teams] = await Promise.all([
     getTeamData(undefined, false),
     getStandings(false),
     getTeamData(undefined, true),
     getStandings(true),
+    getActiveTeams(),
   ]);
 
   return (
@@ -33,6 +34,7 @@ export default async function TeamsPage() {
           regularStandings={regularStandings}
           playoffTeamData={playoffTeamData}
           playoffStandings={playoffStandings}
+          teams={teams}
         />
       </FadeIn>
     </div>

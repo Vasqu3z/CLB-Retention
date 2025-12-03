@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LeaderEntry } from "@/lib/sheets";
-import { getTeamByName } from "@/config/league";
+import { LeaderEntry, Team } from "@/lib/sheets";
 import { getTeamLogoPaths } from "@/lib/teamLogos";
 import { playerNameToSlug } from "@/lib/utils";
 import Link from "next/link";
@@ -18,6 +17,15 @@ interface LeadersViewProps {
   playoffBattingLeaders: any;
   playoffPitchingLeaders: any;
   playoffFieldingLeaders: any;
+  teams: Team[];
+}
+
+// Helper to find team by name
+function findTeamByName(teams: Team[], name: string): Team | undefined {
+  const normalizedInput = name.trim().toLowerCase();
+  return teams.find(
+    (t) => t.name.toLowerCase() === normalizedInput || t.shortName.toLowerCase() === normalizedInput
+  );
 }
 
 type Tab = 'batting' | 'pitching' | 'fielding';
@@ -29,6 +37,7 @@ export default function LeadersView({
   playoffBattingLeaders,
   playoffPitchingLeaders,
   playoffFieldingLeaders,
+  teams,
 }: LeadersViewProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('batting');
@@ -135,7 +144,7 @@ function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; lea
           <p className="text-star-gray text-sm italic font-mono">No leaders yet</p>
         )}
         {leaders.map((leader, idx) => {
-          const teamConfig = leader.team ? getTeamByName(leader.team) : null;
+          const teamConfig = leader.team ? findTeamByName(teams, leader.team) : null;
           const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
 
           return (

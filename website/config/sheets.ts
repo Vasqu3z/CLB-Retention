@@ -179,6 +179,31 @@ export const DISPLAY_CONFIG = {
 } as const;
 
 /**
+ * Status values for Player and Team Registry filtering
+ */
+export const REGISTRY_STATUS = {
+  ACTIVE: 'Active',      // On a team and should be displayed
+  FREE_AGENT: 'Free Agent', // Not on a team but still searchable
+  INACTIVE: 'Inactive',  // Not in the league, should not be displayed
+  LEAGUE: 'League',      // Special status for league branding row
+} as const;
+
+/**
+ * Statuses that should be visible in player/team lists
+ */
+export const VISIBLE_PLAYER_STATUSES = [
+  REGISTRY_STATUS.ACTIVE,
+  REGISTRY_STATUS.FREE_AGENT,
+] as const;
+
+/**
+ * Statuses that should be visible in team lists (excludes League branding row)
+ */
+export const VISIBLE_TEAM_STATUSES = [
+  REGISTRY_STATUS.ACTIVE,
+] as const;
+
+/**
  * Player Registry sheet configuration (Phase 1 foundation)
  */
 export const PLAYER_REGISTRY_SHEET = {
@@ -201,24 +226,27 @@ export const PLAYER_REGISTRY_SHEET = {
 
 /**
  * Team Registry sheet configuration (Phase 1 foundation)
+ * Single source of truth for team metadata, colors, and logos
  */
 export const TEAM_REGISTRY_SHEET = {
   NAME: "'📋 Team Registry'",
   DATA_START_ROW: 2,
   MAX_ROWS: 20,
   START_COL: 'A',
-  END_COL: 'H',
+  END_COL: 'J',
 
   // Column indices (0-based)
   COLUMNS: {
     TEAM_NAME: 0,        // A
-    CAPTAIN: 1,          // B
-    ABBR: 2,             // C
-    STATUS: 3,           // D
-    COLOR: 4,            // E
-    LOGO_URL: 5,         // F
-    EMBLEM_URL: 6,       // G
-    DISCORD_ROLE_ID: 7,  // H
+    CAPTAIN: 1,          // B (in-game captain character)
+    ABBR: 2,             // C (used as URL slug, lowercase)
+    STATUS: 3,           // D (Active, Inactive, League)
+    COLOR: 4,            // E (primary hex color)
+    SECONDARY_COLOR: 5,  // F (secondary hex color)
+    LOGO_URL: 6,         // G
+    EMBLEM_URL: 7,       // H
+    DISCORD_ROLE_ID: 8,  // I
+    TEAM_OWNER: 9,       // J (team owner/manager)
   },
 } as const;
 

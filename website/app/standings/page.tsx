@@ -1,6 +1,5 @@
-import { getStandings } from "@/lib/sheets";
-import { getTeamByName } from "@/config/league";
-import { getTeamLogoPaths, getLeagueLogo } from "@/lib/teamLogos";
+import { getStandings, getActiveTeams, getLeagueBranding, Team } from "@/lib/sheets";
+import { getTeamLogoPaths } from "@/lib/teamLogos";
 import StatCard from "@/components/StatCard";
 import StandingsTable from "./StandingsTable";
 import { Trophy, TrendingUp, TrendingDown, Award } from "lucide-react";
@@ -11,12 +10,24 @@ import SurfaceCard from "@/components/SurfaceCard";
 
 export const revalidate = 60;
 
+// Helper to find team by name
+function findTeamByName(teams: Team[], name: string): Team | undefined {
+  const normalizedInput = name.trim().toLowerCase();
+  return teams.find(
+    (t) => t.name.toLowerCase() === normalizedInput || t.shortName.toLowerCase() === normalizedInput
+  );
+}
+
 export default async function StandingsPage() {
-  const standings = await getStandings();
+  const [standings, teams, leagueBranding] = await Promise.all([
+    getStandings(),
+    getActiveTeams(),
+    getLeagueBranding(),
+  ]);
 
   // Enhance standings with team info for stat card calculations
   const enhancedStandings = standings.map((team) => {
-    const teamConfig = getTeamByName(team.team);
+    const teamConfig = findTeamByName(teams, team.team);
     const logos = teamConfig ? getTeamLogoPaths(teamConfig.name) : null;
 
     return {
@@ -104,8 +115,8 @@ export default async function StandingsPage() {
             <div className="flex items-center justify-center pt-2">
               <div className="w-30 h-20 relative">
                 <Image
-                  src={getLeagueLogo()}
-                  alt="CLB Logo"
+                  src={leagueBranding.emblemUrl || '/CLB II.png'}
+                  alt={`${leagueBranding.shortName} Logo`}
                   width={120}
                   height={80}
                   className="object-contain"
@@ -162,7 +173,7 @@ export default async function StandingsPage() {
 
       {/* Standings Table */}
       <FadeIn delay={0.3} direction="up">
-        <StandingsTable standings={standings} />
+        <StandingsTable standings={standings} teams={teams} />
       </FadeIn>
 
       {/* Legend */}

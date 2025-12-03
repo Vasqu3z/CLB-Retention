@@ -1,13 +1,14 @@
-import { getPlayoffSchedule, groupGamesBySeries, buildBracket, getStandings } from "@/lib/sheets";
+import { getPlayoffSchedule, groupGamesBySeries, buildBracket, getStandings, getActiveTeams } from "@/lib/sheets";
 import BracketView from "./BracketView";
 import FadeIn from "@/components/animations/FadeIn";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function PlayoffsPage() {
-  const [playoffGames, standings] = await Promise.all([
+  const [playoffGames, standings, teams] = await Promise.all([
     getPlayoffSchedule(),
     getStandings(),
+    getActiveTeams(),
   ]);
 
   const seriesMap = groupGamesBySeries(playoffGames);
@@ -28,7 +29,7 @@ export default async function PlayoffsPage() {
       </FadeIn>
 
       <FadeIn delay={0.15} direction="up">
-        <BracketView bracket={bracket} standings={standings} />
+        <BracketView bracket={bracket} standings={standings} teams={teams} />
       </FadeIn>
     </div>
   );

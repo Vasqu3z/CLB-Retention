@@ -1,7 +1,6 @@
 'use client';
 
-import { ScheduleGame } from '@/lib/sheets';
-import { Team, getTeamByName } from '@/config/league';
+import { ScheduleGame, Team } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import Image from 'next/image';
 import SurfaceCard from '@/components/SurfaceCard';
@@ -11,7 +10,15 @@ interface ScheduleViewProps {
   teams: Team[];
 }
 
-export default function ScheduleView({ schedule }: ScheduleViewProps) {
+// Helper to look up team by name from teams array
+function findTeamByName(teams: Team[], name: string): Team | undefined {
+  const normalizedInput = name.trim().toLowerCase();
+  return teams.find(
+    (t) => t.name.toLowerCase() === normalizedInput || t.shortName.toLowerCase() === normalizedInput
+  );
+}
+
+export default function ScheduleView({ schedule, teams }: ScheduleViewProps) {
   // Group games by week
   const gamesByWeek = schedule.reduce((acc, game) => {
     const weekKey = `Week ${game.week}`;
@@ -47,7 +54,7 @@ export default function ScheduleView({ schedule }: ScheduleViewProps) {
               {/* Game Cards - 4 per row on large screens */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {weekGames.map((game, idx) => (
-                  <GameCard key={`${weekKey}-${idx}`} game={game} />
+                  <GameCard key={`${weekKey}-${idx}`} game={game} teams={teams} />
                 ))}
               </div>
             </SurfaceCard>
@@ -70,9 +77,9 @@ export default function ScheduleView({ schedule }: ScheduleViewProps) {
   );
 }
 
-function GameCard({ game }: { game: ScheduleGame }) {
-  const homeTeamConfig = getTeamByName(game.homeTeam);
-  const awayTeamConfig = getTeamByName(game.awayTeam);
+function GameCard({ game, teams }: { game: ScheduleGame; teams: Team[] }) {
+  const homeTeamConfig = findTeamByName(teams, game.homeTeam);
+  const awayTeamConfig = findTeamByName(teams, game.awayTeam);
   const homeLogos = homeTeamConfig ? getTeamLogoPaths(homeTeamConfig.name) : null;
   const awayLogos = awayTeamConfig ? getTeamLogoPaths(awayTeamConfig.name) : null;
 

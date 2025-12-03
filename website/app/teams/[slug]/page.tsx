@@ -1,5 +1,4 @@
-import { getTeamBySlug } from '@/config/league';
-import { getTeamRoster, getSchedule, getStandings, getTeamData, getPlayoffSchedule } from '@/lib/sheets';
+import { getTeamBySlug, getTeamRoster, getSchedule, getStandings, getTeamData, getPlayoffSchedule } from '@/lib/sheets';
 import { notFound } from 'next/navigation';
 import TeamPageView from './TeamPageView';
 
@@ -10,7 +9,7 @@ export const dynamicParams = true; // Allow dynamic params without pre-generatio
 
 export default async function TeamPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const team = getTeamBySlug(slug);
+  const team = await getTeamBySlug(slug);
 
   if (!team) {
     notFound();

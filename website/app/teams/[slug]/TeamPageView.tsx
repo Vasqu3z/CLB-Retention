@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Team } from '@/config/league';
-import { PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
+import { Team, PlayerStats, ScheduleGame, PlayoffGame, StandingsRow, TeamData } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import { playerNameToSlug } from '@/lib/utils';
 import Link from 'next/link';

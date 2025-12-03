@@ -1,13 +1,14 @@
-import { getSchedule } from '@/lib/sheets';
-import { getActiveTeams } from '@/config/league';
+import { getSchedule, getActiveTeams } from '@/lib/sheets';
 import ScheduleView from './ScheduleView';
 import FadeIn from "@/components/animations/FadeIn";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function SchedulePage() {
-  const schedule = await getSchedule();
-  const teams = getActiveTeams();
+  const [schedule, teams] = await Promise.all([
+    getSchedule(),
+    getActiveTeams(),
+  ]);
 
   return (
     <div className="space-y-8">

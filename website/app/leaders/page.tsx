@@ -1,4 +1,4 @@
-import { getCalculatedBattingLeaders, getCalculatedPitchingLeaders, getCalculatedFieldingLeaders } from "@/lib/sheets";
+import { getCalculatedBattingLeaders, getCalculatedPitchingLeaders, getCalculatedFieldingLeaders, getActiveTeams } from "@/lib/sheets";
 import LeadersView from "./LeadersView";
 import FadeIn from "@/components/animations/FadeIn";
 import LiveStatsIndicator from "@/components/LiveStatsIndicator";
@@ -6,7 +6,7 @@ import LiveStatsIndicator from "@/components/LiveStatsIndicator";
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function LeadersPage() {
-  // Fetch both regular season and playoff leaders
+  // Fetch both regular season and playoff leaders, plus teams
   const [
     battingLeaders,
     pitchingLeaders,
@@ -14,6 +14,7 @@ export default async function LeadersPage() {
     playoffBattingLeaders,
     playoffPitchingLeaders,
     playoffFieldingLeaders,
+    teams,
   ] = await Promise.all([
     getCalculatedBattingLeaders(false),
     getCalculatedPitchingLeaders(false),
@@ -21,6 +22,7 @@ export default async function LeadersPage() {
     getCalculatedBattingLeaders(true),
     getCalculatedPitchingLeaders(true),
     getCalculatedFieldingLeaders(true),
+    getActiveTeams(),
   ]);
 
   return (
@@ -43,6 +45,7 @@ export default async function LeadersPage() {
           playoffBattingLeaders={playoffBattingLeaders}
           playoffPitchingLeaders={playoffPitchingLeaders}
           playoffFieldingLeaders={playoffFieldingLeaders}
+          teams={teams}
         />
       </FadeIn>
     </div>

@@ -1,5 +1,4 @@
-import { getStandings, getSchedule, getAllPlayers, getPlayoffSchedule, getAverageTeamGP, ScheduleGame, PlayoffGame, groupGamesBySeries } from '@/lib/sheets';
-import { getTeamByName } from '@/config/league';
+import { getStandings, getSchedule, getAllPlayers, getPlayoffSchedule, getAverageTeamGP, ScheduleGame, PlayoffGame, groupGamesBySeries, Team } from '@/lib/sheets';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import { QUALIFICATION_THRESHOLDS } from '@/config/sheets';
 import { playerNameToSlug } from '@/lib/utils';
@@ -16,7 +15,18 @@ type RecentGame = {
   week: number | string; // number for regular season, string for playoffs
 };
 
-export default async function Sidebar() {
+interface SidebarProps {
+  teams: Team[];
+}
+
+export default async function Sidebar({ teams }: SidebarProps) {
+  // Helper function to look up team by name from the passed teams array
+  const getTeamByName = (name: string): Team | undefined => {
+    const normalizedInput = name.trim().toLowerCase();
+    return teams.find(
+      (t) => t.name.toLowerCase() === normalizedInput || t.shortName.toLowerCase() === normalizedInput
+    );
+  };
   // Fetch data in parallel
   const [standings, schedule, playoffSchedule, players, avgTeamGP] = await Promise.all([
     getStandings(),

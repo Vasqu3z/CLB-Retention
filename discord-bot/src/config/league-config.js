@@ -10,8 +10,8 @@
  * 3. Coordinate changes with Apps Script repository
  * 4. Test against updated sheets before deploying
  *
- * Last Schema Sync: 2025-01-10
- * Schema Version: 2.0.0
+ * Last Schema Sync: 2025-12-03
+ * Schema Version: 2.1.0
  *
  * Purpose:
  * - Centralized configuration for sheet names, column mappings, and formatting constants
@@ -37,7 +37,10 @@ export const SHEET_NAMES = {
   TEAM_DATA: '🧮 Teams',            // Team standings and captain info
   SCHEDULE: '📅 Schedule',          // Season schedule with game results (formerly Season Schedule)
   STANDINGS: '🥇 Standings',        // League standings table (formerly 🏆 Rankings)
-  IMAGE_URLS: 'Image URLs',         // Player/team/league image URLs
+
+  // Registry sheets (v2.1) - Single source of truth for identity/metadata
+  PLAYER_REGISTRY: '📋 Player Registry',  // Player identity, team, status, image
+  TEAM_REGISTRY: '📋 Team Registry',      // Team metadata, colors, logos
 
   // Playoff sheets (v2.1)
   PLAYOFF_PLAYER_DATA: '🏆 Players', // Playoff player stats
@@ -51,8 +54,68 @@ export const SHEET_NAMES = {
   FIELDING: '🧮 Fielding & Running', // DEPRECATED - use PLAYER_DATA
   RANKINGS: '🏆 Rankings',          // DEPRECATED - renamed to STANDINGS
   SEASON_SCHEDULE: 'Season Schedule', // DEPRECATED - renamed to SCHEDULE
-  LEAGUE_SCHEDULE: 'Discord Schedule' // DEPRECATED - use SCHEDULE
+  LEAGUE_SCHEDULE: 'Discord Schedule', // DEPRECATED - use SCHEDULE
+  IMAGE_URLS: 'Image URLs'          // DEPRECATED - use PLAYER_REGISTRY/TEAM_REGISTRY
 };
+
+/**
+ * Player Registry Column Mappings (v2.1)
+ *
+ * Single source of truth for player identity, team assignment, and images.
+ * Used for biographical data; stats come from PLAYER_DATA sheet.
+ */
+export const PLAYER_REGISTRY_COLUMNS = {
+  DATABASE_ID: 0,     // Column A - Character database ID (for attributes/chemistry)
+  PLAYER_NAME: 1,     // Column B - Display name
+  TEAM: 2,            // Column C - Current team name
+  STATUS: 3,          // Column D - Active, Free Agent, Inactive
+  IMAGE_URL: 4,       // Column E - Player image URL
+  HAS_ATTRIBUTES: 5   // Column F - Formula indicator
+};
+
+/**
+ * Team Registry Column Mappings (v2.1)
+ *
+ * Single source of truth for team metadata, colors, and logos.
+ * Includes special "League" status row for league branding.
+ */
+export const TEAM_REGISTRY_COLUMNS = {
+  TEAM_NAME: 0,       // Column A - Full team name
+  CAPTAIN: 1,         // Column B - In-game captain character
+  ABBR: 2,            // Column C - Abbreviation (used as URL slug, lowercase)
+  STATUS: 3,          // Column D - Active, Inactive, League
+  COLOR: 4,           // Column E - Primary hex color
+  SECONDARY_COLOR: 5, // Column F - Secondary hex color
+  LOGO_URL: 6,        // Column G - Team logo URL
+  EMBLEM_URL: 7,      // Column H - Team emblem URL (used for Discord)
+  DISCORD_ROLE_ID: 8, // Column I - Discord role ID
+  TEAM_OWNER: 9       // Column J - Team owner/manager name
+};
+
+/**
+ * Registry status values for filtering
+ */
+export const REGISTRY_STATUS = {
+  ACTIVE: 'Active',       // On a team, should be displayed
+  FREE_AGENT: 'Free Agent', // Not on team but searchable
+  INACTIVE: 'Inactive',   // Not in league, hidden
+  LEAGUE: 'League'        // Special row for league branding
+};
+
+/**
+ * Statuses that should be visible in player lists
+ */
+export const VISIBLE_PLAYER_STATUSES = [
+  REGISTRY_STATUS.ACTIVE,
+  REGISTRY_STATUS.FREE_AGENT
+];
+
+/**
+ * Statuses that should be visible in team lists
+ */
+export const VISIBLE_TEAM_STATUSES = [
+  REGISTRY_STATUS.ACTIVE
+];
 
 /**
  * Player Data Sheet Column Mappings (v2.0)

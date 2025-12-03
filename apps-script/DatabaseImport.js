@@ -72,7 +72,7 @@ const HIT_CURVE_TYPES = ["Disabled","Enabled"];
 
 /**
  * Get trajectory type names from imported config, or defaults if not available
- * @returns {string[]} Array of trajectory names (first 3 used trajectories)
+ * @returns {string[]} Array of all 6 trajectory names
  */
 function getTrajectoryTypes() {
   try {
@@ -81,24 +81,17 @@ function getTrajectoryTypes() {
 
     if (trajectoryDataJson) {
       const trajectoryData = JSON.parse(trajectoryDataJson);
-      // Return only the used trajectories (filter by usage array)
-      const usedTrajectories = [];
-      for (let i = 0; i < 6; i++) {
-        if (trajectoryData.usage[i] === 1) {
-          usedTrajectories.push(trajectoryData.names[i]);
-        }
-      }
-      // If we have at least 3 used trajectories, return them
-      if (usedTrajectories.length >= 3) {
-        return usedTrajectories.slice(0, 3);
+      // Return all 6 trajectory names - presetRow[26] is a direct index into this array
+      if (trajectoryData.names && trajectoryData.names.length === 6) {
+        return trajectoryData.names;
       }
     }
   } catch (e) {
     Logger.log('Could not load trajectory names from config: ' + e.message);
   }
 
-  // Fall back to defaults if config not available
-  return DEFAULT_TRAJECTORY_TYPES;
+  // Fall back to defaults if config not available (padded to 6)
+  return ["Medium", "High", "Low", "Trajectory 4", "Trajectory 5", "Trajectory 6"];
 }
 
 /**
@@ -111,146 +104,112 @@ function getTrajectoryTypesForClient() {
 }
 
 /**
- * Generate custom character name from Python format
- * Only converts characters that are actual variants (based on Python tool's comboList)
- * Example: "Red Toad" → "Toad (Red)", but "Baby Mario" stays "Baby Mario"
- * @param {string} pythonName - Name from Python tool
- * @returns {string} Custom formatted name
- */
-function generateCustomName(pythonName) {
-  // Define variant groups (from Python tool's comboList)
-  // Only these characters should be converted to variant format
-
-  const variantGroups = {
-    'Bro': ['Boomerang Bro', 'Fire Bro', 'Hammer Bro'],
-    'Dry Bones': ['Dark Bones', 'Blue Dry Bones', 'Gray Dry Bones', 'Green Dry Bones'],
-    'Koopa Paratroopa': ['Green Koopa Paratroopa', 'Red Koopa Paratroopa'],
-    'Koopa Troopa': ['Green Koopa Troopa', 'Red Koopa Troopa'],
-    'Kritter': ['Green Kritter', 'Blue Kritter', 'Red Kritter', 'Brown Kritter'],
-    'Magikoopa': ['Blue Magikoopa', 'Green Magikoopa', 'Red Magikoopa', 'Yellow Magikoopa'],
-    'Noki': ['Blue Noki', 'Red Noki', 'Green Noki'],
-    'Pianta': ['Blue Pianta', 'Red Pianta', 'Yellow Pianta'],
-    'Shy Guy': ['Blue Shy Guy', 'Gray Shy Guy', 'Green Shy Guy', 'Red Shy Guy', 'Yellow Shy Guy'],
-    'Toad': ['Blue Toad', 'Green Toad', 'Purple Toad', 'Red Toad', 'Yellow Toad'],
-    'Yoshi': ['Blue Yoshi', 'Light Blue Yoshi', 'Green Yoshi', 'Pink Yoshi', 'Red Yoshi', 'Yellow Yoshi']
-  };
-
-  // Check each variant group
-  for (const [baseName, variants] of Object.entries(variantGroups)) {
-    if (variants.includes(pythonName)) {
-      // Extract the color/variant prefix
-      const prefix = pythonName.substring(0, pythonName.length - baseName.length - 1);
-      return baseName + ' (' + prefix + ')';
-    }
-  }
-
-  // Handle Miis - they have a special format "Color Mii (Gender)"
-  if (pythonName.includes('Mii')) {
-    const miiMatch = pythonName.match(/^(.+) Mii \((M|F)\)$/);
-    if (miiMatch) {
-      const color = miiMatch[1];
-      const gender = miiMatch[2];
-      return 'Mii (' + color + ', ' + gender + ')';
-    }
-  }
-
-  // Not a variant - return original name unchanged
-  return pythonName;
-}
-
-/**
- * Create or update Character Name Mapping sheet
+ * Get the Player Registry sheet (read-only access)
+ * The registry maps DATABASE_ID (game index 0-100) to player names
  * @param {Spreadsheet} ss - Active spreadsheet
  * @param {Object} config - Configuration object
+ * @returns {Sheet|null} Player Registry sheet or null if not found
  */
-function createCharacterNameMappingSheet(ss, config) {
-  const sheetName = config.SHEETS.CHARACTER_NAME_MAPPING;
-  let mappingSheet = ss.getSheetByName(sheetName);
-
-  if (!mappingSheet) {
-    mappingSheet = ss.insertSheet(sheetName);
-
-    mappingSheet.getRange(1, 1, 1, 2).setValues([
-      ['Python Name', 'Custom Name']
-    ]);
-
-    const headerRange = mappingSheet.getRange(1, 1, 1, 2);
-    headerRange.setBackground(config.COLORS.HEADER_BACKGROUND);
-    headerRange.setFontColor(config.COLORS.HEADER_TEXT);
-    headerRange.setFontWeight('bold');
-    headerRange.setHorizontalAlignment('center');
-
-    const mappingConfig = config.CHARACTER_NAME_MAPPING_CONFIG;
-    mappingSheet.setColumnWidth(1, mappingConfig.COLUMN_WIDTHS.PYTHON_NAME);
-    mappingSheet.setColumnWidth(2, mappingConfig.COLUMN_WIDTHS.CUSTOM_NAME);
-
-    mappingSheet.setFrozenRows(1);
-
-    const mappingData = [];
-    for (let i = 0; i < GAME_CHARACTER_ORDER.length; i++) {
-      const pythonName = GAME_CHARACTER_ORDER[i];
-      const customName = generateCustomName(pythonName);
-      mappingData.push([pythonName, customName]);
-    }
-
-    mappingSheet.getRange(2, 1, mappingData.length, 2).setValues(mappingData);
-    mappingSheet.getRange(1, 2).setNote(
-      'Edit these names to match your custom naming convention.\n\n' +
-      'Pattern-based conversions applied for VARIANTS ONLY:\n' +
-      '• "Red Toad" → "Toad (Red)"\n' +
-      '• "Blue Yoshi" → "Yoshi (Blue)"\n' +
-      '• "Fire Bro" → "Bro (Fire)"\n' +
-      '• "Red Mii (M)" → "Mii (Red, M)"\n\n' +
-      'Non-variants (Baby Mario, Funky Kong, King Boo, etc.)\n' +
-      'are left unchanged.\n\n' +
-      'Review and adjust as needed!'
-    );
-  }
-
-  return mappingSheet;
+function getPlayerRegistrySheet(ss, config) {
+  const sheetName = config.SHEETS.CHARACTER_NAME_MAPPING; // Points to '📋 Player Registry'
+  return ss.getSheetByName(sheetName);
 }
 
 /**
- * Load all character name mappings into memory for fast lookups
- * @param {Sheet} mappingSheet - Character Name Mapping sheet
- * @returns {Object} Map of Python name → Custom name
+ * Load all character name mappings from Player Registry into memory for fast lookups
+ * Maps game index (0-100) to player display name
+ * DATABASE_ID column contains game character names (e.g., "Red Toad"), not numeric indices
+ * @param {Sheet} registrySheet - Player Registry sheet
+ * @returns {Object} Map of game index (number) → player name (string)
  */
-function loadCharacterNameMappings(mappingSheet) {
+function loadCharacterNameMappings(registrySheet) {
   const mappings = {};
 
-  if (!mappingSheet) {
-    // No mapping sheet, return empty map
+  if (!registrySheet) {
+    // No registry sheet, return empty map
     return mappings;
   }
 
+  // Build reverse lookup: game character name → index
+  const gameNameToIndex = {};
+  GAME_CHARACTER_ORDER.forEach((name, idx) => {
+    gameNameToIndex[name] = idx;
+  });
+
   try {
-    const lastRow = mappingSheet.getLastRow();
+    const config = getConfig();
+    const cols = config.PLAYER_REGISTRY_CONFIG.COLUMNS;
+    const lastRow = registrySheet.getLastRow();
     if (lastRow < 2) return mappings;
 
-    const data = mappingSheet.getRange(2, 1, lastRow - 1, 2).getValues();
+    // Read DATABASE_ID (column A) and PLAYER_NAME (column B)
+    const data = registrySheet.getRange(2, 1, lastRow - 1, 2).getValues();
 
     for (let i = 0; i < data.length; i++) {
-      const pythonName = String(data[i][0]).trim();
-      const customName = String(data[i][1]).trim();
-      if (pythonName && customName) {
-        mappings[pythonName] = customName;
+      const databaseId = String(data[i][cols.DATABASE_ID]).trim();
+      const playerName = String(data[i][cols.PLAYER_NAME]).trim();
+
+      if (databaseId && playerName) {
+        // DATABASE_ID is the game character name (e.g., "Red Toad")
+        // Look up its index in GAME_CHARACTER_ORDER
+        const gameIndex = gameNameToIndex[databaseId];
+
+        if (gameIndex !== undefined) {
+          mappings[gameIndex] = playerName;
+        } else {
+          // Try parsing as numeric index for backwards compatibility
+          const numericIndex = parseInt(databaseId, 10);
+          if (!isNaN(numericIndex) && numericIndex >= 0 && numericIndex < 101) {
+            mappings[numericIndex] = playerName;
+          }
+        }
       }
     }
   } catch (e) {
     // Error reading mappings, return empty map
+    const config = getConfig();
+    if (config.DEBUG.ENABLE_LOGGING) {
+      Logger.log('Error in loadCharacterNameMappings: ' + e.toString());
+    }
   }
 
   return mappings;
 }
 
 /**
- * Get custom character name from pre-loaded mapping
- * @param {Object} mappings - Pre-loaded name mappings
- * @param {string} pythonName - Python format name to look up
- * @returns {string} Custom name, or Python name if not found
+ * Get player name from pre-loaded mapping by game index
+ * @param {Object} mappings - Pre-loaded name mappings (index → name)
+ * @param {number} gameIndex - Game character index (0-100)
+ * @returns {string} Player name from registry, or default game character name if not found
  */
-function getCustomCharacterName(mappings, pythonName) {
-  return mappings[pythonName] || pythonName;
+function getCustomCharacterName(mappings, gameIndex) {
+  return mappings[gameIndex] || GAME_CHARACTER_ORDER[gameIndex];
+}
+
+/**
+ * Build reverse mapping from player name to game index
+ * Used for export functions to map sheet data back to preset indices
+ * @param {Object} nameMappings - Pre-loaded name mappings (index → name)
+ * @returns {Object} Map of player name → game index
+ */
+function buildNameToIndexMap(nameMappings) {
+  const nameToIndex = {};
+
+  // First, add all game character names (fallback)
+  GAME_CHARACTER_ORDER.forEach((name, idx) => {
+    nameToIndex[name] = idx;
+  });
+
+  // Then, add/override with registry mappings (player names)
+  Object.keys(nameMappings).forEach(indexStr => {
+    const idx = parseInt(indexStr, 10);
+    const playerName = nameMappings[indexStr];
+    if (playerName && !isNaN(idx)) {
+      nameToIndex[playerName] = idx;
+    }
+  });
+
+  return nameToIndex;
 }
 
 /**
@@ -285,8 +244,8 @@ function parseFullStatsPreset(fileContent) {
     const config = getConfig();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    const mappingSheet = createCharacterNameMappingSheet(ss, config);
-    const nameMappings = loadCharacterNameMappings(mappingSheet);
+    const registrySheet = getPlayerRegistrySheet(ss, config);
+    const nameMappings = loadCharacterNameMappings(registrySheet);
 
     // ===== SECTION 1: CHEMISTRY (Lines 0-100) =====
     const chemistryResult = parseChemistrySection(lines.slice(0, 101), ss, config, nameMappings);
@@ -301,7 +260,7 @@ function parseFullStatsPreset(fileContent) {
       ss,
       config,
       nameMappings,
-      trajectoryResult.usedTrajectoryTypes
+      trajectoryResult.trajectoryTypes  // All 6 trajectory names
     );
 
     // Log the import event
@@ -374,11 +333,9 @@ function parseChemistrySection(chemistryLines, ss, config, nameMappings) {
 
       // Only store non-neutral chemistry (negative or positive)
       if (chemistry !== null) {
-        const pythonName1 = GAME_CHARACTER_ORDER[i];
-        const pythonName2 = GAME_CHARACTER_ORDER[j];
         pairs.push({
-          player1: getCustomCharacterName(nameMappings, pythonName1),
-          player2: getCustomCharacterName(nameMappings, pythonName2),
+          player1: getCustomCharacterName(nameMappings, i),
+          player2: getCustomCharacterName(nameMappings, j),
           chemistry: chemistry
         });
       }
@@ -458,7 +415,8 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
     }
   }
 
-  const trajectoryTypes = Array.isArray(trajectoryTypesOverride) && trajectoryTypesOverride.length >= 3
+  // Use all 6 trajectory types - presetRow[26] is a direct index (0-5)
+  const trajectoryTypes = Array.isArray(trajectoryTypesOverride) && trajectoryTypesOverride.length === 6
     ? trajectoryTypesOverride
     : getTrajectoryTypes();
 
@@ -466,8 +424,7 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
 
   for (let i = 0; i < 101; i++) {
     const presetRow = statsMatrix[i];
-    const pythonName = GAME_CHARACTER_ORDER[i];
-    const characterName = getCustomCharacterName(nameMappings, pythonName);
+    const characterName = getCustomCharacterName(nameMappings, i);
 
     const customData = existingCustomData[characterName] || { mii: '', miiColor: '', preCharge: '' };
 
@@ -692,19 +649,13 @@ function parseTrajectorySection(trajectoryLines, ss, config) {
   const trajectorySheet = ensureTrajectorySheet(ss, config);
   writeTrajectorySheet(trajectorySheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage);
 
-  const usedTrajectoryTypes = [];
-  for (let i = 0; i < trajectoryNames.length; i++) {
-    if (trajectoryUsage[i] === 1) {
-      usedTrajectoryTypes.push(trajectoryNames[i]);
-    }
-  }
-
+  // Return all 6 trajectory names - presetRow[26] is a direct index into this array
   return {
     stored: true,
     matrixRows: 24,
     names: 6,
     usage: 6,
-    usedTrajectoryTypes
+    trajectoryTypes: trajectoryNames  // Pass all 6 names, not filtered by usage
   };
 }
 
@@ -891,10 +842,10 @@ function exportChemistrySection(ss, config) {
 
   const matrix = Array(101).fill(null).map(() => Array(101).fill(1));
 
-  const nameToIndex = {};
-  GAME_CHARACTER_ORDER.forEach((name, idx) => {
-    nameToIndex[name] = idx;
-  });
+  // Build name → index mapping from Player Registry
+  const registrySheet = getPlayerRegistrySheet(ss, config);
+  const nameMappings = loadCharacterNameMappings(registrySheet);
+  const nameToIndex = buildNameToIndexMap(nameMappings);
 
   const lastRow = lookupSheet.getLastRow();
   if (lastRow > 1) {
@@ -941,10 +892,10 @@ function exportStatsSection(ss, config) {
     config.ATTRIBUTES_CONFIG.TOTAL_COLUMNS
   ).getValues();
 
-  const nameToIndex = {};
-  GAME_CHARACTER_ORDER.forEach((name, idx) => {
-    nameToIndex[name] = idx;
-  });
+  // Build name → index mapping from Player Registry
+  const registrySheet = getPlayerRegistrySheet(ss, config);
+  const nameMappings = loadCharacterNameMappings(registrySheet);
+  const nameToIndex = buildNameToIndexMap(nameMappings);
 
   const presetMatrix = Array(101).fill(null).map(() => Array(30).fill(0));
 
@@ -1205,19 +1156,18 @@ function getChemistryMatrix() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const lookupSheet = ss.getSheetByName(config.SHEETS.CHEMISTRY_LOOKUP);
 
-    const mappingSheet = ss.getSheetByName(config.SHEETS.CHARACTER_NAME_MAPPING);
-    const nameMappings = loadCharacterNameMappings(mappingSheet);
+    const registrySheet = getPlayerRegistrySheet(ss, config);
+    const nameMappings = loadCharacterNameMappings(registrySheet);
 
-    const customNames = GAME_CHARACTER_ORDER.map(pythonName =>
-      getCustomCharacterName(nameMappings, pythonName)
-    );
+    // Build character names array using index-based lookup
+    const customNames = [];
+    for (let i = 0; i < 101; i++) {
+      customNames.push(getCustomCharacterName(nameMappings, i));
+    }
 
     const matrix = Array(101).fill(null).map(() => Array(101).fill(1));
 
-    const nameToIndex = {};
-    customNames.forEach((name, idx) => {
-      nameToIndex[name] = idx;
-    });
+    const nameToIndex = buildNameToIndexMap(nameMappings);
 
     if (lookupSheet && lookupSheet.getLastRow() > 1) {
       const data = lookupSheet.getRange(2, 1, lookupSheet.getLastRow() - 1, 3).getValues();
@@ -1278,12 +1228,8 @@ function updateChemistryMatrix(matrix, changes) {
     const thresholds = config.CHEMISTRY_CONFIG.THRESHOLDS;
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    const mappingSheet = ss.getSheetByName(config.SHEETS.CHARACTER_NAME_MAPPING);
-    const nameMappings = loadCharacterNameMappings(mappingSheet);
-
-    const customNames = GAME_CHARACTER_ORDER.map(pythonName =>
-      getCustomCharacterName(nameMappings, pythonName)
-    );
+    const registrySheet = getPlayerRegistrySheet(ss, config);
+    const nameMappings = loadCharacterNameMappings(registrySheet);
 
     const pairs = [];
 
@@ -1298,8 +1244,8 @@ function updateChemistryMatrix(matrix, changes) {
 
         if (chemistry !== null) {
           pairs.push({
-            player1: customNames[i],
-            player2: customNames[j],
+            player1: getCustomCharacterName(nameMappings, i),
+            player2: getCustomCharacterName(nameMappings, j),
             chemistry: chemistry
           });
         }

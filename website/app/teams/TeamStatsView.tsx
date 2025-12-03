@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { TeamData, StandingsRow } from '@/lib/sheets';
+import { TeamData, StandingsRow, Team } from '@/lib/sheets';
 import Link from 'next/link';
 import Image from 'next/image';
-import { getActiveTeams } from '@/config/league';
 import { getTeamLogoPaths } from '@/lib/teamLogos';
 import SeasonToggle from '@/components/SeasonToggle';
 import DataTable, { Column } from '@/components/DataTable';
@@ -18,6 +17,7 @@ interface TeamStatsViewProps {
   regularStandings: StandingsRow[];
   playoffTeamData: TeamData[];
   playoffStandings: StandingsRow[];
+  teams: Team[];
 }
 
 interface EnhancedTeam extends TeamData {
@@ -40,7 +40,8 @@ export default function TeamStatsView({
   regularTeamData,
   regularStandings,
   playoffTeamData,
-  playoffStandings
+  playoffStandings,
+  teams,
 }: TeamStatsViewProps) {
   const [isPlayoffs, setIsPlayoffs] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('hitting');
@@ -48,8 +49,6 @@ export default function TeamStatsView({
   // Use appropriate data based on toggle
   const teamData = isPlayoffs ? playoffTeamData : regularTeamData;
   const standings = isPlayoffs ? playoffStandings : regularStandings;
-
-  const teams = getActiveTeams();
 
   // Helper to get team color
   const getTeamColor = (teamName: string) => {

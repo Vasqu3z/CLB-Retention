@@ -27,6 +27,8 @@ import {
   TEAM_REGISTRY_SHEET,
   DATABASE_ATTRIBUTES_SHEET,
   CHEMISTRY_LOOKUP_SHEET,
+  REGISTRY_STATUS,
+  VISIBLE_TEAM_STATUSES,
   buildSheetRange,
   buildFullRange,
 } from '@/config/sheets';
@@ -1188,16 +1190,48 @@ export async function getPlayerRegistry(): Promise<PlayerRegistryEntry[]> {
   }
 }
 
-// ===== TEAM REGISTRY (PHASE 1 FOUNDATION) =====
+// ===== TEAM REGISTRY (SINGLE SOURCE OF TRUTH FOR TEAMS) =====
 export interface TeamRegistryEntry {
   teamName: string;
   abbr: string;
-  captain: string;
-  status: string;
-  color: string;
+  captain: string;         // In-game captain character
+  status: string;          // Active, Inactive, League
+  color: string;           // Primary hex color
+  secondaryColor: string;  // Secondary hex color
   logoUrl: string;
   emblemUrl: string;
   discordRoleId: string;
+  teamOwner: string;       // Team owner/manager name
+}
+
+/**
+ * Team interface for component usage (replaces league.ts Team interface)
+ * Uses slug (lowercase abbr) for URL routing
+ */
+export interface Team {
+  name: string;
+  slug: string;            // Lowercase abbreviation for URL routing
+  shortName: string;       // Abbreviation
+  mascot: string;          // In-game captain character
+  primaryColor: string;    // Primary hex color
+  secondaryColor: string;  // Secondary hex color
+  logoUrl: string;
+  emblemUrl: string;
+  teamOwner: string;
+  active: boolean;
+}
+
+/**
+ * League branding interface for the league-level row (STATUS="League")
+ */
+export interface LeagueBranding {
+  name: string;            // "Comets League Baseball"
+  shortName: string;       // "CLB"
+  primaryColor: string;
+  secondaryColor: string;
+  logoUrl: string;
+  emblemUrl: string;
+  currentSeason: string;   // Will need to be added or hardcoded
 }
 
 /**
@@ -1206,14 +1240,14 @@ export interface TeamRegistryEntry {
  */
 export async function getTeamRegistry(): Promise<TeamRegistryEntry[]> {
   try {
-  const range = buildFullRange(
-    TEAM_REGISTRY_SHEET.NAME,
-    TEAM_REGISTRY_SHEET.DATA_START_ROW,
-    TEAM_REGISTRY_SHEET.MAX_ROWS,
-    TEAM_REGISTRY_SHEET.START_COL,
-    TEAM_REGISTRY_SHEET.END_COL
-  );
-  const data = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
+    const range = buildFullRange(
+      TEAM_REGISTRY_SHEET.NAME,
+      TEAM_REGISTRY_SHEET.DATA_START_ROW,
+      TEAM_REGISTRY_SHEET.MAX_ROWS,
+      TEAM_REGISTRY_SHEET.START_COL,
+      TEAM_REGISTRY_SHEET.END_COL
+    );
+    const data = await getSheetData(range, undefined, LOW_CHURN_SHEET_REVALIDATE_SECONDS);
 
     return data
       .filter((row) => row[TEAM_REGISTRY_SHEET.COLUMNS.TEAM_NAME])
@@ -1223,14 +1257,129 @@ export async function getTeamRegistry(): Promise<TeamRegistryEntry[]> {
         captain: String(row[TEAM_REGISTRY_SHEET.COLUMNS.CAPTAIN] || '').trim(),
         status: String(row[TEAM_REGISTRY_SHEET.COLUMNS.STATUS] || '').trim(),
         color: String(row[TEAM_REGISTRY_SHEET.COLUMNS.COLOR] || '').trim(),
+        secondaryColor: String(row[TEAM_REGISTRY_SHEET.COLUMNS.SECONDARY_COLOR] || '').trim(),
         logoUrl: String(row[TEAM_REGISTRY_SHEET.COLUMNS.LOGO_URL] || '').trim(),
         emblemUrl: String(row[TEAM_REGISTRY_SHEET.COLUMNS.EMBLEM_URL] || '').trim(),
         discordRoleId: String(row[TEAM_REGISTRY_SHEET.COLUMNS.DISCORD_ROLE_ID] || '').trim(),
+        teamOwner: String(row[TEAM_REGISTRY_SHEET.COLUMNS.TEAM_OWNER] || '').trim(),
       }));
   } catch (error) {
     console.error('Error fetching team registry:', error);
     return [];
   }
+}
+
+/**
+ * Converts a TeamRegistryEntry to a Team object for component usage
+ */
+function registryEntryToTeam(entry: TeamRegistryEntry): Team {
+  return {
+    name: entry.teamName,
+    slug: entry.abbr.toLowerCase(),
+    shortName: entry.abbr,
+    mascot: entry.captain,
+    primaryColor: entry.color,
+    secondaryColor: entry.secondaryColor,
+    logoUrl: entry.logoUrl,
+    emblemUrl: entry.emblemUrl,
+    teamOwner: entry.teamOwner,
+    active: entry.status === REGISTRY_STATUS.ACTIVE,
+  };
+}
+
+/**
+ * Fetches all active teams from the Team Registry
+ * Replaces getActiveTeams() from league.ts
+ * @returns Array of active Team objects sorted by name
+ */
+export async function getActiveTeams(): Promise<Team[]> {
+  const registry = await getTeamRegistry();
+  return registry
+    .filter((entry) => VISIBLE_TEAM_STATUSES.includes(entry.status as any))
+    .map(registryEntryToTeam)
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Fetches all teams from the Team Registry (including inactive)
+ * @returns Array of all Team objects
+ */
+export async function getAllTeams(): Promise<Team[]> {
+  const registry = await getTeamRegistry();
+  return registry
+    .filter((entry) => entry.status !== REGISTRY_STATUS.LEAGUE)
+    .map(registryEntryToTeam);
+}
+
+/**
+ * Fetches a team by its URL slug (lowercase abbreviation)
+ * Replaces getTeamBySlug() from league.ts
+ * @param slug - The URL slug (lowercase abbreviation) to search for
+ * @returns Team object or undefined if not found
+ */
+export async function getTeamBySlug(slug: string): Promise<Team | undefined> {
+  const registry = await getTeamRegistry();
+  const entry = registry.find(
+    (e) => e.abbr.toLowerCase() === slug.toLowerCase() && e.status !== REGISTRY_STATUS.LEAGUE
+  );
+  return entry ? registryEntryToTeam(entry) : undefined;
+}
+
+/**
+ * Fetches a team by its full name
+ * Replaces getTeamByName() from league.ts
+ * @param name - The team name to search for (case-insensitive)
+ * @returns Team object or undefined if not found
+ */
+export async function getTeamByName(name: string): Promise<Team | undefined> {
+  const registry = await getTeamRegistry();
+  const normalizedInput = name.trim().toLowerCase();
+
+  // First try exact match
+  let entry = registry.find(
+    (e) => e.teamName.toLowerCase() === normalizedInput && e.status !== REGISTRY_STATUS.LEAGUE
+  );
+
+  // If no match, try matching by abbreviation
+  if (!entry) {
+    entry = registry.find(
+      (e) => e.abbr.toLowerCase() === normalizedInput && e.status !== REGISTRY_STATUS.LEAGUE
+    );
+  }
+
+  return entry ? registryEntryToTeam(entry) : undefined;
+}
+
+/**
+ * Fetches league branding from the Team Registry (row with STATUS="League")
+ * @returns LeagueBranding object or default values if not found
+ */
+export async function getLeagueBranding(): Promise<LeagueBranding> {
+  const registry = await getTeamRegistry();
+  const leagueEntry = registry.find((e) => e.status === REGISTRY_STATUS.LEAGUE);
+
+  if (leagueEntry) {
+    return {
+      name: leagueEntry.teamName,
+      shortName: leagueEntry.abbr,
+      primaryColor: leagueEntry.color,
+      secondaryColor: leagueEntry.secondaryColor,
+      logoUrl: leagueEntry.logoUrl,
+      emblemUrl: leagueEntry.emblemUrl,
+      currentSeason: '1', // TODO: Could be stored in a config sheet or registry
+    };
+  }
+
+  // Fallback defaults if no League row exists
+  return {
+    name: 'Comets League Baseball',
+    shortName: 'CLB',
+    primaryColor: '#FF6B35',
+    secondaryColor: '#00D4FF',
+    logoUrl: '',
+    emblemUrl: '',
+    currentSeason: '1',
+  };
 }
 
 // ===== PLAYER ATTRIBUTES (DATABASE MODULE) =====

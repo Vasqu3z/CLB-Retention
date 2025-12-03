@@ -1,7 +1,6 @@
 'use client';
 
-import { BracketRound, StandingsRow } from "@/lib/sheets";
-import { getTeamByName } from "@/config/league";
+import { BracketRound, StandingsRow, Team } from "@/lib/sheets";
 import { getTeamLogoPaths } from "@/lib/teamLogos";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,9 +9,18 @@ import SurfaceCard from "@/components/SurfaceCard";
 interface BracketViewProps {
   bracket: BracketRound[];
   standings: StandingsRow[];
+  teams: Team[];
 }
 
-export default function BracketView({ bracket, standings }: BracketViewProps) {
+// Helper to find team by name
+function findTeamByName(teams: Team[], name: string): Team | undefined {
+  const normalizedInput = name.trim().toLowerCase();
+  return teams.find(
+    (t) => t.name.toLowerCase() === normalizedInput || t.shortName.toLowerCase() === normalizedInput
+  );
+}
+
+export default function BracketView({ bracket, standings, teams }: BracketViewProps) {
   // Helper function to get team seed from standings
   const getTeamSeed = (teamName: string): string => {
     const team = standings.find(s => s.team === teamName);
@@ -48,8 +56,8 @@ export default function BracketView({ bracket, standings }: BracketViewProps) {
           {/* Series Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {round.series.map((series, seriesIdx) => {
-              const teamAConfig = getTeamByName(series.teamA);
-              const teamBConfig = getTeamByName(series.teamB);
+              const teamAConfig = findTeamByName(teams, series.teamA);
+              const teamBConfig = findTeamByName(teams, series.teamB);
               const teamALogos = teamAConfig ? getTeamLogoPaths(teamAConfig.name) : null;
               const teamBLogos = teamBConfig ? getTeamLogoPaths(teamBConfig.name) : null;
 

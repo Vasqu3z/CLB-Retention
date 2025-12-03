@@ -8,6 +8,7 @@ import SidebarMobile from "@/components/SidebarMobile";
 import SmoothScroll from "@/components/SmoothScroll";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import PageTransition from "@/components/animations/PageTransition";
+import { getActiveTeams, getLeagueBranding } from "@/lib/sheets";
 
 // Optimize font loading with display: 'swap' and limited weights
 const barlow = Barlow({
@@ -46,21 +47,27 @@ export const metadata: Metadata = {
   description: "Official statistics and standings for Comets League Baseball",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch team and league data from Registry (single source of truth)
+  const [teams, leagueBranding] = await Promise.all([
+    getActiveTeams(),
+    getLeagueBranding(),
+  ]);
+
   return (
     <html lang="en" className={`${barlow.variable} ${syne.variable} ${azeretMono.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-screen flex flex-col">
         <AnimatedBackground />
         <SmoothScroll />
-        <Header />
+        <Header teams={teams} leagueBranding={leagueBranding} />
         <div className="flex flex-1">
           {/* Sidebar - Responsive */}
           <SidebarMobile>
-            <Sidebar />
+            <Sidebar teams={teams} />
           </SidebarMobile>
 
           {/* Main Content */}
@@ -70,7 +77,7 @@ export default function RootLayout({
             </div>
           </main>
         </div>
-        <Footer />
+        <Footer leagueBranding={leagueBranding} />
       </body>
     </html>
   );

@@ -4,10 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { LEAGUE_CONFIG, getActiveTeams } from "@/config/league";
-import { getLeagueLogo, getTeamLogoPaths } from "@/lib/teamLogos";
+import { getTeamLogoPaths } from "@/lib/teamLogos";
 import MobileNav from "./MobileNav";
 import SurfaceCard from "@/components/SurfaceCard";
+import type { Team, LeagueBranding } from "@/lib/sheets";
 
 const navItems = [
   { href: "/teams", label: "Teams" },
@@ -25,9 +25,13 @@ const toolsItems = [
   { href: "/tools/lineup", label: "Lineup Builder" },
 ];
 
-export default function Header() {
+interface HeaderProps {
+  teams: Team[];
+  leagueBranding: LeagueBranding;
+}
+
+export default function Header({ teams, leagueBranding }: HeaderProps) {
   const pathname = usePathname();
-  const teams = getActiveTeams();
   const [showToolsDropdown, setShowToolsDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -75,12 +79,12 @@ export default function Header() {
           <Link
             href="/"
             className="flex items-center gap-3 group focus:outline-none rounded-lg"
-            aria-label="Comets League Baseball Home"
+            aria-label={`${leagueBranding.name} Home`}
           >
             <div className="w-12 h-12 relative flex items-center justify-center flex-shrink-0">
               <Image
-                src={getLeagueLogo()}
-                alt="CLB Logo"
+                src={leagueBranding.emblemUrl || '/CLB II.png'}
+                alt={`${leagueBranding.shortName} Logo`}
                 width={48}
                 height={48}
                 className="object-contain group-hover:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] group-focus:drop-shadow-[0_0_12px_rgba(255,107,53,0.8)] transition-all"
@@ -88,10 +92,10 @@ export default function Header() {
             </div>
             <div className="flex flex-col justify-center">
               <span className="text-xl font-display font-bold text-star-white leading-tight">
-                {LEAGUE_CONFIG.shortName}
+                {leagueBranding.shortName}
               </span>
               <span className="text-xs text-star-gray font-mono leading-tight">
-                Season {LEAGUE_CONFIG.currentSeason}
+                Season {leagueBranding.currentSeason}
               </span>
             </div>
           </Link>
@@ -99,7 +103,8 @@ export default function Header() {
           {/* Team Emblems */}
           <div className="hidden lg:flex items-center gap-4 mx-4">
             {teams.map((team) => {
-              const logos = getTeamLogoPaths(team.name);
+              // Use registry emblem URL, fallback to local file
+              const emblemSrc = team.emblemUrl || getTeamLogoPaths(team.name).emblem;
               return (
                 <Link
                   key={team.slug}
@@ -109,7 +114,7 @@ export default function Header() {
                 >
                   <div className="w-8 h-8 relative flex items-center justify-center">
                     <Image
-                      src={logos.emblem}
+                      src={emblemSrc}
                       alt={team.name}
                       width={32}
                       height={32}

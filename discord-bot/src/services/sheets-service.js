@@ -37,7 +37,12 @@ import {
   QUALIFICATION,
   CACHE_CONFIG,
   PLAYOFF_CODE_TO_ROUND,
-  PLAYOFF_ROUNDS
+  PLAYOFF_ROUNDS,
+  PLAYER_REGISTRY_COLUMNS,
+  TEAM_REGISTRY_COLUMNS,
+  REGISTRY_STATUS,
+  VISIBLE_PLAYER_STATUSES,
+  VISIBLE_TEAM_STATUSES
 } from '../config/league-config.js';
 import logger from '../utils/logger.js';
 
@@ -851,15 +856,157 @@ class SheetsService {
     };
   }
 
-  async getImageUrl(name, type) {
-    // Read Image URLs sheet
-    const data = await this.getSheetData('Image URLs', 'A2:C'); // Name, Type, URL
+  // ===== REGISTRY FUNCTIONS (v2.1) =====
 
-    logger.debug('SheetsService', `Looking for image: name="${name}", type="${type}"`);
-    logger.debug('SheetsService', `Total rows in Image URLs: ${data.length}`);
-    if (data.length > 0) {
-      logger.debug('SheetsService', `First row sample: ${JSON.stringify(data[0])}`);
+  /**
+   * Fetches the Player Registry - single source of truth for player identity
+   * @param {boolean} includeInactive - Include inactive players (default: false)
+   * @returns {Promise<Array>} Array of player registry entries
+   */
+  async getPlayerRegistry(includeInactive = false) {
+    const data = await this.getSheetData(SHEET_NAMES.PLAYER_REGISTRY, 'A2:F');
+
+    const players = data
+      .filter(row => row[PLAYER_REGISTRY_COLUMNS.PLAYER_NAME])
+      .map(row => ({
+        databaseId: row[PLAYER_REGISTRY_COLUMNS.DATABASE_ID]?.trim() || '',
+        name: row[PLAYER_REGISTRY_COLUMNS.PLAYER_NAME]?.trim() || '',
+        team: row[PLAYER_REGISTRY_COLUMNS.TEAM]?.trim() || '',
+        status: row[PLAYER_REGISTRY_COLUMNS.STATUS]?.trim() || '',
+        imageUrl: row[PLAYER_REGISTRY_COLUMNS.IMAGE_URL]?.trim() || '',
+        hasAttributes: row[PLAYER_REGISTRY_COLUMNS.HAS_ATTRIBUTES]?.toLowerCase() === 'true'
+      }));
+
+    if (includeInactive) {
+      return players;
     }
+
+    // Filter to only visible statuses (Active, Free Agent)
+    return players.filter(p => VISIBLE_PLAYER_STATUSES.includes(p.status));
+  }
+
+  /**
+   * Fetches the Team Registry - single source of truth for team metadata
+   * @param {boolean} includeInactive - Include inactive teams (default: false)
+   * @returns {Promise<Array>} Array of team registry entries
+   */
+  async getTeamRegistry(includeInactive = false) {
+    const data = await this.getSheetData(SHEET_NAMES.TEAM_REGISTRY, 'A2:J');
+
+    const teams = data
+      .filter(row => row[TEAM_REGISTRY_COLUMNS.TEAM_NAME])
+      .map(row => ({
+        name: row[TEAM_REGISTRY_COLUMNS.TEAM_NAME]?.trim() || '',
+        captain: row[TEAM_REGISTRY_COLUMNS.CAPTAIN]?.trim() || '',
+        abbr: row[TEAM_REGISTRY_COLUMNS.ABBR]?.trim() || '',
+        status: row[TEAM_REGISTRY_COLUMNS.STATUS]?.trim() || '',
+        color: row[TEAM_REGISTRY_COLUMNS.COLOR]?.trim() || '',
+        secondaryColor: row[TEAM_REGISTRY_COLUMNS.SECONDARY_COLOR]?.trim() || '',
+        logoUrl: row[TEAM_REGISTRY_COLUMNS.LOGO_URL]?.trim() || '',
+        emblemUrl: row[TEAM_REGISTRY_COLUMNS.EMBLEM_URL]?.trim() || '',
+        discordRoleId: row[TEAM_REGISTRY_COLUMNS.DISCORD_ROLE_ID]?.trim() || '',
+        teamOwner: row[TEAM_REGISTRY_COLUMNS.TEAM_OWNER]?.trim() || ''
+      }));
+
+    if (includeInactive) {
+      return teams;
+    }
+
+    // Filter to only visible statuses (Active)
+    return teams.filter(t => VISIBLE_TEAM_STATUSES.includes(t.status));
+  }
+
+  /**
+   * Fetches league branding from Team Registry (row with STATUS="League")
+   * @returns {Promise<Object|null>} League branding object or null
+   */
+  async getLeagueBranding() {
+    const allTeams = await this.getTeamRegistry(true); // Include all statuses
+    const leagueEntry = allTeams.find(t => t.status === REGISTRY_STATUS.LEAGUE);
+
+    if (leagueEntry) {
+      return {
+        name: leagueEntry.name,
+        shortName: leagueEntry.abbr,
+        primaryColor: leagueEntry.color,
+        secondaryColor: leagueEntry.secondaryColor,
+        logoUrl: leagueEntry.logoUrl,
+        emblemUrl: leagueEntry.emblemUrl
+      };
+    }
+
+    // Fallback defaults
+    return {
+      name: 'Comets League Baseball',
+      shortName: 'CLB',
+      primaryColor: '#FF6B35',
+      secondaryColor: '#00D4FF',
+      logoUrl: '',
+      emblemUrl: ''
+    };
+  }
+
+  /**
+   * Finds a player in the registry by name
+   * @param {string} name - Player name to search for
+   * @returns {Promise<Object|null>} Player registry entry or null
+   */
+  async findPlayerInRegistry(name) {
+    const players = await this.getPlayerRegistry(true);
+    const normalizedName = name.trim().toLowerCase();
+
+    return players.find(p => p.name.toLowerCase() === normalizedName) || null;
+  }
+
+  /**
+   * Finds a team in the registry by name
+   * @param {string} name - Team name to search for
+   * @returns {Promise<Object|null>} Team registry entry or null
+   */
+  async findTeamInRegistry(name) {
+    const teams = await this.getTeamRegistry(true);
+    const normalizedName = name.trim().toLowerCase();
+
+    return teams.find(t =>
+      t.name.toLowerCase() === normalizedName ||
+      t.abbr.toLowerCase() === normalizedName
+    ) || null;
+  }
+
+  /**
+   * Gets image URL for a player, team, or league
+   * Uses Registry sheets as primary source, with fallback to Image URLs sheet
+   * @param {string} name - Name to look up
+   * @param {string} type - 'player', 'team', or 'league'
+   * @returns {Promise<string|null>} Image URL or null
+   */
+  async getImageUrl(name, type) {
+    logger.debug('SheetsService', `Looking for image: name="${name}", type="${type}"`);
+
+    // Try Registry lookup first
+    if (type === 'player') {
+      const player = await this.findPlayerInRegistry(name);
+      if (player?.imageUrl) {
+        logger.debug('SheetsService', `Found player image in Registry: ${player.imageUrl}`);
+        return player.imageUrl;
+      }
+    } else if (type === 'team') {
+      const team = await this.findTeamInRegistry(name);
+      if (team?.emblemUrl) {
+        logger.debug('SheetsService', `Found team emblem in Registry: ${team.emblemUrl}`);
+        return team.emblemUrl;
+      }
+    } else if (type === 'league') {
+      const branding = await this.getLeagueBranding();
+      if (branding?.emblemUrl) {
+        logger.debug('SheetsService', `Found league emblem in Registry: ${branding.emblemUrl}`);
+        return branding.emblemUrl;
+      }
+    }
+
+    // Fallback to Image URLs sheet (deprecated, for backwards compatibility)
+    logger.debug('SheetsService', `Registry lookup failed, trying Image URLs sheet...`);
+    const data = await this.getSheetData(SHEET_NAMES.IMAGE_URLS, 'A2:C');
 
     const normalizedName = name.trim().toLowerCase();
 
@@ -867,16 +1014,12 @@ class SheetsService {
     const match = data.find(row => {
       const rowName = row[0]?.toLowerCase().trim();
       const rowType = row[1]?.toLowerCase().trim();
-      const isMatch = rowName === normalizedName && rowType === type;
-      if (isMatch) {
-        logger.debug('SheetsService', `MATCH FOUND: [${row[0]}] [${row[1]}] [${row[2]}]`);
-      }
-      return isMatch;
+      return rowName === normalizedName && rowType === type;
     });
 
     if (match && match[2]) {
       const url = match[2].trim();
-      logger.debug('SheetsService', `Returning image URL: ${url}\n`);
+      logger.debug('SheetsService', `Found in Image URLs sheet: ${url}`);
       return url;
     }
 
@@ -888,11 +1031,11 @@ class SheetsService {
 
     if (defaultMatch && defaultMatch[2]) {
       const url = defaultMatch[2].trim();
-      logger.debug('SheetsService', `Using default image for ${type}: ${url}\n`);
+      logger.debug('SheetsService', `Using default image for ${type}: ${url}`);
       return url;
     }
 
-    logger.debug('SheetsService', `No image found for ${name} (${type})\n`);
+    logger.debug('SheetsService', `No image found for ${name} (${type})`);
     return null;
   }
 }

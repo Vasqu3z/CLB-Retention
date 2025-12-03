@@ -84,17 +84,18 @@ var DATABASE_CONFIG_DEFAULTS = {
     }
   },
 
-  // Character Name Mapping Configuration
-  CHARACTER_NAME_MAPPING_CONFIG: {
+  // Player Registry Configuration (📋 Player Registry sheet)
+  // Maps DATABASE_ID (game index 0-100) to PLAYER_NAME for import/export
+  PLAYER_REGISTRY_CONFIG: {
     COLUMNS: {
-      PYTHON_NAME: 0,       // Column A (1) - Python tool name
-      CUSTOM_NAME: 1        // Column B (2) - Custom formatted name
+      DATABASE_ID: 0,       // Column A (1) - Game character index (0-100)
+      PLAYER_NAME: 1,       // Column B (2) - Player's display name
+      TEAM: 2,              // Column C (3) - Team name
+      STATUS: 3,            // Column D (4) - Active, Free Agent, Inactive
+      IMAGE_URL: 4,         // Column E (5) - Player image URL
+      HAS_ATTRIBUTES: 5     // Column F (6) - Whether player has custom attributes
     },
-    FIRST_DATA_ROW: 2,
-    COLUMN_WIDTHS: {
-      PYTHON_NAME: 200,
-      CUSTOM_NAME: 200
-    }
+    FIRST_DATA_ROW: 2
   },
 
   // Chemistry Change Log Configuration

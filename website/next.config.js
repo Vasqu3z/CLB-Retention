@@ -11,6 +11,13 @@ const nextConfig = {
   images: {
     // Optimize image loading
     formats: ['image/webp', 'image/avif'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        pathname: '/Vasqu3z/Comets-League-Baseball/**',
+      },
+    ],
   },
 }
 

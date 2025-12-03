@@ -170,8 +170,8 @@ export default function BracketView({ bracket, standings, teams }: BracketViewPr
                       </p>
                       <div className="space-y-2">
                         {series.games.map((game, gameIdx) => {
-                          const homeTeamConfig = getTeamByName(game.homeTeam);
-                          const awayTeamConfig = getTeamByName(game.awayTeam);
+                          const homeTeamConfig = findTeamByName(teams, game.homeTeam);
+                          const awayTeamConfig = findTeamByName(teams, game.awayTeam);
                           const homeLogos = homeTeamConfig ? getTeamLogoPaths(homeTeamConfig.name) : null;
                           const awayLogos = awayTeamConfig ? getTeamLogoPaths(awayTeamConfig.name) : null;
                           const homeWon = game.played && game.homeScore !== undefined && game.awayScore !== undefined && game.homeScore > game.awayScore;

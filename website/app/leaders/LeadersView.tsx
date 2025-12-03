@@ -92,41 +92,41 @@ export default function LeadersView({
       {/* Batting Leaders */}
       {activeTab === 'batting' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <LeaderCard title="Batting Average" abbr="AVG" leaders={battingLeaders.avg} />
-          <LeaderCard title="Hits" abbr="H" leaders={battingLeaders.hits} />
-          <LeaderCard title="Home Runs" abbr="HR" leaders={battingLeaders.hr} />
-          <LeaderCard title="Runs Batted In" abbr="RBI" leaders={battingLeaders.rbi} />
-          <LeaderCard title="Slugging Percentage" abbr="SLG" leaders={battingLeaders.slg} />
-          <LeaderCard title="On-Base Plus Slugging" abbr="OPS" leaders={battingLeaders.ops} />
+          <LeaderCard title="Batting Average" abbr="AVG" leaders={battingLeaders.avg} teams={teams} />
+          <LeaderCard title="Hits" abbr="H" leaders={battingLeaders.hits} teams={teams} />
+          <LeaderCard title="Home Runs" abbr="HR" leaders={battingLeaders.hr} teams={teams} />
+          <LeaderCard title="Runs Batted In" abbr="RBI" leaders={battingLeaders.rbi} teams={teams} />
+          <LeaderCard title="Slugging Percentage" abbr="SLG" leaders={battingLeaders.slg} teams={teams} />
+          <LeaderCard title="On-Base Plus Slugging" abbr="OPS" leaders={battingLeaders.ops} teams={teams} />
         </div>
       )}
 
       {/* Pitching Leaders */}
       {activeTab === 'pitching' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <LeaderCard title="Innings Pitched" abbr="IP" leaders={pitchingLeaders.ip} />
-          <LeaderCard title="Wins" abbr="W" leaders={pitchingLeaders.wins} />
-          <LeaderCard title="Losses" abbr="L" leaders={pitchingLeaders.losses} />
-          <LeaderCard title="Saves" abbr="SV" leaders={pitchingLeaders.saves} />
-          <LeaderCard title="Earned Run Average" abbr="ERA" leaders={pitchingLeaders.era} />
-          <LeaderCard title="Walks & Hits per IP" abbr="WHIP" leaders={pitchingLeaders.whip} />
-          <LeaderCard title="Batting Average Against" abbr="BAA" leaders={pitchingLeaders.baa} />
+          <LeaderCard title="Innings Pitched" abbr="IP" leaders={pitchingLeaders.ip} teams={teams} />
+          <LeaderCard title="Wins" abbr="W" leaders={pitchingLeaders.wins} teams={teams} />
+          <LeaderCard title="Losses" abbr="L" leaders={pitchingLeaders.losses} teams={teams} />
+          <LeaderCard title="Saves" abbr="SV" leaders={pitchingLeaders.saves} teams={teams} />
+          <LeaderCard title="Earned Run Average" abbr="ERA" leaders={pitchingLeaders.era} teams={teams} />
+          <LeaderCard title="Walks & Hits per IP" abbr="WHIP" leaders={pitchingLeaders.whip} teams={teams} />
+          <LeaderCard title="Batting Average Against" abbr="BAA" leaders={pitchingLeaders.baa} teams={teams} />
         </div>
       )}
 
       {/* Fielding Leaders */}
       {activeTab === 'fielding' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <LeaderCard title="Nice Plays" abbr="NP" leaders={fieldingLeaders.nicePlays} />
-          <LeaderCard title="Errors" abbr="E" leaders={fieldingLeaders.errors} />
-          <LeaderCard title="Stolen Bases" abbr="SB" leaders={fieldingLeaders.stolenBases} />
+          <LeaderCard title="Nice Plays" abbr="NP" leaders={fieldingLeaders.nicePlays} teams={teams} />
+          <LeaderCard title="Errors" abbr="E" leaders={fieldingLeaders.errors} teams={teams} />
+          <LeaderCard title="Stolen Bases" abbr="SB" leaders={fieldingLeaders.stolenBases} teams={teams} />
         </div>
       )}
     </div>
   );
 }
 
-function LeaderCard({ title, abbr, leaders }: { title: string; abbr: string; leaders: LeaderEntry[] }) {
+function LeaderCard({ title, abbr, leaders, teams }: { title: string; abbr: string; leaders: LeaderEntry[]; teams: Team[] }) {
   return (
     <SurfaceCard className="p-6 hover:scale-[1.02] transition-all duration-300">
       <div className="flex items-baseline justify-between mb-4 pb-3 border-b border-star-gray/20">

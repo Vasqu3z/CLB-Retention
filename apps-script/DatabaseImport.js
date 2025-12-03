@@ -72,7 +72,7 @@ const HIT_CURVE_TYPES = ["Disabled","Enabled"];
 
 /**
  * Get trajectory type names from imported config, or defaults if not available
- * @returns {string[]} Array of trajectory names (first 3 used trajectories)
+ * @returns {string[]} Array of all 6 trajectory names
  */
 function getTrajectoryTypes() {
   try {
@@ -81,24 +81,17 @@ function getTrajectoryTypes() {
 
     if (trajectoryDataJson) {
       const trajectoryData = JSON.parse(trajectoryDataJson);
-      // Return only the used trajectories (filter by usage array)
-      const usedTrajectories = [];
-      for (let i = 0; i < 6; i++) {
-        if (trajectoryData.usage[i] === 1) {
-          usedTrajectories.push(trajectoryData.names[i]);
-        }
-      }
-      // If we have at least 3 used trajectories, return them
-      if (usedTrajectories.length >= 3) {
-        return usedTrajectories.slice(0, 3);
+      // Return all 6 trajectory names - presetRow[26] is a direct index into this array
+      if (trajectoryData.names && trajectoryData.names.length === 6) {
+        return trajectoryData.names;
       }
     }
   } catch (e) {
     Logger.log('Could not load trajectory names from config: ' + e.message);
   }
 
-  // Fall back to defaults if config not available
-  return DEFAULT_TRAJECTORY_TYPES;
+  // Fall back to defaults if config not available (padded to 6)
+  return ["Medium", "High", "Low", "Trajectory 4", "Trajectory 5", "Trajectory 6"];
 }
 
 /**
@@ -267,7 +260,7 @@ function parseFullStatsPreset(fileContent) {
       ss,
       config,
       nameMappings,
-      trajectoryResult.usedTrajectoryTypes
+      trajectoryResult.trajectoryTypes  // All 6 trajectory names
     );
 
     // Log the import event
@@ -422,7 +415,8 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
     }
   }
 
-  const trajectoryTypes = Array.isArray(trajectoryTypesOverride) && trajectoryTypesOverride.length >= 3
+  // Use all 6 trajectory types - presetRow[26] is a direct index (0-5)
+  const trajectoryTypes = Array.isArray(trajectoryTypesOverride) && trajectoryTypesOverride.length === 6
     ? trajectoryTypesOverride
     : getTrajectoryTypes();
 
@@ -655,19 +649,13 @@ function parseTrajectorySection(trajectoryLines, ss, config) {
   const trajectorySheet = ensureTrajectorySheet(ss, config);
   writeTrajectorySheet(trajectorySheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage);
 
-  const usedTrajectoryTypes = [];
-  for (let i = 0; i < trajectoryNames.length; i++) {
-    if (trajectoryUsage[i] === 1) {
-      usedTrajectoryTypes.push(trajectoryNames[i]);
-    }
-  }
-
+  // Return all 6 trajectory names - presetRow[26] is a direct index into this array
   return {
     stored: true,
     matrixRows: 24,
     names: 6,
     usage: 6,
-    usedTrajectoryTypes
+    trajectoryTypes: trajectoryNames  // Pass all 6 names, not filtered by usage
   };
 }
 

@@ -124,7 +124,8 @@ function getPlayerRegistrySheet(ss, config) {
 
 /**
  * Load all character name mappings from Player Registry into memory for fast lookups
- * Maps game index (DATABASE_ID 0-100) to player display name
+ * Maps game index (0-100) to player display name
+ * DATABASE_ID column contains game character names (e.g., "Red Toad"), not numeric indices
  * @param {Sheet} registrySheet - Player Registry sheet
  * @returns {Object} Map of game index (number) → player name (string)
  */
@@ -136,6 +137,12 @@ function loadCharacterNameMappings(registrySheet) {
     return mappings;
   }
 
+  // Build reverse lookup: game character name → index
+  const gameNameToIndex = {};
+  GAME_CHARACTER_ORDER.forEach((name, idx) => {
+    gameNameToIndex[name] = idx;
+  });
+
   try {
     const config = getConfig();
     const cols = config.PLAYER_REGISTRY_CONFIG.COLUMNS;
@@ -146,14 +153,22 @@ function loadCharacterNameMappings(registrySheet) {
     const data = registrySheet.getRange(2, 1, lastRow - 1, 2).getValues();
 
     for (let i = 0; i < data.length; i++) {
-      const databaseId = data[i][cols.DATABASE_ID];
+      const databaseId = String(data[i][cols.DATABASE_ID]).trim();
       const playerName = String(data[i][cols.PLAYER_NAME]).trim();
 
-      if (databaseId !== '' && playerName) {
-        // Map the game index to the player name
-        const gameIndex = parseInt(databaseId, 10);
-        if (!isNaN(gameIndex) && gameIndex >= 0 && gameIndex < 101) {
+      if (databaseId && playerName) {
+        // DATABASE_ID is the game character name (e.g., "Red Toad")
+        // Look up its index in GAME_CHARACTER_ORDER
+        const gameIndex = gameNameToIndex[databaseId];
+
+        if (gameIndex !== undefined) {
           mappings[gameIndex] = playerName;
+        } else {
+          // Try parsing as numeric index for backwards compatibility
+          const numericIndex = parseInt(databaseId, 10);
+          if (!isNaN(numericIndex) && numericIndex >= 0 && numericIndex < 101) {
+            mappings[numericIndex] = playerName;
+          }
         }
       }
     }

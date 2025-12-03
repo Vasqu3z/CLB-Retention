@@ -548,9 +548,26 @@ function combineStarPitchField(starPitchIndex, starPitchTypeIndex) {
   return STAR_PITCH_TYPES[starPitchTypeIndex] || 'None';
 }
 
+function getTrajectoryLayout(config) {
+  const layout = config && config.TRAJECTORY_SHEET_CONFIG;
+
+  if (layout && layout.MATRIX && layout.NAMES && layout.USAGE) {
+    return layout;
+  }
+
+  if (typeof DATABASE_CONFIG_DEFAULTS !== 'undefined') {
+    const fallback = DATABASE_CONFIG_DEFAULTS.TRAJECTORY_SHEET_CONFIG;
+    if (fallback && fallback.MATRIX && fallback.NAMES && fallback.USAGE) {
+      return fallback;
+    }
+  }
+
+  throw new Error('Trajectory sheet configuration missing: TRAJECTORY_SHEET_CONFIG');
+}
+
 function ensureTrajectorySheet(ss, config) {
   const sheetName = config.SHEETS.TRAJECTORY;
-  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
+  const trajectoryLayout = getTrajectoryLayout(config);
   let sheet = ss.getSheetByName(sheetName);
 
   if (!sheet) {
@@ -621,7 +638,7 @@ function buildTrajectoryRowLabels(trajectoryNames) {
 }
 
 function writeTrajectorySheet(sheet, config, trajectoryMatrix, trajectoryNames, trajectoryUsage) {
-  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
+  const trajectoryLayout = getTrajectoryLayout(config);
   const matrixLayout = trajectoryLayout.MATRIX;
   const rowLabels = buildTrajectoryRowLabels(trajectoryNames);
   const matrixRows = trajectoryMatrix.map((row, idx) => {
@@ -1050,7 +1067,7 @@ function splitStarPitchField(starPitchValue) {
 function exportTrajectorySection(ss, config) {
   const props = PropertiesService.getScriptProperties();
   const sheetName = config.SHEETS.TRAJECTORY;
-  const trajectoryLayout = config.TRAJECTORY_SHEET_CONFIG;
+  const trajectoryLayout = getTrajectoryLayout(config);
   const matrixLayout = trajectoryLayout.MATRIX;
   let trajectorySheet = ss.getSheetByName(sheetName);
 

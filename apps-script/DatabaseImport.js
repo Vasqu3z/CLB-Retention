@@ -417,7 +417,6 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
   }
 
   let attributesSheet = ss.getSheetByName(config.SHEETS.ATTRIBUTES);
-
   if (!attributesSheet) {
     attributesSheet = ss.insertSheet(config.SHEETS.ATTRIBUTES);
 
@@ -438,22 +437,21 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
     attributesSheet.setFrozenRows(1);
   }
 
-  const existingCustomData = {};
-  if (attributesSheet.getLastRow() >= config.ATTRIBUTES_CONFIG.FIRST_DATA_ROW) {
-    const lastRow = attributesSheet.getLastRow();
-    const firstRow = config.ATTRIBUTES_CONFIG.FIRST_DATA_ROW;
-    const totalCols = config.ATTRIBUTES_CONFIG.TOTAL_COLUMNS;
-    const existingData = attributesSheet.getRange(firstRow, 1, lastRow - firstRow + 1, totalCols).getValues();
+  const firstDataRow = config.ATTRIBUTES_CONFIG.FIRST_DATA_ROW;
+  const configuredTotalColumns = config.ATTRIBUTES_CONFIG.TOTAL_COLUMNS;
+  const totalColumns = Math.max(configuredTotalColumns, attributesSheet.getLastColumn());
+  const cols = config.ATTRIBUTES_CONFIG.COLUMNS;
 
-    const cols = config.ATTRIBUTES_CONFIG.COLUMNS;
+  const existingRowsByName = {};
+  if (attributesSheet.getLastRow() >= firstDataRow) {
+    const lastRow = attributesSheet.getLastRow();
+    const existingData = attributesSheet.getRange(firstDataRow, 1, lastRow - firstDataRow + 1, totalColumns).getValues();
+
     for (let i = 0; i < existingData.length; i++) {
-      const characterName = String(existingData[i][cols.NAME]).trim();
+      const row = existingData[i];
+      const characterName = String(row[cols.NAME]).trim();
       if (characterName) {
-        existingCustomData[characterName] = {
-          mii: existingData[i][cols.MII],
-          miiColor: existingData[i][cols.MII_COLOR],
-          preCharge: existingData[i][cols.PRE_CHARGE]
-        };
+        existingRowsByName[characterName] = row;
       }
     }
   }
@@ -469,49 +467,56 @@ function parseStatsSection(statsLines, ss, config, nameMappings, trajectoryTypes
     const pythonName = GAME_CHARACTER_ORDER[i];
     const characterName = getCustomCharacterName(nameMappings, pythonName);
 
-    const customData = existingCustomData[characterName] || { mii: '', miiColor: '', preCharge: '' };
+    const baseRow = (existingRowsByName[characterName] || []).slice(0, totalColumns);
+    while (baseRow.length < totalColumns) {
+      baseRow.push('');
+    }
 
-    const sheetRow = [
-      characterName,
-      CHARACTER_CLASSES[presetRow[2]] || '',
-      presetRow[5] === 1 ? 'Yes' : 'No',
-      customData.mii,
-      customData.miiColor,
-      ARM_SIDES[presetRow[0]] || '',
-      ARM_SIDES[presetRow[1]] || '',
-      presetRow[4],
-      combineAbilityField(presetRow[8], presetRow[9]),
-      presetRow[18],
-      presetRow[19],
-      presetRow[20],
-      presetRow[21],
-      STAR_SWINGS[presetRow[7]] || '',
-      HIT_CURVE_TYPES[presetRow[27]] || '',
-      trajectoryTypes[presetRow[26]] || '',
-      presetRow[10],
-      presetRow[11],
-      presetRow[12],
-      presetRow[13],
-      presetRow[15],
-      presetRow[14],
-      presetRow[17],
-      presetRow[16],
-      customData.preCharge,
-      combineStarPitchField(presetRow[6], presetRow[29]),
-      presetRow[23],
-      presetRow[22],
-      presetRow[24],
-      presetRow[28]
+    const presetMappedValues = [
+      [cols.NAME, characterName],
+      [cols.CHARACTER_CLASS, CHARACTER_CLASSES[presetRow[2]] || ''],
+      [cols.CAPTAIN, presetRow[5] === 1 ? 'Yes' : 'No'],
+      [cols.ARM_SIDE, ARM_SIDES[presetRow[0]] || ''],
+      [cols.BATTING_SIDE, ARM_SIDES[presetRow[1]] || ''],
+      [cols.WEIGHT, presetRow[4]],
+      [cols.ABILITY, combineAbilityField(presetRow[8], presetRow[9])],
+      [cols.PITCHING_OVERALL, presetRow[18]],
+      [cols.BATTING_OVERALL, presetRow[19]],
+      [cols.FIELDING_OVERALL, presetRow[20]],
+      [cols.SPEED_OVERALL, presetRow[21]],
+      [cols.STAR_SWING, STAR_SWINGS[presetRow[7]] || ''],
+      [cols.HIT_CURVE, HIT_CURVE_TYPES[presetRow[27]] || ''],
+      [cols.HITTING_TRAJECTORY, trajectoryTypes[presetRow[26]] || ''],
+      [cols.SLAP_HIT_CONTACT, presetRow[10]],
+      [cols.CHARGE_HIT_CONTACT, presetRow[11]],
+      [cols.SLAP_HIT_POWER, presetRow[12]],
+      [cols.CHARGE_HIT_POWER, presetRow[13]],
+      [cols.SPEED, presetRow[15]],
+      [cols.BUNTING, presetRow[14]],
+      [cols.FIELDING, presetRow[17]],
+      [cols.THROWING_SPEED, presetRow[16]],
+      [cols.STAR_PITCH, combineStarPitchField(presetRow[6], presetRow[29])],
+      [cols.FASTBALL_SPEED, presetRow[23]],
+      [cols.CURVEBALL_SPEED, presetRow[22]],
+      [cols.CURVE, presetRow[24]],
+      [cols.STAMINA, presetRow[28]]
     ];
 
-    sheetData.push(sheetRow);
+    for (let j = 0; j < presetMappedValues.length; j++) {
+      const [colIndex, value] = presetMappedValues[j];
+      if (colIndex < totalColumns) {
+        baseRow[colIndex] = value;
+      }
+    }
+
+    sheetData.push(baseRow);
   }
 
   attributesSheet.getRange(
-    config.ATTRIBUTES_CONFIG.FIRST_DATA_ROW,
+    firstDataRow,
     1,
     sheetData.length,
-    config.ATTRIBUTES_CONFIG.TOTAL_COLUMNS
+    totalColumns
   ).setValues(sheetData);
 
   return {

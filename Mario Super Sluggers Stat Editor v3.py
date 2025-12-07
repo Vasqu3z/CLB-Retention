@@ -2221,7 +2221,44 @@ def geckoGenerate(listPlayers,exclude):
         Lv=simpleAdvance(0, 0, Lv.copy())
         Lv=simpleAdvance(lastplayer+1, lastplayer+1, Lv.copy())
     Lv = resetCount(baseAddress+142*lastplayer+141-(lastplayer%2)*2,Lv.copy())
-    
+
+    # Generate reverse chemistry codes for players NOT in listPlayers
+    # who have non-neutral chemistry with players IN listPlayers
+    # This ensures bidirectional chemistry works properly
+    listPlayersSet = set(listPlayers)
+    reverseChemPlayers = []
+    for j in range(101):
+        if j not in listPlayersSet:
+            for i in listPlayers:
+                if changedChem[j][i] != defaultChem[j][i]:
+                    reverseChemPlayers.append(j)
+                    break
+
+    if reverseChemPlayers:
+        reverseChemPlayers.sort()
+        lastReversePlayer = reverseChemPlayers[0]
+        for j in reverseChemPlayers:
+            if j != lastReversePlayer:
+                Lv=simpleAdvance(0, 0, Lv.copy())
+                if lastReversePlayer%2==0:
+                    Lv=simpleAdvance(0, 0, Lv.copy())
+                    Lv=simpleAdvance(lastReversePlayer+1, lastReversePlayer+1, Lv.copy())
+                Lv = resetCount(baseAddress+142*lastReversePlayer+141-(lastReversePlayer%2)*2,Lv.copy())
+            if j%2==0:
+                Lv=simpleAdvance(0, 0, Lv.copy())
+                Lv=simpleAdvance(j, j, Lv.copy())
+            # Only generate chemistry codes for relationships with players in listPlayers
+            for i in listPlayers:
+                stat=changedChem[j][i]
+                default=defaultChem[j][i]
+                Lv = advanceCount(stat, default, baseAddress+142*j+i+41, Lv.copy())
+            lastReversePlayer=j
+        Lv=simpleAdvance(0, 0, Lv.copy())
+        if lastReversePlayer%2==0:
+            Lv=simpleAdvance(0, 0, Lv.copy())
+            Lv=simpleAdvance(lastReversePlayer+1, lastReversePlayer+1, Lv.copy())
+        Lv = resetCount(baseAddress+142*lastReversePlayer+141-(lastReversePlayer%2)*2,Lv.copy())
+
     for i in range(101): #traj
         stat0=changedStat[i][26]
         stat1=changedStat[i][27]

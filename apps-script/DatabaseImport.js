@@ -314,12 +314,23 @@ function parseChemistrySection(chemistryLines, ss, config, nameMappings) {
   let positiveCount = 0;
   let negativeCount = 0;
 
+  const thresholds = config.CHEMISTRY_CONFIG.THRESHOLDS;
+
   for (let i = 0; i < 101; i++) {
     for (let j = i + 1; j < 101; j++) {
-      const value = matrix[i][j];
+      const upperValue = matrix[i][j];
+      const lowerValue = matrix[j][i];
+
+      // Check both directions and use non-neutral value if either side has one
+      // This ensures bidirectional chemistry is properly imported even if preset is asymmetric
+      let value = thresholds.NEUTRAL_PRESET;
+      if (upperValue !== thresholds.NEUTRAL_PRESET) {
+        value = upperValue;
+      } else if (lowerValue !== thresholds.NEUTRAL_PRESET) {
+        value = lowerValue;
+      }
 
       // Convert preset values (0/1/2) to chemistry values using config thresholds
-      const thresholds = config.CHEMISTRY_CONFIG.THRESHOLDS;
       let chemistry = null;
       if (value === thresholds.NEGATIVE_PRESET) {
         chemistry = thresholds.NEGATIVE_MAX;
@@ -736,8 +747,9 @@ function exportChemistryToStatsPreset() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
     const chemistryLines = exportChemistrySection(ss, config);
-    const statsLines = exportStatsSection(ss, config);
+    // Export trajectory FIRST to update script properties before exportStatsSection reads them
     const trajectoryLines = exportTrajectorySection(ss, config);
+    const statsLines = exportStatsSection(ss, config);
 
     const allLines = [...chemistryLines, ...statsLines, ...trajectoryLines];
     const content = allLines.join('\n');

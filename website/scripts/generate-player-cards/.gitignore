@@ -1,2 +1,3 @@
-# Ignore generated output
-output/
+# Ignore generated output (except test samples)
+output/*
+!output/test/

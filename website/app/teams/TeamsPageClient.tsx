@@ -66,22 +66,10 @@ export default function TeamsPageClient({
                 <Users size={14} />
                 League Roster
               </div>
-              <h1 className="font-display text-5xl md:text-7xl text-white uppercase tracking-tight">
-                {viewMode === "grid" ? (
-                  <>
-                    Select{" "}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">
-                      Team
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    Team{" "}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-comets-cyan to-comets-yellow">
-                      Stats
-                    </span>
-                  </>
-                )}
+              <h1 className="font-display text-5xl md:text-7xl uppercase tracking-tight">
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
+                  {viewMode === "grid" ? "Select Team" : "Team Stats"}
+                </span>
               </h1>
             </div>
 

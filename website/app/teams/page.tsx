@@ -1,6 +1,5 @@
 import React from "react";
-import TeamSelectCard from "@/components/ui/TeamSelectCard";
-import { Users } from "lucide-react";
+import TeamsPageClient from "./TeamsPageClient";
 import { getTeamRegistry, getStandings, getTeamData } from "@/lib/sheets";
 
 function slugify(name: string): string {
@@ -8,21 +7,23 @@ function slugify(name: string): string {
 }
 
 export default async function TeamsPage() {
-  // Fetch team registry and standings data from Google Sheets
-  const [teamRegistry, standings, teamStats] = await Promise.all([
+  // Fetch all required data (regular + playoffs)
+  const [teamRegistry, regularStandings, regularTeamStats, playoffStandings, playoffTeamStats] = await Promise.all([
     getTeamRegistry(),
     getStandings(false),
     getTeamData(undefined, false),
+    getStandings(true),
+    getTeamData(undefined, true),
   ]);
 
   // Create a map of team names to their standings
   const standingsMap = new Map(
-    standings.map(s => [s.team, s])
+    regularStandings.map(s => [s.team, s])
   );
 
   // Create a map of team names to their stats
   const statsMap = new Map(
-    teamStats.map(s => [s.teamName, s])
+    regularTeamStats.map(s => [s.teamName, s])
   );
 
   // Transform team registry into the format expected by TeamSelectCard
@@ -46,7 +47,7 @@ export default async function TeamsPage() {
         code: team.abbr,
         logoColor: team.color,
         logoUrl: team.logoUrl,
-        emblemUrl: team.emblemUrl, // Use emblem for better visibility
+        emblemUrl: team.emblemUrl,
         rank: teamRank,
         stats: {
           wins: standing?.wins || 0,
@@ -56,32 +57,16 @@ export default async function TeamsPage() {
         href: `/teams/${slugify(team.teamName)}`,
       };
     })
-    .sort((a, b) => a.rank! - b.rank!); // Sort by standings rank
+    .sort((a, b) => a.rank! - b.rank!);
 
   return (
-    <main className="min-h-screen pb-24 pt-32 px-4 relative overflow-hidden">
-       {/* Background Decor */}
-       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-comets-blue/10 to-transparent -z-10" />
-       
-       <div className="container mx-auto max-w-6xl">
-          {/* Header */}
-          <div className="mb-12 text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-comets-cyan text-xs font-mono uppercase tracking-widest mb-4">
-                  <Users size={14} />
-                  League Roster
-              </div>
-              <h1 className="font-display text-5xl md:text-7xl text-white uppercase tracking-tight">
-                  Select <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">Team</span>
-              </h1>
-          </div>
-
-          {/* The Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {teams.map((team) => (
-                  <TeamSelectCard key={team.code} {...team} />
-              ))}
-          </div>
-       </div>
-    </main>
+    <TeamsPageClient
+      teams={teams}
+      regularTeamData={regularTeamStats}
+      regularStandings={regularStandings}
+      playoffTeamData={playoffTeamStats}
+      playoffStandings={playoffStandings}
+      teamRegistry={teamRegistry}
+    />
   );
 }

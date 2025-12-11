@@ -408,9 +408,21 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
 
         {/* Search & Filter Controls */}
         <div className="flex gap-2 w-full md:w-auto mb-6">
-          <div className="relative flex-1 md:w-64">
+          <div className="relative flex-1 md:w-64 group/search">
+            {/* HUD corners that appear on focus */}
+            <div className="absolute -top-0.5 -left-0.5 w-3 h-3 border-t border-l border-transparent group-focus-within/search:border-comets-cyan transition-colors duration-200 z-10 pointer-events-none" />
+            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 border-t border-r border-transparent group-focus-within/search:border-comets-cyan transition-colors duration-200 z-10 pointer-events-none" />
+            <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 border-b border-l border-transparent group-focus-within/search:border-comets-cyan transition-colors duration-200 z-10 pointer-events-none" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border-b border-r border-transparent group-focus-within/search:border-comets-cyan transition-colors duration-200 z-10 pointer-events-none" />
+
+            {/* Scanlines overlay */}
+            <div className="absolute inset-0 scanlines opacity-0 group-focus-within/search:opacity-[0.05] transition-opacity duration-200 pointer-events-none rounded-sm" />
+
+            {/* Glow effect on focus */}
+            <div className="absolute inset-0 rounded-sm opacity-0 group-focus-within/search:opacity-100 transition-opacity duration-200 pointer-events-none" style={{ boxShadow: '0 0 20px rgba(0, 243, 255, 0.15), inset 0 0 10px rgba(0, 243, 255, 0.05)' }} />
+
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 group-focus-within/search:text-comets-cyan pointer-events-none transition-colors duration-200 z-10"
               size={16}
             />
             <input
@@ -418,14 +430,14 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="SEARCH..."
-              className="w-full bg-surface-dark border border-white/10 rounded-sm py-2 pl-10 pr-10 text-white font-mono text-sm focus:border-comets-yellow outline-none uppercase placeholder:text-white/20 transition-colors focus-arcade"
+              className="relative w-full bg-surface-dark border border-white/10 rounded-sm py-2 pl-10 pr-10 text-white font-mono text-sm focus:border-comets-cyan focus:bg-surface-dark/80 outline-none uppercase placeholder:text-white/20 transition-all duration-200"
             />
             {searchQuery && (
               <motion.button
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors z-10"
               >
                 <X size={14} />
               </motion.button>
@@ -454,7 +466,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
           </motion.button>
         </div>
 
-        {/* ENHANCED: Animated Filter Panel */}
+        {/* ENHANCED: Animated Filter Panel with HUD styling */}
         <AnimatePresence>
           {showFilters && (
             <motion.div
@@ -464,9 +476,18 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
               transition={{ duration: 0.3 }}
               className="overflow-hidden mb-6"
             >
-              <div className="bg-surface-dark border border-white/10 rounded-lg p-6 space-y-4">
+              <div className="relative bg-surface-dark border border-white/10 rounded-lg p-6 space-y-4">
+                {/* Scanlines overlay */}
+                <div className="absolute inset-0 scanlines opacity-[0.03] pointer-events-none rounded-lg" />
+
+                {/* HUD corners */}
+                <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-comets-cyan/50" />
+                <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-comets-cyan/50" />
+                <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-comets-cyan/50" />
+                <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-comets-cyan/50" />
+
                 {/* Filter Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between relative">
                   <div className="flex items-center gap-2">
                     <Filter size={16} className="text-comets-cyan" />
                     <span className="font-ui text-sm uppercase tracking-widest text-white">

@@ -32,26 +32,36 @@ const RetroCard = ({ title, subtitle, icon: Icon, href, color, delay = 0 }: Retr
           }
         }}
       >
+        {/* Scanlines overlay for arcade feel */}
+        <div className="absolute inset-0 scanlines opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500 pointer-events-none z-10" />
+
         {/* Radial glow on hover */}
-        <div 
+        <div
           className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
           style={{ background: `radial-gradient(circle at center, ${color}, transparent 70%)` }}
         />
 
         <div className="relative z-10 flex flex-col h-full justify-between">
           <div className="mb-6 flex items-center justify-between">
-            {/* Icon with hover scale */}
-            <motion.div 
-              className="p-3 rounded-lg bg-white/5 text-white"
+            {/* Icon with power-up glow effect */}
+            <motion.div
+              className="relative p-3 rounded-lg bg-white/5 text-white"
               style={{ color: color }}
-              whileHover={{ 
-                scale: 1.15, 
+              whileHover={{
+                scale: 1.15,
                 rotate: [0, -5, 5, 0],
-                backgroundColor: "rgba(255,255,255,0.1)"
+                backgroundColor: "rgba(255,255,255,0.1)",
               }}
               transition={{ duration: 0.3 }}
             >
-              {Icon && <Icon size={32} strokeWidth={1.5} />}
+              {/* Power-up glow ring */}
+              <motion.div
+                className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  boxShadow: `0 0 20px ${color}40, inset 0 0 10px ${color}20`,
+                }}
+              />
+              {Icon && <Icon size={32} strokeWidth={1.5} className="relative z-10" />}
             </motion.div>
             
             {/* Animated arrow */}

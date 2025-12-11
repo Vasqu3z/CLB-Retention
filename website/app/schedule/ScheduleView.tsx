@@ -122,35 +122,52 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
           </div>
         </div>
 
-        {/* Week Selector Pills (only in week view) */}
+        {/* Week Selector - Level Select Style (only in week view) */}
         {viewMode === "week" && (
-          <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-thin">
-            {weeks.map((week, index) => (
-              <motion.button
-                key={week}
-                onClick={() => setActiveWeek(week)}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={cn(
-                  "relative px-6 py-2 rounded-full font-ui uppercase tracking-widest text-sm transition-all whitespace-nowrap focus-arcade",
-                  activeWeek === week
-                    ? "text-black"
-                    : "text-white/60 hover:text-white hover:bg-white/5"
-                )}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {activeWeek === week && (
-                  <motion.div
-                    layoutId="activeWeek"
-                    className="absolute inset-0 bg-comets-yellow rounded-full"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
+          <div className="relative mb-8">
+            {/* HUD Frame for level selector */}
+            <div className="absolute -inset-3 pointer-events-none">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-comets-cyan/40" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-comets-cyan/40" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-comets-cyan/40" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-comets-cyan/40" />
+            </div>
+
+            {/* Section label */}
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-[1px] w-4 bg-comets-cyan/30" />
+              <span className="text-[10px] font-ui text-comets-cyan/60 uppercase tracking-[0.2em]">Select Week</span>
+              <div className="h-[1px] flex-1 bg-comets-cyan/30" />
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+              {weeks.map((week, index) => (
+                <motion.button
+                  key={week}
+                  onClick={() => setActiveWeek(week)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={cn(
+                    "relative px-6 py-2 rounded-full font-ui uppercase tracking-widest text-sm transition-all whitespace-nowrap focus-arcade",
+                    activeWeek === week
+                      ? "text-black"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
+                  )}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {activeWeek === week && (
+                    <motion.div
+                      layoutId="activeWeek"
+                      className="absolute inset-0 bg-comets-yellow rounded-full"
+                      transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
+                    />
+                  )}
                 <span className="relative z-10">Week {week}</span>
               </motion.button>
             ))}
+            </div>
           </div>
         )}
 

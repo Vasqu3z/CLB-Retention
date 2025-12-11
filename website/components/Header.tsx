@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Menu, X, Trophy, Calendar, Users, Activity, UserCircle } from "lucide-react";
+import { Menu, X, Trophy, Calendar, Users, Activity, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
@@ -22,7 +22,10 @@ export default function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-background/80 backdrop-blur-md">
-        <Link href="/" className="flex items-center gap-4 group">
+        {/* Subtle scanlines overlay */}
+        <div className="absolute inset-0 scanlines opacity-[0.02] pointer-events-none" />
+
+        <Link href="/" className="flex items-center gap-4 group relative z-10">
           <motion.div
             className="w-10 h-10 bg-comets-yellow rounded-sm flex items-center justify-center font-display text-black text-xl shadow-lg power-indicator"
             whileHover={{ scale: 1.1, rotate: 5 }}
@@ -36,7 +39,13 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1 bg-surface-light/50 border border-white/5 rounded-full px-2 py-1">
+        <nav className="hidden md:flex items-center gap-1 relative bg-surface-light/50 border border-white/5 rounded-full px-2 py-1">
+          {/* HUD accent corners */}
+          <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-comets-cyan/30" />
+          <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-comets-cyan/30" />
+          <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b border-l border-comets-cyan/30" />
+          <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-comets-cyan/30" />
+
           {navItems.map((item) => {
             const isActive = pathname?.startsWith(item.href) && item.href !== "/";
             return (
@@ -44,7 +53,7 @@ export default function Header() {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "relative px-6 py-2 rounded-full font-ui uppercase tracking-widest text-sm transition-all duration-300 group flex items-center gap-2 focus-arcade",
+                  "relative px-6 py-2 rounded-full font-ui uppercase tracking-widest text-sm transition-all duration-200 group flex items-center gap-2 focus-arcade",
                   isActive ? "text-black" : "text-white/60 hover:text-white"
                 )}
               >
@@ -52,27 +61,23 @@ export default function Header() {
                   <motion.div
                     layoutId="activeNav"
                     className="absolute inset-0 bg-comets-yellow rounded-full"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
                   />
                 )}
-                <span className="relative z-10 flex items-center gap-2">
+                <motion.span
+                  className="relative z-10 flex items-center gap-2"
+                  whileHover={{ scale: isActive ? 1 : 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   {isActive && <item.icon size={14} />}
                   {item.name}
-                </span>
+                </motion.span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <motion.button
-            className="p-2 text-white/60 hover:text-comets-cyan hover:bg-white/10 rounded-full transition-colors focus-arcade"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Search size={20} strokeWidth={1.5} />
-          </motion.button>
-
+        <div className="flex items-center gap-2 relative z-10">
           <motion.button
             className="md:hidden p-2 text-white hover:text-comets-yellow transition-colors focus-arcade"
             onClick={() => setIsMobileMenuOpen(true)}

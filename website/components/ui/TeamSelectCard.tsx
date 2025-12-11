@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 interface TeamSelectCardProps {
@@ -27,19 +27,28 @@ export default function TeamSelectCard({ name, code, logoColor, logoUrl, emblemU
   return (
     <Link href={href} className="block h-full group perspective-1000">
       <motion.div
-        whileHover={{ scale: 1.05, rotateX: 5 }}
+        whileHover={{ scale: 1.03, y: -4 }}
         whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
         className="relative h-64 bg-surface-dark border border-white/10 rounded-xl overflow-hidden hover:border-white/30 transition-all duration-300 shadow-lg focus-arcade cursor-pointer"
         tabIndex={0}
       >
+        {/* Scanlines overlay for arcade feel */}
+        <div className="absolute inset-0 scanlines opacity-[0.04] group-hover:opacity-[0.08] transition-opacity duration-300 pointer-events-none z-20" />
+
+        {/* HUD Frame corners - appear on hover */}
+        <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-transparent group-hover:border-comets-cyan transition-colors duration-200 z-20" />
+        <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-transparent group-hover:border-comets-cyan transition-colors duration-200 z-20" />
+        <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-transparent group-hover:border-comets-cyan transition-colors duration-200 z-20" />
+        <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-transparent group-hover:border-comets-cyan transition-colors duration-200 z-20" />
+
         {/* Animated gradient overlay */}
-        <motion.div 
+        <motion.div
           className="absolute inset-0 bg-gradient-to-b from-transparent to-black"
           style={{ background: `linear-gradient(to bottom, ${logoColor}20, transparent)` }}
           initial={{ opacity: 0 }}
-          whileHover={{ opacity: 0.3 }}
-          transition={{ duration: 0.5 }}
+          whileHover={{ opacity: 0.4 }}
+          transition={{ duration: 0.3 }}
         />
         
         {/* Animated team logo/emblem */}
@@ -135,27 +144,39 @@ export default function TeamSelectCard({ name, code, logoColor, logoUrl, emblemU
         </div>
         
         {/* Pulsing border effect on hover */}
-        <motion.div 
-          className="absolute inset-0 border-2 rounded-xl pointer-events-none" 
+        <motion.div
+          className="absolute inset-0 border-2 rounded-xl pointer-events-none"
           style={{ borderColor: logoColor }}
           initial={{ opacity: 0 }}
-          whileHover={{ 
-            opacity: 0.6,
-            scale: [1, 1.02, 1],
+          whileHover={{
+            opacity: [0.4, 0.8, 0.4],
           }}
-          transition={{ 
-            scale: { duration: 1.5, repeat: Infinity }
+          transition={{
+            opacity: { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
           }}
         />
 
-        {/* Corner accent */}
+        {/* SELECT indicator - appears on hover */}
         <motion.div
-          className="absolute top-0 right-0 w-20 h-20 opacity-0 group-hover:opacity-20"
-          style={{ 
-            background: `radial-gradient(circle at top right, ${logoColor}, transparent)`
+          className="absolute bottom-0 left-0 right-0 flex items-center justify-center py-2 bg-gradient-to-t from-black/80 to-transparent z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        >
+          <motion.div
+            initial={{ opacity: 0.6 }}
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1, repeat: Infinity }}
+            className="flex items-center gap-1 text-comets-cyan text-xs font-ui uppercase tracking-[0.2em]"
+          >
+            <span>Select</span>
+            <ChevronRight size={14} className="animate-pulse" />
+          </motion.div>
+        </motion.div>
+
+        {/* Corner accent glow */}
+        <motion.div
+          className="absolute top-0 right-0 w-24 h-24 opacity-0 group-hover:opacity-30 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at top right, ${logoColor}, transparent 70%)`
           }}
-          initial={{ scale: 0, rotate: 0 }}
-          whileHover={{ scale: 1, rotate: 45 }}
           transition={{ duration: 0.3 }}
         />
       </motion.div>

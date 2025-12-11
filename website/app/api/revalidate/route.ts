@@ -40,8 +40,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Revalidate the specified tag (or default to 'sheets')
+    // Next.js 16 requires a cacheLife profile as the second argument
     const tagToRevalidate = tag || 'sheets';
-    revalidateTag(tagToRevalidate);
+    revalidateTag(tagToRevalidate, 'max');
 
     console.log(`Cache revalidated for tag: ${tagToRevalidate}`);
 

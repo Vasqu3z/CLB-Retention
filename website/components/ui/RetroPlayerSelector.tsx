@@ -224,6 +224,7 @@ export default function RetroPlayerSelector({
               exit={{ opacity: 0, y: -10, scaleY: 0.9 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               style={{ originY: 0 }}
+              data-lenis-prevent
               className="absolute z-50 top-full left-0 right-0 mt-2 max-h-64 overflow-y-auto bg-surface-dark border-2 border-comets-cyan/50 rounded shadow-[0_0_30px_rgba(0,243,255,0.2)]"
             >
               {/* Scanlines overlay */}

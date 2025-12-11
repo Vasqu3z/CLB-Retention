@@ -129,7 +129,10 @@ export default function CompareClient({ players }: CompareClientProps) {
             </button>
 
             {showDropdownA && (
-              <div className="absolute top-full mt-2 w-full bg-surface-dark border border-white/10 rounded-lg max-h-64 overflow-y-auto z-30">
+              <div
+                data-lenis-prevent
+                className="absolute top-full mt-2 w-full bg-surface-dark border border-white/10 rounded-lg max-h-64 overflow-y-auto z-30"
+              >
                 {players.map((p) => (
                   <button
                     key={p.name}
@@ -255,7 +258,10 @@ export default function CompareClient({ players }: CompareClientProps) {
             </button>
 
             {showDropdownB && (
-              <div className="absolute top-full mt-2 w-full bg-surface-dark border border-white/10 rounded-lg max-h-64 overflow-y-auto z-30">
+              <div
+                data-lenis-prevent
+                className="absolute top-full mt-2 w-full bg-surface-dark border border-white/10 rounded-lg max-h-64 overflow-y-auto z-30"
+              >
                 {players.map((p) => (
                   <button
                     key={p.name}

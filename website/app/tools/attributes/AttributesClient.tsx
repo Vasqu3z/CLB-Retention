@@ -308,7 +308,7 @@ export default function AttributesClient({ players }: AttributesClientProps) {
               <div className="relative bg-surface-dark border border-white/10 rounded-lg overflow-hidden">
                 <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
 
-                <div className="overflow-x-auto">
+                <div data-lenis-prevent className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-white/10">

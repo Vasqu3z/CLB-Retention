@@ -328,7 +328,7 @@ export default function StatsClient({ regularPlayers, playoffPlayers }: StatsCli
                   </h3>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div data-lenis-prevent className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-white/10">

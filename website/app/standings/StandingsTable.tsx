@@ -82,7 +82,7 @@ export default function StandingsTable({ data, showAdvanced = true }: StandingsT
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <span className="font-bold uppercase tracking-wide text-white group-hover/row:text-comets-cyan transition-colors">
+                <span className="font-ui font-bold uppercase tracking-wide text-white group-hover/row:text-comets-cyan transition-colors">
                   {item.teamName}
                 </span>
                 {/* Playoff clinch/elimination badge */}

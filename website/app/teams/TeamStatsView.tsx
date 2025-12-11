@@ -177,7 +177,7 @@ export default function TeamStatsView({
         </div>
       )}
       <span
-        className="font-semibold group-hover:underline"
+        className="font-ui font-semibold group-hover:underline"
         style={{ color: team.color }}
       >
         {team.teamName}

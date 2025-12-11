@@ -370,7 +370,9 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
             <div className="text-xs font-mono text-comets-cyan uppercase tracking-widest mb-2">
               Database Access
             </div>
-            <h1 className="font-display text-5xl text-white uppercase">Player Registry</h1>
+            <h1 className="font-display text-5xl uppercase">
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">Player Registry</span>
+            </h1>
 
             {/* Player Count Badge */}
             <motion.div

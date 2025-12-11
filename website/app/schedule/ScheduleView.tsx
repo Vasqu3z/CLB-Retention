@@ -50,8 +50,10 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
               <Calendar size={20} />
               <span className="font-ui uppercase tracking-widest text-sm">Official Schedule</span>
             </div>
-            <h1 className="font-display text-5xl text-white uppercase leading-none">
-              {viewMode === "week" ? `Week ${activeWeek}` : "Full Season"}
+            <h1 className="font-display text-5xl uppercase leading-none">
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
+                {viewMode === "week" ? `Week ${activeWeek}` : "Full Season"}
+              </span>
             </h1>
           </div>
 

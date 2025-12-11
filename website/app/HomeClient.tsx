@@ -7,39 +7,11 @@ import { Trophy, Calendar, Users, Activity, Star } from "lucide-react";
 import StatHighlight from "@/components/ui/StatHighlight";
 import RetroCard from "@/components/ui/RetroCard";
 import { RetroButton } from "@/components/ui/RetroButton";
+import { HUDCorner } from "@/components/ui/HUDFrame";
 
 interface HomeClientProps {
   tickerItems: string[];
 }
-
-// HUD corner bracket component for diegetic framing
-const HUDCorner = ({ position }: { position: "tl" | "tr" | "bl" | "br" }) => {
-  const isTop = position.startsWith("t");
-  const isLeft = position.endsWith("l");
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
-      className={`absolute w-8 h-8 md:w-12 md:h-12 pointer-events-none
-        ${isTop ? "top-4 md:top-8" : "bottom-4 md:bottom-8"}
-        ${isLeft ? "left-4 md:left-8" : "right-4 md:right-8"}
-      `}
-    >
-      <div
-        className={`absolute w-full h-[2px] bg-gradient-to-${isLeft ? "r" : "l"} from-comets-cyan to-transparent
-          ${isTop ? "top-0" : "bottom-0"}
-        `}
-      />
-      <div
-        className={`absolute h-full w-[2px] bg-gradient-to-${isTop ? "b" : "t"} from-comets-cyan to-transparent
-          ${isLeft ? "left-0" : "right-0"}
-        `}
-      />
-    </motion.div>
-  );
-};
 
 const HeroSection = () => {
   // Staggered animation variants for arcade menu feel

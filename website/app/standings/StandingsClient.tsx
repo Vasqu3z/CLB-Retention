@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import StandingsTable, { TeamStanding } from "./StandingsTable";
 import { Trophy } from "lucide-react";
 import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
+import HUDFrame from "@/components/ui/HUDFrame";
 
 interface StandingsClientProps {
   data: TeamStanding[];
@@ -33,7 +34,11 @@ export default function StandingsClient({ data }: StandingsClientProps) {
         </div>
 
         {/* The Table */}
-        <StandingsTable data={data} showAdvanced={showAdvanced} />
+        <HUDFrame size="md" animate={true} delay={0.3} scanlines scanlinesOpacity={0.03}>
+          <div className="py-4">
+            <StandingsTable data={data} showAdvanced={showAdvanced} />
+          </div>
+        </HUDFrame>
 
         {/* Legend / Info */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono text-white/30 border-t border-white/5 pt-8">
@@ -55,7 +60,7 @@ export default function StandingsClient({ data }: StandingsClientProps) {
             </div>
           </div>
           <div className="md:text-right">
-            <span className="text-white/50 block mb-1 font-bold">TOP 4 QUALIFY</span>
+            <span className="text-white/50 block mb-1 font-bold">TOP 5 QUALIFY</span>
             Star Cup Semifinals
           </div>
         </div>

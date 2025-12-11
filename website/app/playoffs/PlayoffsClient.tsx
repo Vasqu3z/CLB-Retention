@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Swords, Crown, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import HUDFrame from "@/components/ui/HUDFrame";
 
 interface TeamInfo {
   name: string;
@@ -72,15 +73,23 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
 
         {/* Bracket */}
         {semifinals.length > 0 || finals ? (
-          <div className="relative">
-            {/* Bracket Layout with Connector Lines */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-0 items-center">
+          <HUDFrame size="lg" animate={true} delay={0.4} scanlines scanlinesOpacity={0.03}>
+            <div className="relative py-8 px-4 lg:px-8">
+              {/* Bracket Layout with Connector Lines */}
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-0 items-center">
               {/* Left Column - Semifinals */}
               <div className="space-y-6 lg:pr-8">
-                <h2 className="font-display text-2xl uppercase text-white mb-4 flex items-center gap-3">
-                  <Swords className="text-comets-cyan" size={24} />
-                  Semifinals
-                </h2>
+                {/* Diegetic section label */}
+                <div className="relative mb-6">
+                  <div className="flex items-center gap-3">
+                    <Swords className="text-comets-cyan" size={24} />
+                    <h2 className="font-display text-2xl uppercase text-white tracking-wider">
+                      Semifinals
+                    </h2>
+                  </div>
+                  <div className="mt-2 h-[1px] bg-gradient-to-r from-comets-cyan/60 via-comets-cyan/20 to-transparent" />
+                  <div className="absolute -bottom-1 left-0 w-24 h-[2px] bg-comets-cyan/40 shadow-[0_0_8px_rgba(0,243,255,0.3)]" />
+                </div>
                 {semifinals.slice(0, 1).map((series, idx) => (
                   <MatchupCard key={series.id} series={series} roundName="SF 1" delay={idx * 0.1} />
                 ))}
@@ -155,10 +164,51 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
                     transition={{ delay: 0.6 }}
                     className="w-full"
                   >
-                    <h2 className="font-display text-2xl uppercase text-white mb-4 flex items-center gap-3">
-                      <Crown className="text-comets-yellow" size={24} />
-                      Star Cup Finals
-                    </h2>
+                    {/* Diegetic section label */}
+                    <div className="relative mb-6">
+                      <div className="flex items-center gap-3">
+                        <Crown className="text-comets-yellow" size={24} />
+                        <h2 className="font-display text-2xl uppercase text-white tracking-wider">
+                          Star Cup Finals
+                        </h2>
+                      </div>
+                      <div className="mt-2 h-[1px] bg-gradient-to-r from-comets-yellow/60 via-comets-yellow/20 to-transparent" />
+                      <div className="absolute -bottom-1 left-0 w-24 h-[2px] bg-comets-yellow/40 shadow-[0_0_8px_rgba(244,208,63,0.3)]" />
+                    </div>
+
+                    {/* Champion Banner (appears when finals winner is determined) */}
+                    {finals.winner && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ delay: 0.8, type: "spring", stiffness: 200 }}
+                        className="mb-6 relative overflow-hidden"
+                      >
+                        <div className="relative bg-gradient-to-r from-comets-yellow/20 via-comets-yellow/30 to-comets-yellow/20 border-2 border-comets-yellow/50 rounded-lg p-4 text-center">
+                          {/* Scanlines */}
+                          <div className="absolute inset-0 scanlines opacity-10 pointer-events-none" />
+                          {/* Animated glow */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-comets-yellow/10 to-transparent"
+                            animate={{ x: ["-100%", "100%"] }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                          />
+                          <div className="relative flex items-center justify-center gap-3">
+                            <Trophy className="text-comets-yellow" size={28} />
+                            <div>
+                              <div className="font-ui text-[10px] uppercase tracking-[0.3em] text-comets-yellow/80 mb-1">
+                                Season 2 Champion
+                              </div>
+                              <div className="font-display text-2xl uppercase text-white tracking-wider">
+                                {finals.winner}
+                              </div>
+                            </div>
+                            <Trophy className="text-comets-yellow" size={28} />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
                     <MatchupCard series={finals} roundName="Finals" isFinals />
                   </motion.div>
                 ) : (
@@ -172,18 +222,19 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
               </div>
             </div>
 
-            {/* Mobile Connector Arrow (visible on small screens) */}
-            <div className="lg:hidden flex justify-center my-6">
-              <motion.div
-                className="flex flex-col items-center text-comets-cyan/50"
-                animate={{ y: [0, 5, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-              >
-                <div className="w-0.5 h-8 bg-gradient-to-b from-comets-cyan/50 to-comets-yellow/50" />
-                <ChevronDown size={20} />
-              </motion.div>
+              {/* Mobile Connector Arrow (visible on small screens) */}
+              <div className="lg:hidden flex justify-center my-6">
+                <motion.div
+                  className="flex flex-col items-center text-comets-cyan/50"
+                  animate={{ y: [0, 5, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  <div className="w-0.5 h-8 bg-gradient-to-b from-comets-cyan/50 to-comets-yellow/50" />
+                  <ChevronDown size={20} />
+                </motion.div>
+              </div>
             </div>
-          </div>
+          </HUDFrame>
         ) : (
           <div className="text-center py-20">
             <Trophy className="mx-auto mb-4 text-white/20" size={64} />

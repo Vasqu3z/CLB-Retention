@@ -11,6 +11,7 @@ import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { PlayerStats } from "@/lib/sheets";
+import HUDFrame from "@/components/ui/HUDFrame";
 
 interface Matchup {
   id: string;
@@ -341,7 +342,8 @@ export default function TeamDetailClient({
         </div>
 
         {/* Tab Content */}
-        <div className="min-h-[500px]">
+        <HUDFrame size="md" animate={true} delay={0.4} scanlines scanlinesOpacity={0.02}>
+          <div className="min-h-[500px] p-4">
           {/* Roster Tab */}
           {activeTab === "roster" && (
             <motion.div
@@ -423,7 +425,8 @@ export default function TeamDetailClient({
               </div>
             </motion.div>
           )}
-        </div>
+          </div>
+        </HUDFrame>
       </div>
     </main>
   );

@@ -4,6 +4,8 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Network, Users } from "lucide-react";
 import RetroPlayerSelector, { type PlayerOption } from "@/components/ui/RetroPlayerSelector";
+import RetroEmptyState from "@/components/ui/RetroEmptyState";
+import HUDFrame from "@/components/ui/HUDFrame";
 import RetroChemistryNode, {
   RetroChemistryTeamSummary,
   RetroChemistryConnection,
@@ -154,6 +156,9 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
           />
         </motion.div>
 
+        {/* Chemistry Analysis Content */}
+        <HUDFrame size="md" animate={true} delay={0.4} scanlines scanlinesOpacity={0.03}>
+          <div className="p-4">
         {/* Team Chemistry Summary (if 2+ players) */}
         {selectedPlayers.length >= 2 && (
           <motion.div
@@ -239,32 +244,14 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
             </div>
           </motion.div>
         ) : (
-          // Empty state
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center py-20"
-          >
-            <div className="relative inline-block">
-              <motion.div
-                animate={{
-                  scale: [1, 1.1, 1],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute inset-0 bg-comets-purple/20 blur-3xl rounded-full"
-              />
-              <Network size={64} className="text-white/20 relative" />
-            </div>
-            <h3 className="mt-6 font-display text-2xl uppercase text-white/40">
-              Select Players to Analyze
-            </h3>
-            <p className="mt-2 font-mono text-sm text-white/20">
-              Choose players using the search above to explore their chemistry
-            </p>
-          </motion.div>
+          <RetroEmptyState
+            title="Select Players to Analyze"
+            message="Choose players using the search above to explore their chemistry"
+            icon="search"
+          />
         )}
+          </div>
+        </HUDFrame>
       </div>
     </main>
   );

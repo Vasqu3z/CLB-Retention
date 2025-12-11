@@ -20,6 +20,8 @@ interface RetroTableProps<T> {
   onRowClick?: (item: T) => void;
   isLoading?: boolean;
   showAdvanced?: boolean; // Show condensed columns (default: true)
+  separatorAfterIndex?: number; // Show a separator line after this row index
+  separatorLabel?: string; // Label to display in separator
 }
 
 type SortConfig<T> = {
@@ -32,7 +34,9 @@ export default function RetroTable<T extends { id?: string | number }>({
   columns,
   onRowClick,
   isLoading,
-  showAdvanced = true
+  showAdvanced = true,
+  separatorAfterIndex,
+  separatorLabel
 }: RetroTableProps<T>) {
   const [sortConfig, setSortConfig] = useState<SortConfig<T>>(null);
 
@@ -169,57 +173,82 @@ export default function RetroTable<T extends { id?: string | number }>({
             </thead>
             <tbody className="font-mono text-sm">
               {sortedData.map((item, i) => (
-                <motion.tr
-                  key={item.id || i}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={onRowClick ? { backgroundColor: "rgba(255,255,255,0.05)" } : {}}
-                  transition={{
-                    layout: { duration: 0.2 },
-                    delay: Math.min(i * 0.02, 0.3), // Cap delay to avoid slow animations
-                    duration: 0.2,
-                  }}
-                  onClick={() => onRowClick && onRowClick(item)}
-                  onKeyDown={(e) => {
-                    if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
-                      e.preventDefault();
-                      onRowClick(item);
-                    }
-                  }}
-                  tabIndex={onRowClick ? 0 : -1}
-                  className={cn(
-                    "border-b border-white/5 transition-colors duration-150 group/row relative focus-arcade",
-                    onRowClick && "cursor-pointer hover:bg-white/5"
+                <React.Fragment key={item.id || i}>
+                  <motion.tr
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={onRowClick ? { backgroundColor: "rgba(255,255,255,0.05)" } : {}}
+                    transition={{
+                      layout: { duration: 0.2 },
+                      delay: Math.min(i * 0.02, 0.3), // Cap delay to avoid slow animations
+                      duration: 0.2,
+                    }}
+                    onClick={() => onRowClick && onRowClick(item)}
+                    onKeyDown={(e) => {
+                      if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        onRowClick(item);
+                      }
+                    }}
+                    tabIndex={onRowClick ? 0 : -1}
+                    className={cn(
+                      "border-b border-white/5 transition-colors duration-150 group/row relative focus-arcade",
+                      onRowClick && "cursor-pointer hover:bg-white/5"
+                    )}
+                  >
+                    <AnimatePresence mode="popLayout">
+                      {visibleColumns.map((col, j) => (
+                        <motion.td
+                          key={getColumnKey(col, j)}
+                          layout
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "auto" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className={cn("px-4 py-3 text-white/80 overflow-hidden", col.className)}
+                        >
+                          {col.cell
+                            ? col.cell(item, i)
+                            : col.accessorKey
+                              ? (item[col.accessorKey] as React.ReactNode)
+                              : null
+                          }
+                          {j === 0 && (
+                            <motion.div
+                              className="absolute left-0 top-0 bottom-0 w-[2px] bg-comets-cyan opacity-0 group-hover/row:opacity-100"
+                              transition={{ duration: 0.15 }}
+                            />
+                          )}
+                        </motion.td>
+                      ))}
+                    </AnimatePresence>
+                  </motion.tr>
+                  {/* Separator row after specified index */}
+                  {separatorAfterIndex !== undefined && i === separatorAfterIndex && (
+                    <motion.tr
+                      initial={{ opacity: 0, scaleX: 0 }}
+                      animate={{ opacity: 1, scaleX: 1 }}
+                      transition={{ delay: 0.4, duration: 0.5 }}
+                      className="relative"
+                    >
+                      <td colSpan={visibleColumns.length} className="p-0">
+                        <div className="relative py-2">
+                          {/* Glowing line */}
+                          <div className="h-[2px] bg-gradient-to-r from-transparent via-comets-cyan to-transparent shadow-[0_0_10px_rgba(0,243,255,0.5)]" />
+                          {/* Label */}
+                          {separatorLabel && (
+                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-surface-dark">
+                              <span className="text-[10px] font-ui uppercase tracking-[0.3em] text-comets-cyan/80">
+                                {separatorLabel}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </motion.tr>
                   )}
-                >
-                  <AnimatePresence mode="popLayout">
-                    {visibleColumns.map((col, j) => (
-                      <motion.td
-                        key={getColumnKey(col, j)}
-                        layout
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className={cn("px-4 py-3 text-white/80 overflow-hidden", col.className)}
-                      >
-                        {col.cell
-                          ? col.cell(item, i)
-                          : col.accessorKey
-                            ? (item[col.accessorKey] as React.ReactNode)
-                            : null
-                        }
-                        {j === 0 && (
-                          <motion.div
-                            className="absolute left-0 top-0 bottom-0 w-[2px] bg-comets-cyan opacity-0 group-hover/row:opacity-100"
-                            transition={{ duration: 0.15 }}
-                          />
-                        )}
-                      </motion.td>
-                    ))}
-                  </AnimatePresence>
-                </motion.tr>
+                </React.Fragment>
               ))}
             </tbody>
           </table>

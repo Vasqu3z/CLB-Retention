@@ -7,6 +7,8 @@ import RetroTabs from "@/components/ui/RetroTabs";
 import { SeasonToggle } from "@/components/ui/RetroSegmentedControl";
 import RetroPlayerSelector, { type PlayerOption } from "@/components/ui/RetroPlayerSelector";
 import RetroComparisonBar from "@/components/ui/RetroComparisonBar";
+import RetroEmptyState from "@/components/ui/RetroEmptyState";
+import HUDFrame from "@/components/ui/HUDFrame";
 
 /**
  * Full player stats from Google Sheets
@@ -239,6 +241,8 @@ export default function StatsClient({ regularPlayers, playoffPlayers }: StatsCli
         </motion.div>
 
         {/* Stats Comparison Content */}
+        <HUDFrame size="md" animate={true} delay={0.5} scanlines scanlinesOpacity={0.03}>
+          <div className="p-4">
         <AnimatePresence mode="wait">
           {selectedPlayers.length >= 2 ? (
             <motion.div
@@ -408,33 +412,15 @@ export default function StatsClient({ regularPlayers, playoffPlayers }: StatsCli
               </motion.div>
             </motion.div>
           ) : (
-            // Empty state
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-center py-20"
-            >
-              <div className="relative inline-block">
-                <motion.div
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    opacity: [0.3, 0.6, 0.3],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                  className="absolute inset-0 bg-comets-cyan/20 blur-3xl rounded-full"
-                />
-                <Users size={64} className="text-white/20 relative" />
-              </div>
-              <h3 className="mt-6 font-display text-2xl uppercase text-white/40">
-                Select Players to Compare
-              </h3>
-              <p className="mt-2 font-mono text-sm text-white/20">
-                Choose at least 2 players using the search above
-              </p>
-            </motion.div>
+            <RetroEmptyState
+              title="Select Players to Compare"
+              message="Choose at least 2 players using the search above"
+              icon="search"
+            />
           )}
         </AnimatePresence>
+          </div>
+        </HUDFrame>
       </div>
     </main>
   );

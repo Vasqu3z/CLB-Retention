@@ -169,6 +169,8 @@ export default function StandingsTable({ data, showAdvanced = true }: StandingsT
           columns={columns}
           onRowClick={handleTeamClick}
           showAdvanced={showAdvanced}
+          separatorAfterIndex={4}
+          separatorLabel="Playoff Line"
        />
     </div>
   );

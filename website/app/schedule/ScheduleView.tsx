@@ -5,6 +5,7 @@ import VersusCard from "@/components/ui/VersusCard";
 import { Calendar, ChevronLeft, ChevronRight, Grid3X3, List } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import RetroEmptyState from "@/components/ui/RetroEmptyState";
 
 export type Match = {
   id: string;
@@ -208,17 +209,11 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
               ))}
 
               {matches.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center py-24"
-                >
-                  <div className="text-6xl mb-4 opacity-20">📅</div>
-                  <div className="font-display text-2xl text-white/40 mb-2">No Games Scheduled</div>
-                  <div className="font-ui text-sm text-white/20 uppercase tracking-widest">
-                    Check back soon for updates
-                  </div>
-                </motion.div>
+                <RetroEmptyState
+                  title="No Games Scheduled"
+                  message="Check back soon for updates"
+                  icon="gamepad"
+                />
               )}
             </motion.div>
           )}

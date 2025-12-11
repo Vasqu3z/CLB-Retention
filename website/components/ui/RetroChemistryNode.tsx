@@ -241,7 +241,7 @@ function RetroChemistryBadge({
   delay?: number;
 }) {
   const isPositive = type === "positive";
-  const color = isPositive ? "#10B981" : "#FF4D4D"; // emerald-500 / comets-red
+  const color = isPositive ? "var(--comets-green)" : "var(--comets-red)";
   const Icon = isPositive ? Heart : Skull;
 
   return (
@@ -313,7 +313,7 @@ export function RetroChemistryConnection({
   delay?: number;
 }) {
   const isPositive = value >= 0;
-  const connectionColor = isPositive ? "#10B981" : "#FF4D4D";
+  const connectionColor = isPositive ? "var(--comets-green)" : "var(--comets-red)";
   const Icon = isPositive ? Zap : AlertTriangle;
 
   return (
@@ -433,8 +433,8 @@ export function RetroChemistryTeamSummary({
             )}
             animate={{
               textShadow: netChemistry >= 0
-                ? ["0 0 5px #10B981", "0 0 15px #10B981", "0 0 5px #10B981"]
-                : ["0 0 5px #FF4D4D", "0 0 15px #FF4D4D", "0 0 5px #FF4D4D"],
+                ? ["0 0 5px var(--comets-green)", "0 0 15px var(--comets-green)", "0 0 5px var(--comets-green)"]
+                : ["0 0 5px var(--comets-red)", "0 0 15px var(--comets-red)", "0 0 5px var(--comets-red)"],
             }}
             transition={{ duration: 2, repeat: Infinity }}
           >

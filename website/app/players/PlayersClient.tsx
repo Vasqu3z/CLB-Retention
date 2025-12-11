@@ -129,7 +129,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
             )}
           </motion.div>
           <div className="min-w-0">
-            <span className="font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
+            <span className="font-ui font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
             <span className="text-[10px] text-white/40 md:hidden">{item.team}</span>
           </div>
         </div>
@@ -227,7 +227,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
             )}
           </motion.div>
           <div className="min-w-0">
-            <span className="font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
+            <span className="font-ui font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
             <span className="text-[10px] text-white/40 md:hidden">{item.team}</span>
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
             )}
           </motion.div>
           <div className="min-w-0">
-            <span className="font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
+            <span className="font-ui font-bold text-white uppercase tracking-wider block truncate">{item.name}</span>
             <span className="text-[10px] text-white/40 md:hidden">{item.team}</span>
           </div>
         </div>

@@ -39,12 +39,12 @@ export default function HolographicField({ roster, onPositionClick }: Holographi
       >
         
         {/* More visible grid pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-30"
-          style={{ 
-            backgroundImage: 'linear-gradient(to right, #00F3FF 1px, transparent 1px), linear-gradient(to bottom, #00F3FF 1px, transparent 1px)',
+          style={{
+            backgroundImage: 'linear-gradient(to right, var(--comets-cyan) 1px, transparent 1px), linear-gradient(to bottom, var(--comets-cyan) 1px, transparent 1px)',
             backgroundSize: '40px 40px'
-          }} 
+          }}
         />
         
         {/* Enhanced diamond with pulse */}
@@ -61,12 +61,12 @@ export default function HolographicField({ roster, onPositionClick }: Holographi
         />
         
         {/* Dramatic scanning line */}
-        <motion.div 
+        <motion.div
           animate={{ top: ["0%", "100%"] }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           className="absolute left-0 right-0 h-2 bg-comets-cyan/70 blur-sm"
-          style={{ 
-            boxShadow: "0 0 20px #00F3FF, 0 0 40px #00F3FF"
+          style={{
+            boxShadow: "0 0 20px var(--comets-cyan), 0 0 40px var(--comets-cyan)"
           }}
         />
 
@@ -86,12 +86,12 @@ export default function HolographicField({ roster, onPositionClick }: Holographi
             key={pos}
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
-            whileHover={{ 
-              scale: 1.3, 
+            whileHover={{
+              scale: 1.3,
               y: -8,
-              boxShadow: player 
-                ? "0 0 25px #F4D03F" 
-                : "0 0 20px #00F3FF"
+              boxShadow: player
+                ? "0 0 25px var(--comets-yellow)"
+                : "0 0 20px var(--comets-cyan)"
             }}
             whileTap={{ scale: 0.9 }}
             transition={{ 
@@ -108,8 +108,8 @@ export default function HolographicField({ roster, onPositionClick }: Holographi
             }}
             className={cn(
               "absolute w-12 h-12 -ml-6 -mt-6 rounded-full border-2 flex items-center justify-center z-10 transition-all duration-300 cursor-pointer focus-yellow",
-              player 
-                ? "border-comets-yellow bg-black shadow-[0_0_15px_#F4D03F]" 
+              player
+                ? "border-comets-yellow bg-black shadow-[0_0_15px_var(--comets-yellow)]"
                 : "border-white/20 bg-black/50 hover:border-comets-cyan hover:bg-comets-cyan/10"
             )}
             style={{ top: coords.top, left: coords.left }}

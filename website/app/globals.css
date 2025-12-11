@@ -16,6 +16,7 @@
   --comets-blue: #2E86DE;
   --comets-cyan: #00F3FF;
   --comets-purple: #BD00FF;
+  --comets-green: #10B981;
 }
 
 @layer base {
@@ -62,6 +63,10 @@
     text-shadow: 0 0 10px var(--comets-purple), 0 0 20px var(--comets-purple);
   }
 
+  .glow-green {
+    text-shadow: 0 0 10px var(--comets-green), 0 0 20px var(--comets-green);
+  }
+
   /* ===== BOX EFFECTS ===== */
   .box-glow-cyan {
     box-shadow: 0 0 20px rgba(0, 243, 255, 0.3), inset 0 0 20px rgba(0, 243, 255, 0.1);
@@ -73,6 +78,10 @@
 
   .box-glow-red {
     box-shadow: 0 0 20px rgba(255, 77, 77, 0.3), inset 0 0 20px rgba(255, 77, 77, 0.1);
+  }
+
+  .box-glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), inset 0 0 20px rgba(16, 185, 129, 0.1);
   }
 
   /* ===== SCANLINES ===== */

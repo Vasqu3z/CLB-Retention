@@ -43,11 +43,11 @@ export default function StandingsClient({ data }: StandingsClientProps) {
         {/* Legend / Info */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono text-white/30 border-t border-white/5 pt-8">
           <div>
-            <span className="text-comets-yellow block mb-1 font-bold">RANKING CRITERIA</span>
+            <span className="font-ui text-comets-yellow block mb-1 font-bold">RANKING CRITERIA</span>
             Win Percentage &gt; Head-to-Head &gt; Run Differential
           </div>
           <div>
-            <span className="text-comets-cyan block mb-1 font-bold">PLAYOFF STATUS</span>
+            <span className="font-ui text-comets-cyan block mb-1 font-bold">PLAYOFF STATUS</span>
             <div className="flex items-center gap-4 mt-1">
               <div className="flex items-center gap-1.5">
                 <span className="px-1.5 py-0.5 text-[10px] font-bold bg-green-900/40 text-green-400 border border-green-500/40 rounded">x</span>
@@ -60,7 +60,7 @@ export default function StandingsClient({ data }: StandingsClientProps) {
             </div>
           </div>
           <div className="md:text-right">
-            <span className="text-white/50 block mb-1 font-bold">TOP 5 QUALIFY</span>
+            <span className="font-ui text-white/50 block mb-1 font-bold">TOP 5 QUALIFY</span>
             Star Cup Semifinals
           </div>
         </div>

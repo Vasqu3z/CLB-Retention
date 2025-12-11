@@ -20,7 +20,7 @@ interface H2HTooltipProps {
   teamColor?: string;
 }
 
-export default function H2HTooltip({ record, children, teamColor = "#F4D03F" }: H2HTooltipProps) {
+export default function H2HTooltip({ record, children, teamColor = "var(--comets-yellow)" }: H2HTooltipProps) {
   // Don't show tooltip if there's no record
   if (!record || record.trim() === "") {
     return <>{children}</>;

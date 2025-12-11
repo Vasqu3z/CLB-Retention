@@ -108,13 +108,13 @@ export default function StatHighlight() {
               </div>
               <div className="text-right">
                 <div className="font-ui text-xs text-white/40 uppercase tracking-wider">Season AVG</div>
-                <motion.div 
+                <motion.div
                   className="font-mono text-4xl text-comets-yellow text-shadow-neon"
-                  animate={{ 
+                  animate={{
                     textShadow: [
-                      "0 0 10px #F4D03F",
-                      "0 0 20px #F4D03F",
-                      "0 0 10px #F4D03F"
+                      "0 0 10px var(--comets-yellow)",
+                      "0 0 20px var(--comets-yellow)",
+                      "0 0 10px var(--comets-yellow)"
                     ]
                   }}
                   transition={{ duration: 2, repeat: Infinity }}

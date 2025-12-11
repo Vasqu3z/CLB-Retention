@@ -22,6 +22,7 @@ const config: Config = {
           blue: "var(--comets-blue)",
           cyan: "var(--comets-cyan)",
           purple: "var(--comets-purple)",
+          green: "var(--comets-green)",
         },
       },
       fontFamily: {

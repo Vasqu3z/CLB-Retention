@@ -224,7 +224,7 @@ export function MiniChampionBadge({
 }) {
   return (
     <motion.span
-      className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-bold uppercase tracking-wide border"
+      className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-ui font-bold uppercase tracking-wide border"
       style={{
         backgroundColor: `${teamColor}20`,
         borderColor: `${teamColor}50`,

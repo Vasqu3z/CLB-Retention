@@ -73,13 +73,13 @@ export default function RetroLoader() {
         <div className="font-display text-2xl text-white tracking-widest">
           LOADING
         </div>
-        <motion.div 
+        <motion.div
           className="text-xs font-mono text-comets-cyan uppercase tracking-[0.5em] mt-2"
-          animate={{ 
+          animate={{
             textShadow: [
-              "0 0 0px #00F3FF",
-              "0 0 10px #00F3FF",
-              "0 0 0px #00F3FF"
+              "0 0 0px var(--comets-cyan)",
+              "0 0 10px var(--comets-cyan)",
+              "0 0 0px var(--comets-cyan)"
             ]
           }}
           transition={{ duration: 2, repeat: Infinity }}

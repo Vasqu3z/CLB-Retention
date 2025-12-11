@@ -282,14 +282,14 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
               transition={{ type: "spring", stiffness: 200 }}
             >
               {/* Winning score glows */}
-              <motion.span 
+              <motion.span
                 className={home.score! > away.score! ? "text-comets-yellow" : "text-white/50"}
-                animate={home.score! > away.score! ? { 
+                animate={home.score! > away.score! ? {
                   scale: [1, 1.1, 1],
                   textShadow: [
-                    "0 0 0px #F4D03F", 
-                    "0 0 10px #F4D03F", 
-                    "0 0 0px #F4D03F"
+                    "0 0 0px var(--comets-yellow)",
+                    "0 0 10px var(--comets-yellow)",
+                    "0 0 0px var(--comets-yellow)"
                   ]
                 } : {}}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -297,14 +297,14 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
                 {home.score}
               </motion.span>
               <span className="text-sm text-white/20">-</span>
-              <motion.span 
+              <motion.span
                 className={away.score! > home.score! ? "text-comets-yellow" : "text-white/50"}
-                animate={away.score! > home.score! ? { 
+                animate={away.score! > home.score! ? {
                   scale: [1, 1.1, 1],
                   textShadow: [
-                    "0 0 0px #F4D03F", 
-                    "0 0 10px #F4D03F", 
-                    "0 0 0px #F4D03F"
+                    "0 0 0px var(--comets-yellow)",
+                    "0 0 10px var(--comets-yellow)",
+                    "0 0 0px var(--comets-yellow)"
                   ]
                 } : {}}
                 transition={{ duration: 2, repeat: Infinity }}
@@ -313,11 +313,11 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
               </motion.span>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               className="font-display text-4xl text-white/10 italic"
-              whileHover={{ 
-                scale: 1.25, 
-                color: "rgba(0, 243, 255, 0.8)",
+              whileHover={{
+                scale: 1.25,
+                color: "var(--comets-cyan)",
                 rotate: [0, -5, 5, 0]
               }}
               transition={{ duration: 0.3 }}

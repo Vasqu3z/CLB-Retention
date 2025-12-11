@@ -42,13 +42,13 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
       <div className="container mx-auto max-w-6xl">
 
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
           <div>
             <div className="flex items-center gap-2 text-comets-red mb-2">
               <Calendar size={20} />
-              <span className="font-ui uppercase tracking-widest text-sm">Season 2 Schedule</span>
+              <span className="font-ui uppercase tracking-widest text-sm">Official Schedule</span>
             </div>
-            <h1 className="font-display text-4xl md:text-5xl text-white uppercase leading-none">
+            <h1 className="font-display text-5xl text-white uppercase leading-none">
               {viewMode === "week" ? `Week ${activeWeek}` : "Full Season"}
             </h1>
           </div>
@@ -85,33 +85,37 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
 
             {/* Navigation Controls (only in week view) */}
             {viewMode === "week" && (
-              <div className="flex gap-1">
-                <button
+              <div className="flex gap-2">
+                <motion.button
                   onClick={() => setActiveWeek(prev => Math.max(weeks[0], prev - 1))}
                   disabled={activeWeek === weeks[0]}
                   className={cn(
-                    "w-9 h-9 rounded border flex items-center justify-center transition-colors",
+                    "w-10 h-10 rounded border flex items-center justify-center transition-colors focus-arcade",
                     activeWeek === weeks[0]
                       ? "border-white/5 text-white/20 cursor-not-allowed"
                       : "border-white/10 text-white/50 hover:text-white hover:border-white/30"
                   )}
+                  whileHover={activeWeek !== weeks[0] ? { scale: 1.05 } : {}}
+                  whileTap={activeWeek !== weeks[0] ? { scale: 0.95 } : {}}
                   aria-label="Previous week"
                 >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
+                  <ChevronLeft size={20} />
+                </motion.button>
+                <motion.button
                   onClick={() => setActiveWeek(prev => Math.min(weeks[weeks.length - 1], prev + 1))}
                   disabled={activeWeek === weeks[weeks.length - 1]}
                   className={cn(
-                    "w-9 h-9 rounded border flex items-center justify-center transition-colors",
+                    "w-10 h-10 rounded border flex items-center justify-center transition-colors focus-arcade",
                     activeWeek === weeks[weeks.length - 1]
                       ? "border-white/5 text-white/20 cursor-not-allowed"
                       : "border-white/10 text-white/50 hover:text-white hover:border-white/30"
                   )}
+                  whileHover={activeWeek !== weeks[weeks.length - 1] ? { scale: 1.05 } : {}}
+                  whileTap={activeWeek !== weeks[weeks.length - 1] ? { scale: 0.95 } : {}}
                   aria-label="Next week"
                 >
-                  <ChevronRight size={18} />
-                </button>
+                  <ChevronRight size={20} />
+                </motion.button>
               </div>
             )}
           </div>
@@ -119,20 +123,32 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
 
         {/* Week Selector Pills (only in week view) */}
         {viewMode === "week" && (
-          <div className="flex gap-1.5 mb-6 overflow-x-auto pb-2 scrollbar-thin">
-            {weeks.map((week) => (
-              <button
+          <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-thin">
+            {weeks.map((week, index) => (
+              <motion.button
                 key={week}
                 onClick={() => setActiveWeek(week)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
                 className={cn(
-                  "relative px-4 py-1.5 rounded-full font-ui uppercase tracking-wider text-xs transition-all whitespace-nowrap",
+                  "relative px-6 py-2 rounded-full font-ui uppercase tracking-widest text-sm transition-all whitespace-nowrap focus-arcade",
                   activeWeek === week
-                    ? "bg-comets-yellow text-black font-bold"
-                    : "text-white/50 hover:text-white hover:bg-white/10"
+                    ? "text-black"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
                 )}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                W{week}
-              </button>
+                {activeWeek === week && (
+                  <motion.div
+                    layoutId="activeWeek"
+                    className="absolute inset-0 bg-comets-yellow rounded-full"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10">Week {week}</span>
+              </motion.button>
             ))}
           </div>
         )}
@@ -142,38 +158,49 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
           {viewMode === "week" && (
             <motion.div
               key={`week-${activeWeek}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-4"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
             >
               {Object.entries(matchesByDate).map(([date, dateMatches]) => (
                 <div key={date}>
                   {/* Day Group Header */}
-                  <div className="flex items-center gap-3 py-3">
+                  <div className="flex items-center gap-4 py-4">
                     <div className="h-px flex-1 bg-white/10" />
-                    <span className="font-mono text-white/40 text-xs">{date}</span>
+                    <span className="font-mono text-white/40 text-sm">{date}</span>
                     <div className="h-px flex-1 bg-white/10" />
                   </div>
 
-                  {/* Matches Grid - 2 columns on larger screens */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {dateMatches.map((match) => (
-                      <VersusCard key={match.id} {...match} compact />
+                  {/* Matches for this date */}
+                  <div className="space-y-4">
+                    {dateMatches.map((match, index) => (
+                      <motion.div
+                        key={match.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <VersusCard {...match} />
+                      </motion.div>
                     ))}
                   </div>
                 </div>
               ))}
 
               {matches.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="text-4xl mb-3 opacity-20">📅</div>
-                  <div className="font-display text-xl text-white/40 mb-1">No Games</div>
-                  <div className="font-ui text-xs text-white/20 uppercase tracking-widest">
-                    Week {activeWeek}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-24"
+                >
+                  <div className="text-6xl mb-4 opacity-20">📅</div>
+                  <div className="font-display text-2xl text-white/40 mb-2">No Games Scheduled</div>
+                  <div className="font-ui text-sm text-white/20 uppercase tracking-widest">
+                    Check back soon for updates
                   </div>
-                </div>
+                </motion.div>
               )}
             </motion.div>
           )}
@@ -182,10 +209,10 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
           {viewMode === "all" && (
             <motion.div
               key="all-weeks"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
               className="space-y-8"
             >
               {weeks.map((week) => {

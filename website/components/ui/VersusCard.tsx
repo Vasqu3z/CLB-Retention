@@ -2,8 +2,10 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { ExternalLink } from "lucide-react";
 
 interface TeamInfo {
   name: string;
@@ -23,21 +25,38 @@ interface VersusCardProps {
   isFinished: boolean;
   compact?: boolean;
   status?: GameStatus; // 'live' for current game, 'next' for upcoming
+  boxScoreUrl?: string;
 }
 
-export default function VersusCard({ home, away, date, time, isFinished, compact = false, status }: VersusCardProps) {
+export default function VersusCard({ home, away, date, time, isFinished, compact = false, status, boxScoreUrl }: VersusCardProps) {
+  const hasBoxScore = isFinished && boxScoreUrl;
+
+  // Wrapper component for linking
+  const CardWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (hasBoxScore) {
+      return (
+        <Link href={boxScoreUrl} target="_blank" rel="noopener noreferrer" className="block">
+          {children}
+        </Link>
+      );
+    }
+    return <>{children}</>;
+  };
+
   // Compact mode for grid layouts
   if (compact) {
     return (
-      <div
-        className={cn(
-          "group relative bg-surface-dark border rounded-lg overflow-hidden transition-colors duration-200 cursor-pointer",
-          isFinished ? "opacity-100 border-white/10" : "opacity-80 border-white/10",
-          status === 'live' && "border-comets-red/50 shadow-[0_0_15px_rgba(255,77,77,0.2)]",
-          status === 'next' && "border-comets-cyan/50 shadow-[0_0_15px_rgba(0,243,255,0.2)]",
-          !status && "hover:border-white/20"
-        )}
-      >
+      <CardWrapper>
+        <div
+          className={cn(
+            "group relative bg-surface-dark border rounded-lg overflow-hidden transition-colors duration-200",
+            isFinished ? "opacity-100 border-white/10" : "opacity-80 border-white/10",
+            status === 'live' && "border-comets-red/50 shadow-[0_0_15px_rgba(255,77,77,0.2)]",
+            status === 'next' && "border-comets-cyan/50 shadow-[0_0_15px_rgba(0,243,255,0.2)]",
+            hasBoxScore && "cursor-pointer hover:border-comets-cyan/50 hover:shadow-[0_0_15px_rgba(0,243,255,0.2)]",
+            !status && !hasBoxScore && "hover:border-white/20"
+          )}
+        >
         {/* Status bar with LIVE/NEXT badge */}
         <div className={cn(
           "px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider border-b border-white/5 flex items-center justify-between",
@@ -137,25 +156,35 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
             </span>
           </div>
         </div>
+
+        {/* Box Score Link Indicator */}
+        {hasBoxScore && (
+          <div className="absolute bottom-1 right-1 p-1 text-comets-cyan/50 group-hover:text-comets-cyan transition-colors">
+            <ExternalLink size={10} />
+          </div>
+        )}
       </div>
+      </CardWrapper>
     );
   }
 
   // Full version with animations
   return (
-    <motion.div
-      className={cn(
-        "group relative w-full h-32 bg-surface-dark border rounded-xl overflow-hidden transition-all duration-300 cursor-pointer focus-arcade",
-        status === 'live' ? "border-comets-red/50 shadow-[0_0_20px_rgba(255,77,77,0.25)]" :
-        status === 'next' ? "border-comets-cyan/50 shadow-[0_0_20px_rgba(0,243,255,0.25)]" :
-        "border-white/10 hover:border-white/30"
-      )}
-      whileHover={{ scale: 1.01 }}
-      transition={{ duration: 0.2 }}
-      tabIndex={0}
-      role="article"
-      aria-label={`Match between ${home.name} and ${away.name} on ${date} at ${time}`}
-    >
+    <CardWrapper>
+      <motion.div
+        className={cn(
+          "group relative w-full h-32 bg-surface-dark border rounded-xl overflow-hidden transition-all duration-300 focus-arcade",
+          status === 'live' ? "border-comets-red/50 shadow-[0_0_20px_rgba(255,77,77,0.25)]" :
+          status === 'next' ? "border-comets-cyan/50 shadow-[0_0_20px_rgba(0,243,255,0.25)]" :
+          hasBoxScore ? "border-white/10 hover:border-comets-cyan/50 hover:shadow-[0_0_15px_rgba(0,243,255,0.2)] cursor-pointer" :
+          "border-white/10 hover:border-white/30"
+        )}
+        whileHover={{ scale: 1.01 }}
+        transition={{ duration: 0.2 }}
+        tabIndex={0}
+        role="article"
+        aria-label={`Match between ${home.name} and ${away.name} on ${date} at ${time}${hasBoxScore ? ' - Click to view box score' : ''}`}
+      >
       {/* LIVE Badge (full version - top right corner) */}
       {status === 'live' && (
         <motion.div
@@ -347,6 +376,14 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
           background: `linear-gradient(90deg, ${home.logoColor}20, transparent, ${away.logoColor}20)`
         }}
       />
+
+      {/* Box Score Link Indicator */}
+      {hasBoxScore && (
+        <div className="absolute bottom-2 right-2 p-1.5 text-comets-cyan/50 group-hover:text-comets-cyan transition-colors">
+          <ExternalLink size={14} />
+        </div>
+      )}
     </motion.div>
+    </CardWrapper>
   );
 }

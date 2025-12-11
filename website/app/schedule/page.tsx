@@ -67,7 +67,8 @@ export default async function SchedulePage() {
       },
       date: gameDate,
       time: gameTime,
-      isFinished: game.played
+      isFinished: game.played,
+      boxScoreUrl: game.boxScoreUrl
     };
   });
 

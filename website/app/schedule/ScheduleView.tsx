@@ -13,6 +13,7 @@ export type Match = {
   date: string;
   time: string;
   isFinished: boolean;
+  boxScoreUrl?: string;
 };
 
 interface ScheduleViewProps {

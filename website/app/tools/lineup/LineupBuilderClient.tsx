@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PlayerSearchModal from "@/components/ui/PlayerSearchModal";
+import useLenisScrollLock from "@/hooks/useLenisScrollLock";
 
 // Types
 interface Player {
@@ -121,6 +122,9 @@ export default function LineupBuilderClient({
 
   // Hovered position for tooltip
   const [hoveredPosition, setHoveredPosition] = useState<string | null>(null);
+
+  // Scroll lock for scrollable containers (prevents Lenis from hijacking scroll)
+  const savedLineupsScrollRef = useLenisScrollLock<HTMLDivElement>();
 
   // Load saved lineups from localStorage
   useEffect(() => {
@@ -962,7 +966,10 @@ export default function LineupBuilderClient({
                   No saved lineups yet
                 </div>
               ) : (
-                <div className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar">
+                <div
+                  ref={savedLineupsScrollRef}
+                  className="space-y-2 max-h-[200px] overflow-y-auto custom-scrollbar"
+                >
                   {savedLineups.map((lineup) => (
                     <div
                       key={lineup.id}

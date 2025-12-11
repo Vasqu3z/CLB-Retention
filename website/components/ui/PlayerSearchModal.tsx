@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import useLenisScrollLock from "@/hooks/useLenisScrollLock";
 
 interface Player {
   id: string;
@@ -37,6 +38,7 @@ export default function PlayerSearchModal({
 }: PlayerSearchModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const playerListRef = useLenisScrollLock<HTMLDivElement>();
 
   // Focus input when modal opens
   useEffect(() => {
@@ -145,7 +147,7 @@ export default function PlayerSearchModal({
             </div>
 
             {/* Player List */}
-            <div className="max-h-[50vh] overflow-y-auto custom-scrollbar">
+            <div ref={playerListRef} className="max-h-[50vh] overflow-y-auto custom-scrollbar">
               {filteredPlayers.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="text-white/30 font-mono text-sm">

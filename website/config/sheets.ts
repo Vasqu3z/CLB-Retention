@@ -207,7 +207,7 @@ export const TEAM_REGISTRY_SHEET = {
   DATA_START_ROW: 2,
   MAX_ROWS: 20,
   START_COL: 'A',
-  END_COL: 'H',
+  END_COL: 'I',
 
   // Column indices (0-based)
   COLUMNS: {
@@ -216,9 +216,10 @@ export const TEAM_REGISTRY_SHEET = {
     ABBR: 2,             // C
     STATUS: 3,           // D
     COLOR: 4,            // E
-    LOGO_URL: 5,         // F
-    EMBLEM_URL: 6,       // G
-    DISCORD_ROLE_ID: 7,  // H
+    // F is unused
+    LOGO_URL: 6,         // G
+    EMBLEM_URL: 7,       // H
+    DISCORD_ROLE_ID: 8,  // I
   },
 } as const;
 

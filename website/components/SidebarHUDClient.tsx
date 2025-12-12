@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, TrendingUp, Zap, Activity, ChevronRight } from "lucide-react";
+import { Trophy, TrendingUp, Zap, Activity, ChevronRight, Users, Scale, Sliders, Link2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Types for the data passed from server component
@@ -48,6 +48,7 @@ interface SidebarHUDClientProps {
     batting: Leader[];
     homeRuns: Leader[];
     era: Leader[];
+    nicePlays: Leader[];
   };
   recentGames: RecentGame[];
 }
@@ -386,6 +387,33 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                 </motion.div>
               ))}
             </div>
+
+            {/* Nice Plays */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-1">
+                <Star size={10} className="text-comets-yellow/70" />
+                <span className="font-mono text-[11px] text-comets-yellow/70 uppercase tracking-wide">NP</span>
+              </div>
+              {leaders.nicePlays.slice(0, 2).map((player, idx) => (
+                <motion.div
+                  key={player.name}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.45 + idx * 0.05 }}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <Link
+                    href={`/players/${player.slug}`}
+                    className="font-ui text-[13px] text-white/80 hover:text-comets-yellow transition-colors truncate"
+                  >
+                    {player.name}
+                  </Link>
+                  <span className="font-mono text-[13px] text-comets-yellow tabular-nums flex-shrink-0">
+                    {player.value}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </HUDWidget>
 
@@ -397,7 +425,7 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
           href="/schedule"
           delay={0.3}
         >
-          <div className="space-y-3">
+          <div className="space-y-2">
             {recentGames.slice(0, 4).map((game, idx) => (
               <motion.div
                 key={`${game.homeTeam}-${game.awayTeam}-${idx}`}
@@ -410,12 +438,12 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                     href={game.boxScoreUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-2 rounded-sm bg-white/[0.02] border border-white/5 hover:border-comets-green/30 hover:bg-white/[0.04] transition-all"
+                    className="block p-1.5 rounded-sm bg-white/[0.02] border border-white/5 hover:border-comets-green/30 hover:bg-white/[0.04] transition-all"
                   >
                     <GameScoreContent game={game} />
                   </Link>
                 ) : (
-                  <div className="p-2 rounded-sm bg-white/[0.02] border border-white/5">
+                  <div className="p-1.5 rounded-sm bg-white/[0.02] border border-white/5">
                     <GameScoreContent game={game} />
                   </div>
                 )}
@@ -436,19 +464,20 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
           </div>
           <div className="grid grid-cols-2 gap-1.5">
             {[
-              { name: "Lineup", href: "/tools/lineup", icon: "⚾" },
-              { name: "Compare", href: "/tools/compare", icon: "⚔️" },
-              { name: "Attributes", href: "/tools/attributes", icon: "⚡" },
-              { name: "Chemistry", href: "/tools/chemistry", icon: "🔗" },
-            ].map((tool, idx) => (
+              { name: "Lineup", href: "/tools/lineup", Icon: Users, color: "comets-cyan" },
+              { name: "Compare", href: "/tools/compare", Icon: Scale, color: "comets-yellow" },
+              { name: "Attributes", href: "/tools/attributes", Icon: Sliders, color: "comets-purple" },
+              { name: "Chemistry", href: "/tools/chemistry", Icon: Link2, color: "comets-green" },
+            ].map((tool) => (
               <Link
                 key={tool.name}
                 href={tool.href}
                 className="flex items-center gap-1.5 p-2 rounded-sm bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.05] transition-all group"
               >
-                <span className="text-base opacity-60 group-hover:opacity-100 transition-opacity">
-                  {tool.icon}
-                </span>
+                <tool.Icon
+                  size={14}
+                  className={`text-${tool.color}/60 group-hover:text-${tool.color} transition-colors`}
+                />
                 <span className="font-ui text-xs uppercase tracking-wider text-white/60 group-hover:text-white/90 transition-colors">
                   {tool.name}
                 </span>
@@ -487,7 +516,7 @@ function GameScoreContent({ game }: { game: RecentGame }) {
   const homeWon = game.homeScore > game.awayScore;
 
   return (
-    <>
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           {game.homeEmblem ? (
@@ -548,9 +577,9 @@ function GameScoreContent({ game }: { game: RecentGame }) {
           {game.awayScore}
         </span>
       </div>
-      <div className="text-[10px] font-mono text-white/40 mt-1 text-center">
+      <div className="text-[10px] font-mono text-white/40 pt-0.5 text-center border-t border-white/5">
         {game.label}
       </div>
-    </>
+    </div>
   );
 }

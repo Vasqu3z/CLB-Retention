@@ -85,6 +85,18 @@ export default async function SidebarHUD() {
       slug: playerNameToSlug(p.name),
     }));
 
+  // Nice Plays leaders (fielding, no qualification)
+  const allFielders = players.filter(p => p.np && p.np > 0);
+  const npLeaders = [...allFielders]
+    .sort((a, b) => (b.np || 0) - (a.np || 0))
+    .slice(0, 3)
+    .map(p => ({
+      name: p.name,
+      value: p.np || 0,
+      team: p.team,
+      slug: playerNameToSlug(p.name),
+    }));
+
   // Get recent games (regular season + playoffs)
   const currentWeek = schedule.length > 0
     ? Math.max(...schedule.map(g => g.week))
@@ -148,6 +160,7 @@ export default async function SidebarHUD() {
         batting: battingLeaders,
         homeRuns: hrLeaders,
         era: eraLeaders,
+        nicePlays: npLeaders,
       }}
       recentGames={allGames}
     />

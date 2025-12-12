@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Trophy, Calendar, Users, Activity, UserCircle } from "lucide-react";
@@ -27,11 +28,17 @@ export default function Header() {
 
         <Link href="/" className="flex items-center gap-4 group relative z-10">
           <motion.div
-            className="w-10 h-10 bg-comets-yellow rounded-sm flex items-center justify-center font-display text-black text-xl shadow-lg power-indicator"
+            className="w-10 h-10 flex items-center justify-center"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
           >
-            C
+            <Image
+              src="/icons/Comets.png"
+              alt="Comets League"
+              width={40}
+              height={40}
+              className="object-contain drop-shadow-[0_0_8px_rgba(244,208,63,0.5)]"
+            />
           </motion.div>
           <div className="hidden md:flex flex-col">
             <span className="font-display text-lg tracking-wider leading-none text-white">COMETS</span>

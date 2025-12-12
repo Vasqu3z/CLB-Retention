@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, TrendingUp, Zap, Activity, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ interface Standing {
   losses: number;
   winPct: string;
   color?: string;
+  emblemUrl?: string;
   slug?: string;
 }
 
@@ -28,10 +30,12 @@ interface RecentGame {
   homeTeam: string;
   homeShort: string;
   homeColor: string;
+  homeEmblem?: string;
   homeScore: number;
   awayTeam: string;
   awayShort: string;
   awayColor: string;
+  awayEmblem?: string;
   awayScore: number;
   boxScoreUrl?: string;
   label: string;
@@ -264,10 +268,20 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   <span className="font-mono text-[11px] text-white/30 w-3">
                     {team.rank}
                   </span>
-                  <div
-                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: team.color || "#fff" }}
-                  />
+                  {team.emblemUrl ? (
+                    <Image
+                      src={team.emblemUrl}
+                      alt={team.team}
+                      width={16}
+                      height={16}
+                      className="flex-shrink-0 object-contain"
+                    />
+                  ) : (
+                    <div
+                      className="w-4 h-4 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: team.color || "#fff" }}
+                    />
+                  )}
                   <span className="font-ui text-[13px] text-white/80 truncate">
                     {team.team}
                   </span>
@@ -467,10 +481,20 @@ function GameScoreContent({ game }: { game: RecentGame }) {
     <>
       <div className="flex items-center justify-between text-[11px]">
         <div className="flex items-center gap-1.5">
-          <div
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: game.homeColor }}
-          />
+          {game.homeEmblem ? (
+            <Image
+              src={game.homeEmblem}
+              alt={game.homeTeam}
+              width={14}
+              height={14}
+              className="flex-shrink-0 object-contain"
+            />
+          ) : (
+            <div
+              className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: game.homeColor }}
+            />
+          )}
           <span className={cn(
             "font-ui",
             homeWon ? "text-white font-medium" : "text-white/50"
@@ -487,10 +511,20 @@ function GameScoreContent({ game }: { game: RecentGame }) {
       </div>
       <div className="flex items-center justify-between text-[11px]">
         <div className="flex items-center gap-1.5">
-          <div
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: game.awayColor }}
-          />
+          {game.awayEmblem ? (
+            <Image
+              src={game.awayEmblem}
+              alt={game.awayTeam}
+              width={14}
+              height={14}
+              className="flex-shrink-0 object-contain"
+            />
+          ) : (
+            <div
+              className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: game.awayColor }}
+            />
+          )}
           <span className={cn(
             "font-ui",
             !homeWon ? "text-white font-medium" : "text-white/50"

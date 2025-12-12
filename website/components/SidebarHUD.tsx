@@ -24,19 +24,23 @@ export default async function SidebarHUD() {
 
   // Create team lookup map
   const teamMap = new Map(
-    teamRegistry.map(t => [t.teamName, { color: t.color, abbr: t.abbr }])
+    teamRegistry.map(t => [t.teamName, { color: t.color, abbr: t.abbr, emblemUrl: t.emblemUrl }])
   );
 
   // Transform standings for client
-  const standingsData = standings.slice(0, 8).map(team => ({
-    rank: team.rank,
-    team: team.team,
-    wins: team.wins,
-    losses: team.losses,
-    winPct: team.winPct,
-    color: teamMap.get(team.team)?.color || "#ffffff",
-    slug: team.team.toLowerCase().replace(/\s+/g, "-"),
-  }));
+  const standingsData = standings.slice(0, 8).map(team => {
+    const teamInfo = teamMap.get(team.team);
+    return {
+      rank: team.rank,
+      team: team.team,
+      wins: team.wins,
+      losses: team.losses,
+      winPct: team.winPct,
+      color: teamInfo?.color || "#ffffff",
+      emblemUrl: teamInfo?.emblemUrl || "",
+      slug: team.team.toLowerCase().replace(/\s+/g, "-"),
+    };
+  });
 
   // Calculate qualification thresholds
   const qualifyingAB = avgTeamGP * QUALIFICATION_THRESHOLDS.BATTING.AB_MULTIPLIER;
@@ -124,10 +128,12 @@ export default async function SidebarHUD() {
         homeTeam: g.homeTeam,
         homeShort: homeInfo?.abbr || g.homeTeam.substring(0, 3).toUpperCase(),
         homeColor: homeInfo?.color || "#ffffff",
+        homeEmblem: homeInfo?.emblemUrl || "",
         homeScore: g.homeScore || 0,
         awayTeam: g.awayTeam,
         awayShort: awayInfo?.abbr || g.awayTeam.substring(0, 3).toUpperCase(),
         awayColor: awayInfo?.color || "#ffffff",
+        awayEmblem: awayInfo?.emblemUrl || "",
         awayScore: g.awayScore || 0,
         boxScoreUrl: g.boxScoreUrl,
         label: g.label,

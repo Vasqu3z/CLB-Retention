@@ -117,8 +117,8 @@ export default function HolographicField({ roster, onPositionClick }: Holographi
             aria-label={`${pos} position${player ? `: ${player.name}` : ' empty'}`}
           >
             {player ? (
-              <motion.div 
-                className="font-bold text-xs text-comets-yellow"
+              <motion.div
+                className="font-ui font-bold text-xs text-comets-yellow"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring" }}

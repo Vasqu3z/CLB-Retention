@@ -200,7 +200,7 @@ export default function CompareClient({ players }: CompareClientProps) {
                   </div>
                   {isWinner && (
                     <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-comets-yellow">
-                      <div className="w-6 h-6 rounded-full bg-comets-yellow/20 flex items-center justify-center text-xs font-bold">
+                      <div className="w-6 h-6 rounded-full bg-comets-yellow/20 flex items-center justify-center text-xs font-ui font-bold">
                         ✓
                       </div>
                     </div>
@@ -329,7 +329,7 @@ export default function CompareClient({ players }: CompareClientProps) {
                   </div>
                   {isWinner && (
                     <div className="absolute -left-2 top-1/2 -translate-y-1/2 text-comets-yellow">
-                      <div className="w-6 h-6 rounded-full bg-comets-yellow/20 flex items-center justify-center text-xs font-bold">
+                      <div className="w-6 h-6 rounded-full bg-comets-yellow/20 flex items-center justify-center text-xs font-ui font-bold">
                         ✓
                       </div>
                     </div>

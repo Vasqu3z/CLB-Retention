@@ -154,7 +154,7 @@ export default function MobileNav() {
 
                   {/* References Section */}
                   <div className="mt-6 pt-6 border-t border-cosmic-border">
-                    <h3 className="px-4 mb-2 text-xs font-bold text-star-dim uppercase tracking-wider">
+                    <h3 className="px-4 mb-2 text-xs font-ui font-bold text-star-dim uppercase tracking-wider">
                       References
                     </h3>
                     <ul className="space-y-2">

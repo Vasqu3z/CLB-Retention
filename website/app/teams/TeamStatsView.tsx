@@ -188,55 +188,55 @@ export default function TeamStatsView({
   // Hitting columns
   const hittingColumns = [
     { header: "Team", cell: TeamCell, className: "text-left" },
-    { header: "GP", accessorKey: "gp" as keyof EnhancedTeam, sortable: true, className: "text-center text-white/50" },
-    { header: "R/G", accessorKey: "rGame" as keyof EnhancedTeam, sortable: true, className: "text-center text-comets-cyan font-bold" },
-    { header: "AB", cell: (t: EnhancedTeam) => t.hitting.ab, className: "text-center", condensed: true },
-    { header: "H", cell: (t: EnhancedTeam) => t.hitting.h, className: "text-center", condensed: true },
-    { header: "HR", cell: (t: EnhancedTeam) => t.hitting.hr, className: "text-center" },
-    { header: "RBI", cell: (t: EnhancedTeam) => t.hitting.rbi, className: "text-center" },
-    { header: "AVG", accessorKey: "avg" as keyof EnhancedTeam, sortable: true, className: "text-center text-comets-yellow" },
-    { header: "OBP", accessorKey: "obp" as keyof EnhancedTeam, sortable: true, className: "text-center text-comets-yellow", condensed: true },
-    { header: "SLG", accessorKey: "slg" as keyof EnhancedTeam, sortable: true, className: "text-center text-comets-yellow" },
-    { header: "OPS", accessorKey: "ops" as keyof EnhancedTeam, sortable: true, className: "text-center text-comets-yellow" },
+    { header: "GP", accessorKey: "gp" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-white/50" },
+    { header: "R/G", accessorKey: "rGame" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-comets-cyan font-bold" },
+    { header: "AB", cell: (t: EnhancedTeam) => t.hitting.ab, className: "text-center font-mono", condensed: true },
+    { header: "H", cell: (t: EnhancedTeam) => t.hitting.h, className: "text-center font-mono", condensed: true },
+    { header: "HR", cell: (t: EnhancedTeam) => t.hitting.hr, className: "text-center font-mono" },
+    { header: "RBI", cell: (t: EnhancedTeam) => t.hitting.rbi, className: "text-center font-mono" },
+    { header: "AVG", accessorKey: "avg" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-comets-yellow" },
+    { header: "OBP", accessorKey: "obp" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-comets-yellow", condensed: true },
+    { header: "SLG", accessorKey: "slg" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-comets-yellow" },
+    { header: "OPS", accessorKey: "ops" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-comets-yellow" },
   ];
 
   // Pitching columns
   const pitchingColumns = [
     { header: "Team", cell: TeamCell, className: "text-left" },
-    { header: "GP", accessorKey: "gp" as keyof EnhancedTeam, sortable: true, className: "text-center text-white/50" },
-    { header: "ERA", accessorKey: "era" as keyof EnhancedTeam, sortable: true, className: "text-center text-comets-cyan font-bold" },
-    { header: "IP", cell: (t: EnhancedTeam) => t.pitching.ip.toFixed(1), className: "text-center" },
-    { header: "W", accessorKey: "wins" as keyof EnhancedTeam, sortable: true, className: "text-center", condensed: true },
-    { header: "L", accessorKey: "losses" as keyof EnhancedTeam, sortable: true, className: "text-center", condensed: true },
-    { header: "SV", cell: (t: EnhancedTeam) => t.pitching.sv, className: "text-center", condensed: true },
-    { header: "H", cell: (t: EnhancedTeam) => t.pitching.h, className: "text-center" },
-    { header: "HR", cell: (t: EnhancedTeam) => t.pitching.hr, className: "text-center" },
-    { header: "WHIP", accessorKey: "whip" as keyof EnhancedTeam, sortable: true, className: "text-center text-comets-yellow" },
-    { header: "BAA", accessorKey: "baa" as keyof EnhancedTeam, sortable: true, className: "text-center text-comets-yellow" },
+    { header: "GP", accessorKey: "gp" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-white/50" },
+    { header: "ERA", accessorKey: "era" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-comets-cyan font-bold" },
+    { header: "IP", cell: (t: EnhancedTeam) => t.pitching.ip.toFixed(1), className: "text-center font-mono" },
+    { header: "W", accessorKey: "wins" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono", condensed: true },
+    { header: "L", accessorKey: "losses" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono", condensed: true },
+    { header: "SV", cell: (t: EnhancedTeam) => t.pitching.sv, className: "text-center font-mono", condensed: true },
+    { header: "H", cell: (t: EnhancedTeam) => t.pitching.h, className: "text-center font-mono" },
+    { header: "HR", cell: (t: EnhancedTeam) => t.pitching.hr, className: "text-center font-mono" },
+    { header: "WHIP", accessorKey: "whip" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-comets-yellow" },
+    { header: "BAA", accessorKey: "baa" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-comets-yellow" },
   ];
 
   // Fielding columns
   const fieldingColumns = [
     { header: "Team", cell: TeamCell, className: "text-left" },
-    { header: "GP", accessorKey: "gp" as keyof EnhancedTeam, sortable: true, className: "text-center text-white/50" },
+    { header: "GP", accessorKey: "gp" as keyof EnhancedTeam, sortable: true, className: "text-center font-mono text-white/50" },
     {
       header: "DER",
       accessorKey: "der" as keyof EnhancedTeam,
       sortable: true,
-      className: "text-center text-comets-cyan font-bold",
+      className: "text-center font-mono text-comets-cyan font-bold",
       cell: (t: EnhancedTeam) => `${parseFloat(t.der) > 0 ? "+" : ""}${t.der}`,
     },
-    { header: "NP", cell: (t: EnhancedTeam) => t.fielding.np, className: "text-center" },
-    { header: "E", cell: (t: EnhancedTeam) => t.fielding.e, className: "text-center" },
+    { header: "NP", cell: (t: EnhancedTeam) => t.fielding.np, className: "text-center font-mono" },
+    { header: "E", cell: (t: EnhancedTeam) => t.fielding.e, className: "text-center font-mono" },
     {
       header: "OAA",
       accessorKey: "oaa" as keyof EnhancedTeam,
       sortable: true,
-      className: "text-center text-comets-yellow",
+      className: "text-center font-mono text-comets-yellow",
       cell: (t: EnhancedTeam) => `${t.oaa > 0 ? "+" : ""}${t.oaa}`,
     },
-    { header: "SB", cell: (t: EnhancedTeam) => t.fielding.sb, className: "text-center" },
-    { header: "CS", cell: (t: EnhancedTeam) => t.fielding.cs, className: "text-center" },
+    { header: "SB", cell: (t: EnhancedTeam) => t.fielding.sb, className: "text-center font-mono" },
+    { header: "CS", cell: (t: EnhancedTeam) => t.fielding.cs, className: "text-center font-mono" },
   ];
 
   const currentColumns =

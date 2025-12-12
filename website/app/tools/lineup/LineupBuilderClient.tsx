@@ -741,7 +741,7 @@ export default function LineupBuilderClient({
                         />
                       ) : (
                         <>
-                          <div className="font-bold text-xs text-comets-yellow">
+                          <div className="font-ui font-bold text-xs text-comets-yellow">
                             {player.name[0]}
                           </div>
                           <div className="text-[8px] text-white/50 font-mono">

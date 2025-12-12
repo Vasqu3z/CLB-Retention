@@ -66,7 +66,7 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
           {/* LIVE Badge */}
           {status === 'live' && (
             <motion.span
-              className="flex items-center gap-1.5 px-2 py-0.5 bg-comets-red/20 text-comets-red border border-comets-red/40 rounded text-[9px] font-bold"
+              className="flex items-center gap-1.5 px-2 py-0.5 bg-comets-red/20 text-comets-red border border-comets-red/40 rounded text-[9px] font-ui font-bold"
               animate={{
                 boxShadow: ['0 0 5px rgba(255,77,77,0.3)', '0 0 15px rgba(255,77,77,0.6)', '0 0 5px rgba(255,77,77,0.3)']
               }}
@@ -83,7 +83,7 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
           {/* NEXT Badge */}
           {status === 'next' && (
             <motion.span
-              className="flex items-center gap-1.5 px-2 py-0.5 bg-comets-cyan/20 text-comets-cyan border border-comets-cyan/40 rounded text-[9px] font-bold"
+              className="flex items-center gap-1.5 px-2 py-0.5 bg-comets-cyan/20 text-comets-cyan border border-comets-cyan/40 rounded text-[9px] font-ui font-bold"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
             >
@@ -109,7 +109,7 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
               {away.logoUrl ? (
                 <Image src={away.logoUrl} alt="" width={20} height={20} className="object-contain flex-shrink-0" />
               ) : (
-                <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: `${away.logoColor}30`, color: away.logoColor }}>
+                <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-ui font-bold flex-shrink-0" style={{ backgroundColor: `${away.logoColor}30`, color: away.logoColor }}>
                   {away.code[0]}
                 </div>
               )}
@@ -137,7 +137,7 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
               {home.logoUrl ? (
                 <Image src={home.logoUrl} alt="" width={20} height={20} className="object-contain flex-shrink-0" />
               ) : (
-                <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: `${home.logoColor}30`, color: home.logoColor }}>
+                <div className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-ui font-bold flex-shrink-0" style={{ backgroundColor: `${home.logoColor}30`, color: home.logoColor }}>
                   {home.code[0]}
                 </div>
               )}
@@ -188,7 +188,7 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
       {/* LIVE Badge (full version - top right corner) */}
       {status === 'live' && (
         <motion.div
-          className="absolute top-3 right-3 z-20 flex items-center gap-2 px-3 py-1.5 bg-comets-red/90 text-white border border-comets-red rounded-lg text-xs font-bold uppercase tracking-wider"
+          className="absolute top-3 right-3 z-20 flex items-center gap-2 px-3 py-1.5 bg-comets-red/90 text-white border border-comets-red rounded-lg text-xs font-ui font-bold uppercase tracking-wider"
           animate={{
             boxShadow: ['0 0 10px rgba(255,77,77,0.4)', '0 0 25px rgba(255,77,77,0.7)', '0 0 10px rgba(255,77,77,0.4)']
           }}
@@ -206,7 +206,7 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
       {/* NEXT Badge (full version - top right corner) */}
       {status === 'next' && (
         <motion.div
-          className="absolute top-3 right-3 z-20 flex items-center gap-2 px-3 py-1.5 bg-comets-cyan/90 text-background border border-comets-cyan rounded-lg text-xs font-bold uppercase tracking-wider"
+          className="absolute top-3 right-3 z-20 flex items-center gap-2 px-3 py-1.5 bg-comets-cyan/90 text-background border border-comets-cyan rounded-lg text-xs font-ui font-bold uppercase tracking-wider"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
         >

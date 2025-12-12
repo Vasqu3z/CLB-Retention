@@ -108,7 +108,7 @@ export default function TeamDetailClient({
           >
             {p.name[0]}
           </motion.div>
-          <span className="font-bold hover:text-comets-yellow transition-colors uppercase">
+          <span className="font-ui font-bold hover:text-comets-yellow transition-colors uppercase">
             {p.name}
           </span>
         </div>
@@ -234,7 +234,7 @@ export default function TeamDetailClient({
                 transition={{ delay: 0.5, type: "spring" }}
               >
                 <Trophy size={14} className="text-comets-yellow" />
-                <span className="text-comets-yellow font-bold text-xs uppercase tracking-wide">
+                <span className="text-comets-yellow font-ui font-bold text-xs uppercase tracking-wide">
                   {standing} Place
                 </span>
               </motion.div>
@@ -252,7 +252,7 @@ export default function TeamDetailClient({
                 transition={{ delay: 0.6, type: "spring" }}
               >
                 <TrendingUp size={14} />
-                <span className="font-bold text-xs uppercase tracking-wide">{streak}</span>
+                <span className="font-ui font-bold text-xs uppercase tracking-wide">{streak}</span>
               </motion.div>
             </div>
 

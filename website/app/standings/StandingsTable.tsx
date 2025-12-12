@@ -87,12 +87,12 @@ export default function StandingsTable({ data, showAdvanced = true }: StandingsT
                 </span>
                 {/* Playoff clinch/elimination badge */}
                 {item.clinchStatus === 'clinched' && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-500/40 rounded shadow-[0_0_8px_rgba(74,222,128,0.3)]">
+                  <span className="px-1.5 py-0.5 text-[10px] font-ui font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-500/40 rounded shadow-[0_0_8px_rgba(74,222,128,0.3)]">
                     x
                   </span>
                 )}
                 {item.clinchStatus === 'eliminated' && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-900/40 text-red-400 border border-red-500/40 rounded shadow-[0_0_8px_rgba(248,113,113,0.3)]">
+                  <span className="px-1.5 py-0.5 text-[10px] font-ui font-bold uppercase tracking-wider bg-red-900/40 text-red-400 border border-red-500/40 rounded shadow-[0_0_8px_rgba(248,113,113,0.3)]">
                     e
                   </span>
                 )}
@@ -141,7 +141,7 @@ export default function StandingsTable({ data, showAdvanced = true }: StandingsT
       condensed: true,
       cell: (item: TeamStanding) => (
         <span className={cn(
-          "px-2 py-1 rounded text-xs font-bold border",
+          "px-2 py-1 rounded text-xs font-ui font-bold border",
           item.streak.startsWith("W")
             ? "bg-green-900/30 text-green-400 border-green-500/30 shadow-[0_0_5px_rgba(74,222,128,0.2)]"
             : "bg-red-900/30 text-red-400 border-red-500/30 shadow-[0_0_5px_rgba(248,113,113,0.2)]"

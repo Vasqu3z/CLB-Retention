@@ -50,11 +50,11 @@ export default function StandingsClient({ data }: StandingsClientProps) {
             <span className="font-ui text-comets-cyan block mb-1 font-bold">PLAYOFF STATUS</span>
             <div className="flex items-center gap-4 mt-1">
               <div className="flex items-center gap-1.5">
-                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-green-900/40 text-green-400 border border-green-500/40 rounded">x</span>
+                <span className="px-1.5 py-0.5 text-[10px] font-ui font-bold bg-green-900/40 text-green-400 border border-green-500/40 rounded">x</span>
                 <span>Clinched</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-red-900/40 text-red-400 border border-red-500/40 rounded">e</span>
+                <span className="px-1.5 py-0.5 text-[10px] font-ui font-bold bg-red-900/40 text-red-400 border border-red-500/40 rounded">e</span>
                 <span>Eliminated</span>
               </div>
             </div>

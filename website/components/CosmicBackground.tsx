@@ -4,11 +4,13 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 
 /**
- * CosmicBackground - Animated space background with twinkling stars and nebulas
- * Creates an immersive cosmic atmosphere matching the original arcade design
+ * CosmicBackground - Atmospheric edge glow with twinkling starfield
+ *
+ * Design: Color emanates from screen edges/corners rather than floating orbs.
+ * Uses pure CSS gradients (no blur filter) for organic diffusion.
  */
 export default function CosmicBackground() {
-  // Generate stars once on mount - 150 stars for performance balance
+  // Generate stars once on mount
   const stars = useMemo(() => {
     return Array.from({ length: 150 }, (_, i) => ({
       id: i,
@@ -23,94 +25,43 @@ export default function CosmicBackground() {
 
   return (
     <>
-      {/* Deep space background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-[#050508]">
-
-        {/* Nebula clouds - much brighter and more visible */}
-        <motion.div
-          className="absolute w-[800px] h-[800px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, #00F3FF 0%, rgba(0,243,255,0.4) 30%, transparent 70%)",
-            filter: "blur(120px)",
-            top: "-15%",
-            left: "-10%",
-          }}
-          animate={{
-            y: [0, 60, 0],
-            x: [0, 40, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        <motion.div
-          className="absolute w-[900px] h-[900px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, #BD00FF 0%, rgba(189,0,255,0.3) 30%, transparent 70%)",
-            filter: "blur(140px)",
-            top: "30%",
-            right: "-15%",
-          }}
-          animate={{
-            y: [0, -70, 0],
-            x: [0, -50, 0],
-            scale: [1, 1.15, 1],
-          }}
-          transition={{
-            duration: 35,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 5,
-          }}
-        />
-
-        <motion.div
-          className="absolute w-[700px] h-[700px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, #F4D03F 0%, rgba(244,208,63,0.3) 30%, transparent 70%)",
-            filter: "blur(100px)",
-            bottom: "-10%",
-            left: "15%",
-          }}
-          animate={{
-            y: [0, 50, 0],
-            x: [0, -30, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 10,
-          }}
-        />
-
-        {/* Secondary cyan nebula for depth */}
-        <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(0,243,255,0.5) 0%, rgba(0,243,255,0.2) 30%, transparent 60%)",
-            filter: "blur(80px)",
-            bottom: "20%",
-            right: "5%",
-          }}
-          animate={{
-            y: [0, 40, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 15,
-          }}
-        />
-
-        {/* Starfield - rendered on top of nebulas */}
+      {/* Atmospheric background with edge glows */}
+      <div
+        className="fixed inset-0 pointer-events-none overflow-hidden z-0"
+        style={{
+          backgroundColor: "#050508",
+          backgroundImage: `
+            /* Cyan glow from top-left */
+            radial-gradient(
+              ellipse 90% 70% at 0% 0%,
+              rgba(0, 243, 255, 0.15) 0%,
+              rgba(0, 243, 255, 0.05) 30%,
+              transparent 60%
+            ),
+            /* Purple glow from bottom-right */
+            radial-gradient(
+              ellipse 80% 90% at 100% 100%,
+              rgba(189, 0, 255, 0.12) 0%,
+              rgba(189, 0, 255, 0.04) 30%,
+              transparent 60%
+            ),
+            /* Yellow accent from bottom-left */
+            radial-gradient(
+              ellipse 60% 50% at 0% 100%,
+              rgba(244, 208, 63, 0.10) 0%,
+              rgba(244, 208, 63, 0.03) 30%,
+              transparent 50%
+            ),
+            /* Subtle cyan accent top-right for balance */
+            radial-gradient(
+              ellipse 50% 40% at 100% 0%,
+              rgba(0, 243, 255, 0.06) 0%,
+              transparent 50%
+            )
+          `,
+        }}
+      >
+        {/* Starfield */}
         <div className="absolute inset-0">
           {stars.map((star) => (
             <motion.div
@@ -136,17 +87,17 @@ export default function CosmicBackground() {
           ))}
         </div>
 
-        {/* Vignette effect - darker edges */}
+        {/* Vignette effect - darker edges to frame content */}
         <div
           className="absolute inset-0"
           style={{
-            background: "radial-gradient(ellipse at center, transparent 0%, rgba(5,5,8,0.8) 100%)",
+            background: "radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(5,5,8,0.6) 100%)",
           }}
         />
       </div>
 
       {/* Scanlines overlay */}
-      <div className="fixed inset-0 pointer-events-none z-[1] scanlines opacity-[0.06]" />
+      <div className="fixed inset-0 pointer-events-none z-[1] scanlines opacity-[0.08]" />
     </>
   );
 }

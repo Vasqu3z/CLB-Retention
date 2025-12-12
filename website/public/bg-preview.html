@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Void Background Preview</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: white;
+    }
+
+    /* ========================================
+       OPTION B: ATMOSPHERIC EDGE GLOW
+       ======================================== */
+    .cosmic-background {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+
+      /* Base void color */
+      background-color: #050508;
+
+      /* Layered edge gradients - NO blur filter needed */
+      background-image:
+        /* Cyan glow from top-left */
+        radial-gradient(
+          ellipse 90% 70% at 0% 0%,
+          rgba(0, 243, 255, 0.15) 0%,
+          rgba(0, 243, 255, 0.05) 30%,
+          transparent 60%
+        ),
+        /* Purple glow from bottom-right */
+        radial-gradient(
+          ellipse 80% 90% at 100% 100%,
+          rgba(189, 0, 255, 0.12) 0%,
+          rgba(189, 0, 255, 0.04) 30%,
+          transparent 60%
+        ),
+        /* Yellow accent from bottom-left */
+        radial-gradient(
+          ellipse 60% 50% at 0% 100%,
+          rgba(244, 208, 63, 0.10) 0%,
+          rgba(244, 208, 63, 0.03) 30%,
+          transparent 50%
+        ),
+        /* Subtle cyan accent top-right for balance */
+        radial-gradient(
+          ellipse 50% 40% at 100% 0%,
+          rgba(0, 243, 255, 0.06) 0%,
+          transparent 50%
+        );
+    }
+
+    /* Starfield container */
+    .starfield {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Individual star */
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+    }
+
+    /* Vignette overlay */
+    .vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at center,
+        transparent 0%,
+        transparent 40%,
+        rgba(5, 5, 8, 0.6) 100%
+      );
+    }
+
+    /* Scanlines */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0,0,0,0.35) 50%,
+        rgba(0,0,0,0.35)
+      );
+      background-size: 100% 3px;
+      opacity: 0.08;
+    }
+
+    /* Demo content */
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+
+    .demo-card {
+      background: rgba(10, 10, 10, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 40px;
+      margin-bottom: 30px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+      background: linear-gradient(to bottom, white, rgba(255,255,255,0.5));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h2 {
+      color: #00F3FF;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-bottom: 20px;
+    }
+
+    p {
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-radius: 4px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .badge-cyan {
+      background: rgba(0, 243, 255, 0.2);
+      color: #00F3FF;
+      border: 1px solid rgba(0, 243, 255, 0.4);
+    }
+
+    .badge-purple {
+      background: rgba(189, 0, 255, 0.2);
+      color: #BD00FF;
+      border: 1px solid rgba(189, 0, 255, 0.4);
+    }
+
+    .badge-yellow {
+      background: rgba(244, 208, 63, 0.2);
+      color: #F4D03F;
+      border: 1px solid rgba(244, 208, 63, 0.4);
+    }
+
+    .controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      background: rgba(10, 10, 10, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 15px;
+    }
+
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .controls input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #00F3FF;
+    }
+
+    .controls input[type="range"] {
+      width: 100%;
+      accent-color: #00F3FF;
+    }
+
+    /* Star twinkle animation */
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    .star {
+      animation: twinkle var(--duration, 3s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    /* Subtle gradient animation (optional) */
+    @keyframes drift {
+      0%, 100% { background-position: 0% 0%, 100% 100%, 0% 100%, 100% 0%; }
+      50% { background-position: 5% 5%, 95% 95%, 5% 95%, 95% 5%; }
+    }
+
+    .cosmic-background.animated {
+      animation: drift 60s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="cosmic-background" id="cosmicBg">
+    <div class="starfield" id="starfield"></div>
+    <div class="vignette"></div>
+  </div>
+  <div class="scanlines" id="scanlines"></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <label>
+      <input type="checkbox" id="toggleStars" checked>
+      Stars
+    </label>
+    <label>
+      <input type="checkbox" id="toggleScanlines" checked>
+      Scanlines
+    </label>
+    <label>
+      <input type="checkbox" id="toggleAnimation">
+      Animate Drift
+    </label>
+    <label>
+      Scanline Opacity
+      <input type="range" id="scanlineOpacity" min="0" max="20" value="8">
+    </label>
+  </div>
+
+  <!-- Demo Content -->
+  <div class="content">
+    <div class="demo-card">
+      <h2>Option B Preview</h2>
+      <h1>Atmospheric Edge Glow</h1>
+      <p>
+        This background uses layered radial gradients anchored to screen corners
+        instead of floating orbs. The gradients themselves provide the diffusion -
+        no CSS blur filter needed.
+      </p>
+      <p>
+        <span class="badge badge-cyan">Cyan</span>
+        <span class="badge badge-purple">Purple</span>
+        <span class="badge badge-yellow">Yellow</span>
+      </p>
+    </div>
+
+    <div class="demo-card">
+      <h2>Key Features</h2>
+      <ul style="color: rgba(255,255,255,0.6); line-height: 2; padding-left: 20px;">
+        <li>No visible "orb" shapes - color emerges from edges</li>
+        <li>Pure CSS - no filter: blur() needed</li>
+        <li>Performant - static gradients, no heavy rendering</li>
+        <li>Twinkling starfield for cosmic depth</li>
+        <li>Vignette darkens edges to frame content</li>
+        <li>Optional subtle drift animation</li>
+      </ul>
+    </div>
+
+    <div class="demo-card" style="min-height: 300px;">
+      <h2>Scroll Test</h2>
+      <h1>Content Area</h1>
+      <p>Scroll down to see how the fixed background behaves with content.</p>
+    </div>
+
+    <div class="demo-card">
+      <h2>More Content</h2>
+      <p>The atmospheric glow frames the content without being distracting.</p>
+      <p>Colors are subtle enough to let UI elements provide the main neon accents.</p>
+    </div>
+
+    <div class="demo-card" style="margin-bottom: 200px;">
+      <h2>Bottom of Page</h2>
+      <p>The purple glow should be visible in this region (bottom-right corner).</p>
+    </div>
+  </div>
+
+  <script>
+    // Generate starfield
+    function generateStars(count = 150) {
+      const starfield = document.getElementById('starfield');
+      starfield.innerHTML = '';
+
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+
+        const size = Math.random() * 2 + 1;
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        const duration = Math.random() * 3 + 2;
+        const delay = Math.random() * 5;
+
+        star.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${left}%;
+          top: ${top}%;
+          --duration: ${duration}s;
+          --delay: ${delay}s;
+          opacity: ${Math.random() * 0.5 + 0.3};
+        `;
+
+        starfield.appendChild(star);
+      }
+    }
+
+    generateStars();
+
+    // Controls
+    document.getElementById('toggleStars').addEventListener('change', (e) => {
+      document.getElementById('starfield').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    document.getElementById('toggleScanlines').addEventListener('change', (e) => {
+      document.getElementById('scanlines').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    document.getElementById('toggleAnimation').addEventListener('change', (e) => {
+      document.getElementById('cosmicBg').classList.toggle('animated', e.target.checked);
+    });
+
+    document.getElementById('scanlineOpacity').addEventListener('input', (e) => {
+      document.getElementById('scanlines').style.opacity = e.target.value / 100;
+    });
+  </script>
+</body>
+</html>

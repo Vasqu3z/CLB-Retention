@@ -242,8 +242,8 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
         </h2>
       </motion.div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+      {/* Scrollable content - overscroll-contain prevents scroll from propagating to page */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent overscroll-contain">
 
         {/* Standings Widget */}
         <HUDWidget
@@ -397,7 +397,7 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
           href="/schedule"
           delay={0.3}
         >
-          <div className="space-y-2">
+          <div className="space-y-3">
             {recentGames.slice(0, 4).map((game, idx) => (
               <motion.div
                 key={`${game.homeTeam}-${game.awayTeam}-${idx}`}
@@ -410,12 +410,12 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                     href={game.boxScoreUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-1.5 rounded-sm bg-white/[0.02] border border-white/5 hover:border-comets-green/30 hover:bg-white/[0.04] transition-all"
+                    className="block p-2 rounded-sm bg-white/[0.02] border border-white/5 hover:border-comets-green/30 hover:bg-white/[0.04] transition-all"
                   >
                     <GameScoreContent game={game} />
                   </Link>
                 ) : (
-                  <div className="p-1.5 rounded-sm bg-white/[0.02] border border-white/5">
+                  <div className="p-2 rounded-sm bg-white/[0.02] border border-white/5">
                     <GameScoreContent game={game} />
                   </div>
                 )}

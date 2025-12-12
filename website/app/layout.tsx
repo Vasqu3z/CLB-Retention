@@ -3,7 +3,7 @@ import { Dela_Gothic_One, Chivo, Rajdhani, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Sidebar from "@/components/Sidebar";
+import SidebarHUD from "@/components/SidebarHUD";
 import SidebarMobile from "@/components/SidebarMobile";
 import SmoothScroll from "@/components/SmoothScroll";
 import CosmicBackground from "@/components/CosmicBackground";
@@ -53,8 +53,8 @@ export default function RootLayout({
         <div className="md:hidden z-50">
           <SidebarMobile />
         </div>
-        <div className="hidden md:block w-64 shrink-0 h-screen sticky top-0 border-r border-white/10 bg-surface-dark/50 backdrop-blur-md z-40">
-          <Sidebar />
+        <div className="hidden md:block w-64 shrink-0 h-screen sticky top-0 z-40">
+          <SidebarHUD />
         </div>
         <div className="flex-1 flex flex-col min-w-0 relative">
           <Header />

@@ -3,6 +3,7 @@
 import { RetroButton } from "@/components/ui/RetroButton";
 import { motion } from "framer-motion";
 import { Home, ArrowLeft } from "lucide-react";
+import Image from "next/image";
 
 export default function NotFound() {
   return (
@@ -136,53 +137,15 @@ export default function NotFound() {
           </RetroButton>
         </motion.div>
 
-        {/* Continue prompt */}
+        {/* Insert Coin Section - unified coin + prompt */}
         <motion.div
-          className="mt-12 flex flex-col items-center gap-2"
-          animate={{
-            opacity: [0.3, 1, 0.3],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <div className="text-xs font-mono text-white/20 uppercase tracking-[0.3em]">
-            Press any button to continue
-          </div>
-          <div className="flex gap-2">
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="w-2 h-2 rounded-full bg-comets-yellow/30"
-                animate={{
-                  scale: [1, 1.5, 1],
-                  opacity: [0.3, 1, 0.3],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-              />
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Retro coin insert animation */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          initial={{ y: -100, opacity: 0 }}
+          className="mt-16 flex flex-col items-center gap-4"
+          initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{
-            delay: 1.5,
-            type: "spring",
-            stiffness: 100
-          }}
+          transition={{ delay: 1.2, duration: 0.5 }}
         >
+          {/* Spinning Coin */}
           <motion.div
-            className="text-6xl"
             animate={{
               rotateY: [0, 360],
             }}
@@ -191,8 +154,49 @@ export default function NotFound() {
               repeat: Infinity,
               ease: "linear"
             }}
+            style={{ transformStyle: "preserve-3d" }}
           >
-            🪙
+            <Image
+              src="/icons/Coin.png"
+              alt="Coin"
+              width={64}
+              height={64}
+              className="drop-shadow-[0_0_10px_rgba(244,208,63,0.6)]"
+            />
+          </motion.div>
+
+          {/* Insert Coin Text */}
+          <motion.div
+            className="flex flex-col items-center gap-2"
+            animate={{
+              opacity: [0.4, 1, 0.4],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <div className="text-xs font-mono text-white/30 uppercase tracking-[0.3em]">
+              Insert Coin to Continue
+            </div>
+            <div className="flex gap-2">
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full bg-comets-yellow/40"
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [0.3, 1, 0.3],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                  }}
+                />
+              ))}
+            </div>
           </motion.div>
         </motion.div>
       </div>

@@ -9,10 +9,10 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const links = [
-    { name: "About League", href: "/about", color: "comets-cyan" },
-    { name: "Official Rules", href: "/rules", color: "comets-red" },
-    { name: "Join Discord", href: "/discord", color: "comets-purple" },
-    { name: "Privacy Policy", href: "/privacy", color: "comets-yellow" },
+    // TODO: Re-add when content is ready
+    // { name: "About League", href: "/about", color: "comets-cyan" },
+    // { name: "Official Rules", href: "/rules", color: "comets-red" },
+    { name: "Join Discord", href: "https://discord.gg/NWvm8Dd2s8", color: "comets-purple", external: true },
   ];
 
   return (
@@ -28,7 +28,7 @@ export default function Footer() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-display text-6xl md:text-[12vw] leading-[0.8] text-white/5 select-none pointer-events-none tracking-tighter text-center"
+            className="font-display text-4xl md:text-6xl lg:text-7xl leading-[0.9] text-white/5 select-none pointer-events-none tracking-tighter text-center"
           >
             <motion.span
               animate={{
@@ -74,6 +74,7 @@ export default function Footer() {
             >
               <Link
                 href={link.href}
+                {...('external' in link && link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className={cn(
                   "relative border-b-2 border-transparent transition-all duration-300 focus-arcade group inline-block",
                   `hover:text-${link.color} hover:border-${link.color}`

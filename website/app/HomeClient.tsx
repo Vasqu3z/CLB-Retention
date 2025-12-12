@@ -3,7 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Trophy, Calendar, Users, Activity, Star } from "lucide-react";
+import { Trophy, Calendar, Users, Activity } from "lucide-react";
+import Image from "next/image";
 import StatHighlight from "@/components/ui/StatHighlight";
 import RetroCard from "@/components/ui/RetroCard";
 import { RetroButton } from "@/components/ui/RetroButton";
@@ -89,7 +90,13 @@ const HeroSection = () => {
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               className="rounded-full"
             >
-              <Star size={64} fill="currentColor" className="animate-spin-slow drop-shadow-[0_0_15px_rgba(244,208,63,0.8)]" />
+              <Image
+                src="/icons/Star.png"
+                alt="Star"
+                width={64}
+                height={64}
+                className="animate-spin-slow drop-shadow-[0_0_15px_rgba(244,208,63,0.8)]"
+              />
             </motion.div>
           </motion.div>
         </motion.div>
@@ -251,7 +258,7 @@ export default function HomeClient({ tickerItems }: HomeClientProps) {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-[600px] h-[200px] bg-comets-cyan/5 blur-[100px] rounded-full" />
         </div>
-        <Link href="/signup" className="inline-block group relative">
+        <Link href="https://discord.gg/NWvm8Dd2s8" target="_blank" rel="noopener noreferrer" className="inline-block group relative">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -289,7 +296,7 @@ export default function HomeClient({ tickerItems }: HomeClientProps) {
               </motion.div>
 
               <div className="mt-2 text-xs font-ui text-white/40 uppercase tracking-widest group-hover:text-white/60 transition-colors">
-                Join The League
+                Join Our Discord
               </div>
             </div>
           </motion.div>

@@ -47,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${delaGothic.variable} ${chivo.variable} ${rajdhani.variable} ${spaceMono.variable}`}>
-      <body className="bg-background text-white min-h-screen flex flex-col md:flex-row overflow-x-hidden font-body">
+      <body className="text-white min-h-screen flex flex-col md:flex-row overflow-x-hidden font-body">
         <CosmicBackground />
         <SmoothScroll />
         <div className="md:hidden z-50">

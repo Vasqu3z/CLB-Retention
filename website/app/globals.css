@@ -20,8 +20,12 @@
 }
 
 @layer base {
+  html {
+    @apply bg-background;
+  }
+
   body {
-    @apply bg-background text-foreground font-body antialiased selection:bg-comets-cyan selection:text-black overflow-x-hidden;
+    @apply bg-transparent text-foreground font-body antialiased selection:bg-comets-cyan selection:text-black overflow-x-hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {

@@ -33,6 +33,7 @@ export default async function SidebarHUD() {
     return {
       rank: team.rank,
       team: team.team,
+      abbr: teamInfo?.abbr || team.team.substring(0, 3).toUpperCase(),
       wins: team.wins,
       losses: team.losses,
       winPct: team.winPct,

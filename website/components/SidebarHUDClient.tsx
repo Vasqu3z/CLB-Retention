@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 interface Standing {
   rank: string;
   team: string;
+  abbr: string;
   wins: number;
   losses: number;
   winPct: string;
@@ -252,45 +253,47 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
           href="/standings"
           delay={0.1}
         >
-          <div className="space-y-1">
-            {standings.slice(0, 6).map((team, idx) => (
+          <div className="space-y-0.5">
+            {standings.map((team, idx) => (
               <motion.div
                 key={team.team}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + idx * 0.05 }}
+                transition={{ delay: 0.2 + idx * 0.03 }}
                 className={cn(
-                  "flex items-center justify-between py-1 px-1 rounded-sm transition-colors",
+                  "flex items-center justify-between py-0.5 px-1 rounded-sm transition-colors",
                   "hover:bg-white/5"
                 )}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-mono text-[11px] text-white/30 w-3">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="font-mono text-[10px] text-white/30 w-3">
                     {team.rank}
                   </span>
                   {team.emblemUrl ? (
                     <Image
                       src={team.emblemUrl}
                       alt={team.team}
-                      width={16}
-                      height={16}
+                      width={14}
+                      height={14}
                       className="flex-shrink-0 object-contain"
                     />
                   ) : (
                     <div
-                      className="w-4 h-4 rounded-full flex-shrink-0"
+                      className="w-3.5 h-3.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: team.color || "#fff" }}
                     />
                   )}
-                  <span className="font-ui text-[13px] text-white/80 truncate">
-                    {team.team}
+                  <span className="font-ui text-[11px] text-white/80" title={team.team}>
+                    {team.abbr}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="font-mono text-[11px] text-white/40">
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <span className="font-mono text-[10px] text-white/40">
                     {team.wins}-{team.losses}
                   </span>
-                  <StatValue value={team.winPct} color="comets-yellow" />
+                  <span className="font-mono text-[10px] text-comets-yellow tabular-nums">
+                    {team.winPct}
+                  </span>
                 </div>
               </motion.div>
             ))}

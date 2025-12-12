@@ -81,21 +81,20 @@ const HeroSection = () => {
           >
             <motion.div
               animate={{
-                boxShadow: [
-                  "0 0 20px rgba(244, 208, 63, 0.3)",
-                  "0 0 40px rgba(244, 208, 63, 0.6)",
-                  "0 0 20px rgba(244, 208, 63, 0.3)",
+                filter: [
+                  "drop-shadow(0 0 8px rgba(244, 208, 63, 0.4)) drop-shadow(0 0 15px rgba(244, 208, 63, 0.3))",
+                  "drop-shadow(0 0 15px rgba(244, 208, 63, 0.8)) drop-shadow(0 0 30px rgba(244, 208, 63, 0.5))",
+                  "drop-shadow(0 0 8px rgba(244, 208, 63, 0.4)) drop-shadow(0 0 15px rgba(244, 208, 63, 0.3))",
                 ],
               }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="rounded-full"
             >
               <Image
                 src="/icons/Star.png"
                 alt="Star"
                 width={64}
                 height={64}
-                className="animate-spin-slow drop-shadow-[0_0_15px_rgba(244,208,63,0.8)]"
+                className="animate-spin-slow"
               />
             </motion.div>
           </motion.div>

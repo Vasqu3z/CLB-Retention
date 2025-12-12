@@ -111,11 +111,13 @@ export default function PlayerProfileClient({
 
           <div className="flex-1">
             <motion.h1
-              className="font-display text-5xl md:text-7xl lg:text-8xl uppercase text-white leading-none tracking-tight mb-3"
+              className="font-display text-5xl md:text-7xl lg:text-8xl uppercase leading-none tracking-tighter mb-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {player.name}
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
+                {player.name}
+              </span>
             </motion.h1>
 
             <motion.div

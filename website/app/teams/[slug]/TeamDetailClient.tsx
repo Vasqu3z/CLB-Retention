@@ -258,12 +258,14 @@ export default function TeamDetailClient({
 
             {/* Team Name */}
             <motion.h1
-              className="font-display text-5xl md:text-7xl text-white uppercase leading-none tracking-tight mb-3"
+              className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter mb-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              {teamName}
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
+                {teamName}
+              </span>
             </motion.h1>
 
             {/* Record */}

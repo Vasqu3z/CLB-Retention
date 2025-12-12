@@ -523,8 +523,10 @@ export default function LineupBuilderClient({
               Tactical Manager
             </span>
           </div>
-          <h1 className="font-display text-5xl md:text-6xl text-white uppercase leading-none mb-4">
-            Lineup Builder
+          <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter mb-4">
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
+              Lineup Builder
+            </span>
           </h1>
           <p className="text-white/60 max-w-2xl">
             Build your ultimate roster. Click positions to add players, drag to

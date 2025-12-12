@@ -45,8 +45,7 @@ const HeroSection = () => {
     <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden pt-20">
       {/* Background effects */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-comets-blue/20 blur-[120px] rounded-full mix-blend-screen animate-pulse-slow" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-comets-purple/10 blur-[100px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-comets-purple/10 blur-[100px] rounded-full" />
         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.03]" />
       </div>
 

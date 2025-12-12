@@ -31,13 +31,21 @@ export default function Header() {
             className="w-10 h-10 flex items-center justify-center"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
+            animate={{
+              filter: [
+                "drop-shadow(0 0 6px rgba(244, 208, 63, 0.4))",
+                "drop-shadow(0 0 12px rgba(244, 208, 63, 0.6))",
+                "drop-shadow(0 0 6px rgba(244, 208, 63, 0.4))",
+              ],
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
             <Image
               src="/icons/Comets.png"
               alt="Comets League"
               width={40}
               height={40}
-              className="object-contain drop-shadow-[0_0_8px_rgba(244,208,63,0.5)]"
+              className="object-contain"
             />
           </motion.div>
           <div className="hidden md:flex flex-col">

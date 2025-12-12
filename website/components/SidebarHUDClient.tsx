@@ -284,9 +284,14 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                       style={{ backgroundColor: team.color || "#fff" }}
                     />
                   )}
-                  <span className="font-ui text-[13px] font-medium text-white/90" title={team.team}>
+                  <Link
+                    href={`/teams/${team.slug}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-ui text-[13px] font-medium text-white/90 hover:text-comets-yellow transition-colors"
+                    title={team.team}
+                  >
                     {team.abbr}
-                  </span>
+                  </Link>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="font-mono text-xs text-white/50">
@@ -391,8 +396,7 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
             {/* Nice Plays */}
             <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <Star size={10} className="text-comets-yellow/70" />
-                <span className="font-mono text-[11px] text-comets-yellow/70 uppercase tracking-wide">NP</span>
+                <span className="font-mono text-[11px] text-comets-yellow/70 uppercase tracking-wide">Nice Plays</span>
               </div>
               {leaders.nicePlays.slice(0, 2).map((player, idx) => (
                 <motion.div

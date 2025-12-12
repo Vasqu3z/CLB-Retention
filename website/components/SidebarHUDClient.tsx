@@ -265,33 +265,33 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   "hover:bg-white/5"
                 )}
               >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="font-mono text-[10px] text-white/30 w-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-mono text-xs text-white/30 w-4">
                     {team.rank}
                   </span>
                   {team.emblemUrl ? (
                     <Image
                       src={team.emblemUrl}
                       alt={team.team}
-                      width={14}
-                      height={14}
+                      width={16}
+                      height={16}
                       className="flex-shrink-0 object-contain"
                     />
                   ) : (
                     <div
-                      className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+                      className="w-4 h-4 rounded-full flex-shrink-0"
                       style={{ backgroundColor: team.color || "#fff" }}
                     />
                   )}
-                  <span className="font-ui text-[11px] text-white/80" title={team.team}>
+                  <span className="font-ui text-[13px] font-medium text-white/90" title={team.team}>
                     {team.abbr}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <span className="font-mono text-[10px] text-white/40">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="font-mono text-xs text-white/50">
                     {team.wins}-{team.losses}
                   </span>
-                  <span className="font-mono text-[10px] text-comets-yellow tabular-nums">
+                  <span className="font-mono text-xs text-comets-yellow tabular-nums font-medium">
                     {team.winPct}
                   </span>
                 </div>
@@ -312,7 +312,7 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
             {/* Batting Average */}
             <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <span className="font-mono text-[10px] text-comets-cyan/60 uppercase">AVG</span>
+                <span className="font-mono text-[11px] text-comets-cyan/70 uppercase tracking-wide">AVG</span>
               </div>
               {leaders.batting.slice(0, 2).map((player, idx) => (
                 <motion.div
@@ -320,15 +320,17 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 + idx * 0.05 }}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between gap-2"
                 >
                   <Link
                     href={`/players/${player.slug}`}
-                    className="font-ui text-xs text-white/70 hover:text-comets-cyan transition-colors truncate"
+                    className="font-ui text-[13px] text-white/80 hover:text-comets-cyan transition-colors truncate"
                   >
                     {player.name}
                   </Link>
-                  <StatValue value={player.value} color="comets-cyan" />
+                  <span className="font-mono text-[13px] text-comets-cyan tabular-nums flex-shrink-0">
+                    {player.value}
+                  </span>
                 </motion.div>
               ))}
             </div>
@@ -336,7 +338,7 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
             {/* Home Runs */}
             <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <span className="font-mono text-[10px] text-comets-red/60 uppercase">HR</span>
+                <span className="font-mono text-[11px] text-comets-red/70 uppercase tracking-wide">HR</span>
               </div>
               {leaders.homeRuns.slice(0, 2).map((player, idx) => (
                 <motion.div
@@ -344,15 +346,17 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.35 + idx * 0.05 }}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between gap-2"
                 >
                   <Link
                     href={`/players/${player.slug}`}
-                    className="font-ui text-xs text-white/70 hover:text-comets-red transition-colors truncate"
+                    className="font-ui text-[13px] text-white/80 hover:text-comets-red transition-colors truncate"
                   >
                     {player.name}
                   </Link>
-                  <StatValue value={player.value} color="comets-red" />
+                  <span className="font-mono text-[13px] text-comets-red tabular-nums flex-shrink-0">
+                    {player.value}
+                  </span>
                 </motion.div>
               ))}
             </div>
@@ -360,7 +364,7 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
             {/* ERA */}
             <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <span className="font-mono text-[10px] text-comets-purple/60 uppercase">ERA</span>
+                <span className="font-mono text-[11px] text-comets-purple/70 uppercase tracking-wide">ERA</span>
               </div>
               {leaders.era.slice(0, 2).map((player, idx) => (
                 <motion.div
@@ -368,15 +372,17 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 + idx * 0.05 }}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between gap-2"
                 >
                   <Link
                     href={`/players/${player.slug}`}
-                    className="font-ui text-xs text-white/70 hover:text-comets-purple transition-colors truncate"
+                    className="font-ui text-[13px] text-white/80 hover:text-comets-purple transition-colors truncate"
                   >
                     {player.name}
                   </Link>
-                  <StatValue value={player.value} color="comets-purple" />
+                  <span className="font-mono text-[13px] text-comets-purple tabular-nums flex-shrink-0">
+                    {player.value}
+                  </span>
                 </motion.div>
               ))}
             </div>
@@ -425,7 +431,7 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
           transition={{ delay: 0.5 }}
           className="pt-2"
         >
-          <div className="font-mono text-[10px] text-white/30 uppercase tracking-widest mb-2 px-1">
+          <div className="font-mono text-[11px] text-white/40 uppercase tracking-widest mb-2 px-1">
             Tools
           </div>
           <div className="grid grid-cols-2 gap-1.5">
@@ -440,10 +446,10 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                 href={tool.href}
                 className="flex items-center gap-1.5 p-2 rounded-sm bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.05] transition-all group"
               >
-                <span className="text-sm opacity-60 group-hover:opacity-100 transition-opacity">
+                <span className="text-base opacity-60 group-hover:opacity-100 transition-opacity">
                   {tool.icon}
                 </span>
-                <span className="font-ui text-[11px] uppercase tracking-wider text-white/50 group-hover:text-white/80 transition-colors">
+                <span className="font-ui text-xs uppercase tracking-wider text-white/60 group-hover:text-white/90 transition-colors">
                   {tool.name}
                 </span>
               </Link>
@@ -465,9 +471,9 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
               opacity: [0.3, 0.8, 0.3],
             }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-1 h-1 rounded-full bg-comets-green"
+            className="w-1.5 h-1.5 rounded-full bg-comets-green"
           />
-          <span className="font-mono text-[10px] text-white/20 uppercase tracking-widest">
+          <span className="font-mono text-[11px] text-white/30 uppercase tracking-widest">
             Season 1
           </span>
         </div>
@@ -482,19 +488,19 @@ function GameScoreContent({ game }: { game: RecentGame }) {
 
   return (
     <>
-      <div className="flex items-center justify-between text-[11px]">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
           {game.homeEmblem ? (
             <Image
               src={game.homeEmblem}
               alt={game.homeTeam}
-              width={14}
-              height={14}
+              width={16}
+              height={16}
               className="flex-shrink-0 object-contain"
             />
           ) : (
             <div
-              className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+              className="w-4 h-4 rounded-full flex-shrink-0"
               style={{ backgroundColor: game.homeColor }}
             />
           )}
@@ -506,25 +512,25 @@ function GameScoreContent({ game }: { game: RecentGame }) {
           </span>
         </div>
         <span className={cn(
-          "font-mono tabular-nums",
-          homeWon ? "text-comets-green" : "text-white/50"
+          "font-mono tabular-nums text-[13px]",
+          homeWon ? "text-comets-green font-medium" : "text-white/50"
         )}>
           {game.homeScore}
         </span>
       </div>
-      <div className="flex items-center justify-between text-[11px]">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2">
           {game.awayEmblem ? (
             <Image
               src={game.awayEmblem}
               alt={game.awayTeam}
-              width={14}
-              height={14}
+              width={16}
+              height={16}
               className="flex-shrink-0 object-contain"
             />
           ) : (
             <div
-              className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+              className="w-4 h-4 rounded-full flex-shrink-0"
               style={{ backgroundColor: game.awayColor }}
             />
           )}
@@ -536,13 +542,13 @@ function GameScoreContent({ game }: { game: RecentGame }) {
           </span>
         </div>
         <span className={cn(
-          "font-mono tabular-nums",
-          !homeWon ? "text-comets-green" : "text-white/50"
+          "font-mono tabular-nums text-[13px]",
+          !homeWon ? "text-comets-green font-medium" : "text-white/50"
         )}>
           {game.awayScore}
         </span>
       </div>
-      <div className="text-[9px] font-mono text-white/30 mt-0.5 text-center">
+      <div className="text-[10px] font-mono text-white/40 mt-1 text-center">
         {game.label}
       </div>
     </>

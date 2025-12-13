@@ -55,8 +55,8 @@ export default async function LineupBuilderPage() {
         imageUrl: playerImageMap.get(player.name) || "",
         stats: {
           avg: player.avg || ".000",
-          power: playerAttributes?.battingOverall || 50,
-          speed: playerAttributes?.speedOverall || 50,
+          power: playerAttributes?.battingOverall || 5, // 0-10 scale
+          speed: playerAttributes?.speedOverall || 5, // 0-10 scale
           chemistry,
         },
       };

@@ -548,8 +548,8 @@ function AttributeBar({
   detail?: string;
   delay?: number;
 }) {
-  // Determine tier for styling
-  const tier = value >= 80 ? 'elite' : value >= 60 ? 'good' : value >= 40 ? 'average' : 'low';
+  // Determine tier for styling (values are 0-10 scale)
+  const tier = value >= 8 ? 'elite' : value >= 6 ? 'good' : value >= 4 ? 'average' : 'low';
 
   return (
     <motion.div
@@ -593,7 +593,7 @@ function AttributeBar({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: delay + 0.5, type: "spring", stiffness: 300 }}
         >
-          {Math.round(value / 10)}
+          {value}
           {tier === 'elite' && (
             <motion.span
               className="absolute -top-1 -right-2 text-xs text-comets-yellow"
@@ -614,10 +614,10 @@ function AttributeBar({
           backgroundSize: '10% 100%',
         }} />
 
-        {/* Animated fill bar */}
+        {/* Animated fill bar - value is 0-10, multiply by 10 for percentage */}
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: `${value}%` }}
+          animate={{ width: `${value * 10}%` }}
           transition={{
             delay: delay + 0.3,
             duration: 0.8,

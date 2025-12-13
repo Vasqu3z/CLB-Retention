@@ -6,75 +6,83 @@ import Image from "next/image";
 import Link from "next/link";
 import { HUDCorner } from "@/components/ui/HUDFrame";
 
-// Team colors for the floating orbs
-const TEAM_COLORS = [
-  "#FF4D4D", // Red
-  "#F4D03F", // Yellow
-  "#10B981", // Green
-  "#2E86DE", // Blue
-  "#00F3FF", // Cyan
-  "#BD00FF", // Purple
-  "#8B4513", // Brown
-  "#FF69B4", // Pink
+// Team emblems for floating background elements
+const TEAM_EMBLEMS = [
+  "/team-logos/MSS-Emblem-Mario_Fireballs.webp",
+  "/team-logos/MSS-Emblem-Luigi_Knights.webp",
+  "/team-logos/MSS-Emblem-Peach_Monarchs.webp",
+  "/team-logos/MSS-Emblem-Daisy_Flowers.webp",
+  "/team-logos/MSS-Emblem-Yoshi_Eggs.webp",
+  "/team-logos/MSS-Emblem-Bowser_Monsters.webp",
+  "/team-logos/MSS-Emblem-Wario_Muscles.webp",
+  "/team-logos/MSS-Emblem-DK_Wilds.webp",
 ];
 
-// Floating team color orb component
-const TeamOrb = ({ color, index }: { color: string; index: number }) => {
-  const delay = index * 0.3;
-  const duration = 8 + index * 0.5;
-  const size = 8 + (index % 3) * 4;
+// Floating team emblem component
+const TeamEmblem = ({ emblem, index }: { emblem: string; index: number }) => {
+  const delay = index * 1.5;
+  const duration = 12 + index * 0.8;
+  const size = 24 + (index % 3) * 8;
+  const startY = 20 + (index * 10) % 60;
 
   return (
     <motion.div
-      className="absolute rounded-full"
+      className="absolute"
       style={{
         width: size,
         height: size,
-        backgroundColor: color,
-        boxShadow: `0 0 ${size * 2}px ${color}, 0 0 ${size * 4}px ${color}40`,
-        left: `${10 + index * 10}%`,
+        top: `${startY}%`,
+        filter: "drop-shadow(0 0 8px rgba(255,255,255,0.3))",
       }}
-      initial={{ opacity: 0, y: 100 }}
+      initial={{ opacity: 0, x: "110vw" }}
       animate={{
-        opacity: [0.4, 0.8, 0.4],
-        y: [100, -20, 100],
-        x: [0, (index % 2 === 0 ? 20 : -20), 0],
+        opacity: [0, 0.4, 0.4, 0],
+        x: ["110vw", "50vw", "-10vw"],
+        y: [0, -30, 0],
+        rotate: [0, 10, -10, 0],
       }}
       transition={{
         duration,
         delay,
         repeat: Infinity,
-        ease: "easeInOut",
+        ease: "linear",
+        times: [0, 0.1, 0.9, 1],
       }}
-    />
+    >
+      <Image
+        src={emblem}
+        alt="Team emblem"
+        width={size}
+        height={size}
+        className="w-full h-full object-contain opacity-60"
+      />
+    </motion.div>
   );
 };
 
-// Comet trail component
+// Comet trail component - streaks from E to W
 const CometTrail = ({ index }: { index: number }) => {
-  const startX = Math.random() * 100;
-  const startY = Math.random() * 50;
+  const startY = 15 + (index * 25);
 
   return (
     <motion.div
-      className="absolute w-1 h-20 bg-gradient-to-b from-comets-cyan via-comets-cyan/50 to-transparent rounded-full"
+      className="absolute h-[2px] bg-gradient-to-l from-comets-orange via-comets-yellow/60 to-transparent rounded-full"
       style={{
-        left: `${startX}%`,
+        width: "150px",
         top: `${startY}%`,
-        rotate: "45deg",
+        right: "-150px",
       }}
-      initial={{ opacity: 0, scale: 0 }}
+      initial={{ opacity: 0, x: 0 }}
       animate={{
-        opacity: [0, 0.6, 0],
-        scale: [0, 1, 0],
-        x: [0, 200],
-        y: [0, 200],
+        opacity: [0, 0.8, 0.8, 0],
+        x: [0, -window?.innerWidth ? -window.innerWidth - 200 : -1500],
       }}
       transition={{
-        duration: 2,
-        delay: index * 3 + Math.random() * 2,
+        duration: 3,
+        delay: index * 4,
         repeat: Infinity,
-        ease: "easeOut",
+        ease: "easeIn" as const,
+        times: [0, 0.1, 0.9, 1],
       }}
     />
   );
@@ -140,10 +148,10 @@ export default function TestHomepage() {
           }}
         />
 
-        {/* Floating team color orbs */}
+        {/* Floating team emblems */}
         <div className="absolute inset-0 overflow-hidden">
-          {mounted && TEAM_COLORS.map((color, i) => (
-            <TeamOrb key={i} color={color} index={i} />
+          {mounted && TEAM_EMBLEMS.map((emblem, i) => (
+            <TeamEmblem key={i} emblem={emblem} index={i} />
           ))}
         </div>
 
@@ -284,24 +292,30 @@ export default function TestHomepage() {
           Mario Baseball Analytics
         </motion.p>
 
-        {/* Team Colors Bar */}
+        {/* Team Emblems Bar */}
         <motion.div
           variants={itemVariants}
-          className="flex items-center justify-center gap-3 mb-16"
+          className="flex items-center justify-center gap-4 mb-16"
         >
-          {TEAM_COLORS.map((color, i) => (
+          {TEAM_EMBLEMS.map((emblem, i) => (
             <motion.div
               key={i}
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: color }}
+              className="w-8 h-8 relative"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 1 + i * 0.1, type: "spring", stiffness: 300 }}
+              transition={{ delay: 1 + i * 0.1, type: "spring" as const, stiffness: 300 }}
               whileHover={{
-                scale: 1.5,
-                boxShadow: `0 0 20px ${color}`,
+                scale: 1.3,
+                filter: "drop-shadow(0 0 10px rgba(255,255,255,0.5))",
               }}
-            />
+            >
+              <Image
+                src={emblem}
+                alt="Team"
+                fill
+                className="object-contain"
+              />
+            </motion.div>
           ))}
         </motion.div>
 

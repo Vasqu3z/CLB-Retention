@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Activity, Zap, Users, Target, Shield } from "lucide-react";
+import { Activity, Zap, Users, Target, Shield, ThumbsUp, ThumbsDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatsTooltip from "@/components/ui/StatsTooltip";
 import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
@@ -92,8 +92,11 @@ export default function PlayerProfileClient({
           {/* Player Image */}
           {playerImageUrl && (
             <motion.div
-              className="hidden md:block w-40 h-40 lg:w-48 lg:h-48 rounded-xl border-4 overflow-hidden bg-surface-dark shadow-2xl flex-shrink-0"
-              style={{ borderColor: teamColor }}
+              className="hidden md:block w-32 h-32 lg:w-40 lg:h-40 rounded-xl border-2 overflow-hidden shadow-2xl flex-shrink-0"
+              style={{
+                borderColor: teamColor,
+                background: `linear-gradient(135deg, ${teamColor}30, transparent)`,
+              }}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", duration: 0.6 }}
@@ -101,9 +104,9 @@ export default function PlayerProfileClient({
               <Image
                 src={playerImageUrl}
                 alt={player.name}
-                width={192}
-                height={192}
-                className="w-full h-full object-cover"
+                width={160}
+                height={160}
+                className="w-full h-full object-contain"
                 priority
               />
             </motion.div>
@@ -273,7 +276,7 @@ export default function PlayerProfileClient({
               className="grid grid-cols-1 md:grid-cols-2 gap-6"
             >
               <div className="bg-surface-dark border border-white/10 rounded-lg p-6">
-                <h3 className="font-display text-2xl uppercase text-comets-yellow mb-4">
+                <h3 className="font-display text-2xl uppercase text-comets-green mb-4">
                   Positive Chemistry
                 </h3>
                 {positiveChemistry.length > 0 ? (
@@ -284,10 +287,10 @@ export default function PlayerProfileClient({
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="flex items-center justify-between p-3 bg-comets-yellow/10 rounded hover:bg-comets-yellow/20 transition-all"
+                        className="flex items-center justify-between p-3 bg-comets-green/10 rounded hover:bg-comets-green/20 transition-all"
                       >
                         <span className="font-ui text-white uppercase">{rel.name}</span>
-                        <span className="font-mono text-comets-yellow font-bold">+{rel.value}</span>
+                        <ThumbsUp size={18} className="text-comets-green" />
                       </motion.div>
                     ))}
                   </div>
@@ -311,7 +314,7 @@ export default function PlayerProfileClient({
                         className="flex items-center justify-between p-3 bg-comets-red/10 rounded hover:bg-comets-red/20 transition-all"
                       >
                         <span className="font-ui text-white uppercase">{rel.name}</span>
-                        <span className="font-mono text-comets-red font-bold">{rel.value}</span>
+                        <ThumbsDown size={18} className="text-comets-red" />
                       </motion.div>
                     ))}
                   </div>
@@ -413,7 +416,7 @@ function AttributeBar({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: delay + 0.5, type: "spring", stiffness: 300 }}
         >
-          {value}
+          {Math.round(value / 10)}
           {tier === 'elite' && (
             <motion.span
               className="absolute -top-1 -right-2 text-xs text-comets-yellow"

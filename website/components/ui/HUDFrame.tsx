@@ -109,6 +109,13 @@ export const HUDCorner = ({
   return <div className={className}>{content}</div>;
 };
 
+// Inner padding map to prevent bracket/content overlap
+const innerPaddingClasses = {
+  sm: "p-6 md:p-8",
+  md: "p-8 md:p-12",
+  lg: "p-10 md:p-16",
+};
+
 interface HUDFrameProps {
   children: React.ReactNode;
   className?: string;
@@ -120,6 +127,8 @@ interface HUDFrameProps {
   scanlines?: boolean;
   /** Scanlines opacity (0.01 - 0.2) */
   scanlinesOpacity?: number;
+  /** Add inner padding to prevent content overlapping brackets */
+  innerPadding?: boolean;
 }
 
 /**
@@ -135,9 +144,10 @@ export default function HUDFrame({
   delay = 0.3,
   scanlines = false,
   scanlinesOpacity = 0.05,
+  innerPadding = false,
 }: HUDFrameProps) {
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative overflow-hidden", className)}>
       {/* Scanlines overlay */}
       {scanlines && (
         <div
@@ -152,7 +162,12 @@ export default function HUDFrame({
       <HUDCorner position="bl" size={size} color={color} animate={animate} delay={delay + 0.1} />
       <HUDCorner position="br" size={size} color={color} animate={animate} delay={delay + 0.15} />
 
-      {children}
+      {/* Content with optional inner padding */}
+      {innerPadding ? (
+        <div className={innerPaddingClasses[size]}>{children}</div>
+      ) : (
+        children
+      )}
     </div>
   );
 }

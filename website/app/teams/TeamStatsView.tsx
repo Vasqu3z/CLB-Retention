@@ -152,11 +152,12 @@ export default function TeamStatsView({
       };
     });
 
-  // Tab config
+  // Tab config - consistent colors across site
+  // Hitting: cyan, Pitching: yellow, Fielding: purple
   const tabs = [
     { value: "hitting", label: "Hitting", icon: Crosshair, color: "cyan" as const },
     { value: "pitching", label: "Pitching", icon: Target, color: "yellow" as const },
-    { value: "fielding", label: "Fielding", icon: Shield, color: "cyan" as const },
+    { value: "fielding", label: "Fielding", icon: Shield, color: "purple" as const },
   ];
 
   // Team name cell renderer

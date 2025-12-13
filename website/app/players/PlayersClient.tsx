@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import RetroTable from "@/components/ui/RetroTable";
-import { Search, SlidersHorizontal, X, TrendingUp, Filter, Target, Flame, Shield, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, SlidersHorizontal, X, TrendingUp, Filter, Target, Flame, Shield, ChevronLeft, ChevronRight, Database } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn, playerNameToSlug } from "@/lib/utils";
 import { SeasonToggle, StatsToggle } from "@/components/ui/RetroSegmentedControl";
@@ -367,11 +367,12 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
           <div>
-            <div className="text-xs font-mono text-comets-cyan uppercase tracking-widest mb-2">
-              Database Access
+            <div className="flex items-center gap-2 text-comets-cyan mb-2">
+              <Database size={16} />
+              <span className="text-xs font-mono uppercase tracking-widest">Database Access</span>
             </div>
             <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
-              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">Player Registry</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">Player Select</span>
             </h1>
 
             {/* Player Count Badge */}

@@ -134,16 +134,16 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
               <div className="h-[1px] flex-1 bg-comets-cyan/30" />
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+            <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
               {weeks.map((week, index) => (
                 <motion.button
                   key={week}
                   onClick={() => setActiveWeek(week)}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: Math.min(index * 0.03, 0.3) }}
                   className={cn(
-                    "relative px-6 py-2 rounded-full font-ui uppercase tracking-widest text-sm transition-all whitespace-nowrap focus-arcade",
+                    "relative px-3 py-1.5 rounded-full font-ui uppercase tracking-wider text-xs transition-all whitespace-nowrap focus-arcade",
                     activeWeek === week
                       ? "text-black"
                       : "text-white/60 hover:text-white hover:bg-white/5"
@@ -158,7 +158,7 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
                       transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
                     />
                   )}
-                <span className="relative z-10">Week {week}</span>
+                <span className="relative z-10">W{week}</span>
               </motion.button>
             ))}
             </div>

@@ -527,15 +527,11 @@ export default function LineupBuilderClient({
               Tactical Manager
             </span>
           </div>
-          <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter mb-4">
+          <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
               Lineup Builder
             </span>
           </h1>
-          <p className="text-white/60 max-w-2xl">
-            Build your ultimate roster. Click positions to add players, drag to
-            reorder. Build chemistry by pairing compatible teammates.
-          </p>
         </motion.div>
 
         {/* Stats Bar */}

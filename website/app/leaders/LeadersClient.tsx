@@ -86,13 +86,13 @@ function LeaderPodium({
       animate={{ opacity: 1, y: 0 }}
       className="relative group"
     >
-      {/* Card container */}
-      <div className="relative bg-surface-dark border border-white/10 rounded-lg overflow-hidden p-8 hover:border-white/30 transition-colors duration-300">
+      {/* Card container - min-height ensures consistent sizing */}
+      <div className="relative bg-surface-dark border border-white/10 rounded-lg overflow-hidden p-6 hover:border-white/30 transition-colors duration-300 min-h-[320px] flex flex-col">
         {/* Scanlines */}
         <div className="absolute inset-0 scanlines opacity-5 pointer-events-none" />
 
         {/* Stat header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <motion.div
               className="p-2 bg-comets-cyan/10 rounded-lg"
@@ -110,7 +110,7 @@ function LeaderPodium({
         </div>
 
         {/* Leader entries */}
-        <div className="space-y-3">
+        <div className="space-y-2 flex-1">
           {displayLeaders.length > 0 ? (
             displayLeaders.map((leader, idx) => (
               <motion.div

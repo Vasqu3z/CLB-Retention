@@ -119,18 +119,10 @@ export default function StatsTooltip({ stat, children, description, context }: S
       content={definition}
       accentColor="#00F3FF" // comets-cyan
     >
-      <div className="inline-flex items-center gap-1 cursor-help">
+      <span className="inline-flex items-center cursor-help group/tooltip">
         {children}
-        <motion.div
-          animate={{
-            opacity: [0.3, 0.6, 0.3],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <HelpCircle size={12} className="text-white/40 group-hover:text-white/60" />
-        </motion.div>
-      </div>
+        <HelpCircle size={10} className="ml-0.5 text-white/30 group-hover/tooltip:text-white/50 flex-shrink-0" />
+      </span>
     </RetroTooltip>
   );
 }

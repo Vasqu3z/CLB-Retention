@@ -224,7 +224,7 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
 
           {/* Star Icon - positioned top-right of COMETS */}
           <motion.div
-            className="absolute -top-2 -right-4 sm:-top-4 sm:-right-6 md:-top-6 md:-right-8 lg:-top-8 lg:-right-10 z-10"
+            className="absolute -top-6 -right-2 md:-top-10 md:-right-12 lg:-top-12 lg:-right-16 z-10"
             animate={{ rotate: 360, scale: [1, 1.1, 1] }}
             transition={{
               rotate: { duration: 20, repeat: Infinity, ease: "linear" },
@@ -237,7 +237,7 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
               alt="Star"
               width={80}
               height={80}
-              className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20"
+              className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20"
             />
           </motion.div>
 

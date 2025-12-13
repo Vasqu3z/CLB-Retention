@@ -138,7 +138,7 @@ export default function Header() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-surface-dark/95 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden shadow-xl"
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48 bg-surface-dark backdrop-blur-md border border-white/10 rounded-lg overflow-hidden shadow-xl"
                 >
                   {/* HUD corners on dropdown */}
                   <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-comets-cyan/80" />

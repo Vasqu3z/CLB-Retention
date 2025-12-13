@@ -1,43 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
+/**
+ * Legacy hook - previously used for Lenis scroll lock workarounds.
+ * Now just returns a ref for components that still reference it.
+ * Can be replaced with useRef directly in consuming components.
+ */
 export default function useLenisScrollLock<T extends HTMLElement>() {
-  const ref = useRef<T>(null);
-
-  useEffect(() => {
-    const container = ref.current;
-    if (!container) return;
-
-    container.setAttribute('data-lenis-prevent', '');
-    const hoverState = { current: false };
-
-    const handleMouseEnter = () => {
-      hoverState.current = true;
-    };
-
-    const handleMouseLeave = () => {
-      hoverState.current = false;
-    };
-
-    const handleWheel = (event: WheelEvent) => {
-      event.stopPropagation();
-      if (!hoverState.current) {
-        event.preventDefault();
-      }
-    };
-
-    container.addEventListener('mouseenter', handleMouseEnter);
-    container.addEventListener('mouseleave', handleMouseLeave);
-    container.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      container.removeEventListener('mouseenter', handleMouseEnter);
-      container.removeEventListener('mouseleave', handleMouseLeave);
-      container.removeEventListener('wheel', handleWheel);
-      container.removeAttribute('data-lenis-prevent');
-    };
-  }, []);
-
-  return ref;
+  return useRef<T>(null);
 }

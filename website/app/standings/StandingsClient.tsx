@@ -1,10 +1,12 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import StandingsTable, { TeamStanding } from "./StandingsTable";
 import { Trophy } from "lucide-react";
 import HUDFrame from "@/components/ui/HUDFrame";
 import { LEAGUE_CONFIG } from "@/config/league";
+import { motion } from "framer-motion";
 
 interface StandingsClientProps {
   data: TeamStanding[];
@@ -16,21 +18,36 @@ export default function StandingsClient({ data }: StandingsClientProps) {
       <div className="container mx-auto max-w-5xl">
 
         {/* Page Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 text-comets-yellow mb-2">
-            <Trophy size={24} />
-            <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season {LEAGUE_CONFIG.currentSeason}</span>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+          <div>
+            <div className="flex items-center gap-3 text-comets-yellow mb-2">
+              <Trophy size={24} />
+              <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season {LEAGUE_CONFIG.currentSeason}</span>
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">Standings</span>
+            </h1>
           </div>
-          <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">Standings</span>
-          </h1>
+
+          {/* Playoffs Link */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Link
+              href="/playoffs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-ui uppercase tracking-wider text-sm transition-all bg-comets-yellow/20 text-comets-yellow border border-comets-yellow/40 hover:bg-comets-yellow/30 hover:border-comets-yellow/60 hover:shadow-[0_0_15px_rgba(244,208,63,0.3)] focus-arcade"
+            >
+              <Trophy size={16} />
+              <span>View Playoffs</span>
+            </Link>
+          </motion.div>
         </div>
 
         {/* The Table - always show all stats */}
-        <HUDFrame size="md" animate={true} delay={0.3} scanlines scanlinesOpacity={0.03}>
-          <div className="py-4">
-            <StandingsTable data={data} showAdvanced={true} />
-          </div>
+        <HUDFrame size="md" animate={true} delay={0.3} scanlines scanlinesOpacity={0.03} innerPadding>
+          <StandingsTable data={data} showAdvanced={true} />
         </HUDFrame>
 
         {/* Legend / Info */}

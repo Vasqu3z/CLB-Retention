@@ -70,25 +70,25 @@ const OVERALL_ATTRIBUTES = [
 ];
 
 const HITTING_ATTRIBUTES = [
-  { key: "hitCurve", name: "Hit Curve", maxValue: 10 },
-  { key: "slapHitContact", name: "Slap Hit Contact", maxValue: 10 },
-  { key: "chargeHitContact", name: "Charge Hit Contact", maxValue: 10 },
-  { key: "slapHitPower", name: "Slap Hit Power", maxValue: 10 },
-  { key: "chargeHitPower", name: "Charge Hit Power", maxValue: 10 },
+  { key: "hitCurve", name: "Hit Curve", type: "boolean" as const },
+  { key: "slapHitContact", name: "Slap Hit Contact", maxValue: 100 },
+  { key: "chargeHitContact", name: "Charge Hit Contact", maxValue: 100 },
+  { key: "slapHitPower", name: "Slap Hit Power", maxValue: 150 },
+  { key: "chargeHitPower", name: "Charge Hit Power", maxValue: 100 },
 ];
 
 const PITCHING_ATTRIBUTES = [
   { key: "fastballSpeed", name: "Fastball Speed", maxValue: 200 },
   { key: "curveballSpeed", name: "Curveball Speed", maxValue: 200 },
-  { key: "curve", name: "Curve", maxValue: 10 },
-  { key: "stamina", name: "Stamina", maxValue: 10 },
+  { key: "curve", name: "Curve", maxValue: 100 },
+  { key: "stamina", name: "Stamina", maxValue: 100 },
 ];
 
 const FIELDING_ATTRIBUTES = [
-  { key: "fielding", name: "Fielding", maxValue: 10 },
-  { key: "throwingSpeed", name: "Throwing Speed", maxValue: 10 },
-  { key: "speed", name: "Speed", maxValue: 10 },
-  { key: "bunting", name: "Bunting", maxValue: 10 },
+  { key: "fielding", name: "Fielding", maxValue: 100 },
+  { key: "throwingSpeed", name: "Throwing Speed", maxValue: 100 },
+  { key: "speed", name: "Speed", maxValue: 150 },
+  { key: "bunting", name: "Bunting", maxValue: 100 },
 ];
 
 export default function AttributesClient({ players }: AttributesClientProps) {
@@ -163,10 +163,6 @@ export default function AttributesClient({ players }: AttributesClientProps) {
               Comparison
             </span>
           </h1>
-
-          <p className="font-mono text-white/40 text-sm">
-            Compare 2-5 players side-by-side across all 30 attributes
-          </p>
         </motion.div>
 
         {/* Player Selection */}
@@ -200,8 +196,7 @@ export default function AttributesClient({ players }: AttributesClientProps) {
         </motion.div>
 
         {/* Comparison Content */}
-        <HUDFrame size="md" animate={true} delay={0.5} scanlines scanlinesOpacity={0.03}>
-          <div className="p-4">
+        <HUDFrame size="md" animate={true} delay={0.5} scanlines scanlinesOpacity={0.03} innerPadding>
         {selectedPlayers.length >= 2 ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -284,7 +279,8 @@ export default function AttributesClient({ players }: AttributesClientProps) {
                     key={attr.key}
                     statName={attr.name}
                     statKey={attr.key.toUpperCase()}
-                    maxValue={attr.maxValue}
+                    maxValue={"maxValue" in attr ? attr.maxValue : undefined}
+                    type={"type" in attr ? attr.type : "number"}
                     delay={0.2 + idx * 0.05}
                     players={selectedPlayers.map((p) => ({
                       id: p.id,
@@ -397,7 +393,6 @@ export default function AttributesClient({ players }: AttributesClientProps) {
             icon="question-block"
           />
         )}
-          </div>
         </HUDFrame>
       </div>
     </main>

@@ -41,14 +41,14 @@ export default async function SchedulePage() {
         name: game.homeTeam,
         code: homeTeam?.abbr || game.homeTeam.substring(0, 3).toUpperCase(),
         logoColor: homeTeam?.color || "#FFFFFF",
-        logoUrl: homeTeam?.emblemUrl,
+        logoUrl: homeTeam?.logoUrl,
         score: game.homeScore
       },
       away: {
         name: game.awayTeam,
         code: awayTeam?.abbr || game.awayTeam.substring(0, 3).toUpperCase(),
         logoColor: awayTeam?.color || "#FFFFFF",
-        logoUrl: awayTeam?.emblemUrl,
+        logoUrl: awayTeam?.logoUrl,
         score: game.awayScore
       },
       date: `Game ${weekIndex + 1}`, // Simple game number instead of fake dates

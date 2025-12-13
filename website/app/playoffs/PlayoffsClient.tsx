@@ -74,8 +74,8 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
 
         {/* Bracket */}
         {semifinals.length > 0 || finals ? (
-          <HUDFrame size="lg" animate={true} delay={0.4} scanlines scanlinesOpacity={0.03}>
-            <div className="relative py-8 px-4 lg:px-8">
+          <HUDFrame size="lg" animate={true} delay={0.4} scanlines scanlinesOpacity={0.03} innerPadding>
+            <div className="relative">
               {/* Bracket Layout with Connector Lines */}
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-8 lg:gap-0 items-center">
               {/* Left Column - Semifinals */}

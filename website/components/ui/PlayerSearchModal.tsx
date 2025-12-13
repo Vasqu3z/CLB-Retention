@@ -212,7 +212,7 @@ export default function PlayerSearchModal({
                         {/* Stats bars (values are 0-10 scale) */}
                         <div className="hidden sm:flex flex-col gap-1 w-16">
                           <div className="flex items-center gap-1">
-                            <div className="text-[9px] text-white/30 w-5">PWR</div>
+                            <div className="text-[9px] text-white/30 w-5">HIT</div>
                             <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-comets-red"

@@ -22,6 +22,7 @@ interface RetroTableProps<T> {
   showAdvanced?: boolean; // Show condensed columns (default: true)
   separatorAfterIndex?: number; // Show a separator line after this row index
   separatorLabel?: string; // Label to display in separator
+  compactMode?: boolean | "auto"; // Reduce padding for many columns (auto = based on column count)
 }
 
 type SortConfig<T> = {
@@ -36,7 +37,8 @@ export default function RetroTable<T extends { id?: string | number }>({
   isLoading,
   showAdvanced = true,
   separatorAfterIndex,
-  separatorLabel
+  separatorLabel,
+  compactMode = "auto"
 }: RetroTableProps<T>) {
   const [sortConfig, setSortConfig] = useState<SortConfig<T>>(null);
 
@@ -45,6 +47,18 @@ export default function RetroTable<T extends { id?: string | number }>({
     if (showAdvanced) return columns;
     return columns.filter(col => !col.condensed);
   }, [columns, showAdvanced]);
+
+  // Determine if we should use compact mode (smaller padding) for many columns
+  const isCompact = React.useMemo(() => {
+    if (compactMode === true) return true;
+    if (compactMode === false) return false;
+    // Auto: use compact mode when showing 8+ columns
+    return visibleColumns.length >= 8;
+  }, [compactMode, visibleColumns.length]);
+
+  // Dynamic cell padding based on compact mode
+  const cellPadding = isCompact ? "px-2 py-2" : "px-4 py-3";
+  const headerPadding = isCompact ? "px-2 py-2" : "px-4 py-3";
 
   const handleSort = (key: keyof T) => {
     // Default to descending (high to low) for first click - most stats are "higher is better"
@@ -111,7 +125,10 @@ export default function RetroTable<T extends { id?: string | number }>({
         <div className="absolute inset-0 scanlines opacity-10 pointer-events-none z-20" />
 
         <div>
-          <table className="w-full text-left border-collapse min-w-full">
+          <table className={cn(
+            "w-full text-left border-collapse",
+            isCompact && "table-fixed"
+          )}>
             <thead>
               <tr className="border-b border-white/10 bg-black/40">
                 <AnimatePresence mode="popLayout">
@@ -124,8 +141,11 @@ export default function RetroTable<T extends { id?: string | number }>({
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
                       className={cn(
-                        "px-4 py-3 font-ui uppercase text-xs tracking-[0.1em] text-comets-yellow/80 font-bold whitespace-nowrap overflow-hidden",
+                        headerPadding,
+                        "font-ui uppercase text-xs tracking-[0.1em] text-comets-yellow/80 font-bold whitespace-nowrap overflow-hidden",
                         col.sortable && "cursor-pointer hover:text-comets-yellow transition-colors select-none",
+                        // First column (Player) gets more space, others share equally
+                        i === 0 ? "w-[180px] md:w-[200px]" : isCompact ? "w-auto" : "",
                         col.className
                       )}
                       onClick={() => col.sortable && col.accessorKey && handleSort(col.accessorKey)}
@@ -207,7 +227,7 @@ export default function RetroTable<T extends { id?: string | number }>({
                           animate={{ opacity: 1, width: "auto" }}
                           exit={{ opacity: 0, width: 0 }}
                           transition={{ duration: 0.2, ease: "easeOut" }}
-                          className={cn("px-4 py-3 text-white/80 overflow-hidden", col.className)}
+                          className={cn(cellPadding, "text-white/80 overflow-hidden truncate", col.className)}
                         >
                           {col.cell
                             ? col.cell(item, i)

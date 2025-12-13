@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import VersusCard from "@/components/ui/VersusCard";
-import { Calendar, ChevronLeft, ChevronRight, Grid3X3, List } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Grid3X3, List, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import RetroEmptyState from "@/components/ui/RetroEmptyState";
@@ -134,7 +135,7 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
               <div className="h-[1px] flex-1 bg-comets-cyan/30" />
             </div>
 
-            <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
               {weeks.map((week, index) => (
                 <motion.button
                   key={week}
@@ -143,7 +144,7 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(index * 0.03, 0.3) }}
                   className={cn(
-                    "relative px-3 py-1.5 rounded-full font-ui uppercase tracking-wider text-xs transition-all whitespace-nowrap focus-arcade",
+                    "relative px-4 py-2 rounded-full font-ui uppercase tracking-wider text-xs transition-all whitespace-nowrap focus-arcade",
                     activeWeek === week
                       ? "text-black"
                       : "text-white/60 hover:text-white hover:bg-white/5"
@@ -161,6 +162,21 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
                 <span className="relative z-10">W{week}</span>
               </motion.button>
             ))}
+
+              {/* Playoffs Button - after all weeks */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(weeks.length * 0.03, 0.3) + 0.05 }}
+              >
+                <Link
+                  href="/playoffs"
+                  className="relative flex items-center gap-2 px-4 py-2 rounded-full font-ui uppercase tracking-wider text-xs transition-all whitespace-nowrap bg-comets-yellow/20 text-comets-yellow border border-comets-yellow/40 hover:bg-comets-yellow/30 hover:border-comets-yellow/60 focus-arcade"
+                >
+                  <Trophy size={14} />
+                  <span>Playoffs</span>
+                </Link>
+              </motion.div>
             </div>
           </div>
         )}

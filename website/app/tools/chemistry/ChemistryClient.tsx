@@ -136,10 +136,6 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
               Analysis
             </span>
           </h1>
-
-          <p className="font-mono text-white/40 text-sm">
-            Explore player relationships and build optimal teams
-          </p>
         </motion.div>
 
         {/* Player Selection */}
@@ -159,8 +155,7 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
         </motion.div>
 
         {/* Chemistry Analysis Content */}
-        <HUDFrame size="md" animate={true} delay={0.4} scanlines scanlinesOpacity={0.03}>
-          <div className="p-4">
+        <HUDFrame size="md" animate={true} delay={0.4} scanlines scanlinesOpacity={0.03} innerPadding>
         {/* Team Chemistry Summary (if 2+ players) */}
         {selectedPlayers.length >= 2 && (
           <motion.div
@@ -252,7 +247,6 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
             icon="question-block"
           />
         )}
-          </div>
         </HUDFrame>
       </div>
     </main>

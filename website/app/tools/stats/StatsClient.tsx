@@ -190,10 +190,6 @@ export default function StatsClient({ regularPlayers, playoffPlayers }: StatsCli
               Comparison
             </span>
           </h1>
-
-          <p className="font-mono text-white/40 text-sm">
-            Compare 2-5 players side-by-side for hitting, pitching, and fielding
-          </p>
         </motion.div>
 
         {/* Season Toggle */}
@@ -241,8 +237,7 @@ export default function StatsClient({ regularPlayers, playoffPlayers }: StatsCli
         </motion.div>
 
         {/* Stats Comparison Content */}
-        <HUDFrame size="md" animate={true} delay={0.5} scanlines scanlinesOpacity={0.03}>
-          <div className="p-4">
+        <HUDFrame size="md" animate={true} delay={0.5} scanlines scanlinesOpacity={0.03} innerPadding>
         <AnimatePresence mode="wait">
           {selectedPlayers.length >= 2 ? (
             <motion.div
@@ -419,7 +414,6 @@ export default function StatsClient({ regularPlayers, playoffPlayers }: StatsCli
             />
           )}
         </AnimatePresence>
-          </div>
         </HUDFrame>
       </div>
     </main>

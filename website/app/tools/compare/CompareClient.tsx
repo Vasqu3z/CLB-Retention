@@ -84,23 +84,46 @@ export default function CompareClient({ players }: CompareClientProps) {
       </motion.div>
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 relative">
-        {/* Center Divider Line with pulse - Desktop */}
-        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 hidden md:block z-10">
-          {/* VS Circle */}
+        {/* Diagonal Divider - Fighting Game Style - Desktop */}
+        <div className="absolute inset-0 pointer-events-none hidden md:flex items-center justify-center z-10">
+          {/* Diagonal slash line */}
+          <div
+            className="absolute w-[2px] bg-gradient-to-b from-transparent via-comets-cyan/60 to-transparent shadow-[0_0_15px_rgba(0,243,255,0.4)]"
+            style={{
+              height: '120%',
+              transform: 'rotate(-15deg)',
+            }}
+          />
+          {/* Secondary accent line */}
+          <div
+            className="absolute w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent"
+            style={{
+              height: '120%',
+              transform: 'rotate(-15deg) translateX(4px)',
+            }}
+          />
+          {/* VS Badge - Fighting Game Style */}
           <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-black border border-white/20 rounded-full flex items-center justify-center font-display text-white/50 text-sm"
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            className="relative w-16 h-16 bg-black border-2 border-comets-cyan rounded-full flex items-center justify-center font-display text-xl text-white shadow-[0_0_25px_rgba(0,243,255,0.5)]"
+            animate={{
+              scale: [1, 1.1, 1],
+              rotate: [0, 3, -3, 0],
+            }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
+            {/* Inner glow ring */}
+            <div className="absolute inset-1 rounded-full border border-comets-cyan/30" />
             VS
           </motion.div>
         </div>
 
         {/* Mobile VS Divider */}
         <div className="md:hidden absolute left-0 right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center pointer-events-none">
+          {/* Horizontal line with glow */}
+          <div className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-comets-cyan/40 to-transparent" />
           <motion.div
-            className="px-4 py-2 bg-black border border-white/20 rounded-full font-display text-white/50 text-sm"
-            animate={{ scale: [1, 1.05, 1] }}
+            className="relative px-5 py-2.5 bg-black border-2 border-comets-cyan rounded-full font-display text-white text-lg shadow-[0_0_20px_rgba(0,243,255,0.4)]"
+            animate={{ scale: [1, 1.08, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
             VS

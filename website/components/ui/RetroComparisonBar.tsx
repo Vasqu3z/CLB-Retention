@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Trophy, Minus } from "lucide-react";
+import { Trophy, Minus, Check, X } from "lucide-react";
 
 /**
  * RetroComparisonBar - Arcade-style stat comparison bars
@@ -32,6 +32,7 @@ interface RetroComparisonBarProps {
   maxValue?: number; // Optional max for scaling bars
   delay?: number;
   className?: string;
+  type?: "number" | "boolean"; // Boolean shows Yes/No badges instead of bars
 }
 
 export default function RetroComparisonBar({
@@ -43,7 +44,16 @@ export default function RetroComparisonBar({
   maxValue,
   delay = 0,
   className,
+  type = "number",
 }: RetroComparisonBarProps) {
+  // Helper to determine boolean value
+  const isTruthy = (value: number | string): boolean => {
+    if (typeof value === "string") {
+      return value.toLowerCase() === "yes" || value === "1" || value.toLowerCase() === "true";
+    }
+    return value === 1 || value > 0;
+  };
+
   // Parse numeric values for comparison
   const numericValues = players.map((p) => {
     const val = typeof p.value === "string" ? parseFloat(p.value) : p.value;
@@ -94,125 +104,188 @@ export default function RetroComparisonBar({
         </span>
       </div>
 
-      {/* Comparison bars */}
-      <div className="space-y-3">
-        {players.map((player, idx) => {
-          const numValue = numericValues[idx];
-          const barWidth = getBarWidth(numValue);
-          const playerIsWinner = isWinner(player.id);
+      {/* Boolean comparison - Yes/No badges */}
+      {type === "boolean" ? (
+        <div className="space-y-3">
+          {players.map((player, idx) => {
+            const hasAbility = isTruthy(player.value);
 
-          return (
-            <motion.div
-              key={player.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: delay + idx * 0.1 }}
-              className="relative"
-            >
-              {/* Player row */}
-              <div className="flex items-center gap-3 mb-1.5">
+            return (
+              <motion.div
+                key={player.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: delay + idx * 0.1 }}
+                className="flex items-center gap-3"
+              >
                 {/* Color dot */}
                 <motion.div
                   className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   style={{
                     backgroundColor: player.color,
-                    boxShadow: playerIsWinner ? `0 0 10px ${player.color}` : "none",
+                    boxShadow: hasAbility ? `0 0 10px ${player.color}` : "none",
                   }}
-                  animate={
-                    playerIsWinner
-                      ? { scale: [1, 1.3, 1], opacity: [0.8, 1, 0.8] }
-                      : {}
-                  }
-                  transition={{ duration: 1.5, repeat: Infinity }}
                 />
 
                 {/* Player name */}
                 <span
                   className={cn(
                     "flex-1 font-ui text-sm uppercase tracking-wide truncate",
-                    playerIsWinner ? "text-white" : "text-white/60"
+                    hasAbility ? "text-white" : "text-white/60"
                   )}
                 >
                   {player.name}
                 </span>
 
-                {/* Winner indicator */}
-                {playerIsWinner && !isTie && (
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", stiffness: 500, delay: delay + 0.3 }}
-                    className="text-comets-yellow"
-                  >
-                    <Trophy size={14} />
-                  </motion.div>
-                )}
-                {isTie && playerIsWinner && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="text-white/40"
-                  >
-                    <Minus size={14} />
-                  </motion.div>
-                )}
-
-                {/* Value display */}
-                <motion.span
-                  className={cn(
-                    "font-mono text-sm tabular-nums",
-                    playerIsWinner
-                      ? "text-comets-cyan font-bold"
-                      : "text-white/50"
-                  )}
-                  style={
-                    playerIsWinner
-                      ? { textShadow: `0 0 10px ${player.color}80` }
-                      : {}
-                  }
-                >
-                  {formatValue(player.value)}
-                </motion.span>
-              </div>
-
-              {/* Bar container */}
-              <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
-                {/* Animated fill bar */}
+                {/* Yes/No badge */}
                 <motion.div
-                  className="absolute inset-y-0 left-0 rounded-full"
-                  style={{
-                    backgroundColor: player.color,
-                    boxShadow: playerIsWinner
-                      ? `0 0 15px ${player.color}80, inset 0 1px 0 rgba(255,255,255,0.3)`
-                      : `inset 0 1px 0 rgba(255,255,255,0.2)`,
-                  }}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${barWidth}%` }}
-                  transition={{
-                    delay: delay + idx * 0.1 + 0.2,
-                    duration: 0.8,
-                    ease: [0.34, 1.56, 0.64, 1],
-                  }}
-                />
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 500, delay: delay + idx * 0.1 + 0.2 }}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-ui uppercase tracking-wide",
+                    hasAbility
+                      ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                      : "bg-white/5 text-white/40 border border-white/10"
+                  )}
+                >
+                  {hasAbility ? (
+                    <>
+                      <Check size={12} />
+                      Yes
+                    </>
+                  ) : (
+                    <>
+                      <X size={12} />
+                      No
+                    </>
+                  )}
+                </motion.div>
+              </motion.div>
+            );
+          })}
+        </div>
+      ) : (
+        /* Comparison bars - numeric values */
+        <div className="space-y-3">
+          {players.map((player, idx) => {
+            const numValue = numericValues[idx];
+            const barWidth = getBarWidth(numValue);
+            const playerIsWinner = isWinner(player.id);
 
-                {/* Shimmer effect on winner */}
-                {playerIsWinner && (
+            return (
+              <motion.div
+                key={player.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: delay + idx * 0.1 }}
+                className="relative"
+              >
+                {/* Player row */}
+                <div className="flex items-center gap-3 mb-1.5">
+                  {/* Color dot */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                    animate={{ x: ["-100%", "200%"] }}
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{
+                      backgroundColor: player.color,
+                      boxShadow: playerIsWinner ? `0 0 10px ${player.color}` : "none",
+                    }}
+                    animate={
+                      playerIsWinner
+                        ? { scale: [1, 1.3, 1], opacity: [0.8, 1, 0.8] }
+                        : {}
+                    }
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+
+                  {/* Player name */}
+                  <span
+                    className={cn(
+                      "flex-1 font-ui text-sm uppercase tracking-wide truncate",
+                      playerIsWinner ? "text-white" : "text-white/60"
+                    )}
+                  >
+                    {player.name}
+                  </span>
+
+                  {/* Winner indicator */}
+                  {playerIsWinner && !isTie && (
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 500, delay: delay + 0.3 }}
+                      className="text-comets-yellow"
+                    >
+                      <Trophy size={14} />
+                    </motion.div>
+                  )}
+                  {isTie && playerIsWinner && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="text-white/40"
+                    >
+                      <Minus size={14} />
+                    </motion.div>
+                  )}
+
+                  {/* Value display */}
+                  <motion.span
+                    className={cn(
+                      "font-mono text-sm tabular-nums",
+                      playerIsWinner
+                        ? "text-comets-cyan font-bold"
+                        : "text-white/50"
+                    )}
+                    style={
+                      playerIsWinner
+                        ? { textShadow: `0 0 10px ${player.color}80` }
+                        : {}
+                    }
+                  >
+                    {formatValue(player.value)}
+                  </motion.span>
+                </div>
+
+                {/* Bar container */}
+                <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
+                  {/* Animated fill bar */}
+                  <motion.div
+                    className="absolute inset-y-0 left-0 rounded-full"
+                    style={{
+                      backgroundColor: player.color,
+                      boxShadow: playerIsWinner
+                        ? `0 0 15px ${player.color}80, inset 0 1px 0 rgba(255,255,255,0.3)`
+                        : `inset 0 1px 0 rgba(255,255,255,0.2)`,
+                    }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${barWidth}%` }}
                     transition={{
-                      delay: delay + 0.8,
-                      duration: 1.5,
-                      repeat: Infinity,
-                      repeatDelay: 3,
+                      delay: delay + idx * 0.1 + 0.2,
+                      duration: 0.8,
+                      ease: [0.34, 1.56, 0.64, 1],
                     }}
                   />
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
+
+                  {/* Shimmer effect on winner */}
+                  {playerIsWinner && (
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                      animate={{ x: ["-100%", "200%"] }}
+                      transition={{
+                        delay: delay + 0.8,
+                        duration: 1.5,
+                        repeat: Infinity,
+                        repeatDelay: 3,
+                      }}
+                    />
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </motion.div>
   );
 }

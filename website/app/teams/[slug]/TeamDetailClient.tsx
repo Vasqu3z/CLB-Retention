@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Users, Calendar, Activity, Trophy, TrendingUp } from "lucide-react";
+import { Users, Calendar, Activity, Trophy, TrendingUp, Target, Flame, Shield } from "lucide-react";
 import RetroTable from "@/components/ui/RetroTable";
+import RetroTabs from "@/components/ui/RetroTabs";
 import VersusCard from "@/components/ui/VersusCard";
 import StatsTooltip from "@/components/ui/StatsTooltip";
 import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
@@ -13,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { PlayerStats } from "@/lib/sheets";
 import HUDFrame from "@/components/ui/HUDFrame";
 import { LEAGUE_CONFIG } from "@/config/league";
+
+type StatCategory = "hitting" | "pitching" | "fielding";
 
 interface Matchup {
   id: string;
@@ -89,6 +92,7 @@ export default function TeamDetailClient({
 }: TeamDetailClientProps) {
   const [activeTab, setActiveTab] = useState<"roster" | "schedule" | "stats">("roster");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [statCategory, setStatCategory] = useState<StatCategory>("hitting");
 
   const record = `${wins}-${losses}`;
   const standing = `${rank}${getRankSuffix(rank)}`;
@@ -99,52 +103,114 @@ export default function TeamDetailClient({
     id: `${player.name}-${idx}`,
   }));
 
-  // Roster Table Configuration
-  const rosterColumns = [
-    {
-      header: "Player",
-      cell: (p: PlayerStats & { id: string; imageUrl?: string; slug?: string }) => (
-        <Link
-          href={`/players/${p.slug || p.name.toLowerCase().replace(/\s+/g, '-')}`}
-          className="flex items-center gap-3 group"
+  // Player cell renderer (shared across all category columns)
+  const PlayerCell = (p: PlayerStats & { id: string; imageUrl?: string; slug?: string }) => (
+    <Link
+      href={`/players/${p.slug || p.name.toLowerCase().replace(/\s+/g, '-')}`}
+      className="flex items-center gap-3 group"
+    >
+      {p.imageUrl ? (
+        <motion.div
+          className="w-8 h-8 rounded-lg overflow-hidden border-2 flex-shrink-0"
+          style={{ borderColor: logoColor }}
+          whileHover={{ scale: 1.1 }}
         >
-          {p.imageUrl ? (
-            <motion.div
-              className="w-10 h-10 rounded-lg overflow-hidden border-2"
-              style={{ borderColor: logoColor }}
-              whileHover={{ scale: 1.1 }}
-            >
-              <Image
-                src={p.imageUrl}
-                alt={p.name}
-                width={40}
-                height={40}
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center font-display text-white border-2"
-              style={{ borderColor: `${logoColor}40` }}
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
-            >
-              {p.name[0]}
-            </motion.div>
-          )}
-          <span className="font-ui font-bold group-hover:text-comets-cyan transition-colors uppercase">
-            {p.name}
-          </span>
-        </Link>
-      ),
-    },
-    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/50", condensed: true },
-    { header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>, accessorKey: "avg" as const, className: "font-mono text-comets-cyan", sortable: true },
-    { header: <StatsTooltip stat="HR" context="batting">HR</StatsTooltip>, accessorKey: "hr" as const, className: "font-mono text-comets-red", sortable: true },
-    { header: <StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>, accessorKey: "ops" as const, className: "font-mono text-white font-bold", sortable: true },
+          <Image
+            src={p.imageUrl}
+            alt={p.name}
+            width={32}
+            height={32}
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center font-display text-white border-2 flex-shrink-0"
+          style={{ borderColor: `${logoColor}40` }}
+          whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
+        >
+          {p.name[0]}
+        </motion.div>
+      )}
+      <span className="font-ui font-bold group-hover:text-comets-cyan transition-colors uppercase truncate">
+        {p.name}
+      </span>
+    </Link>
+  );
+
+  // Hitting columns
+  const hittingColumns = [
+    { header: "Player", cell: PlayerCell },
+    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-center text-xs", sortable: true },
+    { header: <StatsTooltip stat="AB" context="batting">AB</StatsTooltip>, accessorKey: "ab" as const, className: "text-white/70 font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="H" context="batting">H</StatsTooltip>, accessorKey: "h" as const, className: "text-white/90 font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="HR" context="batting">HR</StatsTooltip>, accessorKey: "hr" as const, className: "text-comets-red font-mono font-bold text-center", sortable: true },
+    { header: <StatsTooltip stat="RBI" context="batting">RBI</StatsTooltip>, accessorKey: "rbi" as const, className: "text-white/90 font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="DP" context="batting">DP</StatsTooltip>, accessorKey: "dp" as const, className: "text-white/70 font-mono text-center text-sm", sortable: true, condensed: true },
+    { header: <StatsTooltip stat="ROB" context="fielding">ROB</StatsTooltip>, accessorKey: "rob" as const, className: "text-white/70 font-mono text-center text-sm", sortable: true, condensed: true },
+    { header: <StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>, accessorKey: "avg" as const, className: "text-comets-cyan font-mono font-bold text-center", sortable: true },
+    { header: <StatsTooltip stat="OBP" context="batting">OBP</StatsTooltip>, accessorKey: "obp" as const, className: "text-comets-cyan font-mono text-center", sortable: true, condensed: true },
+    { header: <StatsTooltip stat="SLG" context="batting">SLG</StatsTooltip>, accessorKey: "slg" as const, className: "text-comets-cyan font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>, accessorKey: "ops" as const, className: "text-comets-yellow font-mono font-bold text-center", sortable: true },
+  ];
+
+  // Pitching columns
+  const pitchingColumns = [
+    { header: "Player", cell: PlayerCell },
+    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-center text-xs", sortable: true },
+    { header: <StatsTooltip stat="IP" context="pitching">IP</StatsTooltip>, accessorKey: "ip" as const, className: "text-white/90 font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="W" context="pitching">W</StatsTooltip>, accessorKey: "w" as const, className: "text-green-400 font-mono text-center text-sm", sortable: true, condensed: true },
+    { header: <StatsTooltip stat="L" context="pitching">L</StatsTooltip>, accessorKey: "l" as const, className: "text-red-400 font-mono text-center text-sm", sortable: true, condensed: true },
+    { header: <StatsTooltip stat="SV" context="pitching">SV</StatsTooltip>, accessorKey: "sv" as const, className: "text-comets-yellow font-mono text-center text-sm", sortable: true, condensed: true },
+    { header: <StatsTooltip stat="H" context="pitching">H</StatsTooltip>, accessorKey: "hAllowed" as const, className: "text-white/90 font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="HR" context="pitching">HR</StatsTooltip>, accessorKey: "hrAllowed" as const, className: "text-white/90 font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="ERA" context="pitching">ERA</StatsTooltip>, accessorKey: "era" as const, className: "text-comets-cyan font-mono font-bold text-center", sortable: true },
+    { header: <StatsTooltip stat="WHIP" context="pitching">WHIP</StatsTooltip>, accessorKey: "whip" as const, className: "text-comets-cyan font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="BAA" context="pitching">BAA</StatsTooltip>, accessorKey: "baa" as const, className: "text-comets-cyan font-mono text-center", sortable: true },
+  ];
+
+  // Fielding columns
+  const fieldingColumns = [
+    { header: "Player", cell: PlayerCell },
+    { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/40 text-center text-xs", sortable: true },
+    { header: <StatsTooltip stat="NP" context="fielding">NP</StatsTooltip>, accessorKey: "np" as const, className: "text-comets-cyan font-mono font-bold text-center", sortable: true },
+    { header: <StatsTooltip stat="E" context="fielding">E</StatsTooltip>, accessorKey: "e" as const, className: "text-red-400 font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="SB" context="batting">SB</StatsTooltip>, accessorKey: "sb" as const, className: "text-comets-yellow font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="CS" context="fielding">CS</StatsTooltip>, accessorKey: "cs" as const, className: "text-white/90 font-mono text-center", sortable: true },
+    { header: <StatsTooltip stat="OAA" context="fielding">OAA</StatsTooltip>, accessorKey: "oaa" as const, className: "text-comets-purple font-mono font-bold text-center", sortable: true },
+  ];
+
+  // Get current columns based on category
+  const rosterColumns = useMemo(() => {
+    switch (statCategory) {
+      case "hitting": return hittingColumns;
+      case "pitching": return pitchingColumns;
+      case "fielding": return fieldingColumns;
+      default: return hittingColumns;
+    }
+  }, [statCategory]);
+
+  // Filter roster for current category (only show players with relevant stats)
+  const filteredRoster = useMemo(() => {
+    return rosterWithIds.filter((p) => {
+      switch (statCategory) {
+        case "hitting": return p.ab && p.ab > 0;
+        case "pitching": return p.ip && p.ip > 0;
+        case "fielding": return (p.np && p.np > 0) || (p.e && p.e > 0) || (p.sb && p.sb > 0);
+        default: return true;
+      }
+    });
+  }, [rosterWithIds, statCategory]);
+
+  // Stat category tabs
+  const statCategoryTabs = [
+    { value: "hitting", label: "Hitting", icon: Target, color: "yellow" as const },
+    { value: "pitching", label: "Pitching", icon: Flame, color: "cyan" as const },
+    { value: "fielding", label: "Fielding", icon: Shield, color: "purple" as const },
   ];
 
   // Calculate team stats
-  const teamAvg = stats && stats.hitting.ab > 0 ? (stats.hitting.h / stats.hitting.ab).toFixed(3) : ".000";
+  const teamAvg = stats && stats.hitting.ab > 0 ? (stats.hitting.h / stats.hitting.ab).toFixed(3).replace(/^0/, '') : ".000";
   const teamERA = stats && stats.pitching.ip > 0 ? ((stats.pitching.r * 9) / stats.pitching.ip).toFixed(2) : "0.00";
   const teamOPS = stats && stats.hitting.ab > 0
     ? calculateOPS(stats.hitting.h, stats.hitting.ab, stats.hitting.bb, stats.hitting.tb)
@@ -367,8 +433,8 @@ export default function TeamDetailClient({
         </div>
 
         {/* Tab Content */}
-        <HUDFrame size="md" animate={true} delay={0.4} scanlines scanlinesOpacity={0.02}>
-          <div className="min-h-[500px] p-4">
+        <HUDFrame size="md" animate={true} delay={0.4} scanlines scanlinesOpacity={0.02} innerPadding>
+          <div className="min-h-[500px]">
           {/* Roster Tab */}
           {activeTab === "roster" && (
             <motion.div
@@ -378,16 +444,26 @@ export default function TeamDetailClient({
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <h3 className="font-display text-2xl text-white">Team Roster</h3>
                 <div className="flex items-center gap-4">
                   <div className="text-xs font-mono text-white/40">
-                    {roster.length} {roster.length === 1 ? "PLAYER" : "PLAYERS"}
+                    {filteredRoster.length} {filteredRoster.length === 1 ? "PLAYER" : "PLAYERS"}
                   </div>
                   <StatsToggle showAdvanced={showAdvanced} onChange={setShowAdvanced} size="sm" />
                 </div>
               </div>
-              <RetroTable data={rosterWithIds} columns={rosterColumns} showAdvanced={showAdvanced} />
+
+              {/* Category Tabs */}
+              <div className="mb-6">
+                <RetroTabs
+                  tabs={statCategoryTabs}
+                  value={statCategory}
+                  onChange={(val) => setStatCategory(val as StatCategory)}
+                />
+              </div>
+
+              <RetroTable data={filteredRoster} columns={rosterColumns} showAdvanced={showAdvanced} />
             </motion.div>
           )}
 
@@ -475,7 +551,7 @@ export default function TeamDetailClient({
                 <div className="bg-surface-dark border border-white/10 rounded-lg p-4 text-center">
                   <div className="text-xs font-mono text-white/40 uppercase mb-1">Win %</div>
                   <div className="text-3xl font-display text-comets-cyan">
-                    {stats.gp > 0 ? ((stats.wins / stats.gp) * 100).toFixed(1) : "0.0"}%
+                    {stats.gp > 0 ? (stats.wins / stats.gp).toFixed(3).replace(/^0/, '') : ".000"}
                   </div>
                 </div>
               </div>
@@ -556,8 +632,10 @@ function getRankSuffix(rank: number): string {
 }
 
 function calculateOPS(h: number, ab: number, bb: number, tb: number): string {
-  if (ab === 0) return "0.000";
+  if (ab === 0) return ".000";
   const obp = (h + bb) / (ab + bb);
   const slg = tb / ab;
-  return (obp + slg).toFixed(3);
+  const ops = obp + slg;
+  // OPS can be > 1.000, so only strip leading zero if < 1
+  return ops >= 1 ? ops.toFixed(3) : ops.toFixed(3).replace(/^0/, '');
 }

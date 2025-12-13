@@ -2,11 +2,17 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Activity, Zap, Users, Target, Shield, ThumbsUp, ThumbsDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatsTooltip from "@/components/ui/StatsTooltip";
 import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
+
+// Helper to create URL-friendly slugs
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
 
 interface PlayerStats {
   name: string;
@@ -120,7 +126,7 @@ export default function PlayerProfileClient({
           {/* Player Image */}
           {playerImageUrl && (
             <motion.div
-              className="hidden md:block w-32 h-32 lg:w-40 lg:h-40 rounded-xl border-2 overflow-hidden shadow-2xl flex-shrink-0"
+              className="hidden md:block w-28 h-28 lg:w-32 lg:h-32 rounded-xl border-2 overflow-hidden shadow-2xl flex-shrink-0"
               style={{
                 borderColor: teamColor,
                 background: `linear-gradient(135deg, ${teamColor}30, transparent)`,
@@ -262,6 +268,45 @@ export default function PlayerProfileClient({
               animate={{ opacity: 1, y: 0 }}
               className="space-y-8"
             >
+              {/* Character Info - At Top */}
+              {(attributes.characterClass || attributes.battingSide || attributes.captain) && (
+                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
+                  <h4 className="font-display text-lg uppercase text-comets-purple mb-3">Character Info</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-sm">
+                    {attributes.characterClass && (
+                      <div>
+                        <span className="text-white/40 block">Class</span>
+                        <span className="text-white">{attributes.characterClass}</span>
+                      </div>
+                    )}
+                    {attributes.battingSide && (
+                      <div>
+                        <span className="text-white/40 block">Bats</span>
+                        <span className="text-white">{attributes.battingSide}</span>
+                      </div>
+                    )}
+                    {attributes.armSide && (
+                      <div>
+                        <span className="text-white/40 block">Throws</span>
+                        <span className="text-white">{attributes.armSide}</span>
+                      </div>
+                    )}
+                    {attributes.captain && (
+                      <div>
+                        <span className="text-white/40 block">Captain</span>
+                        <span className="text-white">{attributes.captain}</span>
+                      </div>
+                    )}
+                    {attributes.weight && (
+                      <div>
+                        <span className="text-white/40 block">Weight</span>
+                        <span className="text-white">{attributes.weight}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Overall Stats */}
               <div>
                 <h3 className="font-display text-xl uppercase text-comets-yellow mb-4">Overall Stats</h3>
@@ -307,10 +352,10 @@ export default function PlayerProfileClient({
                     <Zap size={16} /> Pitching
                   </h4>
                   <div className="space-y-2 font-mono text-sm">
-                    <DetailRow label="Fastball Speed" value={attributes.fastballSpeed} suffix=" mph" />
-                    <DetailRow label="Curveball Speed" value={attributes.curveballSpeed} suffix=" mph" />
-                    <DetailRow label="Curve" value={attributes.curve} max={10} />
-                    <DetailRow label="Stamina" value={attributes.stamina} max={10} />
+                    <DetailRow label="Fastball Speed" value={attributes.fastballSpeed} />
+                    <DetailRow label="Curveball Speed" value={attributes.curveballSpeed} />
+                    <DetailRow label="Curve" value={attributes.curve} />
+                    <DetailRow label="Stamina" value={attributes.stamina} />
                   </div>
                 </div>
 
@@ -320,23 +365,13 @@ export default function PlayerProfileClient({
                     <Target size={16} /> Hitting
                   </h4>
                   <div className="space-y-2 font-mono text-sm">
-                    <DetailRow label="Hit Curve" value={attributes.hitCurve} max={10} />
-                    <DetailRow label="Slap Contact" value={attributes.slapHitContact} max={10} />
-                    <DetailRow label="Charge Contact" value={attributes.chargeHitContact} max={10} />
-                    <DetailRow label="Slap Power" value={attributes.slapHitPower} max={10} />
-                    <DetailRow label="Charge Power" value={attributes.chargeHitPower} max={10} />
-                    {attributes.hittingTrajectory && (
-                      <div className="flex justify-between text-white/60">
-                        <span>Trajectory</span>
-                        <span className="text-white">{attributes.hittingTrajectory}</span>
-                      </div>
-                    )}
-                    {attributes.preCharge && (
-                      <div className="flex justify-between text-white/60">
-                        <span>Pre-Charge</span>
-                        <span className="text-white">{attributes.preCharge}</span>
-                      </div>
-                    )}
+                    <DetailRow label="Hit Curve" value={attributes.hitCurve} />
+                    <DetailRow label="Slap Contact" value={attributes.slapHitContact} />
+                    <DetailRow label="Charge Contact" value={attributes.chargeHitContact} />
+                    <DetailRow label="Slap Power" value={attributes.slapHitPower} />
+                    <DetailRow label="Charge Power" value={attributes.chargeHitPower} />
+                    <DetailRow label="Trajectory" value={attributes.hittingTrajectory} />
+                    <DetailRow label="Pre-Charge" value={attributes.preCharge} />
                   </div>
                 </div>
 
@@ -346,58 +381,20 @@ export default function PlayerProfileClient({
                     <Shield size={16} /> Fielding & Running
                   </h4>
                   <div className="space-y-2 font-mono text-sm">
-                    <DetailRow label="Fielding" value={attributes.fielding} max={10} />
-                    <DetailRow label="Throwing Speed" value={attributes.throwingSpeed} max={10} />
-                    <DetailRow label="Speed" value={attributes.speed} max={10} />
-                    <DetailRow label="Bunting" value={attributes.bunting} max={10} />
+                    <DetailRow label="Fielding" value={attributes.fielding} />
+                    <DetailRow label="Throwing Speed" value={attributes.throwingSpeed} />
+                    <DetailRow label="Speed" value={attributes.speed} />
+                    <DetailRow label="Bunting" value={attributes.bunting} />
+                    {attributes.ability && (
+                      <div className="flex justify-between items-center text-white/60 pt-2 mt-2 border-t border-white/10">
+                        <span className="text-comets-purple">Special Ability</span>
+                        <span className="text-white px-2 py-0.5 bg-comets-purple/20 rounded border border-comets-purple/30">{attributes.ability}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Character Info */}
-              {(attributes.characterClass || attributes.ability || attributes.battingSide) && (
-                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
-                  <h4 className="font-display text-lg uppercase text-comets-purple mb-3">Character Info</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-sm">
-                    {attributes.characterClass && (
-                      <div>
-                        <span className="text-white/40 block">Class</span>
-                        <span className="text-white">{attributes.characterClass}</span>
-                      </div>
-                    )}
-                    {attributes.ability && (
-                      <div>
-                        <span className="text-white/40 block">Ability</span>
-                        <span className="text-white">{attributes.ability}</span>
-                      </div>
-                    )}
-                    {attributes.battingSide && (
-                      <div>
-                        <span className="text-white/40 block">Bats</span>
-                        <span className="text-white">{attributes.battingSide}</span>
-                      </div>
-                    )}
-                    {attributes.armSide && (
-                      <div>
-                        <span className="text-white/40 block">Throws</span>
-                        <span className="text-white">{attributes.armSide}</span>
-                      </div>
-                    )}
-                    {attributes.captain && (
-                      <div>
-                        <span className="text-white/40 block">Captain</span>
-                        <span className="text-white">{attributes.captain}</span>
-                      </div>
-                    )}
-                    {attributes.weight && (
-                      <div>
-                        <span className="text-white/40 block">Weight</span>
-                        <span className="text-white">{attributes.weight}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </motion.div>
           )}
 
@@ -423,7 +420,7 @@ export default function PlayerProfileClient({
                         transition={{ delay: idx * 0.05 }}
                         className="flex items-center justify-between p-3 bg-comets-green/10 rounded hover:bg-comets-green/20 transition-all"
                       >
-                        <div className="flex items-center gap-3">
+                        <Link href={`/players/${slugify(rel.name)}`} className="flex items-center gap-3 flex-1 hover:opacity-80 transition-opacity">
                           <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
                             {rel.imageUrl ? (
                               <img
@@ -437,8 +434,8 @@ export default function PlayerProfileClient({
                               </div>
                             )}
                           </div>
-                          <span className="font-ui text-white uppercase">{rel.name}</span>
-                        </div>
+                          <span className="font-ui text-white uppercase hover:text-comets-cyan transition-colors">{rel.name}</span>
+                        </Link>
                         <ThumbsUp size={18} className="text-comets-green" />
                       </motion.div>
                     ))}
@@ -462,7 +459,7 @@ export default function PlayerProfileClient({
                         transition={{ delay: idx * 0.05 }}
                         className="flex items-center justify-between p-3 bg-comets-red/10 rounded hover:bg-comets-red/20 transition-all"
                       >
-                        <div className="flex items-center gap-3">
+                        <Link href={`/players/${slugify(rel.name)}`} className="flex items-center gap-3 flex-1 hover:opacity-80 transition-opacity">
                           <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
                             {rel.imageUrl ? (
                               <img
@@ -476,8 +473,8 @@ export default function PlayerProfileClient({
                               </div>
                             )}
                           </div>
-                          <span className="font-ui text-white uppercase">{rel.name}</span>
-                        </div>
+                          <span className="font-ui text-white uppercase hover:text-comets-cyan transition-colors">{rel.name}</span>
+                        </Link>
                         <ThumbsDown size={18} className="text-comets-red" />
                       </motion.div>
                     ))}
@@ -520,15 +517,12 @@ function StatRow({ label, value, highlight }: { label: React.ReactNode; value: s
   );
 }
 
-function DetailRow({ label, value, max, suffix }: { label: string; value?: number; max?: number; suffix?: string }) {
+function DetailRow({ label, value }: { label: string; value?: number | string }) {
   if (value === undefined || value === null) return null;
   return (
     <div className="flex justify-between items-center text-white/60">
       <span>{label}</span>
-      <span className="text-white">
-        {value}{suffix}
-        {max && <span className="text-white/40">/{max}</span>}
-      </span>
+      <span className="text-white">{value}</span>
     </div>
   );
 }

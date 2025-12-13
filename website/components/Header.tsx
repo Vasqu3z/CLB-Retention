@@ -5,11 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Trophy, Calendar, Users, Activity, UserCircle } from "lucide-react";
+import { Menu, X, Trophy, Calendar, Users, Activity, UserCircle, Wrench, Scale, Sliders, Link2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
   const pathname = usePathname();
 
   const navItems = [
@@ -19,6 +20,15 @@ export default function Header() {
     { name: "Players", href: "/players", icon: UserCircle },
     { name: "Stats", href: "/leaders", icon: Activity },
   ];
+
+  const toolItems = [
+    { name: "Lineup Builder", href: "/tools/lineup", icon: Users, color: "comets-cyan" },
+    { name: "Compare Players", href: "/tools/compare", icon: Scale, color: "comets-yellow" },
+    { name: "Attributes", href: "/tools/attributes", icon: Sliders, color: "comets-purple" },
+    { name: "Chemistry", href: "/tools/chemistry", icon: Link2, color: "comets-green" },
+  ];
+
+  const isToolsActive = pathname?.startsWith("/tools");
 
   return (
     <>
@@ -90,6 +100,73 @@ export default function Header() {
               </Link>
             );
           })}
+
+          {/* Tools Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setIsToolsOpen(true)}
+            onMouseLeave={() => setIsToolsOpen(false)}
+          >
+            <button
+              className={cn(
+                "relative px-6 py-2 rounded-full font-ui uppercase tracking-widest text-sm transition-all duration-200 flex items-center gap-1.5 focus-arcade",
+                isToolsActive ? "text-black" : "text-white/60 hover:text-white"
+              )}
+            >
+              {isToolsActive && (
+                <motion.div
+                  layoutId="activeNav"
+                  className="absolute inset-0 bg-comets-yellow rounded-full"
+                  transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1.5">
+                {isToolsActive && <Wrench size={14} />}
+                Tools
+                <ChevronDown size={12} className={cn("transition-transform", isToolsOpen && "rotate-180")} />
+              </span>
+            </button>
+
+            {/* Dropdown Menu */}
+            <AnimatePresence>
+              {isToolsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-surface-dark/95 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden shadow-xl"
+                >
+                  {/* HUD corners on dropdown */}
+                  <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-comets-cyan/50" />
+                  <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-comets-cyan/50" />
+                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-comets-cyan/50" />
+                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-comets-cyan/50" />
+
+                  <div className="p-1">
+                    {toolItems.map((tool, idx) => {
+                      const isActive = pathname === tool.href;
+                      return (
+                        <Link
+                          key={tool.name}
+                          href={tool.href}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors",
+                            isActive
+                              ? "bg-white/10 text-white"
+                              : "text-white/70 hover:bg-white/5 hover:text-white"
+                          )}
+                        >
+                          <tool.icon size={16} className={`text-${tool.color}`} />
+                          <span className="font-ui text-sm">{tool.name}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </nav>
 
         {/* Right: Mobile menu button */}
@@ -192,6 +269,42 @@ export default function Header() {
                     </motion.div>
                   );
                 })}
+
+                {/* Tools Section */}
+                <motion.div
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: navItems.length * 0.1 }}
+                  className="mt-2 pt-4 border-t border-white/10"
+                >
+                  <div className="px-4 pb-2 text-xs font-mono text-white/40 uppercase tracking-widest flex items-center gap-2">
+                    <Wrench size={12} />
+                    Tools
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {toolItems.map((tool) => {
+                      const isActive = pathname === tool.href;
+                      return (
+                        <Link
+                          key={tool.name}
+                          href={tool.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={cn(
+                            "flex flex-col items-center gap-2 p-3 rounded-lg border transition-all",
+                            isActive
+                              ? "bg-white/10 border-comets-yellow/50"
+                              : "border-white/5 hover:border-white/10 hover:bg-white/5"
+                          )}
+                        >
+                          <tool.icon size={20} className={`text-${tool.color}`} />
+                          <span className="font-ui text-xs text-white/80 text-center">
+                            {tool.name}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </motion.div>
               </div>
 
               {/* Menu Footer */}

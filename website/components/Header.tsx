@@ -22,7 +22,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-background/80 backdrop-blur-md">
+      <header className="fixed top-0 left-0 md:left-64 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-background/80 backdrop-blur-md">
         {/* Subtle scanlines overlay */}
         <div className="absolute inset-0 scanlines opacity-[0.02] pointer-events-none" />
 

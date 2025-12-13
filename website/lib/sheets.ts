@@ -66,16 +66,28 @@ async function getAuthClient(): Promise<SheetsAuthClient> {
   return authClientPromise;
 }
 
+// Check if Google credentials are configured
+function hasGoogleCredentials(): boolean {
+  return !!parsedGoogleCredentials && !!process.env.SHEETS_SPREADSHEET_ID;
+}
+
 // Generic function to read data from a sheet range (uncached)
 async function getSheetDataUncached(range: string, spreadsheetId?: string): Promise<any[][]> {
+  const sheetId = spreadsheetId || process.env.SHEETS_SPREADSHEET_ID;
+
+  // If credentials aren't configured, return empty data (allows builds without creds)
+  if (!hasGoogleCredentials()) {
+    console.warn('Google Sheets credentials not configured, returning empty data');
+    return [];
+  }
+
+  if (!sheetId) {
+    console.warn('No spreadsheet ID provided, returning empty data');
+    return [];
+  }
+
   try {
     const auth = await getAuthClient();
-    const sheetId = spreadsheetId || process.env.SHEETS_SPREADSHEET_ID;
-
-    if (!sheetId) {
-      console.warn('No spreadsheet ID provided, returning empty data');
-      return [];
-    }
 
     const response = await sheets.spreadsheets.values.get({
       auth: auth as any,
@@ -85,9 +97,9 @@ async function getSheetDataUncached(range: string, spreadsheetId?: string): Prom
 
     return response.data.values || [];
   } catch (error) {
-    // Return empty data instead of throwing - allows builds without credentials
+    // In production with credentials, throw errors so they're visible
     console.error('Error fetching sheet data:', error);
-    return [];
+    throw error;
   }
 }
 
@@ -140,15 +152,21 @@ async function batchGetSheetDataUncached(
   spreadsheetId?: string
 ): Promise<Map<string, any[][]>> {
   const result = new Map<string, any[][]>();
+  const sheetId = spreadsheetId || process.env.SHEETS_SPREADSHEET_ID;
+
+  // If credentials aren't configured, return empty data (allows builds without creds)
+  if (!hasGoogleCredentials()) {
+    console.warn('Google Sheets credentials not configured, returning empty batch data');
+    return result;
+  }
+
+  if (!sheetId) {
+    console.warn('No spreadsheet ID provided for batch fetch, returning empty data');
+    return result;
+  }
 
   try {
     const auth = await getAuthClient();
-    const sheetId = spreadsheetId || process.env.SHEETS_SPREADSHEET_ID;
-
-    if (!sheetId) {
-      console.warn('No spreadsheet ID provided for batch fetch, returning empty data');
-      return result;
-    }
 
     const response = await sheets.spreadsheets.values.batchGet({
       auth: auth as any,
@@ -163,9 +181,9 @@ async function batchGetSheetDataUncached(
 
     return result;
   } catch (error) {
+    // In production with credentials, throw errors so they're visible
     console.error('Error fetching batch sheet data:', error);
-    // Return empty map - individual fetches will fail gracefully
-    return result;
+    throw error;
   }
 }
 

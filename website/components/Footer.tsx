@@ -9,16 +9,15 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const links = [
-    // TODO: Re-add when content is ready
-    // { name: "About League", href: "/about", color: "comets-cyan" },
-    // { name: "Official Rules", href: "/rules", color: "comets-red" },
+    { name: "About", href: "/about", color: "comets-cyan" },
+    { name: "Rules", href: "/rules", color: "comets-red" },
     { name: "Join Discord", href: "https://discord.gg/NWvm8Dd2s8", color: "comets-purple", external: true },
   ];
 
   return (
-    <footer className="relative pt-24 pb-12 border-t border-white/10 bg-background overflow-hidden">
+    <footer className="relative pt-16 pb-12 border-t border-white/10 bg-background overflow-hidden">
       {/* Scanlines overlay */}
-      <div className="absolute inset-0 scanlines opacity-10 pointer-events-none" />
+      <div className="absolute inset-0 scanlines opacity-[0.06] pointer-events-none" />
 
       <div className="container mx-auto px-4 relative z-10">
 
@@ -126,16 +125,16 @@ export default function Footer() {
 
         {/* Decorative corner accents */}
         <motion.div
-          className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-white/5"
+          className="absolute bottom-4 left-4 w-12 h-12 border-l border-b border-white/10"
           animate={{
-            borderColor: ["rgba(255,255,255,0.05)", "rgba(0,243,255,0.2)", "rgba(255,255,255,0.05)"]
+            borderColor: ["rgba(255,255,255,0.1)", "rgba(0,243,255,0.3)", "rgba(255,255,255,0.1)"]
           }}
           transition={{ duration: 4, repeat: Infinity }}
         />
         <motion.div
-          className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-white/5"
+          className="absolute bottom-4 right-4 w-12 h-12 border-r border-b border-white/10"
           animate={{
-            borderColor: ["rgba(255,255,255,0.05)", "rgba(244,208,63,0.2)", "rgba(255,255,255,0.05)"]
+            borderColor: ["rgba(255,255,255,0.1)", "rgba(244,208,63,0.3)", "rgba(255,255,255,0.1)"]
           }}
           transition={{ duration: 4, repeat: Infinity, delay: 2 }}
         />

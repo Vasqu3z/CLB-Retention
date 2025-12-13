@@ -34,7 +34,7 @@ export default function Header() {
     <>
       <header className="fixed top-0 left-0 md:left-64 right-0 z-40 grid grid-cols-3 items-center px-6 py-4 border-b border-white/10 bg-background/80 backdrop-blur-md">
         {/* Subtle scanlines overlay */}
-        <div className="absolute inset-0 scanlines opacity-[0.02] pointer-events-none" />
+        <div className="absolute inset-0 scanlines opacity-[0.05] pointer-events-none" />
 
         {/* Left: Logo */}
         <Link href="/" className="flex items-center gap-4 group relative z-10 justify-self-start">
@@ -60,16 +60,19 @@ export default function Header() {
               className="object-contain"
             />
           </motion.div>
-          <span className="hidden md:block font-display text-xl tracking-wider text-white">CLB</span>
+          <span
+            className="hidden md:block font-display text-xl tracking-wider text-white"
+            style={{ textShadow: '0 0 10px rgba(255, 107, 0, 0.4)' }}
+          >CLB</span>
         </Link>
 
         {/* Center: Navigation */}
         <nav className="hidden md:flex items-center gap-1 relative bg-surface-light/50 border border-white/5 rounded-full px-2 py-1 justify-self-center">
           {/* HUD accent corners */}
-          <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-comets-cyan/30" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-comets-cyan/30" />
-          <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b border-l border-comets-cyan/30" />
-          <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-comets-cyan/30" />
+          <div className="absolute -top-1 -left-1 w-3 h-3 border-t border-l border-comets-cyan/60" />
+          <div className="absolute -top-1 -right-1 w-3 h-3 border-t border-r border-comets-cyan/60" />
+          <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b border-l border-comets-cyan/60" />
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b border-r border-comets-cyan/60" />
 
           {navItems.map((item) => {
             const isActive = pathname?.startsWith(item.href) && item.href !== "/";
@@ -138,10 +141,10 @@ export default function Header() {
                   className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-surface-dark/95 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden shadow-xl"
                 >
                   {/* HUD corners on dropdown */}
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-comets-cyan/50" />
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-comets-cyan/50" />
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-comets-cyan/50" />
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-comets-cyan/50" />
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-comets-cyan/80" />
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-comets-cyan/80" />
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-comets-cyan/80" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-comets-cyan/80" />
 
                   <div className="p-1">
                     {toolItems.map((tool, idx) => {

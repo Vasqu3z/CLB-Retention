@@ -40,6 +40,7 @@ const TeamEmblem = ({ emblem, index }: { emblem: string; index: number }) => {
         height: size,
         filter: "drop-shadow(0 0 8px rgba(255,255,255,0.3))",
         top: 0,
+        willChange: "transform, opacity",
       }}
       initial={{ opacity: 0, x: startX, y: `${startY}vh` }}
       animate={{
@@ -78,6 +79,7 @@ const CometTrail = ({ index }: { index: number }) => {
         width: "150px",
         top: `${startY}%`,
         right: "-150px",
+        willChange: "transform, opacity",
       }}
       initial={{ opacity: 0, x: 0 }}
       animate={{
@@ -128,15 +130,9 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
     },
   };
 
-  const glowPulse = {
-    animate: {
-      textShadow: [
-        "0 0 20px rgba(255,255,255,0.3), 0 0 40px rgba(255,255,255,0.1)",
-        "0 0 40px rgba(255,255,255,0.5), 0 0 80px rgba(255,255,255,0.2)",
-        "0 0 20px rgba(255,255,255,0.3), 0 0 40px rgba(255,255,255,0.1)",
-      ],
-    },
-    transition: { duration: 3, repeat: Infinity, ease: "easeInOut" as const },
+  // Static glow style - removed animation for performance (textShadow animation is CPU-intensive)
+  const staticGlowStyle = {
+    textShadow: "0 0 30px rgba(255,255,255,0.4), 0 0 60px rgba(255,255,255,0.15)",
   };
 
   return (
@@ -208,13 +204,8 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full">
             <motion.div
               className="w-2 h-2 rounded-full bg-comets-cyan"
-              animate={{
-                boxShadow: [
-                  "0 0 0px rgba(0,243,255,0)",
-                  "0 0 10px rgba(0,243,255,0.8)",
-                  "0 0 0px rgba(0,243,255,0)",
-                ],
-              }}
+              style={{ boxShadow: "0 0 8px rgba(0,243,255,0.6)" }}
+              animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 1.5, repeat: Infinity }}
             />
             <span className="font-mono text-xs text-white/60 uppercase tracking-[0.3em]">
@@ -233,7 +224,7 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
 
           <motion.h1
             className="relative font-display text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] uppercase leading-[0.85] tracking-tight"
-            {...glowPulse}
+            style={staticGlowStyle}
           >
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/40">
               COMETS
@@ -244,14 +235,7 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
         <motion.div variants={itemVariants} className="relative mb-4">
           <motion.h2
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-b from-white/80 to-white/30"
-            animate={{
-              textShadow: [
-                "0 0 10px rgba(0,243,255,0.3)",
-                "0 0 20px rgba(0,243,255,0.5)",
-                "0 0 10px rgba(0,243,255,0.3)",
-              ],
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            style={{ textShadow: "0 0 15px rgba(0,243,255,0.4)" }}
           >
             LEAGUE
           </motion.h2>
@@ -260,14 +244,7 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
         <motion.div variants={itemVariants} className="relative mb-6 z-20">
           <motion.h3
             className="relative font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase tracking-[0.3em] text-comets-yellow"
-            animate={{
-              textShadow: [
-                "0 0 10px rgba(244, 208, 63, 0.4), 0 0 30px rgba(244, 208, 63, 0.2)",
-                "0 0 20px rgba(244, 208, 63, 0.6), 0 0 50px rgba(244, 208, 63, 0.3)",
-                "0 0 10px rgba(244, 208, 63, 0.4), 0 0 30px rgba(244, 208, 63, 0.2)",
-              ],
-            }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+            style={{ textShadow: "0 0 15px rgba(244, 208, 63, 0.5), 0 0 40px rgba(244, 208, 63, 0.25)" }}
           >
             BASEBALL
           </motion.h3>
@@ -279,33 +256,17 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
           className="relative mb-10 z-0"
         >
           <motion.div
-            animate={{
-              rotate: 360,
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-              scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            style={{ filter: "drop-shadow(0 0 15px rgba(244, 208, 63, 0.6)) drop-shadow(0 0 30px rgba(244, 208, 63, 0.4))" }}
           >
-            <motion.div
-              animate={{
-                filter: [
-                  "drop-shadow(0 0 10px rgba(244, 208, 63, 0.5)) drop-shadow(0 0 20px rgba(244, 208, 63, 0.3))",
-                  "drop-shadow(0 0 20px rgba(244, 208, 63, 0.8)) drop-shadow(0 0 40px rgba(244, 208, 63, 0.5))",
-                  "drop-shadow(0 0 10px rgba(244, 208, 63, 0.5)) drop-shadow(0 0 20px rgba(244, 208, 63, 0.3))",
-                ],
-              }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Image
-                src="/icons/Star.png"
-                alt="Star"
-                width={80}
-                height={80}
-                className="w-16 h-16 md:w-20 md:h-20"
-              />
-            </motion.div>
+            <Image
+              src="/icons/Star.png"
+              alt="Star"
+              width={80}
+              height={80}
+              className="w-16 h-16 md:w-20 md:h-20"
+            />
           </motion.div>
         </motion.div>
 

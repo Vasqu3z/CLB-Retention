@@ -31,6 +31,12 @@ export default function CosmicBackground() {
         style={{
           backgroundColor: "#050508",
           backgroundImage: `
+            /* Center blue glow for depth */
+            radial-gradient(
+              ellipse 80% 50% at 50% 50%,
+              rgba(0, 243, 255, 0.06) 0%,
+              transparent 50%
+            ),
             /* Cyan glow from top-left */
             radial-gradient(
               ellipse 90% 70% at 0% 0%,

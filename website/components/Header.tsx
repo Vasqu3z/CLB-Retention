@@ -22,11 +22,12 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 md:left-64 right-0 z-40 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-background/80 backdrop-blur-md">
+      <header className="fixed top-0 left-0 md:left-64 right-0 z-40 grid grid-cols-3 items-center px-6 py-4 border-b border-white/10 bg-background/80 backdrop-blur-md">
         {/* Subtle scanlines overlay */}
         <div className="absolute inset-0 scanlines opacity-[0.02] pointer-events-none" />
 
-        <Link href="/" className="flex items-center gap-4 group relative z-10">
+        {/* Left: Logo */}
+        <Link href="/" className="flex items-center gap-4 group relative z-10 justify-self-start">
           <motion.div
             className="w-10 h-10 flex items-center justify-center"
             whileHover={{ scale: 1.15, rotate: 5 }}
@@ -49,13 +50,11 @@ export default function Header() {
               className="object-contain"
             />
           </motion.div>
-          <div className="hidden md:flex flex-col">
-            <span className="font-display text-lg tracking-wider leading-none text-white">COMETS</span>
-            <span className="font-ui text-xs tracking-[0.3em] text-comets-cyan leading-none">LEAGUE</span>
-          </div>
+          <span className="hidden md:block font-display text-xl tracking-wider text-white">COMETS</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1 relative bg-surface-light/50 border border-white/5 rounded-full px-2 py-1">
+        {/* Center: Navigation */}
+        <nav className="hidden md:flex items-center gap-1 relative bg-surface-light/50 border border-white/5 rounded-full px-2 py-1 justify-self-center">
           {/* HUD accent corners */}
           <div className="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-comets-cyan/30" />
           <div className="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-comets-cyan/30" />
@@ -93,7 +92,8 @@ export default function Header() {
           })}
         </nav>
 
-        <div className="flex items-center gap-2 relative z-10">
+        {/* Right: Mobile menu button */}
+        <div className="flex items-center gap-2 relative z-10 justify-self-end">
           <motion.button
             className="md:hidden p-2 text-white hover:text-comets-yellow transition-colors focus-arcade"
             onClick={() => setIsMobileMenuOpen(true)}

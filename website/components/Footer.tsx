@@ -47,19 +47,21 @@ export default function Footer() {
             </motion.span>
           </motion.div>
 
-          {/* Decorative elements */}
-          <motion.div
-            className="absolute left-1/2 -translate-x-1/2 -top-4 w-32 h-1 bg-gradient-to-r from-transparent via-comets-cyan to-transparent"
-            animate={{
-              scaleX: [0, 1, 0],
-              opacity: [0, 1, 0]
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
+          {/* Decorative elements - centered bar */}
+          <div className="absolute left-0 right-0 -top-4 flex justify-center">
+            <motion.div
+              className="w-32 h-1 bg-gradient-to-r from-transparent via-comets-cyan to-transparent"
+              animate={{
+                scaleX: [0, 1, 0],
+                opacity: [0, 1, 0]
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </div>
         </div>
 
         {/* Footer links with staggered entrance */}

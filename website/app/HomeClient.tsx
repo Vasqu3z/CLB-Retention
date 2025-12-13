@@ -6,24 +6,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { HUDCorner } from "@/components/ui/HUDFrame";
 
-// Team data with emblems and slugs for navigation
-const TEAMS = [
-  { emblem: "/team-logos/MSS-Emblem-Mario_Fireballs.webp", slug: "mario-fireballs", name: "Mario Fireballs" },
-  { emblem: "/team-logos/MSS-Emblem-Luigi_Knights.webp", slug: "luigi-knights", name: "Luigi Knights" },
-  { emblem: "/team-logos/MSS-Emblem-Peach_Monarchs.webp", slug: "peach-monarchs", name: "Peach Monarchs" },
-  { emblem: "/team-logos/MSS-Emblem-Daisy_Flowers.webp", slug: "daisy-flowers", name: "Daisy Flowers" },
-  { emblem: "/team-logos/MSS-Emblem-Yoshi_Eggs.webp", slug: "yoshi-eggs", name: "Yoshi Eggs" },
-  { emblem: "/team-logos/MSS-Emblem-Bowser_Monsters.webp", slug: "bowser-monsters", name: "Bowser Monsters" },
-  { emblem: "/team-logos/MSS-Emblem-Wario_Muscles.webp", slug: "wario-muscles", name: "Wario Muscles" },
-  { emblem: "/team-logos/MSS-Emblem-DK_Wilds.webp", slug: "dk-wilds", name: "DK Wilds" },
-];
+// Team type for props
+export interface TeamData {
+  emblem: string;
+  slug: string;
+  name: string;
+}
 
-// Floating team emblem component
+interface HomeClientProps {
+  teams: TeamData[];
+  season: number;
+}
+
+// Floating team emblem component - diagonal directions NW-SE or NE-SW
 const TeamEmblem = ({ emblem, index }: { emblem: string; index: number }) => {
-  const delay = index * 1.5;
-  const duration = 12 + index * 0.8;
-  const size = 24 + (index % 3) * 8;
-  const startY = 20 + (index * 10) % 60;
+  // Randomize direction based on index: even = NE-SW, odd = NW-SE
+  const isNEtoSW = index % 2 === 0;
+  const delay = index * 2 + Math.random() * 2;
+  const duration = 10 + Math.random() * 6;
+  const size = 28 + (index % 3) * 10;
+
+  // Starting positions
+  const startX = isNEtoSW ? "110vw" : "-10vw";
+  const endX = isNEtoSW ? "-10vw" : "110vw";
+  const startY = 10 + (index * 12) % 50;
+  const endY = startY + 40; // Move down as it crosses
 
   return (
     <motion.div
@@ -31,15 +38,14 @@ const TeamEmblem = ({ emblem, index }: { emblem: string; index: number }) => {
       style={{
         width: size,
         height: size,
-        top: `${startY}%`,
         filter: "drop-shadow(0 0 8px rgba(255,255,255,0.3))",
       }}
-      initial={{ opacity: 0, x: "110vw" }}
+      initial={{ opacity: 0, x: startX, y: `${startY}%` }}
       animate={{
-        opacity: [0, 0.4, 0.4, 0],
-        x: ["110vw", "50vw", "-10vw"],
-        y: [0, -30, 0],
-        rotate: [0, 10, -10, 0],
+        opacity: [0, 0.5, 0.5, 0],
+        x: [startX, "50vw", endX],
+        y: [`${startY}%`, `${(startY + endY) / 2}%`, `${endY}%`],
+        rotate: [0, isNEtoSW ? -15 : 15, 0],
       }}
       transition={{
         duration,
@@ -88,7 +94,7 @@ const CometTrail = ({ index }: { index: number }) => {
   );
 };
 
-export default function HomeClient() {
+export default function HomeClient({ teams, season }: HomeClientProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -133,7 +139,7 @@ export default function HomeClient() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden pt-16">
       {/* Background Effects Layer */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         {/* Radial gradient overlay */}
@@ -150,8 +156,8 @@ export default function HomeClient() {
 
         {/* Floating team emblems */}
         <div className="absolute inset-0 overflow-hidden">
-          {mounted && TEAMS.map((team, i) => (
-            <TeamEmblem key={i} emblem={team.emblem} index={i} />
+          {mounted && teams.map((team, i) => (
+            <TeamEmblem key={team.slug} emblem={team.emblem} index={i} />
           ))}
         </div>
 
@@ -178,11 +184,13 @@ export default function HomeClient() {
         <div className="absolute inset-0 scanlines opacity-[0.03]" />
       </div>
 
-      {/* HUD Corners */}
-      <HUDCorner position="tl" size="lg" color="comets-cyan" delay={0.5} />
-      <HUDCorner position="tr" size="lg" color="comets-cyan" delay={0.6} />
-      <HUDCorner position="bl" size="lg" color="comets-cyan" delay={0.7} />
-      <HUDCorner position="br" size="lg" color="comets-cyan" delay={0.8} />
+      {/* HUD Corners - offset from top to avoid header overlap */}
+      <div className="absolute inset-0 top-20 pointer-events-none">
+        <HUDCorner position="tl" size="lg" color="comets-cyan" delay={0.5} />
+        <HUDCorner position="tr" size="lg" color="comets-cyan" delay={0.6} />
+        <HUDCorner position="bl" size="lg" color="comets-cyan" delay={0.7} />
+        <HUDCorner position="br" size="lg" color="comets-cyan" delay={0.8} />
+      </div>
 
       {/* Main Content */}
       <motion.div
@@ -212,7 +220,7 @@ export default function HomeClient() {
               Now Playing
             </span>
             <span className="font-ui text-sm text-comets-yellow font-semibold tracking-wider">
-              SEASON 6
+              SEASON {season}
             </span>
           </div>
         </motion.div>
@@ -232,9 +240,9 @@ export default function HomeClient() {
           </motion.h1>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="relative mb-6">
+        <motion.div variants={itemVariants} className="relative mb-4">
           <motion.h2
-            className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white/80 to-white/30"
+            className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl uppercase tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-b from-white/80 to-white/30"
             animate={{
               textShadow: [
                 "0 0 10px rgba(0,243,255,0.3)",
@@ -246,6 +254,22 @@ export default function HomeClient() {
           >
             LEAGUE
           </motion.h2>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="relative mb-6">
+          <motion.h3
+            className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-comets-yellow/90 to-comets-yellow/40"
+            animate={{
+              textShadow: [
+                "0 0 8px rgba(244, 208, 63, 0.3)",
+                "0 0 16px rgba(244, 208, 63, 0.5)",
+                "0 0 8px rgba(244, 208, 63, 0.3)",
+              ],
+            }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+          >
+            BASEBALL
+          </motion.h3>
         </motion.div>
 
         {/* Star Icon */}
@@ -295,9 +319,9 @@ export default function HomeClient() {
         {/* Team Emblems Bar - Clickable links to team pages */}
         <motion.div
           variants={itemVariants}
-          className="flex items-center justify-center gap-4 mb-16"
+          className="flex items-center justify-center gap-4 mb-16 flex-wrap"
         >
-          {TEAMS.map((team, i) => (
+          {teams.map((team, i) => (
             <Link key={team.slug} href={`/teams/${team.slug}`}>
               <motion.div
                 className="w-10 h-10 md:w-12 md:h-12 relative cursor-pointer group"

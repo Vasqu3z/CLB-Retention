@@ -29,16 +29,17 @@ export default function Header() {
         <Link href="/" className="flex items-center gap-4 group relative z-10">
           <motion.div
             className="w-10 h-10 flex items-center justify-center"
-            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileHover={{ scale: 1.15, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
             animate={{
+              scale: [1, 1.08, 1],
               filter: [
-                "drop-shadow(0 0 6px rgba(244, 208, 63, 0.4))",
-                "drop-shadow(0 0 12px rgba(244, 208, 63, 0.6))",
-                "drop-shadow(0 0 6px rgba(244, 208, 63, 0.4))",
+                "drop-shadow(0 0 4px rgba(255, 107, 0, 0.4))",
+                "drop-shadow(0 0 10px rgba(255, 107, 0, 0.7))",
+                "drop-shadow(0 0 4px rgba(255, 107, 0, 0.4))",
               ],
             }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
             <Image
               src="/icons/Comets.png"

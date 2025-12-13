@@ -244,8 +244,8 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
         </h2>
       </motion.div>
 
-      {/* Scrollable content - overscroll-contain prevents scroll from propagating to page */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent overscroll-contain">
+      {/* Scrollable content - data-lenis-prevent stops Lenis from hijacking scroll */}
+      <div data-lenis-prevent className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent overscroll-contain">
 
         {/* Standings Widget */}
         <HUDWidget
@@ -497,13 +497,13 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
               <Link
                 key={tool.name}
                 href={tool.href}
-                className="flex items-center justify-center gap-1.5 p-2 rounded-sm bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.05] transition-all group"
+                className="flex items-center justify-center gap-1.5 p-2 rounded-sm bg-white/[0.03] border border-white/10 hover:border-white/30 hover:bg-white/[0.08] transition-all group"
               >
                 <tool.Icon
                   size={14}
-                  className={`text-${tool.color}/60 group-hover:text-${tool.color} transition-colors flex-shrink-0`}
+                  className={`text-${tool.color} group-hover:text-${tool.color} transition-colors flex-shrink-0`}
                 />
-                <span className="font-ui text-xs uppercase tracking-wider text-white/60 group-hover:text-white/90 transition-colors leading-none">
+                <span className="font-ui text-xs uppercase tracking-wider text-white/70 group-hover:text-white transition-colors leading-none">
                   {tool.name}
                 </span>
               </Link>

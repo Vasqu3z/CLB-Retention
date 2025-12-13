@@ -154,13 +154,6 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
           }}
         />
 
-        {/* Floating team emblems */}
-        <div className="absolute inset-0 overflow-hidden">
-          {mounted && teams.map((team, i) => (
-            <TeamEmblem key={team.slug} emblem={team.emblem} index={i} />
-          ))}
-        </div>
-
         {/* Comet trails */}
         <div className="absolute inset-0 overflow-hidden opacity-30">
           {mounted && [0, 1, 2].map((i) => (
@@ -182,6 +175,13 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
 
         {/* Scanlines */}
         <div className="absolute inset-0 scanlines opacity-[0.03]" />
+      </div>
+
+      {/* Floating team emblems - separate layer, z-5 to be above background but below content (z-10) and header (z-40) */}
+      <div className="absolute inset-0 overflow-hidden z-[5] pointer-events-none">
+        {mounted && teams.map((team, i) => (
+          <TeamEmblem key={team.slug} emblem={team.emblem} index={i} />
+        ))}
       </div>
 
       {/* HUD Corners - offset from top to avoid header overlap */}
@@ -256,9 +256,9 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
           </motion.h2>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="relative mb-6">
+        <motion.div variants={itemVariants} className="relative mb-6 z-10">
           <motion.h3
-            className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-comets-yellow/90 to-comets-yellow/40"
+            className="relative font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-comets-yellow/90 to-comets-yellow/40"
             animate={{
               textShadow: [
                 "0 0 8px rgba(244, 208, 63, 0.3)",
@@ -311,9 +311,9 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
         {/* Subtitle */}
         <motion.p
           variants={itemVariants}
-          className="font-ui text-lg md:text-xl text-comets-cyan/80 uppercase tracking-[0.25em] mb-16"
+          className="font-ui text-lg md:text-xl text-comets-cyan/80 uppercase tracking-[0.2em] mb-16"
         >
-          Mario Baseball Analytics
+          A Mario Super Sluggers League
         </motion.p>
 
         {/* Team Emblems Bar - Clickable links to team pages */}
@@ -324,14 +324,10 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
           {teams.map((team, i) => (
             <Link key={team.slug} href={`/teams/${team.slug}`}>
               <motion.div
-                className="w-10 h-10 md:w-12 md:h-12 relative cursor-pointer group"
+                className="w-10 h-10 md:w-12 md:h-12 relative cursor-pointer group transition-all duration-200 hover:scale-[1.4] hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 1 + i * 0.1, type: "spring" as const, stiffness: 300 }}
-                whileHover={{
-                  scale: 1.4,
-                  filter: "drop-shadow(0 0 15px rgba(255,255,255,0.6))",
-                }}
                 whileTap={{ scale: 0.95 }}
                 title={team.name}
               >

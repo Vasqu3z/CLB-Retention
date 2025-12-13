@@ -61,6 +61,7 @@ export default async function SidebarHUD() {
       value: p.avg || ".000",
       team: p.team,
       slug: playerNameToSlug(p.name),
+      emblemUrl: teamMap.get(p.team)?.emblemUrl || "",
     }));
 
   // Home Run leaders (no qualification)
@@ -72,6 +73,7 @@ export default async function SidebarHUD() {
       value: p.hr || 0,
       team: p.team,
       slug: playerNameToSlug(p.name),
+      emblemUrl: teamMap.get(p.team)?.emblemUrl || "",
     }));
 
   // ERA leaders (qualified, lower is better)
@@ -83,6 +85,7 @@ export default async function SidebarHUD() {
       value: p.era || "-.--",
       team: p.team,
       slug: playerNameToSlug(p.name),
+      emblemUrl: teamMap.get(p.team)?.emblemUrl || "",
     }));
 
   // Nice Plays leaders (fielding, no qualification)
@@ -95,6 +98,7 @@ export default async function SidebarHUD() {
       value: p.np || 0,
       team: p.team,
       slug: playerNameToSlug(p.name),
+      emblemUrl: teamMap.get(p.team)?.emblemUrl || "",
     }));
 
   // Get recent games (regular season + playoffs)

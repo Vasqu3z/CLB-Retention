@@ -50,7 +50,7 @@ export default function Header() {
               className="object-contain"
             />
           </motion.div>
-          <span className="hidden md:block font-display text-xl tracking-wider text-white">COMETS</span>
+          <span className="hidden md:block font-display text-xl tracking-wider text-white">CLB</span>
         </Link>
 
         {/* Center: Navigation */}

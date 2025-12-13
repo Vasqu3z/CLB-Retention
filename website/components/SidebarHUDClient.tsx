@@ -25,6 +25,7 @@ interface Leader {
   value: string | number;
   team?: string;
   slug?: string;
+  emblemUrl?: string;
 }
 
 interface RecentGame {
@@ -202,7 +203,7 @@ const StatValue = ({
 
 export default function SidebarHUDClient({ standings, leaders, recentGames }: SidebarHUDClientProps) {
   return (
-    <div className="w-full h-full flex flex-col bg-surface-dark/80 border-r border-white/10 relative overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-surface-dark/80 border-r border-white/10 relative overflow-hidden isolate">
       {/* Background scanlines */}
       <div className="absolute inset-0 scanlines opacity-[0.02] pointer-events-none" />
 
@@ -328,12 +329,17 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   transition={{ delay: 0.3 + idx * 0.05 }}
                   className="flex items-center justify-between gap-2"
                 >
-                  <Link
-                    href={`/players/${player.slug}`}
-                    className="font-ui text-[13px] text-white/80 hover:text-comets-cyan transition-colors truncate"
-                  >
-                    {player.name}
-                  </Link>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {player.emblemUrl && (
+                      <Image src={player.emblemUrl} alt="" width={14} height={14} className="flex-shrink-0" />
+                    )}
+                    <Link
+                      href={`/players/${player.slug}`}
+                      className="font-ui text-[13px] text-white/80 hover:text-comets-cyan transition-colors truncate"
+                    >
+                      {player.name}
+                    </Link>
+                  </div>
                   <span className="font-mono text-[13px] text-comets-cyan tabular-nums flex-shrink-0">
                     {player.value}
                   </span>
@@ -354,12 +360,17 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   transition={{ delay: 0.35 + idx * 0.05 }}
                   className="flex items-center justify-between gap-2"
                 >
-                  <Link
-                    href={`/players/${player.slug}`}
-                    className="font-ui text-[13px] text-white/80 hover:text-comets-red transition-colors truncate"
-                  >
-                    {player.name}
-                  </Link>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {player.emblemUrl && (
+                      <Image src={player.emblemUrl} alt="" width={14} height={14} className="flex-shrink-0" />
+                    )}
+                    <Link
+                      href={`/players/${player.slug}`}
+                      className="font-ui text-[13px] text-white/80 hover:text-comets-red transition-colors truncate"
+                    >
+                      {player.name}
+                    </Link>
+                  </div>
                   <span className="font-mono text-[13px] text-comets-red tabular-nums flex-shrink-0">
                     {player.value}
                   </span>
@@ -380,12 +391,17 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   transition={{ delay: 0.4 + idx * 0.05 }}
                   className="flex items-center justify-between gap-2"
                 >
-                  <Link
-                    href={`/players/${player.slug}`}
-                    className="font-ui text-[13px] text-white/80 hover:text-comets-purple transition-colors truncate"
-                  >
-                    {player.name}
-                  </Link>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {player.emblemUrl && (
+                      <Image src={player.emblemUrl} alt="" width={14} height={14} className="flex-shrink-0" />
+                    )}
+                    <Link
+                      href={`/players/${player.slug}`}
+                      className="font-ui text-[13px] text-white/80 hover:text-comets-purple transition-colors truncate"
+                    >
+                      {player.name}
+                    </Link>
+                  </div>
                   <span className="font-mono text-[13px] text-comets-purple tabular-nums flex-shrink-0">
                     {player.value}
                   </span>
@@ -406,12 +422,17 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
                   transition={{ delay: 0.45 + idx * 0.05 }}
                   className="flex items-center justify-between gap-2"
                 >
-                  <Link
-                    href={`/players/${player.slug}`}
-                    className="font-ui text-[13px] text-white/80 hover:text-comets-yellow transition-colors truncate"
-                  >
-                    {player.name}
-                  </Link>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {player.emblemUrl && (
+                      <Image src={player.emblemUrl} alt="" width={14} height={14} className="flex-shrink-0" />
+                    )}
+                    <Link
+                      href={`/players/${player.slug}`}
+                      className="font-ui text-[13px] text-white/80 hover:text-comets-yellow transition-colors truncate"
+                    >
+                      {player.name}
+                    </Link>
+                  </div>
                   <span className="font-mono text-[13px] text-comets-yellow tabular-nums flex-shrink-0">
                     {player.value}
                   </span>
@@ -476,13 +497,13 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
               <Link
                 key={tool.name}
                 href={tool.href}
-                className="flex items-center gap-1.5 p-2 rounded-sm bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.05] transition-all group"
+                className="flex items-center justify-center gap-1.5 p-2 rounded-sm bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.05] transition-all group"
               >
                 <tool.Icon
                   size={14}
-                  className={`text-${tool.color}/60 group-hover:text-${tool.color} transition-colors`}
+                  className={`text-${tool.color}/60 group-hover:text-${tool.color} transition-colors flex-shrink-0`}
                 />
-                <span className="font-ui text-xs uppercase tracking-wider text-white/60 group-hover:text-white/90 transition-colors">
+                <span className="font-ui text-xs uppercase tracking-wider text-white/60 group-hover:text-white/90 transition-colors leading-none">
                   {tool.name}
                 </span>
               </Link>

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, TrendingUp, Zap, Activity, ChevronRight, Users, Scale, Sliders, Link2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LEAGUE_CONFIG } from "@/config/league";
 
 // Types for the data passed from server component
 interface Standing {
@@ -528,7 +529,7 @@ export default function SidebarHUDClient({ standings, leaders, recentGames }: Si
             className="w-1.5 h-1.5 rounded-full bg-comets-green"
           />
           <span className="font-mono text-[11px] text-white/30 uppercase tracking-widest">
-            Season 1
+            Season {LEAGUE_CONFIG.currentSeason}
           </span>
         </div>
       </motion.div>

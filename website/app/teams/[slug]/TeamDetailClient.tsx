@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { PlayerStats } from "@/lib/sheets";
 import HUDFrame from "@/components/ui/HUDFrame";
+import { LEAGUE_CONFIG } from "@/config/league";
 
 interface Matchup {
   id: string;
@@ -224,7 +225,7 @@ export default function TeamDetailClient({
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, type: "spring" }}
               >
-                Season 2
+                Season {LEAGUE_CONFIG.currentSeason}
               </motion.span>
 
               <motion.div

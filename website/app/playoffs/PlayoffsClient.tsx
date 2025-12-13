@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Swords, Crown, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import HUDFrame from "@/components/ui/HUDFrame";
+import { LEAGUE_CONFIG } from "@/config/league";
 
 interface TeamInfo {
   name: string;
@@ -59,7 +60,7 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
             transition={{ delay: 0.2 }}
           >
             <Trophy size={24} />
-            <span className="font-ui uppercase tracking-[0.3em] text-sm">Season 2</span>
+            <span className="font-ui uppercase tracking-[0.3em] text-sm">Season {LEAGUE_CONFIG.currentSeason}</span>
           </motion.div>
 
           <h1 className="font-display text-6xl md:text-8xl uppercase leading-none tracking-tighter mb-4">
@@ -197,7 +198,7 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
                             <Trophy className="text-comets-yellow" size={28} />
                             <div>
                               <div className="font-ui text-[10px] uppercase tracking-[0.3em] text-comets-yellow/80 mb-1">
-                                Season 2 Champion
+                                Season {LEAGUE_CONFIG.currentSeason} Champion
                               </div>
                               <div className="font-display text-2xl uppercase text-white tracking-wider">
                                 {finals.winner}

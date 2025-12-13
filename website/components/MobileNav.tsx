@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FocusTrap from 'focus-trap-react';
 import useReducedMotion from '@/hooks/useReducedMotion';
 import { drawerVariants, navItemVariants, overlayVariants } from './animations/motionVariants';
+import { LEAGUE_CONFIG } from '@/config/league';
 
 const navItems = [
   { href: "/teams", label: "Teams" },
@@ -197,7 +198,7 @@ export default function MobileNav() {
                     Comets League Baseball
                   </p>
                   <p className="text-xs text-star-dim font-mono text-center mt-1">
-                    Season 1
+                    Season {LEAGUE_CONFIG.currentSeason}
                   </p>
                 </div>
               </motion.div>

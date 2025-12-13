@@ -5,6 +5,7 @@ import StandingsTable, { TeamStanding } from "./StandingsTable";
 import { Trophy } from "lucide-react";
 import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
 import HUDFrame from "@/components/ui/HUDFrame";
+import { LEAGUE_CONFIG } from "@/config/league";
 
 interface StandingsClientProps {
   data: TeamStanding[];
@@ -22,7 +23,7 @@ export default function StandingsClient({ data }: StandingsClientProps) {
           <div>
             <div className="flex items-center gap-3 text-comets-yellow mb-2">
               <Trophy size={24} />
-              <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season 2</span>
+              <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season {LEAGUE_CONFIG.currentSeason}</span>
             </div>
             <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
               <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">League Standings</span>

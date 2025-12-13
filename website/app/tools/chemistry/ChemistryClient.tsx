@@ -16,6 +16,7 @@ interface PlayerData {
   name: string;
   team: string;
   color: string;
+  imageUrl?: string;
 }
 
 interface ChemistryClientProps {
@@ -38,6 +39,7 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
     name: p.name,
     team: p.team,
     color: p.color,
+    imageUrl: p.imageUrl,
   }));
 
   // Get selected player data

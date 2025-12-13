@@ -17,6 +17,7 @@ interface PlayerAttributeData {
   name: string;
   team: string;
   color: string;
+  imageUrl?: string;
   // Character info
   characterClass: string;
   captain: string;
@@ -100,6 +101,7 @@ export default function AttributesClient({ players }: AttributesClientProps) {
     name: p.name,
     team: p.team,
     color: p.color,
+    imageUrl: p.imageUrl,
   }));
 
   // Get selected player data

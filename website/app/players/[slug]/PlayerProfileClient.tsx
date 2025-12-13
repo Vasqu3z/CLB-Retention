@@ -36,12 +36,39 @@ interface PlayerStats {
 }
 
 interface PlayerAttributes {
+  // Overall stats
   pitchingOverall: number;
   battingOverall: number;
   fieldingOverall: number;
   speedOverall: number;
+  // Character info
+  characterClass?: string;
+  captain?: string;
+  ability?: string;
+  battingSide?: string;
+  armSide?: string;
+  weight?: number;
+  // Pitching attributes
   starPitch: string;
+  fastballSpeed?: number;
+  curveballSpeed?: number;
+  curve?: number;
+  stamina?: number;
+  // Hitting attributes
   starSwing: string;
+  hitCurve?: number;
+  hittingTrajectory?: string;
+  slapHitContact?: number;
+  chargeHitContact?: number;
+  slapHitPower?: number;
+  chargeHitPower?: number;
+  preCharge?: string;
+  // Fielding attributes
+  fielding?: number;
+  throwingSpeed?: number;
+  // Running attributes
+  speed?: number;
+  bunting?: number;
 }
 
 interface ChemistryRelation {
@@ -233,38 +260,144 @@ export default function PlayerProfileClient({
               key="attributes"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
+              className="space-y-8"
             >
-              <AttributeBar
-                name="Pitching"
-                value={attributes.pitchingOverall}
-                color="#FF4D4D"
-                icon={Zap}
-                detail={attributes.starPitch}
-                delay={0}
-              />
-              <AttributeBar
-                name="Batting"
-                value={attributes.battingOverall}
-                color="#00F3FF"
-                icon={Target}
-                detail={attributes.starSwing}
-                delay={0.1}
-              />
-              <AttributeBar
-                name="Fielding"
-                value={attributes.fieldingOverall}
-                color="#2ECC71"
-                icon={Shield}
-                delay={0.2}
-              />
-              <AttributeBar
-                name="Speed"
-                value={attributes.speedOverall}
-                color="#F4D03F"
-                icon={Activity}
-                delay={0.3}
-              />
+              {/* Overall Stats */}
+              <div>
+                <h3 className="font-display text-xl uppercase text-comets-yellow mb-4">Overall Stats</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <AttributeBar
+                    name="Pitching"
+                    value={attributes.pitchingOverall}
+                    color="#FF4D4D"
+                    icon={Zap}
+                    detail={attributes.starPitch}
+                    delay={0}
+                  />
+                  <AttributeBar
+                    name="Batting"
+                    value={attributes.battingOverall}
+                    color="#00F3FF"
+                    icon={Target}
+                    detail={attributes.starSwing}
+                    delay={0.05}
+                  />
+                  <AttributeBar
+                    name="Fielding"
+                    value={attributes.fieldingOverall}
+                    color="#2ECC71"
+                    icon={Shield}
+                    delay={0.1}
+                  />
+                  <AttributeBar
+                    name="Speed"
+                    value={attributes.speedOverall}
+                    color="#F4D03F"
+                    icon={Activity}
+                    delay={0.15}
+                  />
+                </div>
+              </div>
+
+              {/* Detailed Attributes Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Pitching Attributes */}
+                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
+                  <h4 className="font-display text-lg uppercase text-comets-red mb-3 flex items-center gap-2">
+                    <Zap size={16} /> Pitching
+                  </h4>
+                  <div className="space-y-2 font-mono text-sm">
+                    <DetailRow label="Fastball Speed" value={attributes.fastballSpeed} suffix=" mph" />
+                    <DetailRow label="Curveball Speed" value={attributes.curveballSpeed} suffix=" mph" />
+                    <DetailRow label="Curve" value={attributes.curve} max={10} />
+                    <DetailRow label="Stamina" value={attributes.stamina} max={10} />
+                  </div>
+                </div>
+
+                {/* Hitting Attributes */}
+                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
+                  <h4 className="font-display text-lg uppercase text-comets-cyan mb-3 flex items-center gap-2">
+                    <Target size={16} /> Hitting
+                  </h4>
+                  <div className="space-y-2 font-mono text-sm">
+                    <DetailRow label="Hit Curve" value={attributes.hitCurve} max={10} />
+                    <DetailRow label="Slap Contact" value={attributes.slapHitContact} max={10} />
+                    <DetailRow label="Charge Contact" value={attributes.chargeHitContact} max={10} />
+                    <DetailRow label="Slap Power" value={attributes.slapHitPower} max={10} />
+                    <DetailRow label="Charge Power" value={attributes.chargeHitPower} max={10} />
+                    {attributes.hittingTrajectory && (
+                      <div className="flex justify-between text-white/60">
+                        <span>Trajectory</span>
+                        <span className="text-white">{attributes.hittingTrajectory}</span>
+                      </div>
+                    )}
+                    {attributes.preCharge && (
+                      <div className="flex justify-between text-white/60">
+                        <span>Pre-Charge</span>
+                        <span className="text-white">{attributes.preCharge}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Fielding & Running */}
+                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
+                  <h4 className="font-display text-lg uppercase text-comets-green mb-3 flex items-center gap-2">
+                    <Shield size={16} /> Fielding & Running
+                  </h4>
+                  <div className="space-y-2 font-mono text-sm">
+                    <DetailRow label="Fielding" value={attributes.fielding} max={10} />
+                    <DetailRow label="Throwing Speed" value={attributes.throwingSpeed} max={10} />
+                    <DetailRow label="Speed" value={attributes.speed} max={10} />
+                    <DetailRow label="Bunting" value={attributes.bunting} max={10} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Character Info */}
+              {(attributes.characterClass || attributes.ability || attributes.battingSide) && (
+                <div className="bg-surface-dark border border-white/10 rounded-lg p-4">
+                  <h4 className="font-display text-lg uppercase text-comets-purple mb-3">Character Info</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-sm">
+                    {attributes.characterClass && (
+                      <div>
+                        <span className="text-white/40 block">Class</span>
+                        <span className="text-white">{attributes.characterClass}</span>
+                      </div>
+                    )}
+                    {attributes.ability && (
+                      <div>
+                        <span className="text-white/40 block">Ability</span>
+                        <span className="text-white">{attributes.ability}</span>
+                      </div>
+                    )}
+                    {attributes.battingSide && (
+                      <div>
+                        <span className="text-white/40 block">Bats</span>
+                        <span className="text-white">{attributes.battingSide}</span>
+                      </div>
+                    )}
+                    {attributes.armSide && (
+                      <div>
+                        <span className="text-white/40 block">Throws</span>
+                        <span className="text-white">{attributes.armSide}</span>
+                      </div>
+                    )}
+                    {attributes.captain && (
+                      <div>
+                        <span className="text-white/40 block">Captain</span>
+                        <span className="text-white">{attributes.captain}</span>
+                      </div>
+                    )}
+                    {attributes.weight && (
+                      <div>
+                        <span className="text-white/40 block">Weight</span>
+                        <span className="text-white">{attributes.weight}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -382,6 +515,19 @@ function StatRow({ label, value, highlight }: { label: React.ReactNode; value: s
       <span className="text-white/60 text-xs font-mono uppercase mb-1">{label}</span>
       <span className={cn("font-mono font-bold text-2xl", highlight ? "text-comets-cyan" : "text-white")}>
         {value}
+      </span>
+    </div>
+  );
+}
+
+function DetailRow({ label, value, max, suffix }: { label: string; value?: number; max?: number; suffix?: string }) {
+  if (value === undefined || value === null) return null;
+  return (
+    <div className="flex justify-between items-center text-white/60">
+      <span>{label}</span>
+      <span className="text-white">
+        {value}{suffix}
+        {max && <span className="text-white/40">/{max}</span>}
       </span>
     </div>
   );

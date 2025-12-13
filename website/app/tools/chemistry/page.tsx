@@ -17,9 +17,12 @@ export default async function ChemistryToolPage() {
     getTeamRegistry(),
   ]);
 
-  // Create a map of player names to their teams
+  // Create maps from player registry
   const playerTeamMap = new Map(
     playerRegistry.map(p => [p.playerName, p.team])
+  );
+  const playerImageMap = new Map(
+    playerRegistry.map(p => [p.playerName, p.imageUrl])
   );
 
   // Create a map of team names to their colors
@@ -46,6 +49,7 @@ export default async function ChemistryToolPage() {
       name,
       team: teamName,
       color: teamColor,
+      imageUrl: playerImageMap.get(name) || "",
     };
   }).sort((a, b) => a.name.localeCompare(b.name));
 

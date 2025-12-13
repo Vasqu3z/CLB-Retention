@@ -73,7 +73,8 @@ async function getSheetDataUncached(range: string, spreadsheetId?: string): Prom
     const sheetId = spreadsheetId || process.env.SHEETS_SPREADSHEET_ID;
 
     if (!sheetId) {
-      throw new Error('No spreadsheet ID provided');
+      console.warn('No spreadsheet ID provided, returning empty data');
+      return [];
     }
 
     const response = await sheets.spreadsheets.values.get({
@@ -84,8 +85,9 @@ async function getSheetDataUncached(range: string, spreadsheetId?: string): Prom
 
     return response.data.values || [];
   } catch (error) {
+    // Return empty data instead of throwing - allows builds without credentials
     console.error('Error fetching sheet data:', error);
-    throw error;
+    return [];
   }
 }
 
@@ -124,6 +126,107 @@ export function getSheetData(
   revalidate: number = DEFAULT_SHEET_REVALIDATE_SECONDS
 ): Promise<any[][]> {
   return getCachedSheetFetcher(revalidate)(range, spreadsheetId);
+}
+
+// ===== BATCH API REQUESTS =====
+// Fetch multiple sheet ranges in a single API call to avoid rate limits
+
+/**
+ * Fetches multiple sheet ranges in a single API call using batchGet
+ * This dramatically reduces API calls during builds (30+ → 1)
+ */
+async function batchGetSheetDataUncached(
+  ranges: string[],
+  spreadsheetId?: string
+): Promise<Map<string, any[][]>> {
+  const result = new Map<string, any[][]>();
+
+  try {
+    const auth = await getAuthClient();
+    const sheetId = spreadsheetId || process.env.SHEETS_SPREADSHEET_ID;
+
+    if (!sheetId) {
+      console.warn('No spreadsheet ID provided for batch fetch, returning empty data');
+      return result;
+    }
+
+    const response = await sheets.spreadsheets.values.batchGet({
+      auth: auth as any,
+      spreadsheetId: sheetId,
+      ranges,
+    });
+
+    // Map each range to its data
+    response.data.valueRanges?.forEach((valueRange, idx) => {
+      result.set(ranges[idx], valueRange.values || []);
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching batch sheet data:', error);
+    // Return empty map - individual fetches will fail gracefully
+    return result;
+  }
+}
+
+/**
+ * Cached batch fetcher for all commonly-needed league data
+ * Fetches standings, schedule, teams, players, and registries in ONE API call
+ */
+export const getAllLeagueData = unstable_cache(
+  async (isPlayoffs: boolean = false): Promise<Map<string, any[][]>> => {
+    const prefix = isPlayoffs ? "'🏆" : "'🧮";
+
+    const ranges = [
+      // Standings (regular season only)
+      `'🥇 Standings'!A4:H11`,
+      // Schedule
+      `${prefix} Schedule'!A2:L100`,
+      // Teams
+      `${prefix} Teams'!A2:Z20`,
+      // Players
+      `${prefix} Players'!A2:Z100`,
+      // Registries (same for both seasons)
+      `'📋 Player Registry'!A2:F100`,
+      `'📋 Team Registry'!A2:I20`,
+    ];
+
+    return batchGetSheetDataUncached(ranges);
+  },
+  ['all-league-data'],
+  { revalidate: DEFAULT_SHEET_REVALIDATE_SECONDS, tags: ['sheets'] }
+);
+
+/**
+ * Get team registry data from batch cache or individual fetch
+ * Returns array of team registry rows
+ */
+export async function getTeamRegistryFromBatch(batchData?: Map<string, any[][]>): Promise<any[][]> {
+  if (batchData) {
+    return batchData.get(`'📋 Team Registry'!A2:I20`) || [];
+  }
+  // Fallback to individual fetch
+  return getSheetData(
+    buildFullRange(TEAM_REGISTRY_SHEET.NAME, TEAM_REGISTRY_SHEET.DATA_START_ROW, TEAM_REGISTRY_SHEET.MAX_ROWS, TEAM_REGISTRY_SHEET.START_COL, TEAM_REGISTRY_SHEET.END_COL),
+    undefined,
+    LOW_CHURN_SHEET_REVALIDATE_SECONDS
+  );
+}
+
+/**
+ * Get player registry data from batch cache or individual fetch
+ * Returns array of player registry rows
+ */
+export async function getPlayerRegistryFromBatch(batchData?: Map<string, any[][]>): Promise<any[][]> {
+  if (batchData) {
+    return batchData.get(`'📋 Player Registry'!A2:F100`) || [];
+  }
+  // Fallback to individual fetch
+  return getSheetData(
+    buildFullRange(PLAYER_REGISTRY_SHEET.NAME, PLAYER_REGISTRY_SHEET.DATA_START_ROW, PLAYER_REGISTRY_SHEET.MAX_ROWS, PLAYER_REGISTRY_SHEET.START_COL, PLAYER_REGISTRY_SHEET.END_COL),
+    undefined,
+    LOW_CHURN_SHEET_REVALIDATE_SECONDS
+  );
 }
 
 // ===== STANDINGS =====

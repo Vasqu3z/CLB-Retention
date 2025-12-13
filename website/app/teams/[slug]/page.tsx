@@ -3,6 +3,24 @@ import { notFound } from "next/navigation";
 import { getTeamRegistry, getTeamRoster, getStandings, getSchedule, getTeamData } from "@/lib/sheets";
 import TeamDetailClient from "./TeamDetailClient";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
+// Generate static params for all teams at build time
+export async function generateStaticParams() {
+  try {
+    const teams = await getTeamRegistry();
+    return teams.map((team) => ({
+      slug: team.teamName.toLowerCase().replace(/\s+/g, '-'),
+    }));
+  } catch (error) {
+    // If credentials are missing during local build, return empty array
+    // Pages will be generated on-demand via ISR
+    console.warn('generateStaticParams: Could not fetch teams, falling back to on-demand generation');
+    return [];
+  }
+}
+
 function deslugify(slug: string): string {
   return slug
     .split('-')

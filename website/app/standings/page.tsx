@@ -3,6 +3,9 @@ import StandingsClient from "./StandingsClient";
 import { TeamStanding, ClinchStatus } from "./StandingsTable";
 import { getStandings, getTeamRegistry, getSchedule } from "@/lib/sheets";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
 // Configuration
 const PLAYOFF_SPOTS = 4; // Top 4 teams make playoffs
 
@@ -130,7 +133,8 @@ export default async function StandingsPage() {
   // Find leader for GB calculation
   const leader = standingsData[0];
   if (!leader) {
-    throw new Error("No standings data available");
+    // Return empty standings when no data available (e.g., during build without credentials)
+    return <StandingsClient data={[]} />;
   }
 
   // Transform data to match component interface

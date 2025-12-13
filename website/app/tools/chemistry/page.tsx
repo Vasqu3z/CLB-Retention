@@ -2,6 +2,9 @@ import React from "react";
 import { getChemistryMatrix, getPlayerRegistry, getTeamRegistry } from "@/lib/sheets";
 import ChemistryClient from "./ChemistryClient";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
 function slugify(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '-');
 }

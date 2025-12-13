@@ -2,6 +2,9 @@ import React from "react";
 import { getPlayoffSchedule, getTeamRegistry, getStandings } from "@/lib/sheets";
 import PlayoffsClient from "./PlayoffsClient";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
 export default async function PlayoffsPage() {
   // Fetch playoff schedule and team registry (required)
   // Standings is optional - used for seeds, gracefully handle if it fails

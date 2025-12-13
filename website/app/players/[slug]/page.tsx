@@ -3,6 +3,24 @@ import { notFound } from "next/navigation";
 import { getAllPlayers, getPlayerAttributes, getChemistryMatrix, getTeamRegistry, getPlayerRegistry } from "@/lib/sheets";
 import PlayerProfileClient from "./PlayerProfileClient";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
+// Generate static params for all players at build time
+export async function generateStaticParams() {
+  try {
+    const players = await getPlayerRegistry();
+    return players.map((player) => ({
+      slug: player.playerName.toLowerCase().replace(/\s+/g, '-'),
+    }));
+  } catch (error) {
+    // If credentials are missing during local build, return empty array
+    // Pages will be generated on-demand via ISR
+    console.warn('generateStaticParams: Could not fetch players, falling back to on-demand generation');
+    return [];
+  }
+}
+
 function deslugify(slug: string): string {
   return slug
     .split('-')

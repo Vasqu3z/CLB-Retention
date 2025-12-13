@@ -2,6 +2,9 @@ import React from "react";
 import ScheduleView, { Match } from "./ScheduleView";
 import { getSchedule, getTeamRegistry } from "@/lib/sheets";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
 // Helper to generate placeholder date from week number
 function getWeekDate(weekNum: number, gameIndex: number): string {
   // Generate placeholder dates: Week 1 starts May 1, 2025

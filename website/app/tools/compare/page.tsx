@@ -2,6 +2,9 @@ import React from "react";
 import { getAllPlayers, getPlayerRegistry, getTeamRegistry } from "@/lib/sheets";
 import CompareClient from "./CompareClient";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
 export default async function ComparePage() {
   // Fetch player data from Google Sheets
   const [allPlayers, playerRegistry, teamRegistry] = await Promise.all([

@@ -2,6 +2,9 @@ import { getTeamRegistry } from "@/lib/sheets";
 import HomeClient, { TeamData } from "./HomeClient";
 import { LEAGUE_CONFIG } from "@/config/league";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
 // Helper to convert team name to URL slug
 function teamNameToSlug(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '-');

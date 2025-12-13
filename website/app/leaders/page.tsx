@@ -6,6 +6,9 @@ import {
 } from "@/lib/sheets";
 import LeadersClient from "./LeadersClient";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
 export default async function LeadersPage() {
   // Fetch regular season and playoff leaders for all categories
   const [

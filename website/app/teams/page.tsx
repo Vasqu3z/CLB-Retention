@@ -2,6 +2,9 @@ import React from "react";
 import TeamsPageClient from "./TeamsPageClient";
 import { getTeamRegistry, getStandings, getTeamData } from "@/lib/sheets";
 
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300;
+
 function slugify(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '-');
 }

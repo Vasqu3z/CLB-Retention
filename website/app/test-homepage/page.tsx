@@ -121,7 +121,7 @@ export default function TestHomepage() {
         "0 0 20px rgba(255,255,255,0.3), 0 0 40px rgba(255,255,255,0.1)",
       ],
     },
-    transition: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+    transition: { duration: 3, repeat: Infinity, ease: "easeInOut" as const },
   };
 
   return (

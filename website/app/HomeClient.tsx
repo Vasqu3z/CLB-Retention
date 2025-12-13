@@ -41,11 +41,11 @@ const TeamEmblem = ({ emblem, index }: { emblem: string; index: number }) => {
         filter: "drop-shadow(0 0 8px rgba(255,255,255,0.3))",
         top: 0,
       }}
-      initial={{ opacity: 0, x: startX, y: `${startY}%` }}
+      initial={{ opacity: 0, x: startX, y: `${startY}vh` }}
       animate={{
         opacity: [0, 0.5, 0.5, 0],
         x: [startX, startX, endX, endX],
-        y: [`${startY}%`, `${startY}%`, `${endY}%`, `${endY}%`],
+        y: [`${startY}vh`, `${startY}vh`, `${endY}vh`, `${endY}vh`],
         rotate: [0, 0, isNEtoSW ? -20 : 20, isNEtoSW ? -20 : 20],
       }}
       transition={{
@@ -259,12 +259,12 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
 
         <motion.div variants={itemVariants} className="relative mb-6 z-20">
           <motion.h3
-            className="relative font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase tracking-[0.3em] text-transparent bg-clip-text bg-gradient-to-b from-comets-yellow/90 to-comets-yellow/40"
+            className="relative font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase tracking-[0.3em] text-comets-yellow"
             animate={{
               textShadow: [
-                "0 0 8px rgba(244, 208, 63, 0.3)",
-                "0 0 16px rgba(244, 208, 63, 0.5)",
-                "0 0 8px rgba(244, 208, 63, 0.3)",
+                "0 0 10px rgba(244, 208, 63, 0.4), 0 0 30px rgba(244, 208, 63, 0.2)",
+                "0 0 20px rgba(244, 208, 63, 0.6), 0 0 50px rgba(244, 208, 63, 0.3)",
+                "0 0 10px rgba(244, 208, 63, 0.4), 0 0 30px rgba(244, 208, 63, 0.2)",
               ],
             }}
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}

@@ -247,7 +247,7 @@ export default function ChemistryClient({ players, chemistryMatrix }: ChemistryC
           <RetroEmptyState
             title="Select Players to Analyze"
             message="Choose players using the search above to explore their chemistry"
-            icon="search"
+            icon="question-block"
           />
         )}
           </div>

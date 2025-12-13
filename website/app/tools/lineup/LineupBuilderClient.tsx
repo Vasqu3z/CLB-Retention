@@ -151,9 +151,10 @@ export default function LineupBuilderClient({
     setStatusMessage({ type, text });
   };
 
-  // Calculate chemistry score
+  // Calculate chemistry score with positive and negative breakdown
   const calculateChemistry = useCallback(() => {
-    let totalChemistry = 0;
+    let positive = 0;
+    let negative = 0;
     const filledPositions = Object.entries(roster).filter(
       ([, player]) => player !== null
     );
@@ -166,14 +167,17 @@ export default function LineupBuilderClient({
               player.stats.chemistry.find((c) => c.name === otherPlayer.name)
                 ?.value || 0;
             if (chemistryValue >= 100) {
-              totalChemistry++;
+              positive++;
+            } else if (chemistryValue <= -100) {
+              negative++;
             }
           }
         });
       }
     });
 
-    return totalChemistry;
+    // Divide by 2 since each pair is counted twice
+    return { positive: Math.floor(positive / 2), negative: Math.floor(negative / 2) };
   }, [roster]);
 
   const chemistryScore = calculateChemistry();
@@ -394,7 +398,7 @@ export default function LineupBuilderClient({
       name: saveLineupName.trim(),
       roster: lineupRoster,
       battingOrder: battingOrder.map((p) => p?.id || null),
-      chemistry: chemistryScore,
+      chemistry: chemistryScore.positive - chemistryScore.negative,
       createdAt: Date.now(),
     };
 
@@ -455,7 +459,7 @@ export default function LineupBuilderClient({
     const exportData = {
       roster: lineupRoster,
       battingOrder: battingOrder.map((p) => p?.id || null),
-      chemistry: chemistryScore,
+      chemistry: { positive: chemistryScore.positive, negative: chemistryScore.negative },
       exportedAt: new Date().toISOString(),
     };
 
@@ -554,21 +558,23 @@ export default function LineupBuilderClient({
             <div className="text-xs font-mono text-white/40 uppercase">
               Chemistry
             </div>
-            <div className="text-3xl font-display text-comets-cyan flex items-center gap-2">
-              <Zap size={24} />
-              {chemistryScore}
+            <div className="text-2xl font-display flex items-center gap-2">
+              <Zap size={20} className="text-comets-cyan" />
+              <span className="text-green-400">+{chemistryScore.positive}</span>
+              <span className="text-white/30">/</span>
+              <span className="text-red-400">-{chemistryScore.negative}</span>
             </div>
           </div>
 
-          <div className="bg-surface-dark border border-white/10 rounded-lg p-4 flex items-center gap-2">
+          <div className="bg-surface-dark border border-white/10 rounded-lg p-4 flex items-center justify-center">
             <motion.button
               onClick={handleReset}
-              className="flex items-center gap-2 text-white/60 hover:text-comets-red transition-colors font-ui uppercase tracking-widest text-sm arcade-press focus-arcade"
+              className="flex items-center gap-2 px-4 py-2 bg-comets-red/20 text-comets-red border border-comets-red/30 rounded-lg font-ui uppercase tracking-widest text-sm arcade-press focus-arcade hover:bg-comets-red/30 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <RotateCcw size={18} />
-              Reset
+              Reset Lineup
             </motion.button>
           </div>
 

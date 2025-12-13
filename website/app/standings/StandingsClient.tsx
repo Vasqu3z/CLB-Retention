@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import StandingsTable, { TeamStanding } from "./StandingsTable";
 import { Trophy } from "lucide-react";
-import { StatsToggle } from "@/components/ui/RetroSegmentedControl";
 import HUDFrame from "@/components/ui/HUDFrame";
 import { LEAGUE_CONFIG } from "@/config/league";
 
@@ -12,32 +11,25 @@ interface StandingsClientProps {
 }
 
 export default function StandingsClient({ data }: StandingsClientProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
   return (
     <main className="min-h-screen pb-24 pt-28 px-4">
       <div className="container mx-auto max-w-5xl">
 
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-12">
-          <div>
-            <div className="flex items-center gap-3 text-comets-yellow mb-2">
-              <Trophy size={24} />
-              <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season {LEAGUE_CONFIG.currentSeason}</span>
-            </div>
-            <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
-              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">League Standings</span>
-            </h1>
+        <div className="mb-12">
+          <div className="flex items-center gap-3 text-comets-yellow mb-2">
+            <Trophy size={24} />
+            <span className="font-ui uppercase tracking-[0.2em] font-bold text-sm">Season {LEAGUE_CONFIG.currentSeason}</span>
           </div>
-
-          {/* Stats Toggle */}
-          <StatsToggle showAdvanced={showAdvanced} onChange={setShowAdvanced} size="sm" />
+          <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">Standings</span>
+          </h1>
         </div>
 
-        {/* The Table */}
+        {/* The Table - always show all stats */}
         <HUDFrame size="md" animate={true} delay={0.3} scanlines scanlinesOpacity={0.03}>
           <div className="py-4">
-            <StandingsTable data={data} showAdvanced={showAdvanced} />
+            <StandingsTable data={data} showAdvanced={true} />
           </div>
         </HUDFrame>
 
@@ -62,7 +54,7 @@ export default function StandingsClient({ data }: StandingsClientProps) {
           </div>
           <div className="md:text-right">
             <span className="font-ui text-white/50 block mb-1 font-bold">TOP 5 QUALIFY</span>
-            Star Cup Semifinals
+            Kingdom Cup Semifinals
           </div>
         </div>
 

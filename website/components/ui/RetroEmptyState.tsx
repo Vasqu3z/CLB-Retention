@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Gamepad2, Search, Trophy, AlertCircle } from "lucide-react";
 
@@ -15,7 +16,7 @@ import { Gamepad2, Search, Trophy, AlertCircle } from "lucide-react";
 interface RetroEmptyStateProps {
   title?: string;
   message?: string;
-  icon?: "search" | "trophy" | "gamepad" | "alert" | "database";
+  icon?: "search" | "trophy" | "gamepad" | "alert" | "database" | "question-block";
   action?: {
     label: string;
     onClick: () => void;
@@ -38,7 +39,8 @@ export default function RetroEmptyState({
   action,
   className = ""
 }: RetroEmptyStateProps) {
-  const Icon = ICONS[icon];
+  const isQuestionBlock = icon === "question-block";
+  const Icon = isQuestionBlock ? null : ICONS[icon];
 
   return (
     <motion.div
@@ -97,7 +99,17 @@ export default function RetroEmptyState({
               }}
               transition={{ duration: 4, repeat: Infinity }}
             >
-              <Icon size={80} className="text-comets-yellow drop-shadow-[0_0_20px_rgba(244,208,63,0.6)]" />
+              {isQuestionBlock ? (
+                <Image
+                  src="/icons/Question Block.png"
+                  alt="Question Block"
+                  width={80}
+                  height={80}
+                  className="drop-shadow-[0_0_20px_rgba(244,208,63,0.6)]"
+                />
+              ) : Icon && (
+                <Icon size={80} className="text-comets-yellow drop-shadow-[0_0_20px_rgba(244,208,63,0.6)]" />
+              )}
             </motion.div>
 
             {/* Power indicator */}

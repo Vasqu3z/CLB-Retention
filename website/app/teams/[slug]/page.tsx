@@ -1,6 +1,6 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { getTeamRegistry, getTeamRoster, getStandings, getSchedule, getTeamData } from "@/lib/sheets";
+import { getTeamRegistry, getTeamRoster, getStandings, getSchedule, getTeamData, getPlayerRegistry } from "@/lib/sheets";
 import TeamDetailClient from "./TeamDetailClient";
 
 // ISR: Revalidate every 5 minutes
@@ -80,11 +80,12 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
   const teamNameGuess = deslugify(slug);
 
   // Fetch all necessary data from Google Sheets
-  const [teamRegistry, standings, allSchedule, teamStatsData] = await Promise.all([
+  const [teamRegistry, standings, allSchedule, teamStatsData, playerRegistry] = await Promise.all([
     getTeamRegistry(),
     getStandings(false),
     getSchedule(),
     getTeamData(undefined, false),
+    getPlayerRegistry(),
   ]);
 
   // Find the team in the registry
@@ -96,8 +97,20 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
     return notFound();
   }
 
-  // Fetch team roster
-  const roster = await getTeamRoster(team.teamName, false);
+  // Fetch team roster and merge with player registry for images
+  const rosterData = await getTeamRoster(team.teamName, false);
+
+  // Create lookup map for player images
+  const playerImageMap = new Map(
+    playerRegistry.map(p => [p.playerName, { imageUrl: p.imageUrl, slug: slugify(p.playerName) }])
+  );
+
+  // Enrich roster with images and slugs
+  const roster = rosterData.map(player => ({
+    ...player,
+    imageUrl: playerImageMap.get(player.name)?.imageUrl || '',
+    slug: playerImageMap.get(player.name)?.slug || slugify(player.name),
+  }));
 
   // Find team in standings
   const standing = standings.find(s => s.team === team.teamName);
@@ -112,9 +125,11 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
     .map((game, index) => {
       const homeTeamInfo = teamRegistry.find(t => t.teamName === game.homeTeam);
       const awayTeamInfo = teamRegistry.find(t => t.teamName === game.awayTeam);
+      const isHome = game.homeTeam === team.teamName;
 
       return {
         id: `w${game.week}-g${index + 1}`,
+        week: game.week,
         home: {
           name: game.homeTeam,
           code: homeTeamInfo?.abbr || game.homeTeam.substring(0, 3).toUpperCase(),
@@ -129,11 +144,13 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ slu
           logoUrl: awayTeamInfo?.emblemUrl,
           score: game.awayScore,
         },
-        date: getWeekDate(game.week, index),
+        date: `Week ${game.week}`,
         time: game.played ? "FINAL" : "TBD",
         isFinished: game.played,
+        isHome,
       };
-    });
+    })
+    .sort((a, b) => a.week - b.week);
 
   // Get team stats
   const stats = teamStatsData.find(s => s.teamName === team.teamName) || null;

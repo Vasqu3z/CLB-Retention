@@ -60,59 +60,52 @@ export default function StandingsTable({ data, showAdvanced = true }: StandingsT
     {
       header: "Team",
       className: "min-w-[200px]",
-      cell: (item: TeamStanding) => {
-        const teamDisplay = (
-          <div className="flex items-center gap-3">
-            {/* Team Logo */}
-            <div
-              className="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs font-bold border border-white/10 shadow-sm overflow-hidden"
-              style={{ borderColor: item.rank === 1 ? item.logoColor : 'rgba(255,255,255,0.1)' }}
-            >
-              {item.logoUrl ? (
-                <Image
-                  src={item.logoUrl}
-                  alt={`${item.teamName} logo`}
-                  width={32}
-                  height={32}
-                  className="object-contain"
-                />
-              ) : (
-                <span style={{ color: item.logoColor }}>{item.teamCode[0]}</span>
+      cell: (item: TeamStanding) => (
+        <div className="flex items-center gap-3">
+          {/* Team Logo */}
+          <div
+            className="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs font-bold border border-white/10 shadow-sm overflow-hidden"
+            style={{ borderColor: item.rank === 1 ? item.logoColor : 'rgba(255,255,255,0.1)' }}
+          >
+            {item.logoUrl ? (
+              <Image
+                src={item.logoUrl}
+                alt={`${item.teamName} logo`}
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            ) : (
+              <span style={{ color: item.logoColor }}>{item.teamCode[0]}</span>
+            )}
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="font-ui font-bold uppercase tracking-wider text-white group-hover/row:text-comets-cyan transition-colors">
+                {item.teamName}
+              </span>
+              {/* Playoff clinch/elimination badge */}
+              {item.clinchStatus === 'clinched' && (
+                <span className="px-1.5 py-0.5 text-[10px] font-ui font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-500/40 rounded shadow-[0_0_8px_rgba(74,222,128,0.3)]">
+                  x
+                </span>
+              )}
+              {item.clinchStatus === 'eliminated' && (
+                <span className="px-1.5 py-0.5 text-[10px] font-ui font-bold uppercase tracking-wider bg-red-900/40 text-red-400 border border-red-500/40 rounded shadow-[0_0_8px_rgba(248,113,113,0.3)]">
+                  e
+                </span>
+              )}
+              {/* H2H icon - only this triggers the tooltip, not the whole team name */}
+              {item.h2hNote && (
+                <H2HTooltip record={item.h2hNote} teamColor={item.logoColor}>
+                  <span className="sr-only">Head-to-head record</span>
+                </H2HTooltip>
               )}
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-ui font-bold uppercase tracking-wider text-white group-hover/row:text-comets-cyan transition-colors">
-                  {item.teamName}
-                </span>
-                {/* Playoff clinch/elimination badge */}
-                {item.clinchStatus === 'clinched' && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-ui font-bold uppercase tracking-wider bg-green-900/40 text-green-400 border border-green-500/40 rounded shadow-[0_0_8px_rgba(74,222,128,0.3)]">
-                    x
-                  </span>
-                )}
-                {item.clinchStatus === 'eliminated' && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-ui font-bold uppercase tracking-wider bg-red-900/40 text-red-400 border border-red-500/40 rounded shadow-[0_0_8px_rgba(248,113,113,0.3)]">
-                    e
-                  </span>
-                )}
-              </div>
-              <span className="text-[10px] text-white/40 md:hidden">{item.teamCode}</span>
-            </div>
+            <span className="text-[10px] text-white/40 md:hidden">{item.teamCode}</span>
           </div>
-        );
-
-        // Wrap with H2H tooltip if head-to-head record exists
-        if (item.h2hNote) {
-          return (
-            <H2HTooltip record={item.h2hNote} teamColor={item.logoColor}>
-              {teamDisplay}
-            </H2HTooltip>
-          );
-        }
-
-        return teamDisplay;
-      }
+        </div>
+      )
     },
     {
       header: <StatsTooltip stat="W" context="team">W</StatsTooltip>,

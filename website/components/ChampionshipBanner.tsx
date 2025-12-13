@@ -16,7 +16,7 @@ interface ChampionshipBannerProps {
 }
 
 /**
- * ChampionshipBanner - Celebratory animation for the Star Cup Champion
+ * ChampionshipBanner - Celebratory animation for the Kingdom Cup Champion
  *
  * Shows an animated banner with confetti when a champion is crowned
  */
@@ -134,7 +134,7 @@ export default function ChampionshipBanner({
               Season {seasonNumber} Champion
             </h2>
             <h3 className="font-display text-5xl md:text-7xl uppercase text-white mb-6">
-              Star Cup
+              Kingdom Cup
             </h3>
           </motion.div>
 

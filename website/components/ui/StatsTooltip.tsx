@@ -128,7 +128,7 @@ export default function StatsTooltip({ stat, children, description, context }: S
           }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <HelpCircle size={12} className="text-white/20" />
+          <HelpCircle size={12} className="text-white/40 group-hover:text-white/60" />
         </motion.div>
       </div>
     </RetroTooltip>

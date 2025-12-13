@@ -16,11 +16,13 @@ import { LEAGUE_CONFIG } from "@/config/league";
 
 interface Matchup {
   id: string;
+  week: number;
   home: { name: string; code: string; logoColor: string; logoUrl?: string; score?: number };
   away: { name: string; code: string; logoColor: string; logoUrl?: string; score?: number };
   date: string;
   time: string;
   isFinished: boolean;
+  isHome: boolean; // Is this team the home team?
 }
 
 interface TeamStats {
@@ -101,18 +103,38 @@ export default function TeamDetailClient({
   const rosterColumns = [
     {
       header: "Player",
-      cell: (p: PlayerStats & { id: string }) => (
-        <div className="flex items-center gap-3">
-          <motion.div
-            className="w-8 h-8 bg-white/10 rounded flex items-center justify-center font-display text-white"
-            whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
-          >
-            {p.name[0]}
-          </motion.div>
-          <span className="font-ui font-bold hover:text-comets-yellow transition-colors uppercase">
+      cell: (p: PlayerStats & { id: string; imageUrl?: string; slug?: string }) => (
+        <Link
+          href={`/players/${p.slug || p.name.toLowerCase().replace(/\s+/g, '-')}`}
+          className="flex items-center gap-3 group"
+        >
+          {p.imageUrl ? (
+            <motion.div
+              className="w-10 h-10 rounded-lg overflow-hidden border-2"
+              style={{ borderColor: logoColor }}
+              whileHover={{ scale: 1.1 }}
+            >
+              <Image
+                src={p.imageUrl}
+                alt={p.name}
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center font-display text-white border-2"
+              style={{ borderColor: `${logoColor}40` }}
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
+            >
+              {p.name[0]}
+            </motion.div>
+          )}
+          <span className="font-ui font-bold group-hover:text-comets-cyan transition-colors uppercase">
             {p.name}
           </span>
-        </div>
+        </Link>
       ),
     },
     { header: <StatsTooltip stat="GP">GP</StatsTooltip>, accessorKey: "gp" as const, className: "text-white/50", condensed: true },
@@ -377,17 +399,51 @@ export default function TeamDetailClient({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              className="space-y-6"
             >
-              {schedule.map((match, index) => (
-                <motion.div
-                  key={match.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <VersusCard {...match} />
-                </motion.div>
+              {/* Group matches by week */}
+              {Object.entries(
+                schedule.reduce((acc, match) => {
+                  const week = match.week;
+                  if (!acc[week]) acc[week] = [];
+                  acc[week].push(match);
+                  return acc;
+                }, {} as Record<number, typeof schedule>)
+              ).map(([week, matches], weekIdx) => (
+                <div key={week}>
+                  {/* Week Header */}
+                  <div className="flex items-center gap-4 py-3 mb-4">
+                    <div className="h-px flex-1 bg-white/10" />
+                    <span className="font-display text-white/60 uppercase tracking-wider">Week {week}</span>
+                    <div className="h-px flex-1 bg-white/10" />
+                  </div>
+
+                  {/* Week's matches */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {matches.map((match, index) => (
+                      <motion.div
+                        key={match.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: (weekIdx * matches.length + index) * 0.03 }}
+                        className="relative"
+                      >
+                        {/* Home/Away indicator */}
+                        <div className={cn(
+                          "absolute -left-2 top-1/2 -translate-y-1/2 px-2 py-1 text-[10px] font-ui uppercase tracking-wider rounded z-10",
+                          match.isHome
+                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                            : "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                        )}>
+                          {match.isHome ? "HOME" : "AWAY"}
+                        </div>
+                        <div className="pl-12">
+                          <VersusCard {...match} compact />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
               ))}
             </motion.div>
           )}
@@ -400,30 +456,66 @@ export default function TeamDetailClient({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              className="space-y-6"
             >
+              {/* Summary Row */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-surface-dark border border-white/10 rounded-lg p-4 text-center">
+                  <div className="text-xs font-mono text-white/40 uppercase mb-1">Games Played</div>
+                  <div className="text-3xl font-display text-white">{stats.gp}</div>
+                </div>
+                <div className="bg-surface-dark border border-white/10 rounded-lg p-4 text-center">
+                  <div className="text-xs font-mono text-white/40 uppercase mb-1">Record</div>
+                  <div className="text-3xl font-display">
+                    <span className="text-green-400">{stats.wins}</span>
+                    <span className="text-white/30 mx-1">-</span>
+                    <span className="text-red-400">{stats.losses}</span>
+                  </div>
+                </div>
+                <div className="bg-surface-dark border border-white/10 rounded-lg p-4 text-center">
+                  <div className="text-xs font-mono text-white/40 uppercase mb-1">Win %</div>
+                  <div className="text-3xl font-display text-comets-cyan">
+                    {stats.gp > 0 ? ((stats.wins / stats.gp) * 100).toFixed(1) : "0.0"}%
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Hitting Stats */}
+                {/* Hitting Stats - Full */}
                 <StatCard title="Team Hitting" color={logoColor}>
-                  <StatRow label={<StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>} value={teamAvg} />
+                  <StatRow label={<StatsTooltip stat="AVG" context="batting">AVG</StatsTooltip>} value={teamAvg} highlight />
+                  <StatRow label={<StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>} value={teamOPS} highlight />
+                  <div className="border-t border-white/5 my-2" />
+                  <StatRow label={<StatsTooltip stat="AB" context="batting">AB</StatsTooltip>} value={stats.hitting.ab} />
+                  <StatRow label={<StatsTooltip stat="H" context="batting">H</StatsTooltip>} value={stats.hitting.h} />
                   <StatRow label={<StatsTooltip stat="HR" context="batting">HR</StatsTooltip>} value={stats.hitting.hr} />
                   <StatRow label={<StatsTooltip stat="RBI" context="batting">RBI</StatsTooltip>} value={stats.hitting.rbi} />
-                  <StatRow label={<StatsTooltip stat="OPS" context="batting">OPS</StatsTooltip>} value={teamOPS} />
+                  <StatRow label={<StatsTooltip stat="BB" context="batting">BB</StatsTooltip>} value={stats.hitting.bb} />
+                  <StatRow label={<StatsTooltip stat="K" context="batting">K</StatsTooltip>} value={stats.hitting.k} />
                 </StatCard>
 
-                {/* Pitching Stats */}
+                {/* Pitching Stats - Full */}
                 <StatCard title="Team Pitching" color={logoColor}>
-                  <StatRow label={<StatsTooltip stat="ERA" context="pitching">ERA</StatsTooltip>} value={teamERA} />
+                  <StatRow label={<StatsTooltip stat="ERA" context="pitching">ERA</StatsTooltip>} value={teamERA} highlight />
+                  <StatRow label={<StatsTooltip stat="WHIP" context="pitching">WHIP</StatsTooltip>} value={stats.pitching.ip > 0 ? ((stats.pitching.h + stats.pitching.bb) / stats.pitching.ip).toFixed(2) : "0.00"} highlight />
+                  <div className="border-t border-white/5 my-2" />
                   <StatRow label={<StatsTooltip stat="IP" context="pitching">IP</StatsTooltip>} value={stats.pitching.ip.toFixed(1)} />
+                  <StatRow label={<StatsTooltip stat="BF" context="pitching">BF</StatsTooltip>} value={stats.pitching.bf} />
+                  <StatRow label={<StatsTooltip stat="H" context="pitching">H</StatsTooltip>} value={stats.pitching.h} />
+                  <StatRow label={<StatsTooltip stat="R" context="pitching">R</StatsTooltip>} value={stats.pitching.r} />
                   <StatRow label={<StatsTooltip stat="K" context="pitching">K</StatsTooltip>} value={stats.pitching.k} />
                   <StatRow label={<StatsTooltip stat="SV" context="pitching">SV</StatsTooltip>} value={stats.pitching.sv} />
                 </StatCard>
 
-                {/* Fielding Stats */}
-                <StatCard title="Team Fielding" color={logoColor}>
-                  <StatRow label={<StatsTooltip stat="NP" context="fielding">NP</StatsTooltip>} value={stats.fielding.np} />
-                  <StatRow label={<StatsTooltip stat="E" context="fielding">E</StatsTooltip>} value={stats.fielding.e} />
+                {/* Fielding Stats - Full */}
+                <StatCard title="Defense & Baserunning" color={logoColor}>
+                  <StatRow label={<StatsTooltip stat="NP" context="fielding">Nice Plays</StatsTooltip>} value={stats.fielding.np} highlight />
+                  <StatRow label={<StatsTooltip stat="E" context="fielding">Errors</StatsTooltip>} value={stats.fielding.e} highlight />
+                  <div className="border-t border-white/5 my-2" />
                   <StatRow label={<StatsTooltip stat="SB" context="batting">SB</StatsTooltip>} value={stats.fielding.sb} />
                   <StatRow label="CS" value={stats.fielding.cs} />
+                  <StatRow label={<StatsTooltip stat="ROB" context="batting">ROB</StatsTooltip>} value={stats.hitting.rob} />
+                  <StatRow label={<StatsTooltip stat="DP" context="batting">GIDP</StatsTooltip>} value={stats.hitting.dp} />
                 </StatCard>
               </div>
             </motion.div>
@@ -447,11 +539,11 @@ function StatCard({ title, color, children }: { title: string; color: string; ch
   );
 }
 
-function StatRow({ label, value }: { label: React.ReactNode; value: string | number }) {
+function StatRow({ label, value, highlight = false }: { label: React.ReactNode; value: string | number; highlight?: boolean }) {
   return (
     <div className="flex justify-between items-center">
-      <span className="text-white/60 text-sm font-mono uppercase">{label}</span>
-      <span className="text-white font-mono font-bold text-lg">{value}</span>
+      <span className={cn("text-sm font-mono uppercase", highlight ? "text-white/80" : "text-white/60")}>{label}</span>
+      <span className={cn("font-mono font-bold", highlight ? "text-comets-cyan text-xl" : "text-white text-lg")}>{value}</span>
     </div>
   );
 }

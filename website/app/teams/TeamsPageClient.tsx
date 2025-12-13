@@ -68,7 +68,7 @@ export default function TeamsPageClient({
               </div>
               <h1 className="font-display text-5xl md:text-7xl uppercase leading-none tracking-tighter">
                 <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
-                  {viewMode === "grid" ? "Select Team" : "Team Stats"}
+                  {viewMode === "grid" ? "Team Select" : "Team Stats"}
                 </span>
               </h1>
             </div>

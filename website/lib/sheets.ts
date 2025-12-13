@@ -66,9 +66,11 @@ async function getAuthClient(): Promise<SheetsAuthClient> {
   return authClientPromise;
 }
 
-// Check if Google credentials are configured
+// Check if Google credentials are configured and valid
 function hasGoogleCredentials(): boolean {
-  return !!parsedGoogleCredentials && !!process.env.SHEETS_SPREADSHEET_ID;
+  return !!parsedGoogleCredentials
+    && !!parsedGoogleCredentials.client_email
+    && !!process.env.SHEETS_SPREADSHEET_ID;
 }
 
 // Generic function to read data from a sheet range (uncached)

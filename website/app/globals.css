@@ -356,6 +356,12 @@ button:disabled,
   pointer-events: none;
 }
 
+/* ===== CONTENT VISIBILITY FOR PERFORMANCE ===== */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
 /* ===== REDUCE MOTION SUPPORT ===== */
 @media (prefers-reduced-motion: reduce) {
   *,

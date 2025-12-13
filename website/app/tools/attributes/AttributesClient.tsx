@@ -60,33 +60,34 @@ interface AttributesClientProps {
 type AttributeTab = "hitting" | "pitching" | "fielding";
 
 // Attribute definitions grouped by category
+// Most attributes are on 1-10 scale, speeds are in raw values
 const OVERALL_ATTRIBUTES = [
-  { key: "pitchingOverall", name: "Pitching Overall", maxValue: 100 },
-  { key: "battingOverall", name: "Batting Overall", maxValue: 100 },
-  { key: "fieldingOverall", name: "Fielding Overall", maxValue: 100 },
-  { key: "speedOverall", name: "Speed Overall", maxValue: 100 },
+  { key: "pitchingOverall", name: "Pitching Overall", maxValue: 10 },
+  { key: "battingOverall", name: "Batting Overall", maxValue: 10 },
+  { key: "fieldingOverall", name: "Fielding Overall", maxValue: 10 },
+  { key: "speedOverall", name: "Speed Overall", maxValue: 10 },
 ];
 
 const HITTING_ATTRIBUTES = [
-  { key: "hitCurve", name: "Hit Curve", maxValue: 100 },
-  { key: "slapHitContact", name: "Slap Hit Contact", maxValue: 100 },
-  { key: "chargeHitContact", name: "Charge Hit Contact", maxValue: 100 },
-  { key: "slapHitPower", name: "Slap Hit Power", maxValue: 100 },
-  { key: "chargeHitPower", name: "Charge Hit Power", maxValue: 100 },
+  { key: "hitCurve", name: "Hit Curve", maxValue: 10 },
+  { key: "slapHitContact", name: "Slap Hit Contact", maxValue: 10 },
+  { key: "chargeHitContact", name: "Charge Hit Contact", maxValue: 10 },
+  { key: "slapHitPower", name: "Slap Hit Power", maxValue: 10 },
+  { key: "chargeHitPower", name: "Charge Hit Power", maxValue: 10 },
 ];
 
 const PITCHING_ATTRIBUTES = [
   { key: "fastballSpeed", name: "Fastball Speed", maxValue: 200 },
   { key: "curveballSpeed", name: "Curveball Speed", maxValue: 200 },
-  { key: "curve", name: "Curve", maxValue: 100 },
-  { key: "stamina", name: "Stamina", maxValue: 100 },
+  { key: "curve", name: "Curve", maxValue: 10 },
+  { key: "stamina", name: "Stamina", maxValue: 10 },
 ];
 
 const FIELDING_ATTRIBUTES = [
-  { key: "fielding", name: "Fielding", maxValue: 100 },
-  { key: "throwingSpeed", name: "Throwing Speed", maxValue: 100 },
-  { key: "speed", name: "Speed", maxValue: 100 },
-  { key: "bunting", name: "Bunting", maxValue: 100 },
+  { key: "fielding", name: "Fielding", maxValue: 10 },
+  { key: "throwingSpeed", name: "Throwing Speed", maxValue: 10 },
+  { key: "speed", name: "Speed", maxValue: 10 },
+  { key: "bunting", name: "Bunting", maxValue: 10 },
 ];
 
 export default function AttributesClient({ players }: AttributesClientProps) {
@@ -391,7 +392,7 @@ export default function AttributesClient({ players }: AttributesClientProps) {
           <RetroEmptyState
             title="Select Players to Compare"
             message="Choose at least 2 players using the search above"
-            icon="database"
+            icon="question-block"
           />
         )}
           </div>

@@ -5,19 +5,6 @@ import { getSchedule, getTeamRegistry } from "@/lib/sheets";
 // ISR: Revalidate every 5 minutes
 export const revalidate = 300;
 
-// Helper to generate placeholder date from week number
-function getWeekDate(weekNum: number, gameIndex: number): string {
-  // Generate placeholder dates: Week 1 starts May 1, 2025
-  // Each week is 7 days apart, games are spread across the week
-  const baseDate = new Date('2025-05-01');
-  const daysToAdd = (weekNum - 1) * 7 + (gameIndex % 3); // Spread games across week
-  baseDate.setDate(baseDate.getDate() + daysToAdd);
-
-  const month = baseDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  const day = baseDate.getDate().toString().padStart(2, '0');
-  return `${month} ${day}`;
-}
-
 export default async function SchedulePage() {
   // Fetch data from Google Sheets
   const [scheduleData, teamRegistry] = await Promise.all([
@@ -44,13 +31,9 @@ export default async function SchedulePage() {
     const homeTeam = teamMap.get(game.homeTeam);
     const awayTeam = teamMap.get(game.awayTeam);
 
-    // Find the index within this week for date generation
+    // Find the index within this week
     const weekGames = gamesByWeek[game.week];
     const weekIndex = weekGames.indexOf(game);
-
-    // Generate placeholder date based on week number
-    const gameDate = getWeekDate(game.week, weekIndex);
-    const gameTime = game.played ? "FINAL" : "TBD";
 
     return {
       id: `w${game.week}-g${weekIndex + 1}`,
@@ -68,8 +51,8 @@ export default async function SchedulePage() {
         logoUrl: awayTeam?.emblemUrl,
         score: game.awayScore
       },
-      date: gameDate,
-      time: gameTime,
+      date: `Game ${weekIndex + 1}`, // Simple game number instead of fake dates
+      time: game.played ? "FINAL" : "TBD",
       isFinished: game.played,
       boxScoreUrl: game.boxScoreUrl
     };

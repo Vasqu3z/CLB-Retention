@@ -248,14 +248,14 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
         >
           {home.logoUrl ? (
             <motion.div
-              className="w-12 h-12 flex items-center justify-center"
+              className="w-16 h-16 flex items-center justify-center"
               whileHover={{ scale: 1.1 }}
             >
               <Image
                 src={home.logoUrl}
-                alt={`${home.name} logo`}
-                width={48}
-                height={48}
+                alt={home.name}
+                width={64}
+                height={64}
                 className="object-contain"
               />
             </motion.div>
@@ -267,9 +267,6 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
               {home.code}
             </motion.div>
           )}
-          <div className="hidden md:block font-ui uppercase tracking-wider text-sm text-white/60 group-hover:text-white/80 transition-colors">
-            {home.name}
-          </div>
         </motion.div>
 
         {/* Center - Score or VS */}
@@ -341,19 +338,16 @@ export default function VersusCard({ home, away, date, time, isFinished, compact
           whileHover={{ x: 5 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <div className="hidden md:block font-ui uppercase tracking-wider text-sm text-white/60 group-hover:text-white/80 transition-colors">
-            {away.name}
-          </div>
           {away.logoUrl ? (
             <motion.div
-              className="w-12 h-12 flex items-center justify-center"
+              className="w-16 h-16 flex items-center justify-center"
               whileHover={{ scale: 1.1 }}
             >
               <Image
                 src={away.logoUrl}
-                alt={`${away.name} logo`}
-                width={48}
-                height={48}
+                alt={away.name}
+                width={64}
+                height={64}
                 className="object-contain"
               />
             </motion.div>

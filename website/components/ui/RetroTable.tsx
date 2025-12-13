@@ -47,9 +47,10 @@ export default function RetroTable<T extends { id?: string | number }>({
   }, [columns, showAdvanced]);
 
   const handleSort = (key: keyof T) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    // Default to descending (high to low) for first click - most stats are "higher is better"
+    let direction: 'asc' | 'desc' = 'desc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'desc') {
+      direction = 'asc';
     }
     setSortConfig({ key, direction });
   };
@@ -176,13 +177,13 @@ export default function RetroTable<T extends { id?: string | number }>({
                 <React.Fragment key={item.id || i}>
                   <motion.tr
                     layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     whileHover={onRowClick ? { backgroundColor: "rgba(255,255,255,0.05)" } : {}}
                     transition={{
-                      layout: { duration: 0.2 },
-                      delay: Math.min(i * 0.02, 0.3), // Cap delay to avoid slow animations
-                      duration: 0.2,
+                      layout: { duration: 0.15 },
+                      delay: Math.min(i * 0.015, 0.25), // Faster stagger, capped for performance
+                      duration: 0.15,
                     }}
                     onClick={() => onRowClick && onRowClick(item)}
                     onKeyDown={(e) => {

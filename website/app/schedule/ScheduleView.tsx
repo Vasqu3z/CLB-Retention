@@ -30,15 +30,6 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const matches = matchesByWeek[activeWeek] || [];
 
-  // Group matches by date for week view
-  const matchesByDate = matches.reduce((acc, match) => {
-    if (!acc[match.date]) {
-      acc[match.date] = [];
-    }
-    acc[match.date].push(match);
-    return acc;
-  }, {} as Record<string, Match[]>);
-
   return (
     <main className="min-h-screen pb-24 pt-28 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -183,31 +174,17 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="space-y-6"
+              className="space-y-4"
             >
-              {Object.entries(matchesByDate).map(([date, dateMatches]) => (
-                <div key={date}>
-                  {/* Day Group Header */}
-                  <div className="flex items-center gap-4 py-4">
-                    <div className="h-px flex-1 bg-white/10" />
-                    <span className="font-mono text-white/40 text-sm">{date}</span>
-                    <div className="h-px flex-1 bg-white/10" />
-                  </div>
-
-                  {/* Matches for this date */}
-                  <div className="space-y-4">
-                    {dateMatches.map((match, index) => (
-                      <motion.div
-                        key={match.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <VersusCard {...match} />
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
+              {matches.map((match, index) => (
+                <motion.div
+                  key={match.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <VersusCard {...match} />
+                </motion.div>
               ))}
 
               {matches.length === 0 && (
@@ -235,7 +212,7 @@ export default function ScheduleView({ matchesByWeek, weeks, initialWeek }: Sche
                 if (weekMatches.length === 0) return null;
 
                 return (
-                  <div key={week} className="bg-surface-dark/50 rounded-xl border border-white/5 p-4">
+                  <div key={week} className="bg-surface-dark/50 rounded-xl border border-white/5 p-4 content-auto">
                     {/* Week Header */}
                     <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                       <h2 className="font-display text-xl text-white uppercase">Week {week}</h2>

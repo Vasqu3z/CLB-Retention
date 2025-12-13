@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Swords, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import RetroEmptyState from "@/components/ui/RetroEmptyState";
 
 interface PlayerData {
   name: string;
@@ -26,10 +27,23 @@ interface CompareClientProps {
 }
 
 export default function CompareClient({ players }: CompareClientProps) {
-  const [playerA, setPlayerA] = useState(players[0]);
-  const [playerB, setPlayerB] = useState(players[1] || players[0]);
+  const [playerA, setPlayerA] = useState<PlayerData | null>(players[0] || null);
+  const [playerB, setPlayerB] = useState<PlayerData | null>(players[1] || players[0] || null);
   const [showDropdownA, setShowDropdownA] = useState(false);
   const [showDropdownB, setShowDropdownB] = useState(false);
+
+  // Handle empty players array
+  if (players.length === 0 || !playerA || !playerB) {
+    return (
+      <main className="min-h-screen pt-28 px-4 flex items-center justify-center">
+        <RetroEmptyState
+          title="No Players Available"
+          message="Player data is currently loading or unavailable"
+          icon="question-block"
+        />
+      </main>
+    );
+  }
 
   const stats = [
     { key: "avg", label: "AVG", type: "rate" },
@@ -70,12 +84,23 @@ export default function CompareClient({ players }: CompareClientProps) {
       </motion.div>
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 relative">
-        {/* Center Divider Line with pulse */}
+        {/* Center Divider Line with pulse - Desktop */}
         <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 hidden md:block z-10">
           {/* VS Circle */}
           <motion.div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-black border border-white/20 rounded-full flex items-center justify-center font-display text-white/50 text-sm"
             animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            VS
+          </motion.div>
+        </div>
+
+        {/* Mobile VS Divider */}
+        <div className="md:hidden absolute left-0 right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center pointer-events-none">
+          <motion.div
+            className="px-4 py-2 bg-black border border-white/20 rounded-full font-display text-white/50 text-sm"
+            animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
             VS
@@ -198,14 +223,7 @@ export default function CompareClient({ players }: CompareClientProps) {
                       {value ?? "-"}
                     </span>
                   </div>
-                  {isWinner && (
-                    <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-comets-yellow">
-                      <div className="w-6 h-6 rounded-full bg-comets-yellow/20 flex items-center justify-center text-xs font-ui font-bold">
-                        ✓
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
+                                  </motion.div>
               );
             })}
           </div>
@@ -327,14 +345,7 @@ export default function CompareClient({ players }: CompareClientProps) {
                       {value ?? "-"}
                     </span>
                   </div>
-                  {isWinner && (
-                    <div className="absolute -left-2 top-1/2 -translate-y-1/2 text-comets-yellow">
-                      <div className="w-6 h-6 rounded-full bg-comets-yellow/20 flex items-center justify-center text-xs font-ui font-bold">
-                        ✓
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
+                                  </motion.div>
               );
             })}
           </div>

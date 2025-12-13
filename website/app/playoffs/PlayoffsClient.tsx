@@ -65,7 +65,7 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
 
           <h1 className="font-display text-6xl md:text-8xl uppercase leading-none tracking-tighter mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">
-              Star Cup
+              Kingdom Cup
               <br />
               Playoffs
             </span>
@@ -170,7 +170,7 @@ export default function PlayoffsClient({ semifinals, finals }: PlayoffsClientPro
                       <div className="flex items-center gap-3">
                         <Crown className="text-comets-yellow" size={24} />
                         <h2 className="font-display text-2xl uppercase text-white tracking-wider">
-                          Star Cup Finals
+                          Kingdom Cup Finals
                         </h2>
                       </div>
                       <div className="mt-2 h-[1px] bg-gradient-to-r from-comets-yellow/60 via-comets-yellow/20 to-transparent" />

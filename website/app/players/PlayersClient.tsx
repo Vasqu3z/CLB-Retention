@@ -520,9 +520,9 @@ export default function PlayersClient({ regularPlayers, playoffPlayers }: Player
                     {TEAMS.map((team, index) => (
                       <motion.button
                         key={team}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: Math.min(index * 0.03, 0.3) }}
                         onClick={() => setSelectedTeam(team)}
                         className={cn(
                           "relative px-4 py-2 rounded-full font-ui text-sm uppercase tracking-wider transition-all focus-arcade",

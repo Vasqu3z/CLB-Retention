@@ -65,14 +65,15 @@ export default async function PlayerProfilePage({ params }: { params: Promise<{ 
 
   // Get player chemistry
   const playerChemistry = chemistryMatrix[player.name] || {};
-  const positiveChemistry: Array<{name: string, value: number}> = [];
-  const negativeChemistry: Array<{name: string, value: number}> = [];
+  const positiveChemistry: Array<{name: string, value: number, imageUrl: string}> = [];
+  const negativeChemistry: Array<{name: string, value: number, imageUrl: string}> = [];
 
   Object.entries(playerChemistry).forEach(([otherPlayer, value]) => {
+    const otherImageUrl = playerImageMap.get(otherPlayer) || "";
     if (value >= 100) {
-      positiveChemistry.push({ name: otherPlayer, value });
+      positiveChemistry.push({ name: otherPlayer, value, imageUrl: otherImageUrl });
     } else if (value <= -100) {
-      negativeChemistry.push({ name: otherPlayer, value });
+      negativeChemistry.push({ name: otherPlayer, value, imageUrl: otherImageUrl });
     }
   });
 

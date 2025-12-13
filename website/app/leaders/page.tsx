@@ -3,6 +3,7 @@ import {
   getCalculatedBattingLeaders,
   getCalculatedPitchingLeaders,
   getCalculatedFieldingLeaders,
+  getPlayerRegistry,
 } from "@/lib/sheets";
 import LeadersClient from "./LeadersClient";
 
@@ -18,6 +19,7 @@ export default async function LeadersPage() {
     playoffBattingLeaders,
     playoffPitchingLeaders,
     playoffFieldingLeaders,
+    playerRegistry,
   ] = await Promise.all([
     getCalculatedBattingLeaders(false),
     getCalculatedPitchingLeaders(false),
@@ -25,7 +27,14 @@ export default async function LeadersPage() {
     getCalculatedBattingLeaders(true),
     getCalculatedPitchingLeaders(true),
     getCalculatedFieldingLeaders(true),
+    getPlayerRegistry(),
   ]);
+
+  // Create player image map
+  const playerImageMap: Record<string, string> = {};
+  playerRegistry.forEach(p => {
+    playerImageMap[p.playerName] = p.imageUrl;
+  });
 
   return (
     <LeadersClient
@@ -35,6 +44,7 @@ export default async function LeadersPage() {
       playoffBattingLeaders={playoffBattingLeaders}
       playoffPitchingLeaders={playoffPitchingLeaders}
       playoffFieldingLeaders={playoffFieldingLeaders}
+      playerImageMap={playerImageMap}
     />
   );
 }

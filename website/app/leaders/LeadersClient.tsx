@@ -54,6 +54,7 @@ interface LeadersClientProps {
     errors: LeaderEntry[];
     stolenBases: LeaderEntry[];
   };
+  playerImageMap: Record<string, string>;
 }
 
 type Category = "batting" | "pitching" | "fielding";
@@ -64,12 +65,14 @@ function LeaderPodium({
   statKey,
   context,
   icon: Icon,
+  playerImageMap,
 }: {
   leaders: LeaderEntry[];
   statName: string;
   statKey: string;
   context: "batting" | "pitching" | "fielding";
   icon: React.ElementType;
+  playerImageMap: Record<string, string>;
 }) {
   // Convert LeaderEntry[] to display format with team colors
   const displayLeaders = leaders.slice(0, 3).map((leader, idx) => ({
@@ -78,6 +81,7 @@ function LeaderPodium({
     team: leader.team,
     value: leader.value,
     color: getTeamColor(leader.team),
+    imageUrl: playerImageMap[leader.player] || "",
   }));
 
   return (
@@ -121,11 +125,11 @@ function LeaderPodium({
                 whileHover={{ scale: 1.02, x: 4 }}
                 className="relative group/item"
               >
-                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-comets-cyan/50 transition-all duration-200 cursor-pointer">
+                <div className="flex items-center gap-3 p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 hover:border-comets-cyan/50 transition-all duration-200 cursor-pointer">
                   {/* Rank badge */}
                   <motion.div
                     className={cn(
-                      "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-display text-xl font-bold",
+                      "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-display text-lg font-bold",
                       idx === 0 && "bg-comets-yellow text-black",
                       idx === 1 && "bg-white/20 text-white",
                       idx === 2 && "bg-white/10 text-white/80"
@@ -135,9 +139,30 @@ function LeaderPodium({
                     {leader.rank}
                   </motion.div>
 
+                  {/* Player portrait */}
+                  <div
+                    className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2"
+                    style={{
+                      borderColor: leader.color,
+                      background: leader.imageUrl ? 'transparent' : `linear-gradient(135deg, ${leader.color}40, ${leader.color}20)`,
+                    }}
+                  >
+                    {leader.imageUrl ? (
+                      <img
+                        src={leader.imageUrl}
+                        alt={leader.name}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center font-display text-sm text-white/60">
+                        {leader.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Player info */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-ui text-white font-bold uppercase tracking-wider text-lg truncate">
+                    <div className="font-ui text-white font-bold uppercase tracking-wider text-base truncate">
                       {leader.name}
                     </div>
                     <div
@@ -193,6 +218,7 @@ export default function LeadersClient({
   playoffBattingLeaders,
   playoffPitchingLeaders,
   playoffFieldingLeaders,
+  playerImageMap,
 }: LeadersClientProps) {
   const [category, setCategory] = useState<Category>("batting");
   const [isPlayoffs, setIsPlayoffs] = useState(false);
@@ -317,6 +343,7 @@ export default function LeadersClient({
                   statKey={stat.key}
                   context={category}
                   icon={stat.icon}
+                  playerImageMap={playerImageMap}
                 />
               </motion.div>
             ))}

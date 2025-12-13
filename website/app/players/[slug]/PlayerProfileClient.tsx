@@ -47,6 +47,7 @@ interface PlayerAttributes {
 interface ChemistryRelation {
   name: string;
   value: number;
+  imageUrl?: string;
 }
 
 interface PlayerProfileClientProps {
@@ -289,7 +290,22 @@ export default function PlayerProfileClient({
                         transition={{ delay: idx * 0.05 }}
                         className="flex items-center justify-between p-3 bg-comets-green/10 rounded hover:bg-comets-green/20 transition-all"
                       >
-                        <span className="font-ui text-white uppercase">{rel.name}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
+                            {rel.imageUrl ? (
+                              <img
+                                src={rel.imageUrl}
+                                alt={rel.name}
+                                className="w-full h-full object-cover object-top"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-white/10 font-display text-xs text-white/60">
+                                {rel.name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <span className="font-ui text-white uppercase">{rel.name}</span>
+                        </div>
                         <ThumbsUp size={18} className="text-comets-green" />
                       </motion.div>
                     ))}
@@ -313,7 +329,22 @@ export default function PlayerProfileClient({
                         transition={{ delay: idx * 0.05 }}
                         className="flex items-center justify-between p-3 bg-comets-red/10 rounded hover:bg-comets-red/20 transition-all"
                       >
-                        <span className="font-ui text-white uppercase">{rel.name}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 flex-shrink-0">
+                            {rel.imageUrl ? (
+                              <img
+                                src={rel.imageUrl}
+                                alt={rel.name}
+                                className="w-full h-full object-cover object-top"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-white/10 font-display text-xs text-white/60">
+                                {rel.name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <span className="font-ui text-white uppercase">{rel.name}</span>
+                        </div>
                         <ThumbsDown size={18} className="text-comets-red" />
                       </motion.div>
                     ))}

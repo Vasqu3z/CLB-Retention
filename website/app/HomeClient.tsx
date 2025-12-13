@@ -217,10 +217,29 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
           </div>
         </motion.div>
 
-        {/* Main Title */}
+        {/* Main Title with Star */}
         <motion.div variants={itemVariants} className="relative mb-4">
           {/* Glow backdrop */}
           <div className="absolute inset-0 blur-3xl bg-gradient-to-r from-comets-cyan/20 via-white/10 to-comets-purple/20 scale-150" />
+
+          {/* Star Icon - positioned top-right of COMETS */}
+          <motion.div
+            className="absolute -top-2 -right-4 sm:-top-4 sm:-right-6 md:-top-6 md:-right-8 lg:-top-8 lg:-right-10 z-10"
+            animate={{ rotate: 360, scale: [1, 1.1, 1] }}
+            transition={{
+              rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+              scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+            }}
+            style={{ filter: "drop-shadow(0 0 15px rgba(244, 208, 63, 0.6)) drop-shadow(0 0 30px rgba(244, 208, 63, 0.4))" }}
+          >
+            <Image
+              src="/icons/Star.png"
+              alt="Star"
+              width={80}
+              height={80}
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20"
+            />
+          </motion.div>
 
           <motion.h1
             className="relative font-display text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] uppercase leading-[0.85] tracking-tight"
@@ -241,33 +260,13 @@ export default function HomeClient({ teams, season }: HomeClientProps) {
           </motion.h2>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="relative mb-6 z-20">
+        <motion.div variants={itemVariants} className="relative mb-8 z-20">
           <motion.h3
             className="relative font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl uppercase tracking-[0.3em] text-comets-yellow"
             style={{ textShadow: "0 0 15px rgba(244, 208, 63, 0.5), 0 0 40px rgba(244, 208, 63, 0.25)" }}
           >
             BASEBALL
           </motion.h3>
-        </motion.div>
-
-        {/* Star Icon - lower z-index than BASEBALL text */}
-        <motion.div
-          variants={itemVariants}
-          className="relative mb-10 z-0"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            style={{ filter: "drop-shadow(0 0 15px rgba(244, 208, 63, 0.6)) drop-shadow(0 0 30px rgba(244, 208, 63, 0.4))" }}
-          >
-            <Image
-              src="/icons/Star.png"
-              alt="Star"
-              width={80}
-              height={80}
-              className="w-16 h-16 md:w-20 md:h-20"
-            />
-          </motion.div>
         </motion.div>
 
         {/* Subtitle */}

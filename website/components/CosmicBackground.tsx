@@ -10,9 +10,9 @@ import { motion } from "framer-motion";
  * Uses pure CSS gradients (no blur filter) for organic diffusion.
  */
 export default function CosmicBackground() {
-  // Generate stars once on mount - reduced from 200 to 60 for performance
+  // Generate stars once on mount
   const stars = useMemo(() => {
-    return Array.from({ length: 60 }, (_, i) => ({
+    return Array.from({ length: 225 }, (_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
